@@ -8,7 +8,9 @@ type T struct {
 
 // New creates a new Tap value
 func New() *T {
-	return &T{}
+	return &T{
+		nextTestNumber: 1,
+	}
 }
 
 // Header displays a TAP header including version number and expected
