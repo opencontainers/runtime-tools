@@ -1,6 +1,7 @@
 package tap
 
 import "fmt"
+import "testing/quick"
 
 type T struct {
 	nextTestNumber int
@@ -30,4 +31,17 @@ func (t *T) Ok(test bool, description string) {
 
 	fmt.Printf("%s %d - %s\n", ok, t.nextTestNumber, description)
 	t.nextTestNumber++
+}
+
+// Check runs randomized tests against a function just as "testing/quick.Check"
+// does.  Success or failure generate appropriate TAP output.
+func (t *T) Check(function interface {}, description string) {
+    err := quick.Check(function, nil)
+    if err == nil {
+        t.Ok(true, description)
+        return
+    }
+
+    fmt.Printf("# %s\n", err)
+    t.Ok(false, description)
 }
