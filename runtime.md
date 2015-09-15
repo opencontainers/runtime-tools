@@ -71,6 +71,8 @@ Runs a secondary process in the given container.
 * *Standard streams:* The runtime must attach its standard streams directly to the application process without inspection.
 * *Exit code:* The runtime must exit with the application process's exit code.
 
+If the main application (launched by `start`) dies, all other processes in its container will be killed [TODO: link to lifecycle docs explaining this].
+
 Example:
 ```sh
 # in a directory with a process.json that echos "goodbye" and exits 43
