@@ -11,14 +11,14 @@ Starts a container from a bundle directory.
 * *Output:* The process output is printed to stdout and stderr, and the process exits with the delegate process exit code.
 
 Example:
-~~~~
- # in a bundle directory with a process that echos "hello" and exits 42
- $ funC start
- hello
+```sh
+# in a bundle directory with a process that echos "hello" and exits 42
+$ funC start
+hello
  
- $ echo $?
- 42
-~~~~
+$ echo $?
+42
+```
 
 ## Stop
 
