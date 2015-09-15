@@ -82,6 +82,42 @@ $ echo $?
 43
 ```
 
+### pause
+
+Pause all processes in a container.
+
+* *Options*
+  * *`--wait`* Block until the process is completely paused.
+  Otherwise return immediately after initiating the pause, which may happen before the pause is complete.
+* *Arguments*
+  * *`<ID>`* The container ID to join.
+* *Exit code:* 0 on success, non-zero on error.
+
+Example:
+```sh
+$ funC pause --wait hello-1
+$ echo $?
+0
+```
+
+### resume
+
+Unpause all processes in a container.
+
+* *Options*
+  * *`--wait`* Block until the process is completely unpaused.
+  Otherwise return immediately after initiating the unpause, which may happen before the unpause is complete.
+* *Arguments*
+  * *`<ID>`* The container ID to join.
+* *Exit code:* 0 on success, non-zero on error.
+
+Example:
+```sh
+$ funC resume hello-1
+$ echo $?
+0
+```
+
 ### signal
 
 Sends a signal to the container.
