@@ -3,8 +3,20 @@
 A conformant runtime should provide an executable (called `funC` in the following examples).
 That executable should support each operation listed below as its first argument.
 It operates by default on the `config.json` and `runtime.json` in the current directory.
+The template for supported commands is:
 
-## Start
+```sh
+$ funC [global-options] <COMMAND> [command-specific-options] <command-specific-arguments>
+```
+
+## Global options
+
+None are required, but the runtime may support options that start with at least one hyphen.
+Global options may take positional arguments (e.g. `--log-level debug`), but the option parsing must be such that `funC <COMMAND>` is unambiguously an invocation of `<COMMAND>` for any `<COMMAND>` that does not start with a hyphen (including commands not specified in this document).
+
+## Commands
+
+### start
 
 Starts a container from a bundle directory. 
 
@@ -24,6 +36,6 @@ $ echo $?
 42
 ```
 
-## Stop
+### stop
 
  ...
