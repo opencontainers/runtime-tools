@@ -2,7 +2,7 @@
 
 A conformant runtime should provide an executable (called `funC` in the following examples).
 That executable should support each operation listed below as its first argument.
-It operates by default on the 'config.json' in the current directory.
+It operates by default on the `config.json` and `runtime.json` in the current directory.
 
 ## Start
 
