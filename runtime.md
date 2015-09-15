@@ -60,6 +60,26 @@ $ echo $?
 42
 ```
 
+### exec
+
+Runs a secondary process in the given container.
+
+* *Options*
+  * *`--process <PATH>`* Override `process.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
+* *Arguments*
+  * *`<ID>`* The container ID to join.
+* *Standard streams:* The runtime must attach its standard streams directly to the application process without inspection.
+* *Exit code:* The runtime must exit with the application process's exit code.
+
+Example:
+```sh
+# in a directory with a process.json that echos "goodbye" and exits 43
+$ funC exec hello-1
+goodbye
+$ echo $?
+43
+```
+
 ### stop
 
  ...
