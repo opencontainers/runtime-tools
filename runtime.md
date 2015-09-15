@@ -44,6 +44,8 @@ $ echo $?
 Starts a container from a bundle directory. 
 
 * *Options*
+  * *`--id <ID>`* Set the container ID when creating or joining a container.
+    If not set, the runtime is free to pick any ID that is not already in use.
   * *`--config <PATH>`* Override `config.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
   * *`--runtime <PATH>`* Override `runtime.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
 * *Standard streams:* The runtime must attach its standard streams directly to the application process without inspection.
@@ -52,7 +54,7 @@ Starts a container from a bundle directory.
 Example:
 ```sh
 # in a bundle directory with a process that echos "hello" and exits 42
-$ funC start
+$ funC start --id hello-1
 hello
  
 $ echo $?
