@@ -8,7 +8,9 @@ It operates by default on the `config.json` and `runtime.json` in the current di
 
 Starts a container from a bundle directory. 
 
-* *Flags:* none.
+* *Options*
+  * *`--config <PATH>`* Override `config.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
+  * *`--runtime <PATH>`* Override `runtime.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
 * *Standard streams:* The runtime must attach its standard streams directly to the application process without inspection.
 * *Exit code:* The runtime must exit with the application process's exit code.
 
