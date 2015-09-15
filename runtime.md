@@ -8,7 +8,8 @@ It operates by default on the 'config.json' in the current directory.
 Starts a container from a bundle directory. 
 
 * *Flags:* none.
-* *Output:* The process output is printed to stdout and stderr, and the process exits with the delegate process's exit code.
+* *Standard streams:* The runtime must attach its standard streams directly to the application process without inspection.
+* *Exit code:* The runtime must exit with the application process's exit code.
 
 Example:
 ```sh
