@@ -7,9 +7,9 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/codegangsta/cli"
-	"github.com/opencontainers/specs"
+	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/opencontainers/specs"
 )
 
 var generateCommand = cli.Command{
