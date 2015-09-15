@@ -80,6 +80,22 @@ $ echo $?
 43
 ```
 
-### stop
+### signal
 
- ...
+Sends a signal to the container.
+
+* *Options*
+  * *`--signal <SIGNAL>`* The signal to send.
+    This must be one of the valid POSIX signals, although runtimes on non-POSIX systems must translate the POSIX name to their platorm's analogous signal.
+    Defaults to TERM.
+* *Arguments*
+  * *`<ID>`* The container ID to join.
+* *Exit code:* 0 on success, non-zero on error.
+  A 0 exit status does not imply the process has exited (as it may have caught the signal).
+
+Example:
+```sh
+$ funC signal --signal KILL hello-1
+$ echo $?
+0
+```
