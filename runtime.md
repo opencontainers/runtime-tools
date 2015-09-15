@@ -1,4 +1,4 @@
-# Operations: 
+# Operations
 
 The command line should support each operation listed below as its first argument.
 It operates by default on the 'config.json' in the current directory.
