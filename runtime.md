@@ -8,7 +8,7 @@ It operates by default on the 'config.json' in the current directory.
 Starts a container from a bundle directory. 
 
 * *Flags:* none.
-* *Output:* The process output is printed to stdout and stderr, and the process exits with the delegate process exit code.
+* *Output:* The process output is printed to stdout and stderr, and the process exits with the delegate process's exit code.
 
 Example:
 ```sh
