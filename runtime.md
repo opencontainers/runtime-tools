@@ -1,8 +1,6 @@
 # Operations
 
 A conformant runtime should provide an executable (called `funC` in the following examples).
-That executable should support each operation listed below as its first argument.
-It operates by default on the `config.json` and `runtime.json` in the current directory.
 The template for supported commands is:
 
 ```sh
@@ -42,6 +40,7 @@ $ echo $?
 ### start
 
 Starts a container from a bundle directory. 
+It operates by default on the `config.json` and `runtime.json` in the current directory.
 
 * *Options*
   * *`--id <ID>`* Set the container ID when creating or joining a container.
