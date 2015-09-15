@@ -16,6 +16,29 @@ Global options may take positional arguments (e.g. `--log-level debug`), but the
 
 ## Commands
 
+### version
+
+* *Options* None are required, but the runtime may support options.
+* *Standard streams*
+  * *stdin:* The runtime may not attempt to read from its stdin.
+  * *stdout:* The runtime must print its name, a space, and its version as the first line to its stdout.
+    The name may contain any Unicode characters except a control codes and newlines.
+    The runtime may print additional lines its stdout, and the format for those lines is not specified in this document.
+  * *stderr:* The runtime may print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+* *Exit code:* The runtime must exit with zero.
+
+Print the runtime version and exit.
+The version
+
+Example:
+```sh
+$ funC version
+funC 1.0.0
+Built for x86_64-pc-linux-gnu
+$ echo $?
+0
+```
+
 ### start
 
 Starts a container from a bundle directory. 
