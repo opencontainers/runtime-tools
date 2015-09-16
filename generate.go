@@ -105,9 +105,9 @@ func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
 		},
 		Linux: specs.Linux{
 			Capabilities: []string{
-				"AUDIT_WRITE",
-				"KILL",
-				"NET_BIND_SERVICE",
+				"CAP_AUDIT_WRITE",
+				"CAP_KILL",
+				"CAP_NET_BIND_SERVICE",
 			},
 		},
 	}
