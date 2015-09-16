@@ -10,11 +10,19 @@ import (
 	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/opencontainers/specs"
 )
 
+var generateFlags = []cli.Flag{
+	cli.StringFlag{Name: "rootfs", Usage: "path to the rootfs"},
+	cli.BoolFlag{Name: "read-only", Usage: "make the container's rootfs read-only"},
+	cli.StringFlag{Name: "hostname", Value: "acme", Usage: "hostname value for the container"},
+}
+
 var generateCommand = cli.Command{
 	Name:  "generate",
 	Usage: "generate a OCI spec file",
+	Flags: generateFlags,
 	Action: func(context *cli.Context) {
 		spec, rspec := getDefaultTemplate()
+		modify(&spec, &rspec, context)
 		cName := "config.json"
 		rName := "runtime.json"
 		data, err := json.MarshalIndent(&spec, "", "\t")
@@ -32,6 +40,12 @@ var generateCommand = cli.Command{
 			logrus.Fatal(err)
 		}
 	},
+}
+
+func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) {
+	spec.Root.Path = context.String("rootfs")
+	spec.Root.Readonly = context.Bool("read-only")
+	spec.Hostname = context.String("hostname")
 }
 
 func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
