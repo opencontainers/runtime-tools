@@ -14,6 +14,8 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "rootfs", Usage: "path to the rootfs"},
 	cli.BoolFlag{Name: "read-only", Usage: "make the container's rootfs read-only"},
 	cli.StringFlag{Name: "hostname", Value: "acme", Usage: "hostname value for the container"},
+	cli.IntFlag{Name: "uid", Usage: "uid for the process"},
+	cli.IntFlag{Name: "gid", Usage: "gid for the process"},
 }
 
 var generateCommand = cli.Command{
@@ -46,6 +48,8 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	spec.Root.Path = context.String("rootfs")
 	spec.Root.Readonly = context.Bool("read-only")
 	spec.Hostname = context.String("hostname")
+	spec.Process.User.UID = int32(context.Int("uid"))
+	spec.Process.User.GID = int32(context.Int("gid"))
 }
 
 func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
