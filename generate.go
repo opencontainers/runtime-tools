@@ -2,13 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"runtime"
 	"strconv"
+	"strings"
 
-	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/codegangsta/cli"
-	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/opencontainers/specs"
+	"github.com/Sirupsen/logrus"
+	"github.com/codegangsta/cli"
+	"github.com/opencontainers/specs"
+	"github.com/syndtr/gocapability/capability"
 )
 
 var generateFlags = []cli.Flag{
@@ -18,7 +21,17 @@ var generateFlags = []cli.Flag{
 	cli.IntFlag{Name: "uid", Usage: "uid for the process"},
 	cli.IntFlag{Name: "gid", Usage: "gid for the process"},
 	cli.StringSliceFlag{Name: "groups", Usage: "supplementary groups for the process"},
+	cli.StringSliceFlag{Name: "cap-add", Usage: "add capabilities"},
+	cli.StringSliceFlag{Name: "cap-drop", Usage: "drop capabilities"},
 }
+
+var (
+	defaultCaps = []string{
+		"CAP_AUDIT_WRITE",
+		"CAP_KILL",
+		"CAP_NET_BIND_SERVICE",
+	}
+)
 
 var generateCommand = cli.Command{
 	Name:  "generate",
@@ -66,6 +79,49 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 			spec.Process.User.AdditionalGids = append(spec.Process.User.AdditionalGids, int32(groupId))
 		}
 	}
+
+	capMappings := make(map[string]bool)
+	for _, cap := range capability.List() {
+		key := strings.ToUpper(cap.String())
+		capMappings[key] = true
+	}
+
+	addedCapsMap := make(map[string]bool)
+	for _, cap := range defaultCaps {
+		addedCapsMap[cap] = true
+	}
+
+	addCapList := make([]string, len(defaultCaps))
+	copy(addCapList, defaultCaps)
+	addCaps := context.StringSlice("cap-add")
+	for _, c := range addCaps {
+		if !capMappings[c] {
+			return fmt.Errorf("Invalid value passed for adding capability")
+		}
+		cp := fmt.Sprintf("CAP_%s", c)
+		if !addedCapsMap[cp] {
+			addCapList = append(addCapList, cp)
+			addedCapsMap[cp] = true
+		}
+	}
+	dropCaps := context.StringSlice("cap-drop")
+	dropCapsMap := make(map[string]bool)
+	for _, c := range dropCaps {
+		if !capMappings[c] {
+			return fmt.Errorf("Invalid value passed for dropping capability")
+		}
+		cp := fmt.Sprintf("CAP_%s", c)
+		dropCapsMap[cp] = true
+	}
+
+	var finalCapList []string
+	for _, c := range addCapList {
+		if !dropCapsMap[c] {
+			finalCapList = append(finalCapList, c)
+		}
+	}
+	spec.Linux.Capabilities = finalCapList
+
 	return nil
 }
 
