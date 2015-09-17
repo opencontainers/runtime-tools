@@ -48,6 +48,9 @@ It operates by default on the `config.json` and `runtime.json` in the current di
   * *`--config <PATH>`* Override `config.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
   * *`--runtime <PATH>`* Override `runtime.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
 * *Standard streams:* The runtime must attach its standard streams directly to the application process without inspection.
+* *Environment variables*
+  * *`LISTEN_FDS`:* The number of file descriptors passed.
+    For example, `LISTEN_FDS=2` would mean passing 3 and 4 (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
 * *Exit code:* The runtime must exit with the application process's exit code.
 
 Example:
@@ -137,3 +140,6 @@ $ funC signal --signal KILL hello-1
 $ echo $?
 0
 ```
+
+[standard-streams]: https://github.com/opencontainers/specs/blob/v0.1.1/runtime-linux.md#file-descriptors
+[systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
