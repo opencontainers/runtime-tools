@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"runtime"
+	"strconv"
 
 	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/codegangsta/cli"
@@ -16,6 +17,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "hostname", Value: "acme", Usage: "hostname value for the container"},
 	cli.IntFlag{Name: "uid", Usage: "uid for the process"},
 	cli.IntFlag{Name: "gid", Usage: "gid for the process"},
+	cli.StringSliceFlag{Name: "groups", Usage: "supplementary groups for the process"},
 }
 
 var generateCommand = cli.Command{
@@ -24,7 +26,10 @@ var generateCommand = cli.Command{
 	Flags: generateFlags,
 	Action: func(context *cli.Context) {
 		spec, rspec := getDefaultTemplate()
-		modify(&spec, &rspec, context)
+		err := modify(&spec, &rspec, context)
+		if err != nil {
+			logrus.Fatal(err)
+		}
 		cName := "config.json"
 		rName := "runtime.json"
 		data, err := json.MarshalIndent(&spec, "", "\t")
@@ -44,12 +49,24 @@ var generateCommand = cli.Command{
 	},
 }
 
-func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) {
+func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
 	spec.Root.Path = context.String("rootfs")
 	spec.Root.Readonly = context.Bool("read-only")
 	spec.Hostname = context.String("hostname")
 	spec.Process.User.UID = int32(context.Int("uid"))
 	spec.Process.User.GID = int32(context.Int("gid"))
+
+	groups := context.StringSlice("groups")
+	if groups != nil {
+		for _, g := range groups {
+			groupId, err := strconv.Atoi(g)
+			if err != nil {
+				return err
+			}
+			spec.Process.User.AdditionalGids = append(spec.Process.User.AdditionalGids, int32(groupId))
+		}
+	}
+	return nil
 }
 
 func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
