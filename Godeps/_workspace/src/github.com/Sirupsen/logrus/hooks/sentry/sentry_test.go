@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/getsentry/raven-go"
-	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 )
 
 const (

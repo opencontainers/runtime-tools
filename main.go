@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/Sirupsen/logrus"
+	"github.com/codegangsta/cli"
 )
 
 func main() {

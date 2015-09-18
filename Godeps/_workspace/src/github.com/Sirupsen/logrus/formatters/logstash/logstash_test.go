@@ -3,7 +3,7 @@ package logstash
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/mrunalp/ocitools/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
