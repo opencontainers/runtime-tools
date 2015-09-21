@@ -23,6 +23,11 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "groups", Usage: "supplementary groups for the process"},
 	cli.StringSliceFlag{Name: "cap-add", Usage: "add capabilities"},
 	cli.StringSliceFlag{Name: "cap-drop", Usage: "drop capabilities"},
+	cli.StringFlag{Name: "network", Usage: "network namespace"},
+	cli.StringFlag{Name: "mount", Usage: "mount namespace"},
+	cli.StringFlag{Name: "pid", Usage: "pid namespace"},
+	cli.StringFlag{Name: "ipc", Usage: "ipc namespace"},
+	cli.StringFlag{Name: "uts", Usage: "uts namespace"},
 }
 
 var (
@@ -122,7 +127,43 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	}
 	spec.Linux.Capabilities = finalCapList
 
+	setupNamespaces(spec, rspec, context)
+
 	return nil
+}
+
+func mapStrToNamespace(ns string, path string) specs.Namespace {
+	switch ns {
+	case "network":
+		return specs.Namespace{Type: specs.NetworkNamespace, Path: path}
+	case "pid":
+		return specs.Namespace{Type: specs.PIDNamespace, Path: path}
+	case "mount":
+		return specs.Namespace{Type: specs.MountNamespace, Path: path}
+	case "ipc":
+		return specs.Namespace{Type: specs.IPCNamespace, Path: path}
+	case "uts":
+		return specs.Namespace{Type: specs.UTSNamespace, Path: path}
+	case "user":
+		return specs.Namespace{Type: specs.UserNamespace, Path: path}
+	default:
+		logrus.Fatalf("Should not reach here!")
+	}
+	return specs.Namespace{}
+}
+
+func setupNamespaces(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) {
+	namespaces := []string{"network", "pid", "mount", "ipc", "uts"}
+	var linuxNs []specs.Namespace
+	for _, nsName := range namespaces {
+		nsPath := context.String(nsName)
+		if nsPath == "host" {
+			continue
+		}
+		ns := mapStrToNamespace(nsName, nsPath)
+		linuxNs = append(linuxNs, ns)
+	}
+	rspec.Linux.Namespaces = linuxNs
 }
 
 func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
