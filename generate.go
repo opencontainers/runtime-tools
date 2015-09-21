@@ -28,6 +28,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "pid", Usage: "pid namespace"},
 	cli.StringFlag{Name: "ipc", Usage: "ipc namespace"},
 	cli.StringFlag{Name: "uts", Usage: "uts namespace"},
+	cli.StringFlag{Name: "selinux-label", Usage: "process selinux label"},
 }
 
 var (
@@ -73,6 +74,7 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	spec.Hostname = context.String("hostname")
 	spec.Process.User.UID = int32(context.Int("uid"))
 	spec.Process.User.GID = int32(context.Int("gid"))
+	rspec.Linux.SelinuxProcessLabel = context.String("selinux-label")
 
 	groups := context.StringSlice("groups")
 	if groups != nil {
