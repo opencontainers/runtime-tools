@@ -87,6 +87,15 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 		}
 	}
 
+	if err := setupCapabilities(spec, rspec, context); err != nil {
+		return err
+	}
+	setupNamespaces(spec, rspec, context)
+
+	return nil
+}
+
+func setupCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
 	capMappings := make(map[string]bool)
 	for _, cap := range capability.List() {
 		key := strings.ToUpper(cap.String())
@@ -128,9 +137,6 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 		}
 	}
 	spec.Linux.Capabilities = finalCapList
-
-	setupNamespaces(spec, rspec, context)
-
 	return nil
 }
 
