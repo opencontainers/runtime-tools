@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "ipc", Usage: "ipc namespace"},
 	cli.StringFlag{Name: "uts", Usage: "uts namespace"},
 	cli.StringFlag{Name: "selinux-label", Usage: "process selinux label"},
+	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
 }
 
 var (
@@ -103,7 +105,26 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 		return err
 	}
 	setupNamespaces(spec, rspec, context)
+	if err := addTmpfsMounts(spec, rspec, context); err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func addTmpfsMounts(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+	for _, dest := range context.StringSlice("tmpfs") {
+		name := filepath.Base(dest)
+		mntName := fmt.Sprintf("%stmpfs", name)
+		mnt := specs.MountPoint{Name: mntName, Path: dest}
+		spec.Mounts = append(spec.Mounts, mnt)
+		rmnt := specs.Mount{
+			Type:    "tmpfs",
+			Source:  "tmpfs",
+			Options: []string{"nosuid", "nodev", "mode=755"},
+		}
+		rspec.Mounts[mntName] = rmnt
+	}
 	return nil
 }
 
