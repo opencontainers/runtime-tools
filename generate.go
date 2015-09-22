@@ -17,6 +17,7 @@ import (
 var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "rootfs", Usage: "path to the rootfs"},
 	cli.BoolFlag{Name: "read-only", Usage: "make the container's rootfs read-only"},
+	cli.BoolFlag{Name: "privileged", Usage: "enabled privileged container settings"},
 	cli.StringFlag{Name: "hostname", Value: "acme", Usage: "hostname value for the container"},
 	cli.IntFlag{Name: "uid", Usage: "uid for the process"},
 	cli.IntFlag{Name: "gid", Usage: "gid for the process"},
@@ -96,6 +97,18 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 }
 
 func setupCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+	var finalCapList []string
+
+	// Add all capabilities in privileged mode.
+	privileged := context.Bool("privileged")
+	if privileged {
+		for _, cap := range capability.List() {
+			finalCapList = append(finalCapList, fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())))
+		}
+		spec.Linux.Capabilities = finalCapList
+		return nil
+	}
+
 	capMappings := make(map[string]bool)
 	for _, cap := range capability.List() {
 		key := strings.ToUpper(cap.String())
@@ -130,7 +143,6 @@ func setupCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, con
 		dropCapsMap[cp] = true
 	}
 
-	var finalCapList []string
 	for _, c := range addCapList {
 		if !dropCapsMap[c] {
 			finalCapList = append(finalCapList, c)
