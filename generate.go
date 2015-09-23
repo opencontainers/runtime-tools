@@ -34,6 +34,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
 	cli.StringFlag{Name: "args", Usage: "command to run in the container"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
+	cli.StringFlag{Name: "mount-cgroups", Value: "ro", Usage: "mount cgroups (rw,ro,no)"},
 }
 
 var (
@@ -119,6 +120,9 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	if err := addTmpfsMounts(spec, rspec, context); err != nil {
 		return err
 	}
+	if err := mountCgroups(spec, rspec, context); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -136,6 +140,27 @@ func addTmpfsMounts(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, contex
 		}
 		rspec.Mounts[mntName] = rmnt
 	}
+	return nil
+}
+
+func mountCgroups(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+	mountCgroupOption := context.String("mount-cgroups")
+	switch mountCgroupOption {
+	case "ro":
+	case "rw":
+	case "no":
+		return nil
+	default:
+		return fmt.Errorf("--mount-cgroups should be one of (ro,rw,no)")
+	}
+
+	spec.Mounts = append(spec.Mounts, specs.MountPoint{Name: "cgroup", Path: "/sys/fs/cgroup"})
+	rspec.Mounts["cgroup"] = specs.Mount{
+		Type:    "cgroup",
+		Source:  "cgroup",
+		Options: []string{"nosuid", "noexec", "nodev", "relatime", mountCgroupOption},
+	}
+
 	return nil
 }
 
@@ -278,10 +303,6 @@ func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
 					Name: "sysfs",
 					Path: "/sys",
 				},
-				{
-					Name: "cgroup",
-					Path: "/sys/fs/cgroup",
-				},
 			},
 		},
 		Linux: specs.Linux{
@@ -335,11 +356,6 @@ func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
 					Type:    "sysfs",
 					Source:  "sysfs",
 					Options: []string{"nosuid", "noexec", "nodev"},
-				},
-				"cgroup": {
-					Type:    "cgroup",
-					Source:  "cgroup",
-					Options: []string{"nosuid", "noexec", "nodev", "relatime", "ro"},
 				},
 			},
 		},
