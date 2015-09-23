@@ -32,6 +32,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "uts", Usage: "uts namespace"},
 	cli.StringFlag{Name: "selinux-label", Usage: "process selinux label"},
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
+	cli.StringFlag{Name: "args", Usage: "command to run in the container"},
 }
 
 var (
@@ -89,6 +90,11 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	spec.Process.User.UID = int32(context.Int("uid"))
 	spec.Process.User.GID = int32(context.Int("gid"))
 	rspec.Linux.SelinuxProcessLabel = context.String("selinux-label")
+
+	args := context.String("args")
+	if args != "" {
+		spec.Process.Args = []string{args}
+	}
 
 	groups := context.StringSlice("groups")
 	if groups != nil {
