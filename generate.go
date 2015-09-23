@@ -35,6 +35,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "args", Usage: "command to run in the container"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "ro", Usage: "mount cgroups (rw,ro,no)"},
+	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
 }
 
 var (
@@ -123,6 +124,9 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	if err := mountCgroups(spec, rspec, context); err != nil {
 		return err
 	}
+	if err := addBindMounts(spec, rspec, context); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -161,6 +165,32 @@ func mountCgroups(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context 
 		Options: []string{"nosuid", "noexec", "nodev", "relatime", mountCgroupOption},
 	}
 
+	return nil
+}
+
+func addBindMounts(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+	for _, b := range context.StringSlice("bind") {
+		var source, dest string
+		options := "ro"
+		bparts := strings.SplitN(b, ":", 3)
+		switch len(bparts) {
+		case 2:
+			source, dest = bparts[0], bparts[1]
+		case 3:
+			source, dest, options = bparts[0], bparts[1], bparts[2]
+		default:
+			return fmt.Errorf("--bind should have format src:dest:[options]")
+		}
+		name := filepath.Base(source)
+		mntName := fmt.Sprintf("%sbind", name)
+		spec.Mounts = append(spec.Mounts, specs.MountPoint{Name: mntName, Path: dest})
+		defaultOptions := []string{"bind"}
+		rspec.Mounts[mntName] = specs.Mount{
+			Type:    "bind",
+			Source:  source,
+			Options: append(defaultOptions, options),
+		}
+	}
 	return nil
 }
 
