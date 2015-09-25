@@ -36,6 +36,8 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "ro", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
+	cli.StringSliceFlag{Name: "prestart", Usage: "path to prestart hooks"},
+	cli.StringSliceFlag{Name: "poststop", Usage: "path to poststop hooks"},
 }
 
 var (
@@ -127,10 +129,22 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	if err := addBindMounts(spec, rspec, context); err != nil {
 		return err
 	}
+	if err := addHooks(spec, rspec, context); err != nil {
+		return err
+	}
 
 	return nil
 }
 
+func addHooks(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+	for _, pre := range context.StringSlice("prestart") {
+		rspec.Hooks.Prestart = append(rspec.Hooks.Prestart, specs.Hook{Path: pre})
+	}
+	for _, post := range context.StringSlice("poststop") {
+		rspec.Hooks.Poststop = append(rspec.Hooks.Poststop, specs.Hook{Path: post})
+	}
+	return nil
+}
 func addTmpfsMounts(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
 	for _, dest := range context.StringSlice("tmpfs") {
 		name := filepath.Base(dest)
