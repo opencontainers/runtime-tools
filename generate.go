@@ -481,10 +481,6 @@ func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
 					Swappiness: -1,
 				},
 			},
-			Seccomp: specs.Seccomp{
-				DefaultAction: "SCMP_ACT_ALLOW",
-				Syscalls:      []*specs.Syscall{},
-			},
 		},
 	}
 	return spec, rspec
