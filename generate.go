@@ -138,10 +138,22 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 
 func addHooks(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
 	for _, pre := range context.StringSlice("prestart") {
-		rspec.Hooks.Prestart = append(rspec.Hooks.Prestart, specs.Hook{Path: pre})
+		parts := strings.Split(pre, ":")
+		args := []string{}
+		path := parts[0]
+		if len(parts) > 1 {
+			args = parts[1:]
+		}
+		rspec.Hooks.Prestart = append(rspec.Hooks.Prestart, specs.Hook{Path: path, Args: args})
 	}
 	for _, post := range context.StringSlice("poststop") {
-		rspec.Hooks.Poststop = append(rspec.Hooks.Poststop, specs.Hook{Path: post})
+		parts := strings.Split(post, ":")
+		args := []string{}
+		path := parts[0]
+		if len(parts) > 1 {
+			args = parts[1:]
+		}
+		rspec.Hooks.Poststop = append(rspec.Hooks.Poststop, specs.Hook{Path: path, Args: args})
 	}
 	return nil
 }
