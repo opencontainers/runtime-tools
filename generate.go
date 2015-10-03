@@ -38,6 +38,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
 	cli.StringSliceFlag{Name: "prestart", Usage: "path to prestart hooks"},
 	cli.StringSliceFlag{Name: "poststop", Usage: "path to poststop hooks"},
+	cli.StringFlag{Name: "root-propagation", Usage: "mount propagation for root"},
 }
 
 var (
@@ -132,7 +133,27 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	if err := addHooks(spec, rspec, context); err != nil {
 		return err
 	}
+	if err := addRootPropagation(spec, rspec, context); err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func addRootPropagation(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+	rp := context.String("root-propagation")
+	switch rp {
+	case "":
+	case "private":
+	case "rprivate":
+	case "slave":
+	case "rslave":
+	case "shared":
+	case "rshared":
+	default:
+		return fmt.Errorf("rootfs-propagation must be empty or one of private|rprivate|slave|rslave|shared|rshared")
+	}
+	rspec.Linux.RootfsPropagation = rp
 	return nil
 }
 
