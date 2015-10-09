@@ -93,8 +93,8 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	spec.Root.Path = context.String("rootfs")
 	spec.Root.Readonly = context.Bool("read-only")
 	spec.Hostname = context.String("hostname")
-	spec.Process.User.UID = int32(context.Int("uid"))
-	spec.Process.User.GID = int32(context.Int("gid"))
+	spec.Process.User.UID = uint32(context.Int("uid"))
+	spec.Process.User.GID = uint32(context.Int("gid"))
 	rspec.Linux.SelinuxProcessLabel = context.String("selinux-label")
 
 	args := context.String("args")
@@ -113,7 +113,7 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 			if err != nil {
 				return err
 			}
-			spec.Process.User.AdditionalGids = append(spec.Process.User.AdditionalGids, int32(groupId))
+			spec.Process.User.AdditionalGids = append(spec.Process.User.AdditionalGids, uint32(groupId))
 		}
 	}
 
