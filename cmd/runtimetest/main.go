@@ -47,6 +47,16 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 		return fmt.Errorf("GID expected: %q, actual: %q", spec.Process.User.GID, gid)
 	}
 
+	if spec.Process.Cwd != "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		if wd != spec.Process.Cwd {
+			return fmt.Errorf("Cwd expected: %q, actual: %q", spec.Process.Cwd, wd)
+		}
+	}
+
 	return nil
 }
 
@@ -55,6 +65,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Failed to load configuration: %q", err)
 	}
-	logrus.Infof("%+v", spec)
-	logrus.Infof("%+v", rspec)
+	if err := validateProcess(spec, rspec); err != nil {
+		logrus.Fatalf("Validation failed: %q", err)
+	}
 }
