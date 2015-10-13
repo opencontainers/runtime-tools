@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/opencontainers/specs"
@@ -54,6 +57,21 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 		}
 		if wd != spec.Process.Cwd {
 			return fmt.Errorf("Cwd expected: %q, actual: %q", spec.Process.Cwd, wd)
+		}
+	}
+
+	cmdlineBytes, err := ioutil.ReadFile("/proc/1/cmdline")
+	if err != nil {
+		return err
+	}
+
+	args := strings.Split(string(bytes.Trim(cmdlineBytes, "\x00")), " ")
+	if len(args) != len(spec.Process.Args) {
+		return fmt.Errorf("Processs arguments expected: %v, actual: %v")
+	}
+	for i, a := range args {
+		if a != spec.Process.Args[i] {
+			return fmt.Errorf("Processs arguments expected: %v, actual: %v", a, spec.Process.Args[i])
 		}
 	}
 
