@@ -50,6 +50,26 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 		return fmt.Errorf("GID expected: %v, actual: %v", spec.Process.User.GID, gid)
 	}
 
+	groups, err := os.Getgroups()
+	if err != nil {
+		return err
+	}
+
+	if len(groups) != len(spec.Process.User.AdditionalGids) {
+		return fmt.Errorf("Groups expected: %v, actual: %v", spec.Process.User.AdditionalGids, groups)
+	}
+
+	groupsMap := make(map[int]bool)
+	for _, g := range spec.Process.User.AdditionalGids {
+		groupsMap[int(g)] = true
+	}
+
+	for _, g := range groups {
+		if !groupsMap[g] {
+			return fmt.Errorf("Groups expected: %v, actual: %v", spec.Process.User.AdditionalGids, groups)
+		}
+	}
+
 	if spec.Process.Cwd != "" {
 		cwd, err := os.Getwd()
 		if err != nil {
