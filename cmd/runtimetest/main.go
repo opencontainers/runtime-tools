@@ -43,20 +43,20 @@ func loadSpecConfig() (spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, err
 func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
 	uid := os.Getuid()
 	if uint32(uid) != spec.Process.User.UID {
-		return fmt.Errorf("UID expected: %q, actual: %q", spec.Process.User.UID, uid)
+		return fmt.Errorf("UID expected: %v, actual: %v", spec.Process.User.UID, uid)
 	}
 	gid := os.Getgid()
 	if uint32(gid) != spec.Process.User.GID {
-		return fmt.Errorf("GID expected: %q, actual: %q", spec.Process.User.GID, gid)
+		return fmt.Errorf("GID expected: %v, actual: %v", spec.Process.User.GID, gid)
 	}
 
 	if spec.Process.Cwd != "" {
-		wd, err := os.Getwd()
+		cwd, err := os.Getwd()
 		if err != nil {
 			return err
 		}
-		if wd != spec.Process.Cwd {
-			return fmt.Errorf("Cwd expected: %q, actual: %q", spec.Process.Cwd, wd)
+		if cwd != spec.Process.Cwd {
+			return fmt.Errorf("Cwd expected: %v, actual: %v", spec.Process.Cwd, cwd)
 		}
 	}
 
