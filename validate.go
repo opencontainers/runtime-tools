@@ -46,7 +46,7 @@ var validateCommand = cli.Command{
 			logrus.Fatal(err)
 		}
 
-		spec.Process.Args = []string{"cat"}
+		spec.Process.Args = []string{"cat", "/proc/self/status"}
 		spec.Root.Path = rootfs
 		cPath := filepath.Join(specDir, "config.json")
 		rPath := filepath.Join(specDir, "runtime.json")
@@ -73,24 +73,13 @@ var validateCommand = cli.Command{
 }
 
 func testRuntime(runtime string, specDir string, spec specs.LinuxSpec, rspec specs.LinuxRuntimeSpec) error {
-	stdinR, stdinW, err := os.Pipe()
-	if err != nil {
-		return err
-	}
-
 	logrus.Infof("Launcing runtime")
 	cmd := exec.Command(runtime, "start")
 	cmd.Dir = specDir
-	cmd.Stdin = stdinR
-
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
-	stdinR.Close()
-	defer stdinW.Close()
-
-	err = cmd.Wait()
+	cmd.Stdin = os.Stdin
+	out, err := cmd.CombinedOutput()
+	logrus.Infof("Command done")
+	logrus.Infof(string(out))
 	if err != nil {
 		return err
 	}
