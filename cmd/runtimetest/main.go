@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/opencontainers/specs"
+	"github.com/syndtr/gocapability/capability"
 )
 
 func loadSpecConfig() (spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, err error) {
@@ -98,12 +99,47 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 	return nil
 }
 
+func validateCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	capabilityMap := make(map[string]capability.Cap)
+	last := capability.CAP_LAST_CAP
+	// workaround for RHEL6 which has no /proc/sys/kernel/cap_last_cap
+	if last == capability.Cap(63) {
+		last = capability.CAP_BLOCK_SUSPEND
+	}
+	for _, cap := range capability.List() {
+		if cap > last {
+			continue
+		}
+		capKey := fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String()))
+		capabilityMap[capKey] = cap
+	}
+
+	processCaps, err := capability.NewPid(1)
+	if err != nil {
+		return err
+	}
+
+	for _, ec := range spec.Linux.Capabilities {
+		cap := capabilityMap[ec]
+		if !processCaps.Get(capability.EFFECTIVE, cap) {
+			return fmt.Errorf("Expected Capability %v not set for process")
+		}
+	}
+
+	//TODO check that unexpected caps aren't set
+
+	return nil
+}
+
 func main() {
 	spec, rspec, err := loadSpecConfig()
 	if err != nil {
 		logrus.Fatalf("Failed to load configuration: %q", err)
 	}
 	if err := validateProcess(spec, rspec); err != nil {
+		logrus.Fatalf("Validation failed: %q", err)
+	}
+	if err := validateCapabilities(spec, rspec); err != nil {
 		logrus.Fatalf("Validation failed: %q", err)
 	}
 }
