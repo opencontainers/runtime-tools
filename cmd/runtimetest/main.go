@@ -96,6 +96,16 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 		}
 	}
 
+	for _, env := range spec.Process.Env {
+		parts := strings.Split(env, "=")
+		key := parts[0]
+		expectedValue := parts[1]
+		actualValue := os.Getenv(key)
+		if actualValue != expectedValue {
+			return fmt.Errorf("Env %v expected: %v, actual: %v", expectedValue, actualValue)
+		}
+	}
+
 	return nil
 }
 
