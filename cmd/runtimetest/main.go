@@ -141,6 +141,17 @@ func validateCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) 
 	return nil
 }
 
+func validateHostname(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	if hostname != spec.Hostname {
+		return fmt.Errorf("Hostname expected: %v, actual: %v", spec.Hostname, hostname)
+	}
+	return nil
+}
+
 func main() {
 	spec, rspec, err := loadSpecConfig()
 	if err != nil {
@@ -150,6 +161,9 @@ func main() {
 		logrus.Fatalf("Validation failed: %q", err)
 	}
 	if err := validateCapabilities(spec, rspec); err != nil {
+		logrus.Fatalf("Validation failed: %q", err)
+	}
+	if err := validateHostname(spec, rspec); err != nil {
 		logrus.Fatalf("Validation failed: %q", err)
 	}
 }
