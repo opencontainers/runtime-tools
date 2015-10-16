@@ -26,4 +26,4 @@ _testmain.go
 # Compiled binaries
 oci
 ocitools
-runtimetest
+/runtimetest
