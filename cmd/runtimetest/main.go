@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -161,12 +162,26 @@ func validateRlimits(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 			return err
 		}
 
-		fmt.Println("%+v to %+v", rlimit, r)
 		if rlimit.Cur != r.Soft {
 			return fmt.Errorf("%v rlimit soft expected: %v, actual: %v", r.Soft, rlimit.Cur)
 		}
 		if rlimit.Max != r.Hard {
 			return fmt.Errorf("%v rlimit hard expected: %v, actual: %v", r.Hard, rlimit.Max)
+		}
+	}
+	return nil
+}
+
+func validateSysctls(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	for k, v := range rspec.Linux.Sysctl {
+		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
+		vBytes, err := ioutil.ReadFile(keyPath)
+		if err != nil {
+			return err
+		}
+		value := string(bytes.Trim(vBytes, "\x00"))
+		if value != v {
+			return fmt.Errorf("Sysctl %v value expected: %v, actual: %v", k, v, value)
 		}
 	}
 	return nil
@@ -187,6 +202,9 @@ func main() {
 		logrus.Fatalf("Validation failed: %q", err)
 	}
 	if err := validateRlimits(spec, rspec); err != nil {
+		logrus.Fatalf("Validation failed: %q", err)
+	}
+	if err := validateSysctls(spec, rspec); err != nil {
 		logrus.Fatalf("Validation failed: %q", err)
 	}
 }
