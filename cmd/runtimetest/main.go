@@ -56,18 +56,14 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 		return err
 	}
 
-	if len(groups) != len(spec.Process.User.AdditionalGids) {
-		return fmt.Errorf("Groups expected: %v, actual: %v", spec.Process.User.AdditionalGids, groups)
-	}
-
 	groupsMap := make(map[int]bool)
-	for _, g := range spec.Process.User.AdditionalGids {
-		groupsMap[int(g)] = true
+	for _, g := range groups {
+		groupsMap[g] = true
 	}
 
-	for _, g := range groups {
-		if !groupsMap[g] {
-			return fmt.Errorf("Groups expected: %v, actual: %v", spec.Process.User.AdditionalGids, groups)
+	for _, g := range spec.Process.User.AdditionalGids {
+		if !groupsMap[int(g)] {
+			return fmt.Errorf("Groups expected: %v, actual (should be superset): %v", spec.Process.User.AdditionalGids, groups)
 		}
 	}
 
