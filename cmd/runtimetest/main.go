@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/opencontainers/specs"
@@ -148,6 +149,29 @@ func validateHostname(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) erro
 	return nil
 }
 
+func validateRlimits(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	for _, r := range rspec.Linux.Rlimits {
+		rl, err := strToRlimit(r.Type)
+		if err != nil {
+			return err
+		}
+
+		var rlimit syscall.Rlimit
+		if err := syscall.Getrlimit(rl, &rlimit); err != nil {
+			return err
+		}
+
+		fmt.Println("%+v to %+v", rlimit, r)
+		if rlimit.Cur != r.Soft {
+			return fmt.Errorf("%v rlimit soft expected: %v, actual: %v", r.Soft, rlimit.Cur)
+		}
+		if rlimit.Max != r.Hard {
+			return fmt.Errorf("%v rlimit hard expected: %v, actual: %v", r.Hard, rlimit.Max)
+		}
+	}
+	return nil
+}
+
 func main() {
 	spec, rspec, err := loadSpecConfig()
 	if err != nil {
@@ -160,6 +184,9 @@ func main() {
 		logrus.Fatalf("Validation failed: %q", err)
 	}
 	if err := validateHostname(spec, rspec); err != nil {
+		logrus.Fatalf("Validation failed: %q", err)
+	}
+	if err := validateRlimits(spec, rspec); err != nil {
 		logrus.Fatalf("Validation failed: %q", err)
 	}
 }
