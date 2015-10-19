@@ -179,7 +179,7 @@ func validateSysctls(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 		if err != nil {
 			return err
 		}
-		value := string(bytes.Trim(vBytes, "\x00"))
+		value := strings.TrimSpace(string(bytes.Trim(vBytes, "\x00")))
 		if value != v {
 			return fmt.Errorf("Sysctl %v value expected: %v, actual: %v", k, v, value)
 		}
