@@ -15,6 +15,8 @@ import (
 	"github.com/syndtr/gocapability/capability"
 )
 
+type validation func(*specs.LinuxSpec, *specs.LinuxRuntimeSpec) error
+
 func loadSpecConfig() (spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, err error) {
 	cPath := "config.json"
 	cf, err := os.Open(cPath)
@@ -192,19 +194,18 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Failed to load configuration: %q", err)
 	}
-	if err := validateProcess(spec, rspec); err != nil {
-		logrus.Fatalf("Validation failed: %q", err)
+
+	validations := []validation{
+		validateProcess,
+		validateCapabilities,
+		validateHostname,
+		validateRlimits,
+		validateSysctls,
 	}
-	if err := validateCapabilities(spec, rspec); err != nil {
-		logrus.Fatalf("Validation failed: %q", err)
-	}
-	if err := validateHostname(spec, rspec); err != nil {
-		logrus.Fatalf("Validation failed: %q", err)
-	}
-	if err := validateRlimits(spec, rspec); err != nil {
-		logrus.Fatalf("Validation failed: %q", err)
-	}
-	if err := validateSysctls(spec, rspec); err != nil {
-		logrus.Fatalf("Validation failed: %q", err)
+
+	for _, v := range validations {
+		if err := v(spec, rspec); err != nil {
+			logrus.Fatalf("Validation failed: %q", err)
+		}
 	}
 }
