@@ -4,10 +4,10 @@ set -o nounset
 set -o pipefail
 
 RUNTIME="runc"
-KEEP=0
+KEEP=0 # Track whether we keep the test directory around or clean it up
 
 usage() {
-	echo "$0 -r <runtime> -h -k"
+	echo "$0 -r <runtime> -k -h"
 }
 
 error() {
@@ -62,12 +62,12 @@ trap cleanup EXIT
 tar -xf  rootfs.tar.gz -C ${TESTDIR}
 cp runtimetest ${TESTDIR}
 
-TESTCMD="${RUNTIME} start"
 
 pushd $TESTDIR > /dev/null
 ocitools generate --args /runtimetest
 popd > /dev/null
 
+TESTCMD="${RUNTIME} start"
 pushd $TESTDIR > /dev/null
 if ! ${TESTCMD}; then
 	error "Runtime ${RUNTIME} failed validation"
