@@ -46,6 +46,7 @@ if ! command -v ${RUNTIME} > /dev/null; then
 	error "Runtime ${RUNTIME} not found in the path"
 fi
 
+mkdir -p /testroot
 TMPDIR=$(mktemp -p /testroot -d)
 TESTDIR=${TMPDIR}/busybox
 mkdir -p ${TESTDIR}
