@@ -23,6 +23,7 @@ GLOBAL OPTIONS:
 ```
 
 Generate
+------------------------------------------
 
 ```
 # ocitools generate --help
@@ -56,4 +57,21 @@ OPTIONS:
    --prestart [--prestart option --prestart option]     path to prestart hooks
    --poststop [--poststop option --poststop option]     path to poststop hooks
    --root-propagation                                   mount propagation for root
+```
+
+Testing OCI runtimes
+------------------------------------------
+
+```
+go get github.com/mrunalp/ocitools
+go build github.com/mrunalp/ocitools
+cp ocitools /usr/bin
+go build github.com/mrunalp/ocitools/cmd/runtimetest
+
+./test_runtime.sh -r runc 
+-----------------------------------------------------------------------------------
+VALIDATING RUNTIME: runc
+-----------------------------------------------------------------------------------
+Runtime runc passed validation
+
 ```
