@@ -46,6 +46,7 @@ func loadSpecConfig() (spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, err
 }
 
 func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	fmt.Println("validating container process")
 	uid := os.Getuid()
 	if uint32(uid) != spec.Process.User.UID {
 		return fmt.Errorf("UID expected: %v, actual: %v", spec.Process.User.UID, uid)
@@ -110,6 +111,7 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 }
 
 func validateCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	fmt.Println("validating capabilities")
 	capabilityMap := make(map[string]capability.Cap)
 	expectedCaps := make(map[capability.Cap]bool)
 	last := capability.CAP_LAST_CAP
@@ -152,6 +154,7 @@ func validateCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) 
 }
 
 func validateHostname(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	fmt.Println("validating hostname")
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
@@ -163,6 +166,7 @@ func validateHostname(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) erro
 }
 
 func validateRlimits(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	fmt.Println("validating rlimits")
 	for _, r := range rspec.Linux.Rlimits {
 		rl, err := strToRlimit(r.Type)
 		if err != nil {
@@ -185,6 +189,7 @@ func validateRlimits(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 }
 
 func validateSysctls(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	fmt.Println("validating sysctls")
 	for k, v := range rspec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
 		vBytes, err := ioutil.ReadFile(keyPath)
