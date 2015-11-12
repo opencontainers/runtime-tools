@@ -40,6 +40,10 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "poststart", Usage: "path to poststart hooks"},
 	cli.StringSliceFlag{Name: "poststop", Usage: "path to poststop hooks"},
 	cli.StringFlag{Name: "root-propagation", Usage: "mount propagation for root"},
+	cli.StringFlag{Name: "version", Value: "0.2.0", Usage: "version of the specification"},
+	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
+	cli.StringFlag{Name: "arch", Value: runtime.GOARCH, Usage: "architecture the container is created for"},
+	cli.StringFlag{Name: "cwd", Usage: "current working directory for the process"},
 }
 
 var (
@@ -97,6 +101,10 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	spec.Process.User.UID = uint32(context.Int("uid"))
 	spec.Process.User.GID = uint32(context.Int("gid"))
 	rspec.Linux.SelinuxProcessLabel = context.String("selinux-label")
+	spec.Version = context.String("version")
+	spec.Platform.OS = context.String("os")
+	spec.Platform.Arch = context.String("arch")
+	spec.Process.Cwd = context.String("cwd")
 
 	args := context.String("args")
 	if args != "" {
