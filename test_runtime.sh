@@ -65,7 +65,7 @@ cp runtimetest ${TESTDIR}
 
 
 pushd $TESTDIR > /dev/null
-ocitools generate --args /runtimetest
+ocitools generate --args /runtimetest --rootfs ""
 popd > /dev/null
 
 TESTCMD="${RUNTIME} start"
