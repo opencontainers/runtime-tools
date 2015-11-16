@@ -44,6 +44,8 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
 	cli.StringFlag{Name: "arch", Value: runtime.GOARCH, Usage: "architecture the container is created for"},
 	cli.StringFlag{Name: "cwd", Usage: "current working directory for the process"},
+	cli.StringSliceFlag{Name: "uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
+	cli.StringSliceFlag{Name: "gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
 }
 
 var (
@@ -145,7 +147,45 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	if err := addRootPropagation(spec, rspec, context); err != nil {
 		return err
 	}
+	if err := addIDMappings(spec, rspec, context); err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func addIDMappings(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+	for _, uidms := range context.StringSlice("uidmappings") {
+		idm := strings.Split(uidms, ":")
+		if len(idm) == 3 {
+			hid, err := strconv.Atoi(idm[0])
+			cid, err := strconv.Atoi(idm[1])
+			size, err := strconv.Atoi(idm[2])
+			if err != nil {
+				return err
+			}
+			uidmapping := specs.IDMapping{uint32(hid), uint32(cid), uint32(size)}
+			rspec.Linux.UIDMappings = append(rspec.Linux.UIDMappings, uidmapping)
+		} else {
+			return fmt.Errorf("uidmappings error: %s", uidms)
+		}
+	}
+
+	for _, gidms := range context.StringSlice("gidmappings") {
+		idm := strings.Split(gidms, ":")
+		if len(idm) == 3 {
+			hid, err := strconv.Atoi(idm[0])
+			cid, err := strconv.Atoi(idm[1])
+			size, err := strconv.Atoi(idm[2])
+			if err != nil {
+				return err
+			}
+			gidmapping := specs.IDMapping{uint32(hid), uint32(cid), uint32(size)}
+			rspec.Linux.GIDMappings = append(rspec.Linux.GIDMappings, gidmapping)
+		} else {
+			return fmt.Errorf("gidmappings error: %s", gidms)
+		}
+	}
 	return nil
 }
 
