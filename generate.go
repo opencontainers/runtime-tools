@@ -32,7 +32,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "uts", Usage: "uts namespace"},
 	cli.StringFlag{Name: "selinux-label", Usage: "process selinux label"},
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
-	cli.StringFlag{Name: "args", Usage: "command to run in the container"},
+	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "ro", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
@@ -98,9 +98,15 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	spec.Process.User.GID = uint32(context.Int("gid"))
 	rspec.Linux.SelinuxProcessLabel = context.String("selinux-label")
 
-	args := context.String("args")
-	if args != "" {
-		spec.Process.Args = []string{args}
+	for i, a := range context.StringSlice("args") {
+		if a != "" {
+			if i == 0 {
+				//Replace "sh" from getDefaultTemplate()
+				spec.Process.Args[0] = a
+			} else {
+				spec.Process.Args = append(spec.Process.Args, a)
+			}
+		}
 	}
 
 	for _, e := range context.StringSlice("env") {
