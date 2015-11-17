@@ -201,7 +201,7 @@ func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *c
 	}
 	// set syscall restrict in Seccomp
 	// the format of input syscall string is Name:Action:Args[1],Args[2],...,Args[n]
-	// and the format of Args string is Index/Value/ValueTwo/Operator
+	// the format of Args string is Index/Value/ValueTwo/Operator,and is parsed by function parseArgs()
 	for _, syscalls := range context.StringSlice("seccomp-syscalls") {
 		syscall := strings.Split(syscalls, ":")
 		if len(syscall) == 3 {
@@ -217,35 +217,9 @@ func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *c
 				return fmt.Errorf("seccomp-sysctl action must be empty or one of SCMP_ACT_KILL|SCMP_ACT_TRAP|SCMP_ACT_ERRNO|SCMP_ACT_TRACE|SCMP_ACT_ALLOW")
 			}
 			action := specs.Action(syscall[1])
-			var Args []*specs.Arg
-			argsslice := strings.Split(syscall[2], ",")
-			for _, argsstru := range argsslice {
-				args := strings.Split(argsstru, "/")
-				if len(args) == 4 {
-					index, err := strconv.Atoi(args[0])
-					value, err := strconv.Atoi(args[1])
-					value2, err := strconv.Atoi(args[2])
-					if err != nil {
-						return err
-					}
-					switch args[3] {
-					case "":
-					case "SCMP_CMP_NE":
-					case "SCMP_CMP_LT":
-					case "SCMP_CMP_LE":
-					case "SCMP_CMP_EQ":
-					case "SCMP_CMP_GE":
-					case "SCMP_CMP_GT":
-					case "SCMP_CMP_MASKED_EQ":
-					default:
-						return fmt.Errorf("seccomp-sysctl args must be empty or one of SCMP_CMP_NE|SCMP_CMP_LT|SCMP_CMP_LE|SCMP_CMP_EQ|SCMP_CMP_GE|SCMP_CMP_GT|SCMP_CMP_MASKED_EQ")
-					}
-					op := specs.Operator(args[3])
-					Arg := specs.Arg{uint(index), uint64(value), uint64(value2), op}
-					Args = append(Args, &Arg)
-				} else {
-					return fmt.Errorf("seccomp-sysctl args error: %s", argsstru)
-				}
+			Args, err := parseArgs(syscall[2])
+			if err != nil {
+				return err
 			}
 			syscallstruct := specs.Syscall{name, action, Args}
 			rspec.Linux.Seccomp.Syscalls = append(rspec.Linux.Seccomp.Syscalls, &syscallstruct)
@@ -254,6 +228,40 @@ func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *c
 		}
 	}
 	return nil
+}
+
+func parseArgs(args2parse string) ([]*specs.Arg, error) {
+	var Args []*specs.Arg
+	argstrslice := strings.Split(args2parse, ",")
+	for _, argstr := range argstrslice {
+		args := strings.Split(argstr, "/")
+		if len(args) == 4 {
+			index, err := strconv.Atoi(args[0])
+			value, err := strconv.Atoi(args[1])
+			value2, err := strconv.Atoi(args[2])
+			if err != nil {
+				return nil, err
+			}
+			switch args[3] {
+			case "":
+			case "SCMP_CMP_NE":
+			case "SCMP_CMP_LT":
+			case "SCMP_CMP_LE":
+			case "SCMP_CMP_EQ":
+			case "SCMP_CMP_GE":
+			case "SCMP_CMP_GT":
+			case "SCMP_CMP_MASKED_EQ":
+			default:
+				return nil, fmt.Errorf("seccomp-sysctl args must be empty or one of SCMP_CMP_NE|SCMP_CMP_LT|SCMP_CMP_LE|SCMP_CMP_EQ|SCMP_CMP_GE|SCMP_CMP_GT|SCMP_CMP_MASKED_EQ")
+			}
+			op := specs.Operator(args[3])
+			Arg := specs.Arg{uint(index), uint64(value), uint64(value2), op}
+			Args = append(Args, &Arg)
+		} else {
+			return nil, fmt.Errorf("seccomp-sysctl args error: %s", argstr)
+		}
+	}
+	return Args, nil
 }
 
 func addIDMappings(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
