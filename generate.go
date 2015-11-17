@@ -190,6 +190,11 @@ func addIDMappings(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context
 			return fmt.Errorf("gidmappings error: %s", gidms)
 		}
 	}
+
+	if len(context.StringSlice("uidmappings")) > 0 || len(context.StringSlice("gidmappings")) > 0 {
+		rspec.Linux.Namespaces = append(rspec.Linux.Namespaces, specs.Namespace{Type: "user"})
+	}
+
 	return nil
 }
 
