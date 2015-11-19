@@ -224,7 +224,7 @@ func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *c
 			syscallstruct := specs.Syscall{name, action, Args}
 			rspec.Linux.Seccomp.Syscalls = append(rspec.Linux.Seccomp.Syscalls, &syscallstruct)
 		} else {
-			return fmt.Errorf("seccomp sysctl must consits 3 parameters")
+			return fmt.Errorf("seccomp sysctl must consist of 3 parameters")
 		}
 	}
 	return nil
