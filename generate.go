@@ -165,10 +165,9 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 
 	return nil
 }
-func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
-	//set the DefaultAction of seccomp
-	sd := context.String("seccomp-default")
-	switch sd {
+
+func addSeccompDefault(rspec *specs.LinuxRuntimeSpec, sdefault string) error {
+	switch sdefault {
 	case "":
 	case "SCMP_ACT_KILL":
 	case "SCMP_ACT_TRAP":
@@ -176,11 +175,16 @@ func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *c
 	case "SCMP_ACT_TRACE":
 	case "SCMP_ACT_ALLOW":
 	default:
-		return fmt.Errorf("seccomp-default must be empty or one of SCMP_ACT_KILL|SCMP_ACT_TRAP|SCMP_ACT_ERRNO|SCMP_ACT_TRACE|SCMP_ACT_ALLOW")
+		return fmt.Errorf("seccomp-default must be empty or one of " +
+			"SCMP_ACT_KILL|SCMP_ACT_TRAP|SCMP_ACT_ERRNO|SCMP_ACT_TRACE|" +
+			"SCMP_ACT_ALLOW")
 	}
-	rspec.Linux.Seccomp.DefaultAction = specs.Action(sd)
-	//add the additional architectures permitted to be used for system calls
-	for _, archs := range context.StringSlice("seccomp-arch") {
+	rspec.Linux.Seccomp.DefaultAction = specs.Action(sdefault)
+	return nil
+}
+
+func addSeccompArch(rspec *specs.LinuxRuntimeSpec, sArch []string) error {
+	for _, archs := range sArch {
 		switch archs {
 		case "":
 		case "SCMP_ARCH_X86":
@@ -195,14 +199,20 @@ func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *c
 		case "SCMP_ARCH_MIPSEL64":
 		case "SCMP_ARCH_MIPSEL64N32":
 		default:
-			return fmt.Errorf("seccomp-arch must be empty or one of SCMP_ARCH_X86|SCMP_ARCH_X86_64|SCMP_ARCH_X32|SCMP_ARCH_ARM|SCMP_ARCH_AARCH64SCMP_ARCH_MIPS|SCMP_ARCH_MIPS64|SCMP_ARCH_MIPS64N32|SCMP_ARCH_MIPSEL|SCMP_ARCH_MIPSEL64|SCMP_ARCH_MIPSEL64N32")
+			return fmt.Errorf("seccomp-arch must be empty or one of " +
+				"SCMP_ARCH_X86|SCMP_ARCH_X86_64|SCMP_ARCH_X32|SCMP_ARCH_ARM|" +
+				"SCMP_ARCH_AARCH64SCMP_ARCH_MIPS|SCMP_ARCH_MIPS64|" +
+				"SCMP_ARCH_MIPS64N32|SCMP_ARCH_MIPSEL|SCMP_ARCH_MIPSEL64|" +
+				"SCMP_ARCH_MIPSEL64N32")
 		}
 		rspec.Linux.Seccomp.Architectures = append(rspec.Linux.Seccomp.Architectures, specs.Arch(archs))
 	}
-	// set syscall restrict in Seccomp
-	// the format of input syscall string is Name:Action:Args[1],Args[2],...,Args[n]
-	// the format of Args string is Index/Value/ValueTwo/Operator,and is parsed by function parseArgs()
-	for _, syscalls := range context.StringSlice("seccomp-syscalls") {
+
+	return nil
+}
+
+func addSeccompSyscall(rspec *specs.LinuxRuntimeSpec, sSyscall []string) error {
+	for _, syscalls := range sSyscall {
 		syscall := strings.Split(syscalls, ":")
 		if len(syscall) == 3 {
 			name := syscall[0]
@@ -214,19 +224,87 @@ func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *c
 			case "SCMP_ACT_TRACE":
 			case "SCMP_ACT_ALLOW":
 			default:
-				return fmt.Errorf("seccomp-sysctl action must be empty or one of SCMP_ACT_KILL|SCMP_ACT_TRAP|SCMP_ACT_ERRNO|SCMP_ACT_TRACE|SCMP_ACT_ALLOW")
+				return fmt.Errorf("seccomp-syscall action must be empty or " +
+					"one of SCMP_ACT_KILL|SCMP_ACT_TRAP|SCMP_ACT_ERRNO|" +
+					"SCMP_ACT_TRACE|SCMP_ACT_ALLOW")
 			}
 			action := specs.Action(syscall[1])
-			Args, err := parseArgs(syscall[2])
-			if err != nil {
-				return err
+
+			var Args []*specs.Arg
+			if strings.EqualFold(syscall[2], "") {
+				Args = nil
+			} else {
+
+				argsslice := strings.Split(syscall[2], ",")
+				for _, argsstru := range argsslice {
+					args := strings.Split(argsstru, "/")
+					if len(args) == 4 {
+						index, err := strconv.Atoi(args[0])
+						value, err := strconv.Atoi(args[1])
+						value2, err := strconv.Atoi(args[2])
+						if err != nil {
+							return err
+						}
+						switch args[3] {
+						case "":
+						case "SCMP_CMP_NE":
+						case "SCMP_CMP_LT":
+						case "SCMP_CMP_LE":
+						case "SCMP_CMP_EQ":
+						case "SCMP_CMP_GE":
+						case "SCMP_CMP_GT":
+						case "SCMP_CMP_MASKED_EQ":
+						default:
+							return fmt.Errorf("seccomp-syscall args must be " +
+								"empty or one of SCMP_CMP_NE|SCMP_CMP_LT|" +
+								"SCMP_CMP_LE|SCMP_CMP_EQ|SCMP_CMP_GE|" +
+								"SCMP_CMP_GT|SCMP_CMP_MASKED_EQ")
+						}
+						op := specs.Operator(args[3])
+						Arg := specs.Arg{uint(index), uint64(value), uint64(value2), op}
+						Args = append(Args, &Arg)
+					} else {
+						return fmt.Errorf("seccomp-sysctl args error: %s", argsstru)
+					}
+				}
 			}
+
 			syscallstruct := specs.Syscall{name, action, Args}
 			rspec.Linux.Seccomp.Syscalls = append(rspec.Linux.Seccomp.Syscalls, &syscallstruct)
 		} else {
 			return fmt.Errorf("seccomp sysctl must consist of 3 parameters")
 		}
 	}
+
+	return nil
+}
+
+func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+
+	sd := context.String("seccomp-default")
+	sa := context.StringSlice("seccomp-arch")
+	ss := context.StringSlice("seccomp-syscalls")
+
+	// Set the DefaultAction of seccomp
+	err := addSeccompDefault(rspec, sd)
+	if err != nil {
+		return err
+	}
+
+	// Add the additional architectures permitted to be used for system calls
+	err = addSeccompArch(rspec, sa)
+	if err != nil {
+		return err
+	}
+
+	// Set syscall restrict in Seccomp
+	// The format of input syscall string is Name:Action:Args[1],Args[2],...,Args[n]
+	// The format of Args string is Index/Value/ValueTwo/Operator,and is parsed by function parseArgs()
+	err = addSeccompSyscall(rspec, ss)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
