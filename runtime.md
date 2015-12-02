@@ -12,6 +12,11 @@ $ funC [global-options] <COMMAND> [command-specific-options] <command-specific-a
 None are required, but the runtime may support options that start with at least one hyphen.
 Global options may take positional arguments (e.g. `--log-level debug`), but the option parsing must be such that `funC <COMMAND>` is unambiguously an invocation of `<COMMAND>` for any `<COMMAND>` that does not start with a hyphen (including commands not specified in this document).
 
+## Character encodings
+
+This API specification does not cover character encodings, but runtimes should conform to their native operating system.
+For example, POSIX systems define [`LANG` and related environment variables][posix-lang] for [declaring][posix-locale-encoding] [locale-specific character encodings][posix-encoding], so a runtime in an `en_US.UTF-8` locale should write its [version](#version) to stdout in [UTF-8][].
+
 ## Commands
 
 ### version
@@ -141,5 +146,9 @@ $ echo $?
 0
 ```
 
+[posix-encoding]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap06.html#tag_06_02
+[posix-lang]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
+[posix-locale-encoding: http://www.unicode.org/reports/tr35/#Bundle_vs_Item_Lookup
 [standard-streams]: https://github.com/opencontainers/specs/blob/v0.1.1/runtime-linux.md#file-descriptors
 [systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
+[UTF-8]: http://www.unicode.org/versions/Unicode8.0.0/ch03.pdf
