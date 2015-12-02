@@ -1,7 +1,7 @@
 # Contributing
 
-The specification and code is licensed under the Apache 2.0 license found in 
-the `LICENSE` file of this repository.  
+The specification and code is licensed under the Apache 2.0 license found in
+the `LICENSE` file of this repository.
 
 ### Sign your work
 
