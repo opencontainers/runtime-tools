@@ -43,7 +43,7 @@ $ echo $?
 
 ### start
 
-Starts a container from a bundle directory. 
+Starts a container from a bundle directory.
 It operates by default on the `config.json` and `runtime.json` in the current directory.
 
 * *Options*
@@ -62,7 +62,7 @@ Example:
 # in a bundle directory with a process that echos "hello" and exits 42
 $ funC start --id hello-1
 hello
- 
+
 $ echo $?
 42
 ```
