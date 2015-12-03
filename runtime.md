@@ -21,6 +21,8 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 
 ### version
 
+Print the runtime version and exit.
+
 * *Options* None are required, but the runtime may support options.
 * *Standard streams*
   * *stdin:* The runtime may not attempt to read from its stdin.
@@ -29,9 +31,6 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
     The runtime may print additional lines its stdout, and the format for those lines is not specified in this document.
   * *stderr:* The runtime may print diagnostic messages to stderr, and the format for those lines is not specified in this document.
 * *Exit code:* The runtime must exit with zero.
-
-Print the runtime version and exit.
-The version
 
 Example:
 ```sh
