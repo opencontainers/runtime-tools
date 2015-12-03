@@ -1,7 +1,7 @@
 # Operations
 
-A conformant runtime should provide an executable (called `funC` in the following examples).
-The template for supported commands is:
+A conformant runtime MUST provide an executable (called `funC` in the following examples).
+That executable MUST support commands with the following template:
 
 ```sh
 $ funC [global-options] <COMMAND> [command-specific-options] <command-specific-arguments>
@@ -26,14 +26,14 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 
 Print the runtime version and exit.
 
-* *Options* None are required, but the runtime may support options.
+* *Options* None are required, but the runtime MAY support options.
 * *Standard streams*
-  * *stdin:* The runtime may not attempt to read from its stdin.
-  * *stdout:* The runtime must print its name, a space, and its version as the first line to its stdout.
-    The name may contain any Unicode characters except a control codes and newlines.
-    The runtime may print additional lines its stdout, and the format for those lines is not specified in this document.
-  * *stderr:* The runtime may print diagnostic messages to stderr, and the format for those lines is not specified in this document.
-* *Exit code:* The runtime must exit with zero.
+  * *stdin:* The runtime MUST NOT attempt to read from its stdin.
+  * *stdout:* The runtime MUST print its name, a space, and its version as the first line to its stdout.
+    The name MAY contain any Unicode characters, but MUST NOT contain control codes or newlines.
+    The runtime MAY print additional lines to its stdout, and the format for those lines is not specified in this document.
+  * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+* *Exit code:* The runtime MUST exit with zero.
 
 Example:
 ```sh
@@ -52,11 +52,11 @@ Start a container from a bundle directory.
   * *`--id <ID>`* Set the container ID when creating or joining a container.
     If not set, the runtime is free to pick any ID that is not already in use.
   * *`--bundle <PATH>`* Override the path to the bundle directory (defaults to the current working directory).
-* *Standard streams:* The runtime must attach its standard streams directly to the application process without inspection.
+* *Standard streams:* The runtime MUST attach its standard streams directly to the application process without inspection.
 * *Environment variables*
   * *`LISTEN_FDS`:* The number of file descriptors passed.
-    For example, `LISTEN_FDS=2` would mean passing 3 and 4 (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
-* *Exit code:* The runtime must exit with the application process's exit code.
+    For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the application process (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
+* *Exit code:* The runtime MUST exit with the application process's exit code.
 
 Example:
 ```sh
