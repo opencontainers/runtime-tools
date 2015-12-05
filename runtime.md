@@ -43,7 +43,7 @@ $ echo $?
 
 ### start
 
-Starts a container from a bundle directory.
+Start a container from a bundle directory.
 It operates by default on the `config.json` and `runtime.json` in the current directory.
 
 * *Options*
