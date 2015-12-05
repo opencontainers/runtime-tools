@@ -44,7 +44,6 @@ $ echo $?
 ### start
 
 Start a container from a bundle directory.
-It operates by default on the `config.json` and `runtime.json` in the current directory.
 
 * *Options*
   * *`--id <ID>`* Set the container ID when creating or joining a container.
