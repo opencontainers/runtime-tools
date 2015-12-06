@@ -20,6 +20,11 @@ rootfs/bin/busybox: downloads/stage3-amd64-current.tar.bz2 rootfs-files
 		--no-recursion --wildcards $$(< rootfs-files)
 	sudo touch $@
 
+rootfs/bin/echo: rootfs/bin/busybox
+	sudo sh -c 'for COMMAND in $$($< --list); do \
+		ln -rs $< "rootfs/bin/$${COMMAND}"; \
+	done'
+
 downloads/stage3-amd64-current.tar.bz2: get-stage3.sh
 	./$<
 	touch downloads/stage3-amd64-*.tar.bz2
