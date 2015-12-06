@@ -8,5 +8,9 @@ all:
 install:
 	cp ocitools /usr/local/bin/ocitools
 
+downloads/stage3-amd64-current.tar.bz2: get-stage3.sh
+	./$<
+	touch downloads/stage3-amd64-*.tar.bz2
+
 clean:
-	rm ocitools runtimetest
+	rm -f ocitools runtimetest downloads/*
