@@ -8,6 +8,9 @@ all:
 install:
 	cp ocitools /usr/local/bin/ocitools
 
+rootfs.tar.gz: rootfs/bin/echo
+	tar -czf $@ -C rootfs .
+
 rootfs/bin/busybox: downloads/stage3-amd64-current.tar.bz2 rootfs-files
 	gpg --verify $<.DIGESTS.asc
 	(cd downloads && \
