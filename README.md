@@ -75,3 +75,22 @@ VALIDATING RUNTIME: runc
 Runtime runc passed validation
 
 ```
+
+Building `rootfs.tar.gz`
+------------------------
+
+The root filesystem tarball is based on [Gentoo][]'s [amd64
+stage3][stage3-amd64] (which we check for a valid GnuPG
+signature][gentoo-signatures]), copying a [minimal
+subset](rootfs-files) to the root filesytem, and adding symlinks for
+all BusyBox commands.  To rebuild the tarball based on a newer stage3,
+just run:
+
+```
+$ touch get-stage3.sh
+$ make rootfs.tar.gz
+```
+
+[Gentoo]: https://www.gentoo.org/
+[stage3-amd64]: http://distfiles.gentoo.org/releases/amd64/autobuilds/
+[gentoo-signatures]: https://www.gentoo.org/downloads/signatures/
