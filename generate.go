@@ -114,7 +114,7 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	for i, a := range context.StringSlice("args") {
 		if a != "" {
 			if i == 0 {
-				//Replace "sh" from getDefaultTemplate()
+				// Replace "sh" from getDefaultTemplate()
 				spec.Process.Args[0] = a
 			} else {
 				spec.Process.Args = append(spec.Process.Args, a)
