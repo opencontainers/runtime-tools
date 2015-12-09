@@ -51,8 +51,7 @@ Start a container from a bundle directory.
 * *Options*
   * *`--id <ID>`* Set the container ID when creating or joining a container.
     If not set, the runtime is free to pick any ID that is not already in use.
-  * *`--config <PATH>`* Override `config.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
-  * *`--runtime <PATH>`* Override `runtime.json` with an alternative path.  The path may not support seeking (e.g. `/dev/fd/3`).
+  * *`--bundle <PATH>`* Override the path to the bundle directory (defaults to the current working directory).
 * *Standard streams:* The runtime must attach its standard streams directly to the application process without inspection.
 * *Environment variables*
   * *`LISTEN_FDS`:* The number of file descriptors passed.
