@@ -42,7 +42,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "root-propagation", Usage: "mount propagation for root"},
 	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
 	cli.StringFlag{Name: "arch", Value: runtime.GOARCH, Usage: "architecture the container is created for"},
-	cli.StringFlag{Name: "cwd", Usage: "current working directory for the process"},
+	cli.StringFlag{Name: "cwd", Value: "/", Usage: "current working directory for the process"},
 	cli.StringSliceFlag{Name: "uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringFlag{Name: "apparmor", Usage: "specifies the the apparmor profile for the container"},
@@ -604,6 +604,7 @@ func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
 					"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 					"TERM=xterm",
 				},
+				Cwd: "/",
 			},
 			Hostname: "shell",
 			Mounts: []specs.MountPoint{
