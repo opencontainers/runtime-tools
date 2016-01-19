@@ -63,15 +63,16 @@ Testing OCI runtimes
 ------------------------------------------
 
 ```
-go get github.com/mrunalp/ocitools
-go build github.com/mrunalp/ocitools
-cp ocitools /usr/bin
-go build github.com/mrunalp/ocitools/cmd/runtimetest
-
+make
+cp ocitools /usr/bin/
 ./test_runtime.sh -r runc 
 -----------------------------------------------------------------------------------
 VALIDATING RUNTIME: runc
 -----------------------------------------------------------------------------------
+validating container process
+validating capabilities
+validating hostname
+validating rlimits
+validating sysctls
 Runtime runc passed validation
-
 ```
