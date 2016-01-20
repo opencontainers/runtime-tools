@@ -57,6 +57,18 @@ OPTIONS:
    --prestart [--prestart option --prestart option]     path to prestart hooks
    --poststop [--poststop option --poststop option]     path to poststop hooks
    --root-propagation                                   mount propagation for root
+   --os "linux"                                         operating system the container is created for
+   --arch "amd64"                                       architecture the container is created for
+   --cwd "/"                                            current working directory for the process
+   --uidmappings [--uidmappings option ]                add UIDMappings  e.g HostID:ContainerID:Size
+   --gidmappings [--gidmappings option ]                add GIDMappings  e.g HostID:ContainerID:Size
+   --apparmor                                           specify the the apparmor profile for the container
+   --seccomp-default                                    specify the the defaultaction of Seccomp syscall restrictions
+   --seccomp-arch [--seccomp-arch option ]              specify Additional architectures permitted to be used 
+                                                         for system calls
+   --seccomp-syscalls [--seccomp-syscalls option]       specify syscalls used in Seccomp
+                                                        e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, 
+                                                            Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op
 ```
 
 Testing OCI runtimes
@@ -64,7 +76,7 @@ Testing OCI runtimes
 
 ```
 make
-cp ocitools /usr/bin/
+sudo make install
 ./test_runtime.sh -r runc 
 -----------------------------------------------------------------------------------
 VALIDATING RUNTIME: runc
