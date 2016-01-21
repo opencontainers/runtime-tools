@@ -129,11 +129,11 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 	groups := context.StringSlice("groups")
 	if groups != nil {
 		for _, g := range groups {
-			groupId, err := strconv.Atoi(g)
+			groupID, err := strconv.Atoi(g)
 			if err != nil {
 				return err
 			}
-			spec.Process.User.AdditionalGids = append(spec.Process.User.AdditionalGids, uint32(groupId))
+			spec.Process.User.AdditionalGids = append(spec.Process.User.AdditionalGids, uint32(groupID))
 		}
 	}
 
@@ -261,7 +261,12 @@ func addSeccompSyscall(rspec *specs.LinuxRuntimeSpec, sSyscall []string) error {
 								"SCMP_CMP_GT|SCMP_CMP_MASKED_EQ")
 						}
 						op := specs.Operator(args[3])
-						Arg := specs.Arg{uint(index), uint64(value), uint64(value2), op}
+						Arg := specs.Arg{
+							Index:    uint(index),
+							Value:    uint64(value),
+							ValueTwo: uint64(value2),
+							Op:       op,
+						}
 						Args = append(Args, &Arg)
 					} else {
 						return fmt.Errorf("seccomp-sysctl args error: %s", argsstru)
@@ -269,7 +274,11 @@ func addSeccompSyscall(rspec *specs.LinuxRuntimeSpec, sSyscall []string) error {
 				}
 			}
 
-			syscallstruct := specs.Syscall{name, action, Args}
+			syscallstruct := specs.Syscall{
+				Name:   name,
+				Action: action,
+				Args:   Args,
+			}
 			rspec.Linux.Seccomp.Syscalls = append(rspec.Linux.Seccomp.Syscalls, &syscallstruct)
 		} else {
 			return fmt.Errorf("seccomp sysctl must consist of 3 parameters")
@@ -333,7 +342,12 @@ func parseArgs(args2parse string) ([]*specs.Arg, error) {
 				return nil, fmt.Errorf("seccomp-sysctl args must be empty or one of SCMP_CMP_NE|SCMP_CMP_LT|SCMP_CMP_LE|SCMP_CMP_EQ|SCMP_CMP_GE|SCMP_CMP_GT|SCMP_CMP_MASKED_EQ")
 			}
 			op := specs.Operator(args[3])
-			Arg := specs.Arg{uint(index), uint64(value), uint64(value2), op}
+			Arg := specs.Arg{
+				Index:    uint(index),
+				Value:    uint64(value),
+				ValueTwo: uint64(value2),
+				Op:       op,
+			}
 			Args = append(Args, &Arg)
 		} else {
 			return nil, fmt.Errorf("seccomp-sysctl args error: %s", argstr)
@@ -352,7 +366,11 @@ func addIDMappings(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context
 			if err != nil {
 				return err
 			}
-			uidmapping := specs.IDMapping{uint32(hid), uint32(cid), uint32(size)}
+			uidmapping := specs.IDMapping{
+				HostID:      uint32(hid),
+				ContainerID: uint32(cid),
+				Size:        uint32(size),
+			}
 			rspec.Linux.UIDMappings = append(rspec.Linux.UIDMappings, uidmapping)
 		} else {
 			return fmt.Errorf("uidmappings error: %s", uidms)
@@ -368,7 +386,11 @@ func addIDMappings(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context
 			if err != nil {
 				return err
 			}
-			gidmapping := specs.IDMapping{uint32(hid), uint32(cid), uint32(size)}
+			gidmapping := specs.IDMapping{
+				HostID:      uint32(hid),
+				ContainerID: uint32(cid),
+				Size:        uint32(size),
+			}
 			rspec.Linux.GIDMappings = append(rspec.Linux.GIDMappings, gidmapping)
 		} else {
 			return fmt.Errorf("gidmappings error: %s", gidms)
