@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Download the current Gentoo stage3
 #
