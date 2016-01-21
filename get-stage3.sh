@@ -40,7 +40,7 @@ for FILE in "${STAGE3}" "${STAGE3_CONTENTS}" "${STAGE3_DIGESTS}"; do
 		fi
 	fi
 
-	CURRENT="${FILE/${DATE}/current}"
+	CURRENT=$(echo "${FILE}" | sed "s/${DATE}/current/")
 	(
 		cd downloads &&
 		rm -f "${CURRENT}" &&
