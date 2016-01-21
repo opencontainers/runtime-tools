@@ -55,9 +55,9 @@ Testing OCI runtimes
 ------------------------------------------
 
 ```
-make
-sudo make install
-./test_runtime.sh -r runc 
+$ make
+$ sudo make install
+$ sudo ./test_runtime.sh -r runc
 -----------------------------------------------------------------------------------
 VALIDATING RUNTIME: runc
 -----------------------------------------------------------------------------------
@@ -73,10 +73,10 @@ Building `rootfs.tar.gz`
 ------------------------
 
 The root filesystem tarball is based on [Gentoo][]'s [amd64
-stage3][stage3-amd64] (which we check for a valid GnuPG
+stage3][stage3-amd64] (which we check for a valid [GnuPG
 signature][gentoo-signatures]), copying a [minimal
 subset](rootfs-files) to the root filesytem, and adding symlinks for
-all BusyBox commands.  To rebuild the tarball based on a newer stage3,
+all BusyBox commands. To rebuild the tarball based on a newer stage3,
 just run:
 
 ```
