@@ -15,6 +15,7 @@ func main() {
 
 	app.Commands = []cli.Command{
 		generateCommand,
+		bundleValidateCommand,
 		validateCommand,
 	}
 
