@@ -35,3 +35,17 @@ downloads/stage3-amd64-current.tar.bz2: get-stage3.sh
 clean:
 	rm -f ocitools runtimetest downloads/*
 	sudo rm -rf rootfs
+
+.PHONY: test .gofmt .govet .golint
+
+test: .gofmt .govet .golint
+
+.gofmt:
+	go fmt ./...
+
+.govet:
+	go vet -x ./...
+
+.golint:
+	golint ./...
+
