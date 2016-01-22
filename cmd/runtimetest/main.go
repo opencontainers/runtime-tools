@@ -144,7 +144,7 @@ func validateCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) 
 		if expectedSet != actuallySet {
 			if expectedSet {
 				return fmt.Errorf("Expected Capability %v not set for process", cap.String())
-			} 
+			}
 			return fmt.Errorf("Unexpected Capability %v set for process", cap.String())
 		}
 	}
