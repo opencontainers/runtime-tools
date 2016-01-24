@@ -2,42 +2,43 @@ package main
 
 import "fmt"
 
+// These values map to rlimit constants defined in linux
 const (
-	RLIMIT_CPU        = iota // CPU time in sec
-	RLIMIT_FSIZE             // Maximum filesize
-	RLIMIT_DATA              // max data size
-	RLIMIT_STACK             // max stack size
-	RLIMIT_CORE              // max core file size
-	RLIMIT_RSS               // max resident set size
-	RLIMIT_NPROC             // max number of processes
-	RLIMIT_NOFILE            // max number of open files
-	RLIMIT_MEMLOCK           // max locked-in-memory address space
-	RLIMIT_AS                // address space limit
-	RLIMIT_LOCKS             // maximum file locks held
-	RLIMIT_SIGPENDING        // max number of pending signals
-	RLIMIT_MSGQUEUE          // maximum bytes in POSIX mqueues
-	RLIMIT_NICE              // max nice prio allowed to raise to
-	RLIMIT_RTPRIO            // maximum realtime priority
-	RLIMIT_RTTIME            // timeout for RT tasks in us
+	RlimitCPU        = iota // CPU time in sec
+	RlimitFsize             // Maximum filesize
+	RlimitData              // max data size
+	RlimitStack             // max stack size
+	RlimitCore              // max core file size
+	RlimitRss               // max resident set size
+	RlimitNproc             // max number of processes
+	RlimitNofile            // max number of open files
+	RlimitMemlock           // max locked-in-memory address space
+	RlimitAs                // address space limit
+	RlimitLocks             // maximum file locks held
+	RlimitSigpending        // max number of pending signals
+	RlimitMsgqueue          // maximum bytes in POSIX mqueues
+	RlimitNice              // max nice prio allowed to raise to
+	RlimitRtprio            // maximum realtime priority
+	RlimitRttime            // timeout for RT tasks in us
 )
 
 var rlimitMap = map[string]int{
-	"RLIMIT_CPU":       RLIMIT_CPU,
-	"RLIMIT_FSIZE":     RLIMIT_FSIZE,
-	"RLIMIT_DATA":      RLIMIT_DATA,
-	"RLIMIT_STACK":     RLIMIT_STACK,
-	"RLIMIT_CORE":      RLIMIT_CORE,
-	"RLIMIT_RSS":       RLIMIT_RSS,
-	"RLIMIT_NPROC":     RLIMIT_NPROC,
-	"RLIMIT_NOFILE":    RLIMIT_NOFILE,
-	"RLIMIT_MEMLOCK":   RLIMIT_MEMLOCK,
-	"RLIMIT_AS":        RLIMIT_AS,
-	"RLIMIT_LOCKS":     RLIMIT_LOCKS,
-	"RLIMIT_SGPENDING": RLIMIT_SIGPENDING,
-	"RLIMIT_MSGQUEUE":  RLIMIT_MSGQUEUE,
-	"RLIMIT_NICE":      RLIMIT_NICE,
-	"RLIMIT_RTPRIO":    RLIMIT_RTPRIO,
-	"RLIMIT_RTTIME":    RLIMIT_RTTIME,
+	"RLIMIT_CPU":       RlimitCPU,
+	"RLIMIT_FSIZE":     RlimitFsize,
+	"RLIMIT_DATA":      RlimitData,
+	"RLIMIT_STACK":     RlimitStack,
+	"RLIMIT_CORE":      RlimitCore,
+	"RLIMIT_RSS":       RlimitRss,
+	"RLIMIT_NPROC":     RlimitNproc,
+	"RLIMIT_NOFILE":    RlimitNofile,
+	"RLIMIT_MEMLOCK":   RlimitMemlock,
+	"RLIMIT_AS":        RlimitAs,
+	"RLIMIT_LOCKS":     RlimitLocks,
+	"RLIMIT_SGPENDING": RlimitSigpending,
+	"RLIMIT_MSGQUEUE":  RlimitMsgqueue,
+	"RLIMIT_NICE":      RlimitNice,
+	"RLIMIT_RTPRIO":    RlimitRtprio,
+	"RLIMIT_RTTIME":    RlimitRttime,
 }
 
 func strToRlimit(key string) (int, error) {

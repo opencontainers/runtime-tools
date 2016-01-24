@@ -89,7 +89,7 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 
 	args := strings.Split(string(bytes.Trim(cmdlineBytes, "\x00")), " ")
 	if len(args) != len(spec.Process.Args) {
-		return fmt.Errorf("Process arguments expected: %v, actual: %v")
+		return fmt.Errorf("Process arguments expected: %v, actual: %v", len(spec.Process.Args), len(args))
 	}
 	for i, a := range args {
 		if a != spec.Process.Args[i] {
@@ -103,7 +103,7 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 		expectedValue := parts[1]
 		actualValue := os.Getenv(key)
 		if actualValue != expectedValue {
-			return fmt.Errorf("Env %v expected: %v, actual: %v", expectedValue, actualValue)
+			return fmt.Errorf("Env %v expected: %v, actual: %v", key, expectedValue, actualValue)
 		}
 	}
 
@@ -144,9 +144,8 @@ func validateCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) 
 		if expectedSet != actuallySet {
 			if expectedSet {
 				return fmt.Errorf("Expected Capability %v not set for process", cap.String())
-			} else {
-				return fmt.Errorf("Unexpected Capability %v set for process", cap.String())
 			}
+			return fmt.Errorf("Unexpected Capability %v set for process", cap.String())
 		}
 	}
 
@@ -179,10 +178,10 @@ func validateRlimits(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 		}
 
 		if rlimit.Cur != r.Soft {
-			return fmt.Errorf("%v rlimit soft expected: %v, actual: %v", r.Soft, rlimit.Cur)
+			return fmt.Errorf("%v rlimit soft expected: %v, actual: %v", r.Type, r.Soft, rlimit.Cur)
 		}
 		if rlimit.Max != r.Hard {
-			return fmt.Errorf("%v rlimit hard expected: %v, actual: %v", r.Hard, rlimit.Max)
+			return fmt.Errorf("%v rlimit hard expected: %v, actual: %v", r.Type, r.Hard, rlimit.Max)
 		}
 	}
 	return nil
