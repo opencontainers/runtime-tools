@@ -14,6 +14,7 @@ VERSION:
    
 COMMANDS:
    generate     generate a OCI spec file
+   validate	validate a OCI bundle
    help, h      Shows a list of commands or help for one command
    
 GLOBAL OPTIONS:

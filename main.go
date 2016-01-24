@@ -16,7 +16,6 @@ func main() {
 	app.Commands = []cli.Command{
 		generateCommand,
 		bundleValidateCommand,
-		validateCommand,
 	}
 
 	if err := app.Run(os.Args); err != nil {
