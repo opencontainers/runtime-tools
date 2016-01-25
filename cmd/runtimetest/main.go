@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 
@@ -203,6 +204,21 @@ func validateSysctls(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 	return nil
 }
 
+func validatePlatform(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+	fmt.Println("validating platform")
+	os := spec.Platform.OS
+	arch := spec.Platform.Arch
+	hos := runtime.GOOS
+	harch := runtime.GOARCH
+	if !strings.EqualFold(os, hos) {
+		return fmt.Errorf("OS expected: %v, actual: %v", os, hos)
+	}
+	if !strings.EqualFold(arch, harch) {
+		return fmt.Errorf("Arch expected: %v, actual: %v", arch, harch)
+	}
+	return nil
+}
+
 func main() {
 	spec, rspec, err := loadSpecConfig()
 	if err != nil {
@@ -211,6 +227,7 @@ func main() {
 
 	validations := []validation{
 		validateProcess,
+		validatePlatform,
 		validateCapabilities,
 		validateHostname,
 		validateRlimits,
