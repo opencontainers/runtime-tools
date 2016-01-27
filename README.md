@@ -55,12 +55,12 @@ Validating OCI bundle
 ------------------------------------------
 
 ```
-# ocitools validate --help
+# ocitools bvalidate --help
 NAME:
-   validate - validate a OCI bundle
+   bvalidate - validate a OCI bundle
 
 USAGE:
-   command validate [command options] [arguments...]
+   command bvalidate [command options] [arguments...]
 
 OPTIONS:
    --path 	path to a bundle

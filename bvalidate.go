@@ -14,7 +14,7 @@ import (
 	"github.com/opencontainers/specs"
 )
 
-var validateFlags = []cli.Flag{
+var bundleValidateFlags = []cli.Flag{
 	cli.StringFlag{Name: "path", Usage: "path to a bundle"},
 }
 
@@ -39,10 +39,10 @@ var (
 	}
 )
 
-var validateCommand = cli.Command{
-	Name:  "validate",
+var bundleValidateCommand = cli.Command{
+	Name:  "bvalidate",
 	Usage: "validate a OCI bundle",
-	Flags: validateFlags,
+	Flags: bundleValidateFlags,
 	Action: func(context *cli.Context) {
 		inputPath := context.String("path")
 		if inputPath == "" {
