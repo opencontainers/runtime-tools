@@ -67,6 +67,7 @@ var (
 		"CAP_SYS_CHROOT",
 		"CAP_KILL",
 		"CAP_AUDIT_WRITE",
+		"CAP_AUDIT_READ",
 	}
 )
 
