@@ -15,37 +15,25 @@ import (
 	"github.com/syndtr/gocapability/capability"
 )
 
-type validation func(*specs.LinuxSpec, *specs.LinuxRuntimeSpec) error
+type validation func(*specs.LinuxSpec) error
 
-func loadSpecConfig() (spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, err error) {
+func loadSpecConfig() (spec *specs.LinuxSpec, err error) {
 	cPath := "config.json"
 	cf, err := os.Open(cPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil, fmt.Errorf("config.json not found")
+			return nil, fmt.Errorf("config.json not found")
 		}
 	}
 	defer cf.Close()
 
-	rPath := "runtime.json"
-	rf, err := os.Open(rPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil, fmt.Errorf("runtime.json not found")
-		}
-	}
-	defer rf.Close()
-
 	if err = json.NewDecoder(cf).Decode(&spec); err != nil {
 		return
 	}
-	if err = json.NewDecoder(rf).Decode(&rspec); err != nil {
-		return
-	}
-	return spec, rspec, nil
+	return spec, nil
 }
 
-func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+func validateProcess(spec *specs.LinuxSpec) error {
 	fmt.Println("validating container process")
 	uid := os.Getuid()
 	if uint32(uid) != spec.Process.User.UID {
@@ -110,7 +98,7 @@ func validateProcess(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 	return nil
 }
 
-func validateCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+func validateCapabilities(spec *specs.LinuxSpec) error {
 	fmt.Println("validating capabilities")
 	capabilityMap := make(map[string]capability.Cap)
 	expectedCaps := make(map[capability.Cap]bool)
@@ -152,7 +140,7 @@ func validateCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) 
 	return nil
 }
 
-func validateHostname(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+func validateHostname(spec *specs.LinuxSpec) error {
 	fmt.Println("validating hostname")
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -164,9 +152,9 @@ func validateHostname(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) erro
 	return nil
 }
 
-func validateRlimits(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+func validateRlimits(spec *specs.LinuxSpec) error {
 	fmt.Println("validating rlimits")
-	for _, r := range rspec.Linux.Rlimits {
+	for _, r := range spec.Linux.Rlimits {
 		rl, err := strToRlimit(r.Type)
 		if err != nil {
 			return err
@@ -187,9 +175,9 @@ func validateRlimits(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 	return nil
 }
 
-func validateSysctls(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error {
+func validateSysctls(spec *specs.LinuxSpec) error {
 	fmt.Println("validating sysctls")
-	for k, v := range rspec.Linux.Sysctl {
+	for k, v := range spec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
 		vBytes, err := ioutil.ReadFile(keyPath)
 		if err != nil {
@@ -204,7 +192,7 @@ func validateSysctls(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec) error
 }
 
 func main() {
-	spec, rspec, err := loadSpecConfig()
+	spec, err := loadSpecConfig()
 	if err != nil {
 		logrus.Fatalf("Failed to load configuration: %q", err)
 	}
@@ -218,7 +206,7 @@ func main() {
 	}
 
 	for _, v := range validations {
-		if err := v(spec, rspec); err != nil {
+		if err := v(spec); err != nil {
 			logrus.Fatalf("Validation failed: %q", err)
 		}
 	}
