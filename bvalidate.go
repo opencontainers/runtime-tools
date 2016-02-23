@@ -64,16 +64,16 @@ var bundleValidateCommand = cli.Command{
 		if err = json.NewDecoder(sf).Decode(&spec); err != nil {
 			logrus.Fatal(err)
 		} else {
-			if spec.Spec.Platform.OS != "linux" {
-				logrus.Fatalf("Operation system '%s' of the bundle is not supported yet.", spec.Spec.Platform.OS)
+			if spec.Platform.OS != "linux" {
+				logrus.Fatalf("Operation system '%s' of the bundle is not supported yet.", spec.Platform.OS)
 			}
 		}
 
-		rootfsPath := path.Join(inputPath, spec.Spec.Root.Path)
+		rootfsPath := path.Join(inputPath, spec.Root.Path)
 		if fi, err := os.Stat(rootfsPath); err != nil {
 			logrus.Fatalf("Cannot find the rootfs: %v", rootfsPath)
 		} else if !fi.IsDir() {
-			logrus.Fatalf("Rootfs: %v is not a directory.", spec.Spec.Root.Path)
+			logrus.Fatalf("Rootfs: %v is not a directory.", spec.Root.Path)
 		}
 		bundleValidate(spec, rootfsPath)
 		logrus.Infof("Bundle validation succeeded.")
