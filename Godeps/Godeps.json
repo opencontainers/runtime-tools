@@ -14,8 +14,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/specs",
-			"Comment": "v0.1.1-56-g346a898",
-			"Rev": "346a898ba89a7450ef30c08910db8756111a9fcc"
+			"Comment": "v0.3.0",
+			"Rev": "25cbfc427ba6154016f33c7ed1b8ed43b8b7b7ed"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
