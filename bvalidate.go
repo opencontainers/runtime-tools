@@ -64,41 +64,27 @@ var bundleValidateCommand = cli.Command{
 		if err = json.NewDecoder(sf).Decode(&spec); err != nil {
 			logrus.Fatal(err)
 		} else {
-			if spec.Platform.OS != "linux" {
-				logrus.Fatalf("Operation system '%s' of the bundle is not supported yet.", spec.Platform.OS)
+			if spec.Spec.Platform.OS != "linux" {
+				logrus.Fatalf("Operation system '%s' of the bundle is not supported yet.", spec.Spec.Platform.OS)
 			}
 		}
 
-		rf, err := os.Open(path.Join(inputPath, "runtime.json"))
-		if err != nil {
-			logrus.Fatal(err)
-		}
-		defer rf.Close()
-
-		var runtime specs.LinuxRuntimeSpec
-		if err = json.NewDecoder(rf).Decode(&runtime); err != nil {
-			logrus.Fatal(err)
-		}
-
-		rootfsPath := path.Join(inputPath, spec.Root.Path)
+		rootfsPath := path.Join(inputPath, spec.Spec.Root.Path)
 		if fi, err := os.Stat(rootfsPath); err != nil {
 			logrus.Fatalf("Cannot find the rootfs: %v", rootfsPath)
 		} else if !fi.IsDir() {
-			logrus.Fatalf("Rootfs: %v is not a directory.", spec.Root.Path)
+			logrus.Fatalf("Rootfs: %v is not a directory.", spec.Spec.Root.Path)
 		}
-		bundleValidate(spec, runtime, rootfsPath)
+		bundleValidate(spec, rootfsPath)
 		logrus.Infof("Bundle validation succeeded.")
 	},
 }
 
-func bundleValidate(spec specs.LinuxSpec, runtime specs.LinuxRuntimeSpec, rootfs string) {
-	//Open after 0.3.0
-	//CheckMandatoryField(spec)
-	//CheckMandatoryField(runtime)
+func bundleValidate(spec specs.LinuxSpec, rootfs string) {
+	CheckMandatoryField(spec)
 	CheckSemVer(spec.Version)
-	CheckMountPoints(spec.Mounts, runtime.Mounts)
-	CheckLinuxSpec(spec, runtime)
-	CheckLinuxRuntime(runtime.Linux, rootfs)
+	CheckMounts(spec.Mounts, rootfs)
+	CheckLinux(spec.Linux, rootfs)
 }
 
 func CheckSemVer(version string) {
@@ -108,60 +94,62 @@ func CheckSemVer(version string) {
 	}
 }
 
-func CheckMountPoints(mps []specs.MountPoint, rmps map[string]specs.Mount) {
-	for index := 0; index < len(mps); index++ {
-		if _, ok := rmps[mps[index].Name]; !ok {
-			logrus.Fatalf("%s in config/mount does not exist in runtime/mount", mps[index].Name)
+func CheckMounts(mounts []specs.Mount, rootfs string) {
+	for _, mount := range mounts {
+		rootfsPath := path.Join(rootfs, mount.Destination)
+		if fi, err := os.Stat(rootfsPath); err != nil {
+			logrus.Fatalf("Cannot find the mount point: %v", rootfsPath)
+		} else if !fi.IsDir() {
+			logrus.Fatalf("Mount point: %v is not a directory.", rootfsPath)
 		}
 	}
 }
 
 //Linux only
-func CheckLinuxSpec(spec specs.LinuxSpec, runtime specs.LinuxRuntimeSpec) {
-	for index := 0; index < len(spec.Linux.Capabilities); index++ {
-		capability := spec.Linux.Capabilities[index]
+func CheckLinux(spec specs.Linux, rootfs string) {
+	for index := 0; index < len(spec.Capabilities); index++ {
+		capability := spec.Capabilities[index]
 		if !capValid(capability) {
-			logrus.Fatalf("%s is not valid, man capabilities(7)", spec.Linux.Capabilities[index])
+			logrus.Fatalf("%s is not valid, man capabilities(7)", spec.Capabilities[index])
 		}
 	}
-}
 
-//Linux only
-func CheckLinuxRuntime(runtime specs.LinuxRuntime, rootfs string) {
-	if len(runtime.UIDMappings) > 5 {
+	if len(spec.UIDMappings) > 5 {
 		logrus.Fatalf("Only 5 UID mappings are allowed (linux kernel restriction).")
 	}
-	if len(runtime.GIDMappings) > 5 {
+	if len(spec.GIDMappings) > 5 {
 		logrus.Fatalf("Only 5 GID mappings are allowed (linux kernel restriction).")
 	}
 
-	for index := 0; index < len(runtime.Rlimits); index++ {
-		if !rlimitValid(runtime.Rlimits[index].Type) {
-			logrus.Fatalf("Rlimit %s is invalid.", runtime.Rlimits[index])
+	for index := 0; index < len(spec.Rlimits); index++ {
+		if !rlimitValid(spec.Rlimits[index].Type) {
+			logrus.Fatalf("Rlimit %s is invalid.", spec.Rlimits[index])
 		}
 	}
 
-	for index := 0; index < len(runtime.Namespaces); index++ {
-		if !namespaceValid(runtime.Namespaces[index]) {
-			logrus.Fatalf("Namespace %s is invalid.", runtime.Namespaces[index])
+	for index := 0; index < len(spec.Namespaces); index++ {
+		if !namespaceValid(spec.Namespaces[index]) {
+			logrus.Fatalf("Namespace %s is invalid.", spec.Namespaces[index])
 		}
 	}
 
-	for index := 0; index < len(runtime.Devices); index++ {
-		if !deviceValid(runtime.Devices[index]) {
-			logrus.Fatalf("Device %s is invalid.", runtime.Devices[index].Path)
+	for index := 0; index < len(spec.Devices); index++ {
+		if !deviceValid(spec.Devices[index]) {
+			logrus.Fatalf("Device %s is invalid.", spec.Devices[index].Path)
 		}
 	}
 
-	if len(runtime.ApparmorProfile) > 0 {
-		profilePath := path.Join(rootfs, "/etc/apparmor.d", runtime.ApparmorProfile)
+	if len(spec.ApparmorProfile) > 0 {
+		profilePath := path.Join(rootfs, "/etc/apparmor.d", spec.ApparmorProfile)
 		_, err := os.Stat(profilePath)
 		if err != nil {
 			logrus.Fatal(err)
 		}
 	}
 
-	switch runtime.RootfsPropagation {
+	CheckSeccomp(spec.Seccomp)
+
+	switch spec.RootfsPropagation {
 	case "":
 	case "private":
 	case "rprivate":
@@ -172,8 +160,6 @@ func CheckLinuxRuntime(runtime specs.LinuxRuntime, rootfs string) {
 	default:
 		logrus.Fatalf("rootfs-propagation must be empty or one of private|rprivate|slave|rslave|shared|rshared")
 	}
-
-	CheckSeccomp(runtime.Seccomp)
 }
 
 func CheckSeccomp(s specs.Seccomp) {
@@ -181,10 +167,8 @@ func CheckSeccomp(s specs.Seccomp) {
 		logrus.Fatalf("Seccomp.DefaultAction is invalid.")
 	}
 	for index := 0; index < len(s.Syscalls); index++ {
-		if s.Syscalls[index] != nil {
-			if !syscallValid(*(s.Syscalls[index])) {
-				logrus.Fatalf("Syscall action is invalid.")
-			}
+		if !syscallValid(s.Syscalls[index]) {
+			logrus.Fatalf("Syscall action is invalid.")
 		}
 	}
 	for index := 0; index < len(s.Architectures); index++ {
@@ -278,7 +262,7 @@ func syscallValid(s specs.Syscall) bool {
 		return false
 	}
 	for index := 0; index < len(s.Args); index++ {
-		arg := *(s.Args[index])
+		arg := s.Args[index]
 		switch arg.Op {
 		case specs.OpNotEqual:
 		case specs.OpLessEqual:
