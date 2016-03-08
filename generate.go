@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -75,13 +74,12 @@ var generateCommand = cli.Command{
 	Usage: "generate a OCI spec file",
 	Flags: generateFlags,
 	Action: func(context *cli.Context) {
-		spec, rspec := getDefaultTemplate()
-		err := modify(&spec, &rspec, context)
+		spec := getDefaultTemplate()
+		err := modify(&spec, context)
 		if err != nil {
 			logrus.Fatal(err)
 		}
 		cName := "config.json"
-		rName := "runtime.json"
 		data, err := json.MarshalIndent(&spec, "", "\t")
 		if err != nil {
 			logrus.Fatal(err)
@@ -89,27 +87,20 @@ var generateCommand = cli.Command{
 		if err := ioutil.WriteFile(cName, data, 0666); err != nil {
 			logrus.Fatal(err)
 		}
-		rdata, err := json.MarshalIndent(&rspec, "", "\t")
-		if err != nil {
-			logrus.Fatal(err)
-		}
-		if err := ioutil.WriteFile(rName, rdata, 0666); err != nil {
-			logrus.Fatal(err)
-		}
 	},
 }
 
-func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+func modify(spec *specs.LinuxSpec, context *cli.Context) error {
 	spec.Root.Path = context.String("rootfs")
 	spec.Root.Readonly = context.Bool("read-only")
 	spec.Hostname = context.String("hostname")
 	spec.Process.User.UID = uint32(context.Int("uid"))
 	spec.Process.User.GID = uint32(context.Int("gid"))
-	rspec.Linux.SelinuxProcessLabel = context.String("selinux-label")
+	spec.Linux.SelinuxProcessLabel = context.String("selinux-label")
 	spec.Platform.OS = context.String("os")
 	spec.Platform.Arch = context.String("arch")
 	spec.Process.Cwd = context.String("cwd")
-	rspec.Linux.ApparmorProfile = context.String("apparmor")
+	spec.Linux.ApparmorProfile = context.String("apparmor")
 
 	for i, a := range context.StringSlice("args") {
 		if a != "" {
@@ -137,36 +128,37 @@ func modify(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.C
 		}
 	}
 
-	if err := setupCapabilities(spec, rspec, context); err != nil {
+	if err := setupCapabilities(spec, context); err != nil {
 		return err
 	}
-	setupNamespaces(spec, rspec, context)
-	if err := addTmpfsMounts(spec, rspec, context); err != nil {
+
+	setupNamespaces(spec, context)
+	if err := addTmpfsMounts(spec, context); err != nil {
 		return err
 	}
-	if err := mountCgroups(spec, rspec, context); err != nil {
+	if err := mountCgroups(spec, context); err != nil {
 		return err
 	}
-	if err := addBindMounts(spec, rspec, context); err != nil {
+	if err := addBindMounts(spec, context); err != nil {
 		return err
 	}
-	if err := addHooks(spec, rspec, context); err != nil {
+	if err := addHooks(spec, context); err != nil {
 		return err
 	}
-	if err := addRootPropagation(spec, rspec, context); err != nil {
+	if err := addRootPropagation(spec, context); err != nil {
 		return err
 	}
-	if err := addIDMappings(spec, rspec, context); err != nil {
+	if err := addIDMappings(spec, context); err != nil {
 		return err
 	}
-	if err := addSeccomp(spec, rspec, context); err != nil {
+	if err := addSeccomp(spec, context); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func addSeccompDefault(rspec *specs.LinuxRuntimeSpec, sdefault string) error {
+func addSeccompDefault(spec *specs.LinuxSpec, sdefault string) error {
 	switch sdefault {
 	case "":
 	case "SCMP_ACT_KILL":
@@ -179,11 +171,11 @@ func addSeccompDefault(rspec *specs.LinuxRuntimeSpec, sdefault string) error {
 			"SCMP_ACT_KILL|SCMP_ACT_TRAP|SCMP_ACT_ERRNO|SCMP_ACT_TRACE|" +
 			"SCMP_ACT_ALLOW")
 	}
-	rspec.Linux.Seccomp.DefaultAction = specs.Action(sdefault)
+	spec.Linux.Seccomp.DefaultAction = specs.Action(sdefault)
 	return nil
 }
 
-func addSeccompArch(rspec *specs.LinuxRuntimeSpec, sArch []string) error {
+func addSeccompArch(spec *specs.LinuxSpec, sArch []string) error {
 	for _, archs := range sArch {
 		switch archs {
 		case "":
@@ -205,13 +197,13 @@ func addSeccompArch(rspec *specs.LinuxRuntimeSpec, sArch []string) error {
 				"SCMP_ARCH_MIPS64N32|SCMP_ARCH_MIPSEL|SCMP_ARCH_MIPSEL64|" +
 				"SCMP_ARCH_MIPSEL64N32")
 		}
-		rspec.Linux.Seccomp.Architectures = append(rspec.Linux.Seccomp.Architectures, specs.Arch(archs))
+		spec.Linux.Seccomp.Architectures = append(spec.Linux.Seccomp.Architectures, specs.Arch(archs))
 	}
 
 	return nil
 }
 
-func addSeccompSyscall(rspec *specs.LinuxRuntimeSpec, sSyscall []string) error {
+func addSeccompSyscall(spec *specs.LinuxSpec, sSyscall []string) error {
 	for _, syscalls := range sSyscall {
 		syscall := strings.Split(syscalls, ":")
 		if len(syscall) == 3 {
@@ -230,7 +222,7 @@ func addSeccompSyscall(rspec *specs.LinuxRuntimeSpec, sSyscall []string) error {
 			}
 			action := specs.Action(syscall[1])
 
-			var Args []*specs.Arg
+			var Args []specs.Arg
 			if strings.EqualFold(syscall[2], "") {
 				Args = nil
 			} else {
@@ -267,7 +259,7 @@ func addSeccompSyscall(rspec *specs.LinuxRuntimeSpec, sSyscall []string) error {
 							ValueTwo: uint64(value2),
 							Op:       op,
 						}
-						Args = append(Args, &Arg)
+						Args = append(Args, Arg)
 					} else {
 						return fmt.Errorf("seccomp-sysctl args error: %s", argsstru)
 					}
@@ -279,7 +271,7 @@ func addSeccompSyscall(rspec *specs.LinuxRuntimeSpec, sSyscall []string) error {
 				Action: action,
 				Args:   Args,
 			}
-			rspec.Linux.Seccomp.Syscalls = append(rspec.Linux.Seccomp.Syscalls, &syscallstruct)
+			spec.Linux.Seccomp.Syscalls = append(spec.Linux.Seccomp.Syscalls, syscallstruct)
 		} else {
 			return fmt.Errorf("seccomp sysctl must consist of 3 parameters")
 		}
@@ -288,20 +280,20 @@ func addSeccompSyscall(rspec *specs.LinuxRuntimeSpec, sSyscall []string) error {
 	return nil
 }
 
-func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+func addSeccomp(spec *specs.LinuxSpec, context *cli.Context) error {
 
 	sd := context.String("seccomp-default")
 	sa := context.StringSlice("seccomp-arch")
 	ss := context.StringSlice("seccomp-syscalls")
 
 	// Set the DefaultAction of seccomp
-	err := addSeccompDefault(rspec, sd)
+	err := addSeccompDefault(spec, sd)
 	if err != nil {
 		return err
 	}
 
 	// Add the additional architectures permitted to be used for system calls
-	err = addSeccompArch(rspec, sa)
+	err = addSeccompArch(spec, sa)
 	if err != nil {
 		return err
 	}
@@ -309,7 +301,7 @@ func addSeccomp(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *c
 	// Set syscall restrict in Seccomp
 	// The format of input syscall string is Name:Action:Args[1],Args[2],...,Args[n]
 	// The format of Args string is Index/Value/ValueTwo/Operator,and is parsed by function parseArgs()
-	err = addSeccompSyscall(rspec, ss)
+	err = addSeccompSyscall(spec, ss)
 	if err != nil {
 		return err
 	}
@@ -356,7 +348,7 @@ func parseArgs(args2parse string) ([]*specs.Arg, error) {
 	return Args, nil
 }
 
-func addIDMappings(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+func addIDMappings(spec *specs.LinuxSpec, context *cli.Context) error {
 	for _, uidms := range context.StringSlice("uidmappings") {
 		idm := strings.Split(uidms, ":")
 		if len(idm) == 3 {
@@ -371,7 +363,7 @@ func addIDMappings(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context
 				ContainerID: uint32(cid),
 				Size:        uint32(size),
 			}
-			rspec.Linux.UIDMappings = append(rspec.Linux.UIDMappings, uidmapping)
+			spec.Linux.UIDMappings = append(spec.Linux.UIDMappings, uidmapping)
 		} else {
 			return fmt.Errorf("uidmappings error: %s", uidms)
 		}
@@ -391,20 +383,20 @@ func addIDMappings(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context
 				ContainerID: uint32(cid),
 				Size:        uint32(size),
 			}
-			rspec.Linux.GIDMappings = append(rspec.Linux.GIDMappings, gidmapping)
+			spec.Linux.GIDMappings = append(spec.Linux.GIDMappings, gidmapping)
 		} else {
 			return fmt.Errorf("gidmappings error: %s", gidms)
 		}
 	}
 
 	if len(context.StringSlice("uidmappings")) > 0 || len(context.StringSlice("gidmappings")) > 0 {
-		rspec.Linux.Namespaces = append(rspec.Linux.Namespaces, specs.Namespace{Type: "user"})
+		spec.Linux.Namespaces = append(spec.Linux.Namespaces, specs.Namespace{Type: "user"})
 	}
 
 	return nil
 }
 
-func addRootPropagation(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+func addRootPropagation(spec *specs.LinuxSpec, context *cli.Context) error {
 	rp := context.String("root-propagation")
 	switch rp {
 	case "":
@@ -417,11 +409,11 @@ func addRootPropagation(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, co
 	default:
 		return fmt.Errorf("rootfs-propagation must be empty or one of private|rprivate|slave|rslave|shared|rshared")
 	}
-	rspec.Linux.RootfsPropagation = rp
+	spec.Linux.RootfsPropagation = rp
 	return nil
 }
 
-func addHooks(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+func addHooks(spec *specs.LinuxSpec, context *cli.Context) error {
 	for _, pre := range context.StringSlice("prestart") {
 		parts := strings.Split(pre, ":")
 		args := []string{}
@@ -429,7 +421,7 @@ func addHooks(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli
 		if len(parts) > 1 {
 			args = parts[1:]
 		}
-		rspec.Hooks.Prestart = append(rspec.Hooks.Prestart, specs.Hook{Path: path, Args: args})
+		spec.Hooks.Prestart = append(spec.Hooks.Prestart, specs.Hook{Path: path, Args: args})
 	}
 	for _, post := range context.StringSlice("poststop") {
 		parts := strings.Split(post, ":")
@@ -438,7 +430,7 @@ func addHooks(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli
 		if len(parts) > 1 {
 			args = parts[1:]
 		}
-		rspec.Hooks.Poststop = append(rspec.Hooks.Poststop, specs.Hook{Path: path, Args: args})
+		spec.Hooks.Poststop = append(spec.Hooks.Poststop, specs.Hook{Path: path, Args: args})
 	}
 	for _, poststart := range context.StringSlice("poststart") {
 		parts := strings.Split(poststart, ":")
@@ -447,27 +439,25 @@ func addHooks(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli
 		if len(parts) > 1 {
 			args = parts[1:]
 		}
-		rspec.Hooks.Poststart = append(rspec.Hooks.Poststart, specs.Hook{Path: path, Args: args})
-	}
-	return nil
-}
-func addTmpfsMounts(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
-	for _, dest := range context.StringSlice("tmpfs") {
-		name := filepath.Base(dest)
-		mntName := fmt.Sprintf("%stmpfs", name)
-		mnt := specs.MountPoint{Name: mntName, Path: dest}
-		spec.Mounts = append(spec.Mounts, mnt)
-		rmnt := specs.Mount{
-			Type:    "tmpfs",
-			Source:  "tmpfs",
-			Options: []string{"nosuid", "nodev", "mode=755"},
-		}
-		rspec.Mounts[mntName] = rmnt
+		spec.Hooks.Poststart = append(spec.Hooks.Poststart, specs.Hook{Path: path, Args: args})
 	}
 	return nil
 }
 
-func mountCgroups(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+func addTmpfsMounts(spec *specs.LinuxSpec, context *cli.Context) error {
+	for _, dest := range context.StringSlice("tmpfs") {
+		mnt := specs.Mount{
+			Destination: dest,
+			Type:        "tmpfs",
+			Source:      "tmpfs",
+			Options:     []string{"nosuid", "nodev", "mode=755"},
+		}
+		spec.Mounts = append(spec.Mounts, mnt)
+	}
+	return nil
+}
+
+func mountCgroups(spec *specs.LinuxSpec, context *cli.Context) error {
 	mountCgroupOption := context.String("mount-cgroups")
 	switch mountCgroupOption {
 	case "ro":
@@ -478,17 +468,18 @@ func mountCgroups(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context 
 		return fmt.Errorf("--mount-cgroups should be one of (ro,rw,no)")
 	}
 
-	spec.Mounts = append(spec.Mounts, specs.MountPoint{Name: "cgroup", Path: "/sys/fs/cgroup"})
-	rspec.Mounts["cgroup"] = specs.Mount{
-		Type:    "cgroup",
-		Source:  "cgroup",
-		Options: []string{"nosuid", "noexec", "nodev", "relatime", mountCgroupOption},
+	mnt := specs.Mount{
+		Destination: "/sys/fs/cgroup",
+		Type:        "cgroup",
+		Source:      "cgroup",
+		Options:     []string{"nosuid", "noexec", "nodev", "relatime", mountCgroupOption},
 	}
+	spec.Mounts = append(spec.Mounts, mnt)
 
 	return nil
 }
 
-func addBindMounts(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+func addBindMounts(spec *specs.LinuxSpec, context *cli.Context) error {
 	for _, b := range context.StringSlice("bind") {
 		var source, dest string
 		options := "ro"
@@ -501,20 +492,19 @@ func addBindMounts(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context
 		default:
 			return fmt.Errorf("--bind should have format src:dest:[options]")
 		}
-		name := filepath.Base(source)
-		mntName := fmt.Sprintf("%sbind", name)
-		spec.Mounts = append(spec.Mounts, specs.MountPoint{Name: mntName, Path: dest})
 		defaultOptions := []string{"bind"}
-		rspec.Mounts[mntName] = specs.Mount{
-			Type:    "bind",
-			Source:  source,
-			Options: append(defaultOptions, options),
+		mnt := specs.Mount{
+			Destination: dest,
+			Type:        "bind",
+			Source:      source,
+			Options:     append(defaultOptions, options),
 		}
+		spec.Mounts = append(spec.Mounts, mnt)
 	}
 	return nil
 }
 
-func setupCapabilities(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) error {
+func setupCapabilities(spec *specs.LinuxSpec, context *cli.Context) error {
 	var finalCapList []string
 
 	// Add all capabilities in privileged mode.
@@ -590,7 +580,7 @@ func mapStrToNamespace(ns string, path string) specs.Namespace {
 	return specs.Namespace{}
 }
 
-func setupNamespaces(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, context *cli.Context) {
+func setupNamespaces(spec *specs.LinuxSpec, context *cli.Context) {
 	namespaces := []string{"network", "pid", "mount", "ipc", "uts"}
 	var linuxNs []specs.Namespace
 	for _, nsName := range namespaces {
@@ -601,10 +591,10 @@ func setupNamespaces(spec *specs.LinuxSpec, rspec *specs.LinuxRuntimeSpec, conte
 		ns := mapStrToNamespace(nsName, nsPath)
 		linuxNs = append(linuxNs, ns)
 	}
-	rspec.Linux.Namespaces = linuxNs
+	spec.Linux.Namespaces = linuxNs
 }
 
-func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
+func getDefaultTemplate() specs.LinuxSpec {
 	spec := specs.LinuxSpec{
 		Spec: specs.Spec{
 			Version: specs.Version,
@@ -629,30 +619,30 @@ func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
 				Cwd: "/",
 			},
 			Hostname: "shell",
-			Mounts: []specs.MountPoint{
+			Mounts: []specs.Mount{
 				{
-					Name: "proc",
-					Path: "/proc",
+					Destination: "/proc",
+					Type:        "proc",
+					Source:      "proc",
+					Options:     nil,
 				},
 				{
-					Name: "dev",
-					Path: "/dev",
+					Destination: "/dev/pts",
+					Type:        "devpts",
+					Source:      "devpts",
+					Options:     []string{"nosuid", "noexec", "newinstance", "ptmxmode=0666", "mode=0620", "gid=5"},
 				},
 				{
-					Name: "devpts",
-					Path: "/dev/pts",
+					Destination: "/dev/shm",
+					Type:        "tmpfs",
+					Source:      "shm",
+					Options:     []string{"nosuid", "noexec", "nodev", "mode=1777", "size=65536k"},
 				},
 				{
-					Name: "shm",
-					Path: "/dev/shm",
-				},
-				{
-					Name: "mqueue",
-					Path: "/dev/mqueue",
-				},
-				{
-					Name: "sysfs",
-					Path: "/sys",
+					Destination: "/sys",
+					Type:        "sysfs",
+					Source:      "sysfs",
+					Options:     []string{"nosuid", "noexec", "nodev"},
 				},
 			},
 		},
@@ -673,44 +663,6 @@ func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
 				"CAP_KILL",
 				"CAP_AUDIT_WRITE",
 			},
-		},
-	}
-	rspec := specs.LinuxRuntimeSpec{
-		RuntimeSpec: specs.RuntimeSpec{
-			Mounts: map[string]specs.Mount{
-				"proc": {
-					Type:    "proc",
-					Source:  "proc",
-					Options: nil,
-				},
-				"dev": {
-					Type:    "tmpfs",
-					Source:  "tmpfs",
-					Options: []string{"nosuid", "strictatime", "mode=755", "size=65536k"},
-				},
-				"devpts": {
-					Type:    "devpts",
-					Source:  "devpts",
-					Options: []string{"nosuid", "noexec", "newinstance", "ptmxmode=0666", "mode=0620", "gid=5"},
-				},
-				"shm": {
-					Type:    "tmpfs",
-					Source:  "shm",
-					Options: []string{"nosuid", "noexec", "nodev", "mode=1777", "size=65536k"},
-				},
-				"mqueue": {
-					Type:    "mqueue",
-					Source:  "mqueue",
-					Options: []string{"nosuid", "noexec", "nodev"},
-				},
-				"sysfs": {
-					Type:    "sysfs",
-					Source:  "sysfs",
-					Options: []string{"nosuid", "noexec", "nodev"},
-				},
-			},
-		},
-		Linux: specs.LinuxRuntime{
 			Namespaces: []specs.Namespace{
 				{
 					Type: "pid",
@@ -737,72 +689,44 @@ func getDefaultTemplate() (specs.LinuxSpec, specs.LinuxRuntimeSpec) {
 			},
 			Devices: []specs.Device{
 				{
-					Type:        'c',
-					Path:        "/dev/null",
-					Major:       1,
-					Minor:       3,
-					Permissions: "rwm",
-					FileMode:    0666,
-					UID:         0,
-					GID:         0,
+					Type:  'c',
+					Path:  "/dev/null",
+					Major: 1,
+					Minor: 3,
 				},
 				{
-					Type:        'c',
-					Path:        "/dev/random",
-					Major:       1,
-					Minor:       8,
-					Permissions: "rwm",
-					FileMode:    0666,
-					UID:         0,
-					GID:         0,
+					Type:  'c',
+					Path:  "/dev/random",
+					Major: 1,
+					Minor: 8,
 				},
 				{
-					Type:        'c',
-					Path:        "/dev/full",
-					Major:       1,
-					Minor:       7,
-					Permissions: "rwm",
-					FileMode:    0666,
-					UID:         0,
-					GID:         0,
+					Type:  'c',
+					Path:  "/dev/full",
+					Major: 1,
+					Minor: 7,
 				},
 				{
-					Type:        'c',
-					Path:        "/dev/tty",
-					Major:       5,
-					Minor:       0,
-					Permissions: "rwm",
-					FileMode:    0666,
-					UID:         0,
-					GID:         0,
+					Type:  'c',
+					Path:  "/dev/tty",
+					Major: 5,
+					Minor: 0,
 				},
 				{
-					Type:        'c',
-					Path:        "/dev/zero",
-					Major:       1,
-					Minor:       5,
-					Permissions: "rwm",
-					FileMode:    0666,
-					UID:         0,
-					GID:         0,
+					Type:  'c',
+					Path:  "/dev/zero",
+					Major: 1,
+					Minor: 5,
 				},
 				{
-					Type:        'c',
-					Path:        "/dev/urandom",
-					Major:       1,
-					Minor:       9,
-					Permissions: "rwm",
-					FileMode:    0666,
-					UID:         0,
-					GID:         0,
-				},
-			},
-			Resources: &specs.Resources{
-				Memory: specs.Memory{
-					Swappiness: -1,
+					Type:  'c',
+					Path:  "/dev/urandom",
+					Major: 1,
+					Minor: 9,
 				},
 			},
 		},
 	}
-	return spec, rspec
+
+	return spec
 }

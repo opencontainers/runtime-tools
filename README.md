@@ -51,6 +51,22 @@ OPTIONS:
                                                             Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op
 ```
 
+Validating OCI bundle
+------------------------------------------
+
+```
+# ocitools bvalidate --help
+NAME:
+   bvalidate - validate a OCI bundle
+
+USAGE:
+   command bvalidate [command options] [arguments...]
+
+OPTIONS:
+   --path       path to a bundle
+
+```
+
 Testing OCI runtimes
 ------------------------------------------
 
