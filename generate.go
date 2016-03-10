@@ -10,7 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	"github.com/opencontainers/specs"
+	"github.com/opencontainers/specs/specs-go"
 	"github.com/syndtr/gocapability/capability"
 )
 
@@ -90,17 +90,17 @@ var generateCommand = cli.Command{
 	},
 }
 
-func modify(spec *specs.LinuxSpec, context *cli.Context) error {
+func modify(spec *specs.Spec, context *cli.Context) error {
 	spec.Root.Path = context.String("rootfs")
 	spec.Root.Readonly = context.Bool("read-only")
 	spec.Hostname = context.String("hostname")
 	spec.Process.User.UID = uint32(context.Int("uid"))
 	spec.Process.User.GID = uint32(context.Int("gid"))
-	spec.Linux.SelinuxProcessLabel = context.String("selinux-label")
+	spec.Process.SelinuxLabel = context.String("selinux-label")
 	spec.Platform.OS = context.String("os")
 	spec.Platform.Arch = context.String("arch")
 	spec.Process.Cwd = context.String("cwd")
-	spec.Linux.ApparmorProfile = context.String("apparmor")
+	spec.Process.ApparmorProfile = context.String("apparmor")
 
 	for i, a := range context.StringSlice("args") {
 		if a != "" {
@@ -158,7 +158,7 @@ func modify(spec *specs.LinuxSpec, context *cli.Context) error {
 	return nil
 }
 
-func addSeccompDefault(spec *specs.LinuxSpec, sdefault string) error {
+func addSeccompDefault(spec *specs.Spec, sdefault string, secc *specs.Seccomp) error {
 	switch sdefault {
 	case "":
 	case "SCMP_ACT_KILL":
@@ -171,11 +171,11 @@ func addSeccompDefault(spec *specs.LinuxSpec, sdefault string) error {
 			"SCMP_ACT_KILL|SCMP_ACT_TRAP|SCMP_ACT_ERRNO|SCMP_ACT_TRACE|" +
 			"SCMP_ACT_ALLOW")
 	}
-	spec.Linux.Seccomp.DefaultAction = specs.Action(sdefault)
+	secc.DefaultAction = specs.Action(sdefault)
 	return nil
 }
 
-func addSeccompArch(spec *specs.LinuxSpec, sArch []string) error {
+func addSeccompArch(spec *specs.Spec, sArch []string, secc *specs.Seccomp) error {
 	for _, archs := range sArch {
 		switch archs {
 		case "":
@@ -197,13 +197,13 @@ func addSeccompArch(spec *specs.LinuxSpec, sArch []string) error {
 				"SCMP_ARCH_MIPS64N32|SCMP_ARCH_MIPSEL|SCMP_ARCH_MIPSEL64|" +
 				"SCMP_ARCH_MIPSEL64N32")
 		}
-		spec.Linux.Seccomp.Architectures = append(spec.Linux.Seccomp.Architectures, specs.Arch(archs))
+		secc.Architectures = append(secc.Architectures, specs.Arch(archs))
 	}
 
 	return nil
 }
 
-func addSeccompSyscall(spec *specs.LinuxSpec, sSyscall []string) error {
+func addSeccompSyscall(spec *specs.Spec, sSyscall []string, secc *specs.Seccomp) error {
 	for _, syscalls := range sSyscall {
 		syscall := strings.Split(syscalls, ":")
 		if len(syscall) == 3 {
@@ -271,7 +271,7 @@ func addSeccompSyscall(spec *specs.LinuxSpec, sSyscall []string) error {
 				Action: action,
 				Args:   Args,
 			}
-			spec.Linux.Seccomp.Syscalls = append(spec.Linux.Seccomp.Syscalls, syscallstruct)
+			secc.Syscalls = append(secc.Syscalls, syscallstruct)
 		} else {
 			return fmt.Errorf("seccomp sysctl must consist of 3 parameters")
 		}
@@ -280,20 +280,24 @@ func addSeccompSyscall(spec *specs.LinuxSpec, sSyscall []string) error {
 	return nil
 }
 
-func addSeccomp(spec *specs.LinuxSpec, context *cli.Context) error {
-
+func addSeccomp(spec *specs.Spec, context *cli.Context) error {
+	var secc specs.Seccomp
 	sd := context.String("seccomp-default")
 	sa := context.StringSlice("seccomp-arch")
 	ss := context.StringSlice("seccomp-syscalls")
 
+	if sd == "" && len(sa) == 0 && len(ss) == 0 {
+		return nil
+	}
+
 	// Set the DefaultAction of seccomp
-	err := addSeccompDefault(spec, sd)
+	err := addSeccompDefault(spec, sd, &secc)
 	if err != nil {
 		return err
 	}
 
 	// Add the additional architectures permitted to be used for system calls
-	err = addSeccompArch(spec, sa)
+	err = addSeccompArch(spec, sa, &secc)
 	if err != nil {
 		return err
 	}
@@ -301,11 +305,12 @@ func addSeccomp(spec *specs.LinuxSpec, context *cli.Context) error {
 	// Set syscall restrict in Seccomp
 	// The format of input syscall string is Name:Action:Args[1],Args[2],...,Args[n]
 	// The format of Args string is Index/Value/ValueTwo/Operator,and is parsed by function parseArgs()
-	err = addSeccompSyscall(spec, ss)
+	err = addSeccompSyscall(spec, ss, &secc)
 	if err != nil {
 		return err
 	}
 
+	spec.Linux.Seccomp = &secc
 	return nil
 }
 
@@ -348,7 +353,7 @@ func parseArgs(args2parse string) ([]*specs.Arg, error) {
 	return Args, nil
 }
 
-func addIDMappings(spec *specs.LinuxSpec, context *cli.Context) error {
+func addIDMappings(spec *specs.Spec, context *cli.Context) error {
 	for _, uidms := range context.StringSlice("uidmappings") {
 		idm := strings.Split(uidms, ":")
 		if len(idm) == 3 {
@@ -396,7 +401,7 @@ func addIDMappings(spec *specs.LinuxSpec, context *cli.Context) error {
 	return nil
 }
 
-func addRootPropagation(spec *specs.LinuxSpec, context *cli.Context) error {
+func addRootPropagation(spec *specs.Spec, context *cli.Context) error {
 	rp := context.String("root-propagation")
 	switch rp {
 	case "":
@@ -413,7 +418,7 @@ func addRootPropagation(spec *specs.LinuxSpec, context *cli.Context) error {
 	return nil
 }
 
-func addHooks(spec *specs.LinuxSpec, context *cli.Context) error {
+func addHooks(spec *specs.Spec, context *cli.Context) error {
 	for _, pre := range context.StringSlice("prestart") {
 		parts := strings.Split(pre, ":")
 		args := []string{}
@@ -444,7 +449,7 @@ func addHooks(spec *specs.LinuxSpec, context *cli.Context) error {
 	return nil
 }
 
-func addTmpfsMounts(spec *specs.LinuxSpec, context *cli.Context) error {
+func addTmpfsMounts(spec *specs.Spec, context *cli.Context) error {
 	for _, dest := range context.StringSlice("tmpfs") {
 		mnt := specs.Mount{
 			Destination: dest,
@@ -457,7 +462,7 @@ func addTmpfsMounts(spec *specs.LinuxSpec, context *cli.Context) error {
 	return nil
 }
 
-func mountCgroups(spec *specs.LinuxSpec, context *cli.Context) error {
+func mountCgroups(spec *specs.Spec, context *cli.Context) error {
 	mountCgroupOption := context.String("mount-cgroups")
 	switch mountCgroupOption {
 	case "ro":
@@ -479,7 +484,7 @@ func mountCgroups(spec *specs.LinuxSpec, context *cli.Context) error {
 	return nil
 }
 
-func addBindMounts(spec *specs.LinuxSpec, context *cli.Context) error {
+func addBindMounts(spec *specs.Spec, context *cli.Context) error {
 	for _, b := range context.StringSlice("bind") {
 		var source, dest string
 		options := "ro"
@@ -504,7 +509,7 @@ func addBindMounts(spec *specs.LinuxSpec, context *cli.Context) error {
 	return nil
 }
 
-func setupCapabilities(spec *specs.LinuxSpec, context *cli.Context) error {
+func setupCapabilities(spec *specs.Spec, context *cli.Context) error {
 	var finalCapList []string
 
 	// Add all capabilities in privileged mode.
@@ -513,7 +518,7 @@ func setupCapabilities(spec *specs.LinuxSpec, context *cli.Context) error {
 		for _, cap := range capability.List() {
 			finalCapList = append(finalCapList, fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())))
 		}
-		spec.Linux.Capabilities = finalCapList
+		spec.Process.Capabilities = finalCapList
 		return nil
 	}
 
@@ -556,7 +561,7 @@ func setupCapabilities(spec *specs.LinuxSpec, context *cli.Context) error {
 			finalCapList = append(finalCapList, c)
 		}
 	}
-	spec.Linux.Capabilities = finalCapList
+	spec.Process.Capabilities = finalCapList
 	return nil
 }
 
@@ -580,7 +585,7 @@ func mapStrToNamespace(ns string, path string) specs.Namespace {
 	return specs.Namespace{}
 }
 
-func setupNamespaces(spec *specs.LinuxSpec, context *cli.Context) {
+func setupNamespaces(spec *specs.Spec, context *cli.Context) {
 	namespaces := []string{"network", "pid", "mount", "ipc", "uts"}
 	var linuxNs []specs.Namespace
 	for _, nsName := range namespaces {
@@ -594,34 +599,28 @@ func setupNamespaces(spec *specs.LinuxSpec, context *cli.Context) {
 	spec.Linux.Namespaces = linuxNs
 }
 
-func getDefaultTemplate() specs.LinuxSpec {
-	spec := specs.LinuxSpec{
-		Spec: specs.Spec{
-			Version: specs.Version,
-			Platform: specs.Platform{
-				OS:   runtime.GOOS,
-				Arch: runtime.GOARCH,
-			},
-			Root: specs.Root{
-				Path:     "",
-				Readonly: false,
-			},
-			Process: specs.Process{
-				Terminal: true,
-				User:     specs.User{},
-				Args: []string{
-					"sh",
-				},
-				Env: []string{
-					"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-					"TERM=xterm",
-				},
-				Cwd: "/",
-			},
-			Hostname: "shell",
-			Mounts: []specs.Mount{},
+func getDefaultTemplate() specs.Spec {
+	spec := specs.Spec{
+		Version: specs.Version,
+		Platform: specs.Platform{
+			OS:   runtime.GOOS,
+			Arch: runtime.GOARCH,
 		},
-		Linux: specs.Linux{
+		Root: specs.Root{
+			Path:     "",
+			Readonly: false,
+		},
+		Process: specs.Process{
+			Terminal: true,
+			User:     specs.User{},
+			Args: []string{
+				"sh",
+			},
+			Env: []string{
+				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+				"TERM=xterm",
+			},
+			Cwd: "/",
 			Capabilities: []string{
 				"CAP_CHOWN",
 				"CAP_DAC_OVERRIDE",
@@ -638,6 +637,17 @@ func getDefaultTemplate() specs.LinuxSpec {
 				"CAP_KILL",
 				"CAP_AUDIT_WRITE",
 			},
+			Rlimits: []specs.Rlimit{
+				{
+					Type: "RLIMIT_NOFILE",
+					Hard: uint64(1024),
+					Soft: uint64(1024),
+				},
+			},
+		},
+		Hostname: "shell",
+		Mounts:   []specs.Mount{},
+		Linux: specs.Linux{
 			Namespaces: []specs.Namespace{
 				{
 					Type: "pid",
@@ -653,13 +663,6 @@ func getDefaultTemplate() specs.LinuxSpec {
 				},
 				{
 					Type: "mount",
-				},
-			},
-			Rlimits: []specs.Rlimit{
-				{
-					Type: "RLIMIT_NOFILE",
-					Hard: uint64(1024),
-					Soft: uint64(1024),
 				},
 			},
 			Devices: []specs.Device{},

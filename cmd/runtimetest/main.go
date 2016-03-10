@@ -11,13 +11,13 @@ import (
 	"syscall"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/opencontainers/specs"
+	"github.com/opencontainers/specs/specs-go"
 	"github.com/syndtr/gocapability/capability"
 )
 
-type validation func(*specs.LinuxSpec) error
+type validation func(*specs.Spec) error
 
-func loadSpecConfig() (spec *specs.LinuxSpec, err error) {
+func loadSpecConfig() (spec *specs.Spec, err error) {
 	cPath := "config.json"
 	cf, err := os.Open(cPath)
 	if err != nil {
@@ -33,7 +33,7 @@ func loadSpecConfig() (spec *specs.LinuxSpec, err error) {
 	return spec, nil
 }
 
-func validateProcess(spec *specs.LinuxSpec) error {
+func validateProcess(spec *specs.Spec) error {
 	fmt.Println("validating container process")
 	uid := os.Getuid()
 	if uint32(uid) != spec.Process.User.UID {
@@ -98,7 +98,7 @@ func validateProcess(spec *specs.LinuxSpec) error {
 	return nil
 }
 
-func validateCapabilities(spec *specs.LinuxSpec) error {
+func validateCapabilities(spec *specs.Spec) error {
 	fmt.Println("validating capabilities")
 	capabilityMap := make(map[string]capability.Cap)
 	expectedCaps := make(map[capability.Cap]bool)
@@ -116,7 +116,7 @@ func validateCapabilities(spec *specs.LinuxSpec) error {
 		expectedCaps[cap] = false
 	}
 
-	for _, ec := range spec.Linux.Capabilities {
+	for _, ec := range spec.Process.Capabilities {
 		cap := capabilityMap[ec]
 		expectedCaps[cap] = true
 	}
@@ -140,7 +140,7 @@ func validateCapabilities(spec *specs.LinuxSpec) error {
 	return nil
 }
 
-func validateHostname(spec *specs.LinuxSpec) error {
+func validateHostname(spec *specs.Spec) error {
 	fmt.Println("validating hostname")
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -152,9 +152,9 @@ func validateHostname(spec *specs.LinuxSpec) error {
 	return nil
 }
 
-func validateRlimits(spec *specs.LinuxSpec) error {
+func validateRlimits(spec *specs.Spec) error {
 	fmt.Println("validating rlimits")
-	for _, r := range spec.Linux.Rlimits {
+	for _, r := range spec.Process.Rlimits {
 		rl, err := strToRlimit(r.Type)
 		if err != nil {
 			return err
@@ -175,7 +175,7 @@ func validateRlimits(spec *specs.LinuxSpec) error {
 	return nil
 }
 
-func validateSysctls(spec *specs.LinuxSpec) error {
+func validateSysctls(spec *specs.Spec) error {
 	fmt.Println("validating sysctls")
 	for k, v := range spec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))

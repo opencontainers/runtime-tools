@@ -11,7 +11,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	"github.com/opencontainers/specs"
+	"github.com/opencontainers/specs/specs-go"
 )
 
 var bundleValidateFlags = []cli.Flag{
@@ -60,7 +60,7 @@ var bundleValidateCommand = cli.Command{
 
 		defer sf.Close()
 
-		var spec specs.LinuxSpec
+		var spec specs.Spec
 		if err = json.NewDecoder(sf).Decode(&spec); err != nil {
 			logrus.Fatal(err)
 		} else {
@@ -80,9 +80,10 @@ var bundleValidateCommand = cli.Command{
 	},
 }
 
-func bundleValidate(spec specs.LinuxSpec, rootfs string) {
+func bundleValidate(spec specs.Spec, rootfs string) {
 	CheckMandatoryField(spec)
 	CheckSemVer(spec.Version)
+	CheckProcess(spec.Process, rootfs)
 	CheckMounts(spec.Mounts, rootfs)
 	CheckLinux(spec.Linux, rootfs)
 }
@@ -105,26 +106,36 @@ func CheckMounts(mounts []specs.Mount, rootfs string) {
 	}
 }
 
-//Linux only
-func CheckLinux(spec specs.Linux, rootfs string) {
-	for index := 0; index < len(spec.Capabilities); index++ {
-		capability := spec.Capabilities[index]
+func CheckProcess(process specs.Process, rootfs string) {
+	for index := 0; index < len(process.Capabilities); index++ {
+		capability := process.Capabilities[index]
 		if !capValid(capability) {
-			logrus.Fatalf("%s is not valid, man capabilities(7)", spec.Capabilities[index])
+			logrus.Fatalf("%s is not valid, man capabilities(7)", process.Capabilities[index])
 		}
 	}
 
+	for index := 0; index < len(process.Rlimits); index++ {
+		if !rlimitValid(process.Rlimits[index].Type) {
+			logrus.Fatalf("Rlimit %s is invalid.", process.Rlimits[index])
+		}
+	}
+
+	if len(process.ApparmorProfile) > 0 {
+		profilePath := path.Join(rootfs, "/etc/apparmor.d", process.ApparmorProfile)
+		_, err := os.Stat(profilePath)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+	}
+}
+
+//Linux only
+func CheckLinux(spec specs.Linux, rootfs string) {
 	if len(spec.UIDMappings) > 5 {
 		logrus.Fatalf("Only 5 UID mappings are allowed (linux kernel restriction).")
 	}
 	if len(spec.GIDMappings) > 5 {
 		logrus.Fatalf("Only 5 GID mappings are allowed (linux kernel restriction).")
-	}
-
-	for index := 0; index < len(spec.Rlimits); index++ {
-		if !rlimitValid(spec.Rlimits[index].Type) {
-			logrus.Fatalf("Rlimit %s is invalid.", spec.Rlimits[index])
-		}
 	}
 
 	for index := 0; index < len(spec.Namespaces); index++ {
@@ -139,15 +150,9 @@ func CheckLinux(spec specs.Linux, rootfs string) {
 		}
 	}
 
-	if len(spec.ApparmorProfile) > 0 {
-		profilePath := path.Join(rootfs, "/etc/apparmor.d", spec.ApparmorProfile)
-		_, err := os.Stat(profilePath)
-		if err != nil {
-			logrus.Fatal(err)
-		}
+	if spec.Seccomp != nil {
+		CheckSeccomp(*spec.Seccomp)
 	}
-
-	CheckSeccomp(spec.Seccomp)
 
 	switch spec.RootfsPropagation {
 	case "":
@@ -224,16 +229,16 @@ func namespaceValid(ns specs.Namespace) bool {
 
 func deviceValid(d specs.Device) bool {
 	switch d.Type {
-	case 'b':
-	case 'c':
-	case 'u':
+	case "b":
+	case "c":
+	case "u":
 		if d.Major <= 0 {
 			return false
 		}
 		if d.Minor <= 0 {
 			return false
 		}
-	case 'p':
+	case "p":
 		if d.Major > 0 || d.Minor > 0 {
 			return false
 		}
