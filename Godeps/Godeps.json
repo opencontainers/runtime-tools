@@ -1,6 +1,6 @@
 {
-	"ImportPath": "github.com/mrunalp/ocitools",
-	"GoVersion": "go1.4.2",
+	"ImportPath": "github.com/opencontainers/ocitools",
+	"GoVersion": "go1.4",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -13,9 +13,9 @@
 			"Rev": "bca61c476e3c752594983e4c9bcd5f62fb09f157"
 		},
 		{
-			"ImportPath": "github.com/opencontainers/specs",
-			"Comment": "v0.3.0",
-			"Rev": "25cbfc427ba6154016f33c7ed1b8ed43b8b7b7ed"
+			"ImportPath": "github.com/opencontainers/specs/specs-go",
+			"Comment": "v0.4.0-2-g4103108",
+			"Rev": "41031086f1a84a1040911b286e522615206e4fee"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
