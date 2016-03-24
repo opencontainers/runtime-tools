@@ -68,7 +68,7 @@ pushd $TESTDIR > /dev/null
 ocitools generate --args /runtimetest --rootfs ""
 popd > /dev/null
 
-TESTCMD="${RUNTIME} start"
+TESTCMD="${RUNTIME} start $(uuidgen)"
 pushd $TESTDIR > /dev/null
 if ! ${TESTCMD}; then
 	error "Runtime ${RUNTIME} failed validation"
