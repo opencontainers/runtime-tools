@@ -116,7 +116,7 @@ func CheckProcess(process specs.Process, rootfs string) {
 
 	for index := 0; index < len(process.Rlimits); index++ {
 		if !rlimitValid(process.Rlimits[index].Type) {
-			logrus.Fatalf("Rlimit %s is invalid.", process.Rlimits[index])
+			logrus.Fatalf("Rlimit %v is invalid.", process.Rlimits[index])
 		}
 	}
 
