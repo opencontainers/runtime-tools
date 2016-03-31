@@ -27,14 +27,11 @@ func init() {
 
 	rd := bufio.NewReader(f)
 	count := 0
-
 	for {
-
 		line, err := rd.ReadString('\n')
 		if err != nil || io.EOF == err {
 			break
 		}
-
 		prefix := strings.Split(line, "=")
 		caseName := strings.TrimSpace(prefix[0])
 		caseArg := strings.TrimPrefix(line, caseName+"=")
@@ -47,7 +44,6 @@ func init() {
 }
 
 func splitArgs(args string) []string {
-
 	argArray := strings.Split(args, ";")
 	resArray := make([]string, len(argArray))
 	for count, arg := range argArray {

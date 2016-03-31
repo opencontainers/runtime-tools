@@ -13,7 +13,7 @@ const bundleCacheDir = "./bundles"
 var runtimetestFlags = []cli.Flag{
 	cli.StringFlag{Name: "runtime, r", Usage: "runtime to be tested"},
 	cli.StringFlag{Name: "output, o", Usage: "output format, \n" +
-		"-o=all: ouput sucessful details and statics, -o=err-only: ouput failure details and statics"},
+		"-o=all: ouput sucessful details and statistics, -o=err-only: ouput failure details and statics"},
 	cli.BoolFlag{Name: "debug, d", Usage: "switch of debug mode, defaults to false, with '--debug' to enable debug mode"},
 }
 
@@ -22,13 +22,12 @@ var runtimeTestCommand = cli.Command{
 	Usage: "test if a runtime is comlpliant to oci specs",
 	Flags: runtimetestFlags,
 	Action: func(context *cli.Context) {
-
 		if os.Geteuid() != 0 {
 			logrus.Fatalln("runtimetest should be run as root")
 		}
 		var runtime string
 		if runtime = context.String("runtime"); runtime != "runc" {
-			logrus.Fatalf("runtimetest have not support %v\n", runtime)
+			logrus.Fatalf("runtimetest does not support %v\n", runtime)
 		}
 		output := context.String("output")
 		setDebugMode(context.Bool("debug"))
@@ -57,7 +56,6 @@ var runtimeTestCommand = cli.Command{
 		if err := os.Remove("./config.json"); err != nil {
 			logrus.Fatalf("remove ./config.json err: %v\n", err)
 		}
-
 	},
 }
 

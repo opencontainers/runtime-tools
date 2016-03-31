@@ -276,14 +276,11 @@ func runcStart(specDir string) (string, error) {
 	if err != nil {
 		return string(out), errors.New(string(out) + err.Error())
 	}
-
 	return string(out), nil
 }
 
 func splitArgs(args string) []string {
-
 	argsnew := strings.TrimSpace(args)
-
 	argArray := strings.Split(argsnew, "--")
 
 	length := len(argArray)
