@@ -13,7 +13,7 @@ const bundleCacheDir = "./bundles"
 var runtimetestFlags = []cli.Flag{
 	cli.StringFlag{Name: "runtime, r", Usage: "runtime to be tested"},
 	cli.StringFlag{Name: "output, o", Usage: "output format, \n" +
-		"-o=all: ouput sucessful details and statistics, -o=err-only: ouput failure details and statics"},
+		"-o=all: ouput sucessful details and statistics, -o=err-only: ouput failure details and statistics"},
 	cli.BoolFlag{Name: "debug, d", Usage: "switch of debug mode, defaults to false, with '--debug' to enable debug mode"},
 }
 
