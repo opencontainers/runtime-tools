@@ -81,7 +81,7 @@ USAGE:
 OPTIONS:
    --runtime, -r        runtime to be tested
    --output, -o         output format,
--o=all: ouput sucessful details and statics, -o=err-only: ouput failure details and statics
+-o=all: ouput sucessful details and statistics, -o=err-only: ouput failure details and statistics
    --debug, -d  switch of debug mode, defaults to false, with '--debug' to enable debug mode
 ```    
 
