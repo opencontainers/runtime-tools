@@ -18,6 +18,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "rootfs", Value: "rootfs", Usage: "path to the rootfs"},
 	cli.BoolFlag{Name: "read-only", Usage: "make the container's rootfs read-only"},
 	cli.BoolFlag{Name: "privileged", Usage: "enabled privileged container settings"},
+	cli.BoolFlag{Name: "no-new-privileges", Usage: "set no new privileges bit for the container process"},
 	cli.StringFlag{Name: "hostname", Value: "acme", Usage: "hostname value for the container"},
 	cli.IntFlag{Name: "uid", Usage: "uid for the process"},
 	cli.IntFlag{Name: "gid", Usage: "gid for the process"},
@@ -101,6 +102,7 @@ func modify(spec *specs.Spec, context *cli.Context) error {
 	spec.Platform.Arch = context.String("arch")
 	spec.Process.Cwd = context.String("cwd")
 	spec.Process.ApparmorProfile = context.String("apparmor")
+	spec.Process.NoNewPrivileges = context.Bool("no-new-privileges")
 
 	for i, a := range context.StringSlice("args") {
 		if a != "" {
