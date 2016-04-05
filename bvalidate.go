@@ -11,7 +11,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	"github.com/opencontainers/specs/specs-go"
+	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 )
 
 var bundleValidateFlags = []cli.Flag{
@@ -60,7 +60,7 @@ var bundleValidateCommand = cli.Command{
 
 		defer sf.Close()
 
-		var spec specs.Spec
+		var spec rspecs.Spec
 		if err = json.NewDecoder(sf).Decode(&spec); err != nil {
 			logrus.Fatal(err)
 		} else {
@@ -80,7 +80,7 @@ var bundleValidateCommand = cli.Command{
 	},
 }
 
-func bundleValidate(spec specs.Spec, rootfs string) {
+func bundleValidate(spec rspecs.Spec, rootfs string) {
 	CheckMandatoryField(spec)
 	CheckSemVer(spec.Version)
 	CheckProcess(spec.Process, rootfs)
@@ -95,7 +95,7 @@ func CheckSemVer(version string) {
 	}
 }
 
-func CheckMounts(mounts []specs.Mount, rootfs string) {
+func CheckMounts(mounts []rspecs.Mount, rootfs string) {
 	for _, mount := range mounts {
 		rootfsPath := path.Join(rootfs, mount.Destination)
 		if fi, err := os.Stat(rootfsPath); err != nil {
@@ -106,7 +106,7 @@ func CheckMounts(mounts []specs.Mount, rootfs string) {
 	}
 }
 
-func CheckProcess(process specs.Process, rootfs string) {
+func CheckProcess(process rspecs.Process, rootfs string) {
 	for index := 0; index < len(process.Capabilities); index++ {
 		capability := process.Capabilities[index]
 		if !capValid(capability) {
@@ -130,7 +130,7 @@ func CheckProcess(process specs.Process, rootfs string) {
 }
 
 //Linux only
-func CheckLinux(spec specs.Linux, rootfs string) {
+func CheckLinux(spec rspecs.Linux, rootfs string) {
 	if len(spec.UIDMappings) > 5 {
 		logrus.Fatalf("Only 5 UID mappings are allowed (linux kernel restriction).")
 	}
@@ -167,7 +167,7 @@ func CheckLinux(spec specs.Linux, rootfs string) {
 	}
 }
 
-func CheckSeccomp(s specs.Seccomp) {
+func CheckSeccomp(s rspecs.Seccomp) {
 	if !seccompActionValid(s.DefaultAction) {
 		logrus.Fatalf("Seccomp.DefaultAction is invalid.")
 	}
@@ -178,17 +178,17 @@ func CheckSeccomp(s specs.Seccomp) {
 	}
 	for index := 0; index < len(s.Architectures); index++ {
 		switch s.Architectures[index] {
-		case specs.ArchX86:
-		case specs.ArchX86_64:
-		case specs.ArchX32:
-		case specs.ArchARM:
-		case specs.ArchAARCH64:
-		case specs.ArchMIPS:
-		case specs.ArchMIPS64:
-		case specs.ArchMIPS64N32:
-		case specs.ArchMIPSEL:
-		case specs.ArchMIPSEL64:
-		case specs.ArchMIPSEL64N32:
+		case rspecs.ArchX86:
+		case rspecs.ArchX86_64:
+		case rspecs.ArchX32:
+		case rspecs.ArchARM:
+		case rspecs.ArchAARCH64:
+		case rspecs.ArchMIPS:
+		case rspecs.ArchMIPS64:
+		case rspecs.ArchMIPS64N32:
+		case rspecs.ArchMIPSEL:
+		case rspecs.ArchMIPSEL64:
+		case rspecs.ArchMIPSEL64N32:
 		default:
 			logrus.Fatalf("Seccomp.Architecture [%s] is invalid", s.Architectures[index])
 		}
@@ -213,21 +213,21 @@ func rlimitValid(rlimit string) bool {
 	return false
 }
 
-func namespaceValid(ns specs.Namespace) bool {
+func namespaceValid(ns rspecs.Namespace) bool {
 	switch ns.Type {
-	case specs.PIDNamespace:
-	case specs.NetworkNamespace:
-	case specs.MountNamespace:
-	case specs.IPCNamespace:
-	case specs.UTSNamespace:
-	case specs.UserNamespace:
+	case rspecs.PIDNamespace:
+	case rspecs.NetworkNamespace:
+	case rspecs.MountNamespace:
+	case rspecs.IPCNamespace:
+	case rspecs.UTSNamespace:
+	case rspecs.UserNamespace:
 	default:
 		return false
 	}
 	return true
 }
 
-func deviceValid(d specs.Device) bool {
+func deviceValid(d rspecs.Device) bool {
 	switch d.Type {
 	case "b":
 	case "c":
@@ -248,33 +248,33 @@ func deviceValid(d specs.Device) bool {
 	return true
 }
 
-func seccompActionValid(secc specs.Action) bool {
+func seccompActionValid(secc rspecs.Action) bool {
 	switch secc {
 	case "":
-	case specs.ActKill:
-	case specs.ActTrap:
-	case specs.ActErrno:
-	case specs.ActTrace:
-	case specs.ActAllow:
+	case rspecs.ActKill:
+	case rspecs.ActTrap:
+	case rspecs.ActErrno:
+	case rspecs.ActTrace:
+	case rspecs.ActAllow:
 	default:
 		return false
 	}
 	return true
 }
 
-func syscallValid(s specs.Syscall) bool {
+func syscallValid(s rspecs.Syscall) bool {
 	if !seccompActionValid(s.Action) {
 		return false
 	}
 	for index := 0; index < len(s.Args); index++ {
 		arg := s.Args[index]
 		switch arg.Op {
-		case specs.OpNotEqual:
-		case specs.OpLessEqual:
-		case specs.OpEqualTo:
-		case specs.OpGreaterEqual:
-		case specs.OpGreaterThan:
-		case specs.OpMaskedEqual:
+		case rspecs.OpNotEqual:
+		case rspecs.OpLessEqual:
+		case rspecs.OpEqualTo:
+		case rspecs.OpGreaterEqual:
+		case rspecs.OpGreaterThan:
+		case rspecs.OpMaskedEqual:
 		default:
 			return false
 		}

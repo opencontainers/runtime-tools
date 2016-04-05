@@ -11,13 +11,13 @@ import (
 	"syscall"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/opencontainers/specs/specs-go"
+	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/syndtr/gocapability/capability"
 )
 
-type validation func(*specs.Spec) error
+type validation func(*rspecs.Spec) error
 
-func loadSpecConfig() (spec *specs.Spec, err error) {
+func loadSpecConfig() (spec *rspecs.Spec, err error) {
 	cPath := "config.json"
 	cf, err := os.Open(cPath)
 	if err != nil {
@@ -33,7 +33,7 @@ func loadSpecConfig() (spec *specs.Spec, err error) {
 	return spec, nil
 }
 
-func validateProcess(spec *specs.Spec) error {
+func validateProcess(spec *rspecs.Spec) error {
 	fmt.Println("validating container process")
 	uid := os.Getuid()
 	if uint32(uid) != spec.Process.User.UID {
@@ -98,7 +98,7 @@ func validateProcess(spec *specs.Spec) error {
 	return nil
 }
 
-func validateCapabilities(spec *specs.Spec) error {
+func validateCapabilities(spec *rspecs.Spec) error {
 	fmt.Println("validating capabilities")
 	capabilityMap := make(map[string]capability.Cap)
 	expectedCaps := make(map[capability.Cap]bool)
@@ -140,7 +140,7 @@ func validateCapabilities(spec *specs.Spec) error {
 	return nil
 }
 
-func validateHostname(spec *specs.Spec) error {
+func validateHostname(spec *rspecs.Spec) error {
 	fmt.Println("validating hostname")
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -152,7 +152,7 @@ func validateHostname(spec *specs.Spec) error {
 	return nil
 }
 
-func validateRlimits(spec *specs.Spec) error {
+func validateRlimits(spec *rspecs.Spec) error {
 	fmt.Println("validating rlimits")
 	for _, r := range spec.Process.Rlimits {
 		rl, err := strToRlimit(r.Type)
@@ -175,7 +175,7 @@ func validateRlimits(spec *specs.Spec) error {
 	return nil
 }
 
-func validateSysctls(spec *specs.Spec) error {
+func validateSysctls(spec *rspecs.Spec) error {
 	fmt.Println("validating sysctls")
 	for k, v := range spec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
