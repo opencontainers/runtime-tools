@@ -55,7 +55,6 @@ func LoadTestUnits(filename string) {
 
 // NewTestUnit new a TestUnit
 func NewTestUnit(name string, args string, desc string) *TestUnit {
-
 	tu := new(TestUnit)
 	tu.Name = name
 	tu.Args = args
@@ -66,7 +65,6 @@ func NewTestUnit(name string, args string, desc string) *TestUnit {
 
 // OutputResult output results, ouput value: err-only or all
 func OutputResult(output string) {
-
 	if output != "err-only" && output != "all" {
 		logrus.Fatalf("eerror output mode: %v\n", output)
 	}
@@ -106,7 +104,6 @@ func OutputResult(output string) {
 
 // EchoSUnit echo sucessful test units after validation
 func (unit *TestUnit) EchoSUnit() {
-
 	logrus.Printf("\nBundleName:\n  %v\nBundleDir:\n  %v\nCaseArgs:\n  %v\nTestResult:\n  %v\n",
 		unit.Name, unit.BundleDir, unit.Args, unit.Result)
 }
