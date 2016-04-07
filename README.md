@@ -1,8 +1,8 @@
 # ocitools
 
-ocitools is a collection of tools for working with the [OCI specification](https://github.com/opencontainers/specs).
+ocitools is a collection of tools for working with the [OCI runtime specification](https://github.com/opencontainers/runtime-spec).
 
-Generating OCI spec configuration files
+Generating OCI runtime spec configuration files
 ------------------------------------------
 
 ```
