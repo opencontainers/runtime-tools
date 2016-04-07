@@ -5,7 +5,6 @@ go:
 sudo: false
 
 before_install:
-  - go get golang.org/x/tools/cmd/vet
   - go get github.com/golang/lint/golint
   - go get github.com/vbatts/git-validation
 
