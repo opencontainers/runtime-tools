@@ -11,7 +11,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	rspecs "github.com/opencontainers/runtime-spec/specs-go"
+	rspec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
 var bundleValidateFlags = []cli.Flag{
@@ -60,7 +60,7 @@ var bundleValidateCommand = cli.Command{
 
 		defer sf.Close()
 
-		var spec rspecs.Spec
+		var spec rspec.Spec
 		if err = json.NewDecoder(sf).Decode(&spec); err != nil {
 			logrus.Fatal(err)
 		} else {
@@ -80,22 +80,22 @@ var bundleValidateCommand = cli.Command{
 	},
 }
 
-func bundleValidate(spec rspecs.Spec, rootfs string) {
-	CheckMandatoryField(spec)
-	CheckSemVer(spec.Version)
-	CheckProcess(spec.Process, rootfs)
-	CheckMounts(spec.Mounts, rootfs)
-	CheckLinux(spec.Linux, rootfs)
+func bundleValidate(spec rspec.Spec, rootfs string) {
+	checkMandatoryField(spec)
+	checkSemVer(spec.Version)
+	checkProcess(spec.Process, rootfs)
+	checkMounts(spec.Mounts, rootfs)
+	checkLinux(spec.Linux, rootfs)
 }
 
-func CheckSemVer(version string) {
+func checkSemVer(version string) {
 	re, _ := regexp.Compile("^(\\d+)?\\.(\\d+)?\\.(\\d+)?$")
 	if ok := re.Match([]byte(version)); !ok {
 		logrus.Fatalf("%s is not a valid version format, please read 'SemVer v2.0.0'", version)
 	}
 }
 
-func CheckMounts(mounts []rspecs.Mount, rootfs string) {
+func checkMounts(mounts []rspec.Mount, rootfs string) {
 	for _, mount := range mounts {
 		rootfsPath := path.Join(rootfs, mount.Destination)
 		if fi, err := os.Stat(rootfsPath); err != nil {
@@ -106,7 +106,7 @@ func CheckMounts(mounts []rspecs.Mount, rootfs string) {
 	}
 }
 
-func CheckProcess(process rspecs.Process, rootfs string) {
+func checkProcess(process rspec.Process, rootfs string) {
 	for index := 0; index < len(process.Capabilities); index++ {
 		capability := process.Capabilities[index]
 		if !capValid(capability) {
@@ -130,7 +130,7 @@ func CheckProcess(process rspecs.Process, rootfs string) {
 }
 
 //Linux only
-func CheckLinux(spec rspecs.Linux, rootfs string) {
+func checkLinux(spec rspec.Linux, rootfs string) {
 	if len(spec.UIDMappings) > 5 {
 		logrus.Fatalf("Only 5 UID mappings are allowed (linux kernel restriction).")
 	}
@@ -151,7 +151,7 @@ func CheckLinux(spec rspecs.Linux, rootfs string) {
 	}
 
 	if spec.Seccomp != nil {
-		CheckSeccomp(*spec.Seccomp)
+		checkSeccomp(*spec.Seccomp)
 	}
 
 	switch spec.RootfsPropagation {
@@ -167,7 +167,7 @@ func CheckLinux(spec rspecs.Linux, rootfs string) {
 	}
 }
 
-func CheckSeccomp(s rspecs.Seccomp) {
+func checkSeccomp(s rspec.Seccomp) {
 	if !seccompActionValid(s.DefaultAction) {
 		logrus.Fatalf("Seccomp.DefaultAction is invalid.")
 	}
@@ -178,17 +178,17 @@ func CheckSeccomp(s rspecs.Seccomp) {
 	}
 	for index := 0; index < len(s.Architectures); index++ {
 		switch s.Architectures[index] {
-		case rspecs.ArchX86:
-		case rspecs.ArchX86_64:
-		case rspecs.ArchX32:
-		case rspecs.ArchARM:
-		case rspecs.ArchAARCH64:
-		case rspecs.ArchMIPS:
-		case rspecs.ArchMIPS64:
-		case rspecs.ArchMIPS64N32:
-		case rspecs.ArchMIPSEL:
-		case rspecs.ArchMIPSEL64:
-		case rspecs.ArchMIPSEL64N32:
+		case rspec.ArchX86:
+		case rspec.ArchX86_64:
+		case rspec.ArchX32:
+		case rspec.ArchARM:
+		case rspec.ArchAARCH64:
+		case rspec.ArchMIPS:
+		case rspec.ArchMIPS64:
+		case rspec.ArchMIPS64N32:
+		case rspec.ArchMIPSEL:
+		case rspec.ArchMIPSEL64:
+		case rspec.ArchMIPSEL64N32:
 		default:
 			logrus.Fatalf("Seccomp.Architecture [%s] is invalid", s.Architectures[index])
 		}
@@ -213,21 +213,21 @@ func rlimitValid(rlimit string) bool {
 	return false
 }
 
-func namespaceValid(ns rspecs.Namespace) bool {
+func namespaceValid(ns rspec.Namespace) bool {
 	switch ns.Type {
-	case rspecs.PIDNamespace:
-	case rspecs.NetworkNamespace:
-	case rspecs.MountNamespace:
-	case rspecs.IPCNamespace:
-	case rspecs.UTSNamespace:
-	case rspecs.UserNamespace:
+	case rspec.PIDNamespace:
+	case rspec.NetworkNamespace:
+	case rspec.MountNamespace:
+	case rspec.IPCNamespace:
+	case rspec.UTSNamespace:
+	case rspec.UserNamespace:
 	default:
 		return false
 	}
 	return true
 }
 
-func deviceValid(d rspecs.Device) bool {
+func deviceValid(d rspec.Device) bool {
 	switch d.Type {
 	case "b":
 	case "c":
@@ -248,33 +248,33 @@ func deviceValid(d rspecs.Device) bool {
 	return true
 }
 
-func seccompActionValid(secc rspecs.Action) bool {
+func seccompActionValid(secc rspec.Action) bool {
 	switch secc {
 	case "":
-	case rspecs.ActKill:
-	case rspecs.ActTrap:
-	case rspecs.ActErrno:
-	case rspecs.ActTrace:
-	case rspecs.ActAllow:
+	case rspec.ActKill:
+	case rspec.ActTrap:
+	case rspec.ActErrno:
+	case rspec.ActTrace:
+	case rspec.ActAllow:
 	default:
 		return false
 	}
 	return true
 }
 
-func syscallValid(s rspecs.Syscall) bool {
+func syscallValid(s rspec.Syscall) bool {
 	if !seccompActionValid(s.Action) {
 		return false
 	}
 	for index := 0; index < len(s.Args); index++ {
 		arg := s.Args[index]
 		switch arg.Op {
-		case rspecs.OpNotEqual:
-		case rspecs.OpLessEqual:
-		case rspecs.OpEqualTo:
-		case rspecs.OpGreaterEqual:
-		case rspecs.OpGreaterThan:
-		case rspecs.OpMaskedEqual:
+		case rspec.OpNotEqual:
+		case rspec.OpLessEqual:
+		case rspec.OpEqualTo:
+		case rspec.OpGreaterEqual:
+		case rspec.OpGreaterThan:
+		case rspec.OpMaskedEqual:
 		default:
 			return false
 		}
@@ -377,7 +377,7 @@ func checkMandatory(obj interface{}) (msgs []string, valid bool) {
 	return msgs, valid
 }
 
-func CheckMandatoryField(obj interface{}) {
+func checkMandatoryField(obj interface{}) {
 	if msgs, valid := checkMandatory(obj); !valid {
 		logrus.Fatalf("Mandatory information missing: %s.", msgs)
 	}
