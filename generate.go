@@ -45,6 +45,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "cwd", Value: "/", Usage: "current working directory for the process"},
 	cli.StringSliceFlag{Name: "uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
+	cli.StringSliceFlag{Name: "sysctl", Usage: "add sysctl settings e.g net.ipv4.forward=1"},
 	cli.StringFlag{Name: "apparmor", Usage: "specifies the the apparmor profile for the container"},
 	cli.StringFlag{Name: "seccomp-default", Usage: "specifies the the defaultaction of Seccomp syscall restrictions"},
 	cli.StringSliceFlag{Name: "seccomp-arch", Usage: "specifies Additional architectures permitted to be used for system calls"},
@@ -128,6 +129,16 @@ func modify(spec *rspec.Spec, context *cli.Context) error {
 			}
 			spec.Process.User.AdditionalGids = append(spec.Process.User.AdditionalGids, uint32(groupID))
 		}
+	}
+
+	spec.Linux.Sysctl = make(map[string]string)
+	sysctls := context.StringSlice("sysctl")
+	for _, s := range sysctls {
+		pair := strings.Split(s, "=")
+		if len(pair) != 2 {
+			return fmt.Errorf("incorrectly specified sysctl: %s", s)
+		}
+		spec.Linux.Sysctl[pair[0]] = pair[1]
 	}
 
 	if err := setupCapabilities(spec, context); err != nil {
