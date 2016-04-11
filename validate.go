@@ -40,7 +40,7 @@ var (
 )
 
 var bundleValidateCommand = cli.Command{
-	Name:  "bvalidate",
+	Name:  "validate",
 	Usage: "validate a OCI bundle",
 	Flags: bundleValidateFlags,
 	Action: func(context *cli.Context) {
