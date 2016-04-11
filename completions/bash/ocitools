@@ -1,0 +1,454 @@
+#!/bin/bash
+#
+# bash completion file for core ocitools commands
+#
+# This script provides completion of:
+#  - commands and their options
+#  - filepaths
+#
+# To enable the completions either:
+#  - place this file in /usr/share/bash-completion/completions
+#  or
+#  - copy this file to e.g. ~/.ocitools-completion.sh and add the line
+#    below to your .bashrc after bash completion features are loaded
+#    . ~/.ocitools-completion.sh
+#
+# Configuration:
+#
+
+
+# Note for developers:
+# Please arrange options sorted alphabetically by long name with the short
+# options immediately following their corresponding long form.
+# This order should be applied to lists, alternatives and code blocks.
+
+__ocitools_previous_extglob_setting=$(shopt -p extglob)
+shopt -s extglob
+
+__ocitools_pos_first_nonflag() {
+	local argument_flags=$1
+
+	local counter=$((${subcommand_pos:-${command_pos}} + 1))
+	while [ $counter -le $cword ]; do
+		if [ -n "$argument_flags" ] && eval "case '${words[$counter]}' in $argument_flags) true ;; *) false ;; esac"; then
+			(( counter++ ))
+		else
+			case "${words[$counter]}" in
+				-*)
+					;;
+				*)
+					break
+					;;
+			esac
+		fi
+		(( counter++ ))
+	done
+
+	echo $counter
+}
+
+# Transforms a multiline list of strings into a single line string
+# with the words separated by "|".
+# This is used to prepare arguments to __ocitools_pos_first_nonflag().
+__ocitools_to_alternatives() {
+	local parts=( $1 )
+	local IFS='|'
+	echo "${parts[*]}"
+}
+
+# Transforms a multiline list of options into an extglob pattern
+# suitable for use in case statements.
+__ocitools_to_extglob() {
+	local extglob=$( __ocitools_to_alternatives "$1" )
+	echo "@($extglob)"
+}
+
+# Subcommand processing.
+# Locates the first occurrence of any of the subcommands contained in the
+# first argument. In case of a match, calls the corresponding completion
+# function and returns 0.
+# If no match is found, 1 is returned. The calling function can then
+# continue processing its completion.
+#
+# TODO if the preceding command has options that accept arguments and an
+# argument is equal ot one of the subcommands, this is falsely detected as
+# a match.
+__ocitools_subcommands() {
+	local subcommands="$1"
+
+	local counter=$(($command_pos + 1))
+	while [ $counter -lt $cword ]; do
+		case "${words[$counter]}" in
+			$(__ocitools_to_extglob "$subcommands") )
+				subcommand_pos=$counter
+				local subcommand=${words[$counter]}
+				local completions_func=_ocitools_${command}_${subcommand}
+				declare -F $completions_func >/dev/null && $completions_func
+				return 0
+				;;
+		esac
+		(( counter++ ))
+	done
+	return 1
+}
+
+# List installed hooks
+__ocitools_groups() {
+    cat /etc/group | cut -d: -f 1
+}
+
+# List installed hooks
+__ocitools_hooks() {
+     ls /usr/libexec/oci/hooks.d/*
+}
+
+# suppress trailing whitespace
+__ocitools_nospace() {
+	# compopt is not available in ancient bash versions
+	type compopt &>/dev/null && compopt -o nospace
+}
+
+__ocitools_complete_propagations() {
+	COMPREPLY=( $( compgen -W "
+		private
+		rprivate
+		rshared
+		rslave
+		shared
+		slave
+	" -- "$cur" ) )
+}
+
+# a selection of the available arches that is most likely of interest in the
+# context of ocitools containers.
+__ocitools_complete_arches() {
+	COMPREPLY=( $( compgen -W "
+		386
+		amd64
+		arm
+	" -- "$cur" ) )
+}
+
+# a selection of the available arches that is most likely of interest in the
+# context of ocitools containers.
+__ocitools_complete_seccomp_arches() {
+	COMPREPLY=( $( compgen -W "
+		SCMP_ARCH_X86
+		SCMP_ARCH_X86_64
+		SCMP_ARCH_X32
+		SCMP_ARCH_ARM
+		SCMP_ARCH_AARCH64
+		SCMP_ARCH_MIPS
+		SCMP_ARCH_MIPS64
+		SCMP_ARCH_MIPS64N32
+		SCMP_ARCH_MIPSEL
+		SCMP_ARCH_MIPSEL64
+		SCMP_ARCH_MIPSEL64N32
+	" -- "$cur" ) )
+}
+
+# a selection of the available actions that is most likely of interest in the
+# context of ocitools containers.
+__ocitools_complete_seccomp_actions() {
+	COMPREPLY=( $( compgen -W "
+		SCMP_ACT_ALLOW
+		SCMP_ACT_ERRNO
+		SCMP_ACT_KILL
+		SCMP_ACT_TRACE
+		SCMP_ACT_TRAP
+	" -- "$cur" ) )
+}
+__ocitools_complete_capabilities() {
+	# The list of capabilities is defined in types.go, ALL was added manually.
+	COMPREPLY=( $( compgen -W "
+		ALL
+		AUDIT_CONTROL
+		AUDIT_WRITE
+		AUDIT_READ
+		BLOCK_SUSPEND
+		CHOWN
+		DAC_OVERRIDE
+		DAC_READ_SEARCH
+		FOWNER
+		FSETID
+		IPC_LOCK
+		IPC_OWNER
+		KILL
+		LEASE
+		LINUX_IMMUTABLE
+		MAC_ADMIN
+		MAC_OVERRIDE
+		MKNOD
+		NET_ADMIN
+		NET_BIND_SERVICE
+		NET_BROADCAST
+		NET_RAW
+		SETFCAP
+		SETGID
+		SETPCAP
+		SETUID
+		SYS_ADMIN
+		SYS_BOOT
+		SYS_CHROOT
+		SYSLOG
+		SYS_MODULE
+		SYS_NICE
+		SYS_PACCT
+		SYS_PTRACE
+		SYS_RAWIO
+		SYS_RESOURCE
+		SYS_TIME
+		SYS_TTY_CONFIG
+		WAKE_ALARM
+	" -- "$cur" ) )
+}
+
+
+# global options that may appear after the ocitools command
+_ocitools_ocitools() {
+	local boolean_options="
+		$global_boolean_options
+		--help
+		--version -v
+	"
+
+	case "$prev" in
+		$(__ocitools_to_extglob "$global_options_with_args") )
+			return
+			;;
+	esac
+
+	case "$cur" in
+		-*)
+			COMPREPLY=( $( compgen -W "$boolean_options $global_options_with_args" -- "$cur" ) )
+			;;
+		*)
+			local counter=$( __ocitools_pos_first_nonflag $(__ocitools_to_extglob "$global_options_with_args") )
+			if [ $cword -eq $counter ]; then
+				COMPREPLY=( $( compgen -W "${commands[*]} help" -- "$cur" ) )
+			fi
+			;;
+	esac
+}
+
+_ocitools_validate() {
+	case "$prev" in
+		--path)
+			case "$cur" in
+				*:*)
+					# TODO somehow do _filedir for stuff inside the image, if it's already specified (which is also somewhat difficult to determine)
+					;;
+				'')
+					COMPREPLY=( $( compgen -W '/' -- "$cur" ) )
+					__ocitools_nospace
+					;;
+				/*)
+					_filedir
+					__ocitools_nospace
+					;;
+			esac
+			return
+			;;
+	esac
+
+	case "$cur" in
+		-*)
+			COMPREPLY=( $( compgen -W "--path --help" -- "$cur" ) )
+			;;
+	esac
+
+}
+
+_ocitools_help() {
+	local counter=$(__ocitools_pos_first_nonflag)
+	if [ $cword -eq $counter ]; then
+		COMPREPLY=( $( compgen -W "${commands[*]}" -- "$cur" ) )
+	fi
+}
+
+_ocitools_generate() {
+	local options_with_args="
+	      --arch
+	      --apparmor
+	      --args
+	      --bind
+	      --cap-add
+	      --cap-drop
+	      --cwd
+	      --env
+	      --gid
+	      --gidmappings
+	      --groups
+	      --hostname
+	      --help
+	      --mount-cgroups
+	      --os
+	      --poststart
+	      --poststop
+	      --prestart
+	      --root-propagation
+	      --rootfs
+	      --seccomp-default
+	      --seccomp-arch
+	      --seccomp-syscalls
+	      --selinux-label
+	      --sysctl
+	      --tmpfs
+	      --uid
+	      --uidmappings
+	"
+
+	local boolean_options="
+	      --ipc
+	      --network
+	      --no-new-privileges
+	      --mount
+	      --pid
+	      --privileged
+	      --read-only
+	      --uts
+	"
+
+	local all_options="$options_with_args $boolean_options"
+
+	case "$prev" in
+		--seccomp-arch)
+			COMPREPLY=( $( compgen -W $( __ocitools_complete_seccomp_arches ) -- "$cur" ) )
+			return
+			;;
+
+		--arch)
+			COMPREPLY=( $( compgen -W $( __ocitools_complete_arches ) -- "$cur" ) )
+			return
+			;;
+
+		--seccomp-default)
+			__ocitools_complete_seccomp_actions
+			return
+			;;
+
+		--seccomp-default)
+			__ocitools_complete_seccomp_actions
+			return
+			;;
+
+		--root-propagation)
+			__ocitools_complete_propagations
+			return
+			;;
+
+		--cap-add|--cap-drop)
+			__ocitools_complete_capabilities
+			return
+			;;
+
+		--mount-cgroups)
+			COMPREPLY=( $( compgen -W "ro" -- "$cur" ) )
+			return
+			;;
+
+		--os)
+			COMPREPLY=( $( compgen -W "linux" "windows" -- "$cur" ) )
+			return
+			;;
+
+		--groups)
+			COMPREPLY=( $( compgen -W "$( __ocitools_groups )" -- "$cur" ) )
+			__ocitools_nospace
+			return
+			;;
+
+		--poststart|--poststop|--prestart)
+			COMPREPLY=( $( compgen -W "$( __ocitools_hooks )" -- "$cur" ) )
+			__ocitools_nospace
+			return
+			;;
+
+		--rootfs|--tmpfs|--bind|--cwd)
+			case "$cur" in
+				*:*)
+					# TODO somehow do _filedir for stuff inside the image, if it's already specified (which is also somewhat difficult to determine)
+					;;
+				'')
+					COMPREPLY=( $( compgen -W '/' -- "$cur" ) )
+					__ocitools_nospace
+					;;
+				/*)
+					_filedir
+					__ocitools_nospace
+					;;
+			esac
+			return
+			;;
+		--env|-e)
+			COMPREPLY=( $( compgen -e -- "$cur" ) )
+			__ocitools_nospace
+			return
+			;;
+		$(__ocitools_to_extglob "$options_with_args") )
+			return
+			;;
+	esac
+
+	__ocitools_complete_log_driver_options && return
+
+	case "$cur" in
+		-*)
+			COMPREPLY=( $( compgen -W "$all_options" -- "$cur" ) )
+			;;
+	esac
+}
+
+_ocitools() {
+	local previous_extglob_setting=$(shopt -p extglob)
+	shopt -s extglob
+
+	local commands=(
+		validate
+		generate
+	)
+
+	# These options are valid as global options for all client commands
+	# and valid as command options for `ocitools daemon`
+	local global_boolean_options="
+		--help -h
+		--version -v
+	"
+
+	local global_options_with_args="
+		--help
+	"
+
+	COMPREPLY=()
+	local cur prev words cword
+	_get_comp_words_by_ref -n : cur prev words cword
+
+	local command='ocitools' command_pos=0 subcommand_pos
+	local counter=1
+	while [ $counter -lt $cword ]; do
+		case "${words[$counter]}" in
+			-*)
+				;;
+			=)
+				(( counter++ ))
+				;;
+			*)
+				command="${words[$counter]}"
+				command_pos=$counter
+				break
+				;;
+		esac
+		(( counter++ ))
+	done
+
+	local completions_func=_ocitools_${command}
+	declare -F $completions_func >/dev/null && $completions_func
+
+	eval "$previous_extglob_setting"
+	return 0
+}
+
+eval "$__ocitools_previous_extglob_setting"
+unset __ocitools_previous_extglob_setting
+
+complete -F _ocitools ocitools
