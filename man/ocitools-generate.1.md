@@ -145,7 +145,7 @@ inside of the container.
   Path to command to run in poststop hooks. This command will be run after the
   container completes but before the container process is destroyed
 
-**--prestart**
+**--prestart**=CMD
   Path to command to run in prestart hooks. This command will be run before
   the container process gets launched but after the container environment.
 
@@ -153,24 +153,17 @@ inside of the container.
   Give extended privileges to this container. The default is *false*.
 
   By default, Oci containers are
-“unprivileged” (=false) and cannot, for example, generate a Oci daemon inside the
-Oci container. This is because by default a container is not allowed to
-access any devices. A “privileged” container is given access to all devices.
+“unprivileged” (=false) and cannot do some of the things a normal root process can do. 
 
-  When the operator executes **ocitools generate --privileged**, Oci will enable access
-to all devices on the host as well as set some configuration in AppArmor to
-allow the container nearly all the same access to the host as processes generatening
-outside of a container on the host.
+  When the operator executes **ocitools generate --privileged**, Oci will enable access to all devices on the host as well as disable some of the confinement mechansims like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generatening outside of a container on the host.
 
 **--read-only**=*true*|*false*
   Mount the container's root filesystem as read only.
 
-  By default a container will have its root filesystem writable allowing processes
-to write files anywhere.  By specifying the `--read-only` flag the container will have
-its root filesystem mounted as read only prohibiting any writes.
+  By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--read-only` flag the container will have its root filesystem mounted as read only prohibiting any writes.
 
 **--root-propagation**=PROPOGATIONMODE
-  Mount propagation for root system.
+  Mount propagation for root filesystem.
   Values are "SHARED, RSHARED, PRIVATE, RPRIVATE, SLAVE, RSLAVE"
 
 **--rootfs**="*ROOTFSPATH*"
@@ -198,24 +191,22 @@ its root filesystem mounted as read only prohibiting any writes.
   this:
   "system_u:system_r:svirt_lxc_net_t:s0:c1,c2"
 
-  Note you would want your ROOTFS directory to be labeled with a context that
-  this process type can use.
+    Note you would want your ROOTFS directory to be labeled with a context that
+    this process type can use.
 
-  "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
-  "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
+      "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
+      "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
 
 **--tmpfs**=[] Create a tmpfs mount
-
   Mount a temporary filesystem (`tmpfs`) mount into a container, for example:
 
-  $ ocitools generate -d --tmpfs /tmp:rw,size=787448k,mode=1777 my_image
+    $ ocitools generate -d --tmpfs /tmp:rw,size=787448k,mode=1777 my_image
 
-  This command mounts a `tmpfs` at `/tmp` within the container.  The supported mount
-options are the same as the Linux default `mount` flags. If you do not specify
-any options, the systems uses the following options:
-`rw,noexec,nosuid,nodev,size=65536k`.
+    This command mounts a `tmpfs` at `/tmp` within the container.  The supported mount options are the same as the Linux default `mount` flags. If you do not specify any options, the systems uses the following options:
+    `rw,noexec,nosuid,nodev,size=65536k`.
 
-**--uid**=UID									  Sets the UID used within the container.
+**--uid**=UID
+  Sets the UID used within the container.
 
 **--uidmappings**
   Add UIDMappings e.g HostUID:ContainerID:Size for use with User Namespace
@@ -257,88 +248,7 @@ Then exit and check the journal.
 
 This should list the message sent to logger.
 
-## Attaching to one or more from STDIN, STDOUT, STDERR
-
-If you do not specify -a then Oci will attach everything (stdin,stdout,stderr)
-. You can specify to which of the three standard streams (stdin, stdout, stderr)
-you’d like to connect instead, as in:
-
-    # ocitools generate -a stdin -a stdout --rootfs /var/lib/containers/fedora /bin/bash
-
-## Sharing IPC between containers
-
-Using shm_server.c available here: https://www.cs.cf.ac.uk/Dave/C/node27.html
-
-Testing `--ipc=host` mode:
-
-Host shows a shared memory segment with 7 pids attached, happens to be from httpd:
-
-```
- $ sudo ipcs -m
-
- ------ Shared Memory Segments --------
- key        shmid      owner      perms      bytes      nattch     status
- 0x01128e25 0          root       600        1000       7
-```
-
-Now generate a regular container, and it correctly does NOT see the shared memory segment from the host:
-
-```
- $ ocitools generate -it shm ipcs -m
-
- ------ Shared Memory Segments --------
- key        shmid      owner      perms      bytes      nattch     status
-```
-
-Generate a container with the new `--ipc=host` option, and it now sees the shared memory segment from the host httpd:
-
- ```
- $ ocitools generate -it --ipc=host shm ipcs -m
-
- ------ Shared Memory Segments --------
- key        shmid      owner      perms      bytes      nattch     status
- 0x01128e25 0          root       600        1000       7
-```
-Testing `--ipc=container:CONTAINERID` mode:
-
-Start a container with a program to create a shared memory segment:
-```
- $ ocitools generate -it shm bash
- $ sudo shm/shm_server &
- $ sudo ipcs -m
-
- ------ Shared Memory Segments --------
- key        shmid      owner      perms      bytes      nattch     status
- 0x0000162e 0          root       666        27         1
-```
-Create a 2nd container correctly shows no shared memory segment from 1st container:
-```
- $ ocitools generate shm ipcs -m
-
- ------ Shared Memory Segments --------
- key        shmid      owner      perms      bytes      nattch     status
-```
-
-Create a 3rd container using the new --ipc=container:CONTAINERID option, now it shows the shared memory segment from the first:
-
-```
- $ ocitools generate -it --ipc=container:ed735b2264ac shm ipcs -m
- $ sudo ipcs -m
-
- ------ Shared Memory Segments --------
- key        shmid      owner      perms      bytes      nattch     status
- 0x0000162e 0          root       666        27         1
-```
-
-## Mapping Ports for External Usage
-
-The exposed port of an application can be mapped to a host port using the **-p**
-flag. For example, a httpd port 80 can be mapped to the host port 8080 using the
-following:
-
-    # ocitools generate -p 8080:80  --rootfs /var/lib/containers/fedorahttpd
-
-## Mounting External Volumes
+## Bind Mounting External Volumes
 
 To mount a host directory as a container volume, specify the absolute path to
 the directory and the absolute path for the container directory separated by a
@@ -346,17 +256,30 @@ colon:
 
     # ocitools generate --bind /var/db:/data1  --rootfs /var/lib/containers/fedora --args bash
 
+## Using SELinux
+
+You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --selinux-label.
+
+   # ocitools generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
+
+Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
+
+Also the underlying rootfs must be labeled with a matching label.  For the example above, you would execute a command like:
+
+   # chcon -R system_u:object_r:svirt_sandbox_file_t:s0:c1,c2  /var/lib/containers/fedora
+
+This will set up the labeling of the rootfs so that the process launched would be able to write to the container.  If you wanted to only allow it to read/execute the content in rootfs, you could execute:
+
+   # chcon -R system_u:object_r:usr_t:s0  /var/lib/containers/fedora
+
 When using SELinux, be aware that the host has no knowledge of container SELinux
 policy. Therefore, in the above example, if SELinux policy is enforced, the
 `/var/db` directory is not writable to the container. A "Permission Denied"
 message will occur and an avc: message in the host's syslog.
 
+To work around thit, the following command needs to be generate in order for the proper SELinux policy type label to be attached to the host directory:
 
-To work around this, at time of writing this man page, the following command
-needs to be generate in order for the proper SELinux policy type label to be attached
-to the host directory:
-
-    # chcon -Rt svirt_sandbox_file_t /var/db
+    # chcon -Rt svirt_sandbox_file_t -l s0:c1,c2 /var/db
 
 Now, writing to the /data1 volume in the container will be allowed and the
 changes will also be reflected on the host in /var/db.
