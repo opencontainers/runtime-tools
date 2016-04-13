@@ -19,6 +19,8 @@ install: man
 	install -m 755 ocitools $(BINDIR)
 	install -d -m 755 $(PREFIX)/share/man/man1
 	install -m 644 *.1 $(PREFIX)/share/man/man1
+	install -d -m 755 $(PREFIX)/share/bash-completion/completions
+	install -m 644 completions/bash/ocitools $(PREFIX)/share/bash-completion/completions
 
 clean:
 	rm -f ocitools runtimetest
