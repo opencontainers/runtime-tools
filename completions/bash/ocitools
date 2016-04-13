@@ -92,7 +92,7 @@ __ocitools_subcommands() {
 	return 1
 }
 
-# List installed hooks
+# List groups
 __ocitools_groups() {
     cat /etc/group | cut -d: -f 1
 }
@@ -292,6 +292,7 @@ _ocitools_generate() {
 	      --seccomp-arch
 	      --seccomp-syscalls
 	      --selinux-label
+	      --mount-label
 	      --sysctl
 	      --tmpfs
 	      --uid
@@ -348,7 +349,7 @@ _ocitools_generate() {
 			;;
 
 		--os)
-			COMPREPLY=( $( compgen -W "linux" "windows" -- "$cur" ) )
+			COMPREPLY=( $( compgen -W "linux windows" -- "$cur" ) )
 			return
 			;;
 
@@ -373,7 +374,7 @@ _ocitools_generate() {
 					COMPREPLY=( $( compgen -W '/' -- "$cur" ) )
 					__ocitools_nospace
 					;;
-				/*)
+				*)
 					_filedir
 					__ocitools_nospace
 					;;
@@ -389,8 +390,6 @@ _ocitools_generate() {
 			return
 			;;
 	esac
-
-	__ocitools_complete_log_driver_options && return
 
 	case "$cur" in
 		-*)
