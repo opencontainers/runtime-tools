@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -50,6 +51,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "seccomp-default", Usage: "specifies the the defaultaction of Seccomp syscall restrictions"},
 	cli.StringSliceFlag{Name: "seccomp-arch", Usage: "specifies Additional architectures permitted to be used for system calls"},
 	cli.StringSliceFlag{Name: "seccomp-syscalls", Usage: "specifies Additional architectures permitted to be used for system calls, e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op "},
+	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 }
 
 var (
@@ -77,7 +79,16 @@ var generateCommand = cli.Command{
 	Flags: generateFlags,
 	Action: func(context *cli.Context) {
 		spec := getDefaultTemplate()
-		err := modify(&spec, context)
+		template := context.String("template")
+		if template != "" {
+			var err error
+			spec, err = loadTemplate(template)
+			if err != nil {
+				logrus.Fatal(err)
+			}
+		}
+
+		err := modify(spec, context)
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -90,6 +101,21 @@ var generateCommand = cli.Command{
 			logrus.Fatal(err)
 		}
 	},
+}
+
+func loadTemplate(path string) (spec *rspec.Spec, err error) {
+	cf, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("template configuration at %s not found", path)
+		}
+	}
+	defer cf.Close()
+
+	if err = json.NewDecoder(cf).Decode(&spec); err != nil {
+		return
+	}
+	return spec, nil
 }
 
 func modify(spec *rspec.Spec, context *cli.Context) error {
@@ -541,6 +567,8 @@ func setupCapabilities(spec *rspec.Spec, context *cli.Context) error {
 		capMappings[key] = true
 	}
 
+	defaultCaps := spec.Process.Capabilities
+
 	addedCapsMap := make(map[string]bool)
 	for _, cap := range defaultCaps {
 		addedCapsMap[cap] = true
@@ -614,7 +642,7 @@ func setupNamespaces(spec *rspec.Spec, context *cli.Context) {
 
 func sPtr(s string) *string { return &s }
 
-func getDefaultTemplate() rspec.Spec {
+func getDefaultTemplate() *rspec.Spec {
 	spec := rspec.Spec{
 		Version: rspec.Version,
 		Platform: rspec.Platform{
@@ -729,5 +757,5 @@ func getDefaultTemplate() rspec.Spec {
 		},
 	}
 
-	return spec
+	return &spec
 }
