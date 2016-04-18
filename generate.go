@@ -21,7 +21,7 @@ var generateFlags = []cli.Flag{
 	cli.BoolFlag{Name: "privileged", Usage: "enabled privileged container settings"},
 	cli.BoolFlag{Name: "no-new-privileges", Usage: "set no new privileges bit for the container process"},
 	cli.BoolFlag{Name: "tty", Usage: "allocate a new tty for the container process"},
-	cli.StringFlag{Name: "hostname", Value: "acme", Usage: "hostname value for the container"},
+	cli.StringFlag{Name: "hostname", Usage: "hostname value for the container"},
 	cli.IntFlag{Name: "uid", Usage: "uid for the process"},
 	cli.IntFlag{Name: "gid", Usage: "gid for the process"},
 	cli.StringSliceFlag{Name: "groups", Usage: "supplementary groups for the process"},
