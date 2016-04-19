@@ -121,7 +121,9 @@ func loadTemplate(path string) (spec *rspec.Spec, err error) {
 
 func modify(spec *rspec.Spec, context *cli.Context) error {
 	spec.Root.Path = context.String("rootfs")
-	spec.Root.Readonly = context.Bool("read-only")
+	if context.IsSet("read-only") {
+		spec.Root.Readonly = context.Bool("read-only")
+	}
 	spec.Hostname = context.String("hostname")
 	spec.Process.User.UID = uint32(context.Int("uid"))
 	spec.Process.User.GID = uint32(context.Int("gid"))
@@ -130,8 +132,12 @@ func modify(spec *rspec.Spec, context *cli.Context) error {
 	spec.Platform.Arch = context.String("arch")
 	spec.Process.Cwd = context.String("cwd")
 	spec.Process.ApparmorProfile = context.String("apparmor")
-	spec.Process.NoNewPrivileges = context.Bool("no-new-privileges")
-	spec.Process.Terminal = context.Bool("tty")
+	if context.IsSet("no-new-privileges") {
+		spec.Process.NoNewPrivileges = context.Bool("no-new-privileges")
+	}
+	if context.IsSet("tty") {
+		spec.Process.Terminal = context.Bool("tty")
+	}
 
 	for i, a := range context.StringSlice("args") {
 		if a != "" {
@@ -554,7 +560,10 @@ func setupCapabilities(spec *rspec.Spec, context *cli.Context) error {
 	var finalCapList []string
 
 	// Add all capabilities in privileged mode.
-	privileged := context.Bool("privileged")
+	privileged := false
+	if context.IsSet("privileged") {
+		privileged = context.Bool("privileged")
+	}
 	if privileged {
 		for _, cap := range capability.List() {
 			finalCapList = append(finalCapList, fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())))
@@ -656,7 +665,7 @@ func getDefaultTemplate() *rspec.Spec {
 			Readonly: false,
 		},
 		Process: rspec.Process{
-			Terminal: true,
+			Terminal: false,
 			User:     rspec.User{},
 			Args: []string{
 				"sh",
