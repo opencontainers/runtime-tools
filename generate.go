@@ -53,6 +53,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "seccomp-arch", Usage: "specifies Additional architectures permitted to be used for system calls"},
 	cli.StringSliceFlag{Name: "seccomp-syscalls", Usage: "specifies Additional architectures permitted to be used for system calls, e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op "},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
+	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
 }
 
 var (
@@ -173,6 +174,16 @@ func modify(spec *rspec.Spec, context *cli.Context) error {
 			return fmt.Errorf("incorrectly specified sysctl: %s", s)
 		}
 		spec.Linux.Sysctl[pair[0]] = pair[1]
+	}
+
+	spec.Annotations = make(map[string]string)
+	labels := context.StringSlice("label")
+	for _, l := range labels {
+		pair := strings.Split(l, "=")
+		if len(pair) != 2 {
+			return fmt.Errorf("incorrectly specified label: %s", l)
+		}
+		spec.Annotations[pair[0]] = pair[1]
 	}
 
 	if err := setupCapabilities(spec, context); err != nil {
