@@ -33,6 +33,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "ipc", Usage: "ipc namespace"},
 	cli.StringFlag{Name: "uts", Usage: "uts namespace"},
 	cli.StringFlag{Name: "selinux-label", Usage: "process selinux label"},
+	cli.StringFlag{Name: "mount-label", Usage: "selinux mount context label"},
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
@@ -129,6 +130,7 @@ func modify(spec *rspec.Spec, context *cli.Context) error {
 	spec.Process.User.UID = uint32(context.Int("uid"))
 	spec.Process.User.GID = uint32(context.Int("gid"))
 	spec.Process.SelinuxLabel = context.String("selinux-label")
+	spec.Linux.MountLabel = context.String("mount-label")
 	spec.Platform.OS = context.String("os")
 	spec.Platform.Arch = context.String("arch")
 	spec.Process.Cwd = context.String("cwd")
