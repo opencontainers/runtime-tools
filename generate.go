@@ -53,6 +53,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "seccomp-default", Usage: "specifies the the defaultaction of Seccomp syscall restrictions"},
 	cli.StringSliceFlag{Name: "seccomp-arch", Usage: "specifies Additional architectures permitted to be used for system calls"},
 	cli.StringSliceFlag{Name: "seccomp-syscalls", Usage: "specifies Additional architectures permitted to be used for system calls, e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op "},
+	cli.StringSliceFlag{Name: "seccomp-allow", Usage: "specifies syscalls to be added to allowed"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
 }
@@ -368,6 +369,14 @@ func addSeccomp(spec *rspec.Spec, context *cli.Context) error {
 	err = addSeccompSyscall(spec, ss, &secc)
 	if err != nil {
 		return err
+	}
+
+	for _, a := range context.StringSlice("seccomp-allow") {
+		sysCall := rspec.Syscall{
+			Name:   a,
+			Action: "SCMP_ACT_ALLOW",
+		}
+		secc.Syscalls = append(secc.Syscalls, sysCall)
 	}
 
 	spec.Linux.Seccomp = &secc
