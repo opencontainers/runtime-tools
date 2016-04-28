@@ -37,7 +37,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
-	cli.StringFlag{Name: "mount-cgroups", Value: "ro", Usage: "mount cgroups (rw,ro,no)"},
+	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
 	cli.StringSliceFlag{Name: "prestart", Usage: "path to prestart hooks"},
 	cli.StringSliceFlag{Name: "poststart", Usage: "path to poststart hooks"},
