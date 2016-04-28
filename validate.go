@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -19,6 +20,7 @@ import (
 
 var bundleValidateFlags = []cli.Flag{
 	cli.StringFlag{Name: "path", Usage: "path to a bundle"},
+	cli.BoolFlag{Name: "hooks", Usage: "Check specified hooks exist and are executable on the host."},
 }
 
 var (
@@ -76,17 +78,19 @@ var bundleValidateCommand = cli.Command{
 			logrus.Fatalf("root path %q is not a directory.", spec.Root.Path)
 		}
 
-		bundleValidate(spec, rootfsPath)
+		hooksCheck := context.Bool("hooks")
+		bundleValidate(spec, rootfsPath, hooksCheck)
 		logrus.Infof("Bundle validation succeeded.")
 	},
 }
 
-func bundleValidate(spec rspec.Spec, rootfs string) {
+func bundleValidate(spec rspec.Spec, rootfs string, hooksCheck bool) {
 	checkMandatoryField(spec)
 	checkSemVer(spec.Version)
 	checkPlatform(spec.Platform)
 	checkProcess(spec.Process, rootfs)
 	checkLinux(spec.Linux, spec.Hostname, rootfs)
+	checkHooks(spec.Hooks, hooksCheck)
 }
 
 func checkSemVer(version string) {
@@ -118,6 +122,30 @@ func checkPlatform(platform rspec.Platform) {
 		}
 	}
 	logrus.Fatalf("Operation system %q of the bundle is not supported yet.", platform.OS)
+}
+
+func checkHooks(hooks rspec.Hooks, hooksCheck bool) {
+	checkEventHookPaths("pre-start", hooks.Prestart, hooksCheck)
+	checkEventHookPaths("post-start", hooks.Poststart, hooksCheck)
+	checkEventHookPaths("post-stop", hooks.Poststop, hooksCheck)
+}
+
+func checkEventHookPaths(hookType string, hooks []rspec.Hook, hooksCheck bool) {
+	for _, hook := range hooks {
+		if !filepath.IsAbs(hook.Path) {
+			logrus.Fatalf("The %s hook %v: is not absolute path", hookType, hook.Path)
+		}
+
+		if hooksCheck {
+			fi, err := os.Stat(hook.Path)
+			if err != nil {
+				logrus.Fatalf("Cannot find %s hook: %v", hookType, hook.Path)
+			}
+			if fi.Mode()&0111 == 0 {
+				logrus.Fatalf("The %s hook %v: is not executable", hookType, hook.Path)
+			}
+		}
+	}
 }
 
 func checkProcess(process rspec.Process, rootfs string) {

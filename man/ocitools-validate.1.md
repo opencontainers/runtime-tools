@@ -18,6 +18,9 @@ Validate an OCI bundle
 **--path=PATH
    Path to bundle
 
+**--hooks**
+  Check specified hooks exist and are executable on the host.
+
 # SEE ALSO
 **ocitools**(1)
 
