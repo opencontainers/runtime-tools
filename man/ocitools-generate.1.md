@@ -254,17 +254,17 @@ colon:
 
 You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --selinux-label.
 
-   # ocitools generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
+    # ocitools generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
 
 Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
 
 Also the underlying rootfs must be labeled with a matching label.  For the example above, you would execute a command like:
 
-   # chcon -R system_u:object_r:svirt_sandbox_file_t:s0:c1,c2  /var/lib/containers/fedora
+    # chcon -R system_u:object_r:svirt_sandbox_file_t:s0:c1,c2  /var/lib/containers/fedora
 
 This will set up the labeling of the rootfs so that the process launched would be able to write to the container.  If you wanted to only allow it to read/execute the content in rootfs, you could execute:
 
-   # chcon -R system_u:object_r:usr_t:s0  /var/lib/containers/fedora
+    # chcon -R system_u:object_r:usr_t:s0  /var/lib/containers/fedora
 
 When using SELinux, be aware that the host has no knowledge of container SELinux
 policy. Therefore, in the above example, if SELinux policy is enforced, the
