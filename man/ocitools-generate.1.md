@@ -89,25 +89,31 @@ compatable runtime like runC to run a container.
 environment variables that are available for the process that will be launched
 inside of the container.
 
+**--gid**=GID
+  Gid for the process inside of container
+
+**--gidmappings**=GIDMAPPINGS
+  Add GIDMappings e.g HostID:ContainerID:Size for use with User Namespace
+
+**--groups**=GROUP
+  Supplementary groups for the processes inside of container
+
+**--help**
+  Print usage statement
+
 **--hostname**=""
    Container host name
 
    Sets the container host name that is available inside the container.
 
-**--help**
-  Print usage statement
-
-**--gid**=GID
-  Gid for the process inside of container
-
-**--groups**=GROUP
-  Supplementary groups for the processes inside of container
-
-**--gidmappings**=GIDMAPPINGS
-  Add GIDMappings e.g HostID:ContainerID:Size for use with User Namespace
-
 **--ipc**
   Use ipc namespace
+
+**--mount**
+  Use a mount namespace
+
+**--mount-cgroups**=[rw|ro|no]
+  Mount cgroups.  The default is `no`.
 
 **--network**
   Use network namespace
@@ -117,12 +123,6 @@ inside of the container.
   will block the container processes from gaining any additional privileges
   using tools like setuid apps.  It is a good idea to run unprivileged
   containers with this flag.
-
-**--mount**
-  Use a mount namespace
-
-**--mount-cgroups**=[rw|ro|no]
-  Mount cgroups.  The default is `no`.
 
 **--os**=OS
   Operating system used within the container
@@ -163,17 +163,13 @@ inside of the container.
 **--rootfs**="*ROOTFSPATH*"
   Path to the rootfs
 
-**--sysctl**=SYSCTLSETTING
-  Add sysctl settings e.g net.ipv4.forward=1, only allowed if the syctl is
-  namespaced.
+**--seccomp-arch**=ARCH
+  Specifies Additional architectures permitted to be used for system calls.
+  By default if you turn on seccomp, only the host architecture will be allowed.
 
 **--seccomp-default**=ACTION
   Specifies the the defaultaction of Seccomp syscall restrictions
   Values: KILL,ERRNO,TRACE,ALLOW
-
-**--seccomp-arch**=ARCH
-  Specifies Additional architectures permitted to be used for system calls.
-  By default if you turn on seccomp, only the host architecture will be allowed.
 
 **--seccomp-syscalls**=SYSCALLS
   Specifies Additional syscalls permitted to be used for system calls,
@@ -190,6 +186,10 @@ inside of the container.
 
       "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
       "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
+
+**--sysctl**=SYSCTLSETTING
+  Add sysctl settings e.g net.ipv4.forward=1, only allowed if the syctl is
+  namespaced.
 
 **--tmpfs**=[] Create a tmpfs mount
   Mount a temporary filesystem (`tmpfs`) mount into a container, for example:
