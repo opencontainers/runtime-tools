@@ -121,8 +121,8 @@ inside of the container.
 **--mount**
   Use a mount namespace
 
-**--mount-cgroups**
-  Mount cgroups (rw,ro,no)
+**--mount-cgroups**=[rw|ro|no]
+  Mount cgroups.  The default is `no`.
 
 **--os**=OS
   Operating system used within the container
