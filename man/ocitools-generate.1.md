@@ -191,6 +191,10 @@ inside of the container.
   Add sysctl settings e.g net.ipv4.forward=1, only allowed if the syctl is
   namespaced.
 
+**--template**=PATH
+  Override the default template with your own.
+  Additional options will only adjust the relevant portions of your template.
+
 **--tmpfs**=[] Create a tmpfs mount
   Mount a temporary filesystem (`tmpfs`) mount into a container, for example:
 
