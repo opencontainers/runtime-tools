@@ -44,10 +44,10 @@ ocitools-generate - Generate a config.json for an OCI container
 [**--uts**]
 
 # DESCRIPTION
-**ocitools generate** is used to generate a config.json (OCI spec file) to be used to
-instantiate an OCI container.  This config.json file can be placed into a
-directory and used by an OCI compatable runtime like **runc** to run a
-container.
+
+`ocitools generate` generates a `config.json` for an OCI bundle.  This
+`config.json` file can be placed into a directory and used by an OCI
+compatable runtime like runC to run a container.
 
 # OPTIONS
 **--apparmor**="PROFILE"

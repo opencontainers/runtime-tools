@@ -4,8 +4,8 @@ ocitools is a collection of tools for working with the [OCI runtime specificatio
 
 ## Generating an OCI runtime spec configuration files
 
-[`ocitools generate`][generate.1] is used to generate a `config.json` ([OCI spec][runtime-spec] file) to be used to instantiate an OCI container.
-This `config.json` file can be placed into a directory and used by an OCI compatable runtime like [**runc**][runC] to run a container.
+[`ocitools generate`][generate.1] generates a [`config.json`][config.json] for an [OCI bundle][bundle].
+This `config.json` file can be placed into a directory and used by an [OCI compatable runtime][runtime-spec] like [runC][] to run a container.
 
 ```sh
 $ ocitools generate
@@ -43,6 +43,8 @@ validating sysctls
 Runtime runc passed validation
 ```
 
+[bundle]: https://github.com/opencontainers/runtime-spec/blob/master/bundle.md
+[config.json]: https://github.com/opencontainers/runtime-spec/blob/master/config.md
 [runC]: https://github.com/opencontainers/runc
 [runtime-spec]: https://github.com/opencontainers/runtime-spec
 
