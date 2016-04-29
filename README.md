@@ -5,7 +5,7 @@ ocitools is a collection of tools for working with the [OCI runtime specificatio
 ## Generating an OCI runtime spec configuration files
 
 [`ocitools generate`][generate.1] generates a [`config.json`][config.json] for an [OCI bundle][bundle].
-This `config.json` file can be placed into a directory and used by an [OCI compatable runtime][runtime-spec] like [runC][] to run a container.
+This `config.json` file can be placed into a directory and used by an [OCI compatible runtime][runtime-spec] like [runC][] to run a container.
 
 ```sh
 $ ocitools generate
