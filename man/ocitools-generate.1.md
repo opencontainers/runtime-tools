@@ -5,43 +5,7 @@
 ocitools-generate - Generate a config.json for an OCI container
 
 # SYNOPSIS
-**ocitools generate**
-[**--arch**[=*[]*]
-[**--apparmor**[=*[]*]]
-[**--args**[=*[]*]]
-[**--bind**[=*[]*]]
-[**--cap-add**[=*[]*]]
-[**--cap-drop**[=*[]*]]
-[**--cwd**[=*[]*]]
-[**--env**[=*[]*]]
-[**--gid**[=*GID*]]
-[**--gidmappings**[=*[]*]]]
-[**--groups**[=*[]*]]
-[**--hostname**[=*[]*]]
-[**--help**]
-[**--ipc**]
-[**--network**]
-[**--no-new-privileges**]
-[**--mount**]
-[**--mount-cgroups**]
-[**--os**[=*[]*]]
-[**--pid**]
-[**--poststart**[=*[]*]]
-[**--poststop**[=*[]*]]
-[**--prestart**[=*[]*]]
-[**--privileged**]
-[**--read-only**]
-[**--root-propagation**[=*[]*]]
-[**--rootfs**[=*[]*]]
-[**--seccomp-default**[=*[]*]]
-[**--seccomp-arch**[=*[]*]]
-[**--seccomp-syscalls**[=*[]*]]
-[**--selinux-label**[=*[]*]]
-[**--sysctl**[=*[]*]]
-[**--tmpfs**[=*[]*]]
-[**--uid**[=*[]*]]
-[**--uidmappings**[=*[]*]]
-[**--uts**]
+**ocitools generate** *[OPTIONS]*
 
 # DESCRIPTION
 
