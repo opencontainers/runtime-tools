@@ -79,6 +79,18 @@ inside of the container.
 **--mount-cgroups**=[rw|ro|no]
   Mount cgroups.  The default is `no`.
 
+**--mount-label**=[=*MOUNTLABEL*]]
+  Mount Label
+  Depending on your SELinux policy, you would specify a label that looks like
+  this:
+  "system_u:object_r:svirt_sandbox_file_t:s0:c1,c2"
+
+    Note you would want your ROOTFS directory to be labeled with a context that
+    this process type can use.
+
+      "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
+      "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
+
 **--network**
   Use network namespace
 
@@ -149,7 +161,7 @@ inside of the container.
     this process type can use.
 
       "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
-      "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
+      "system_u:object_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
 
 **--sysctl**=SYSCTLSETTING
   Add sysctl settings e.g net.ipv4.forward=1, only allowed if the syctl is
@@ -222,7 +234,7 @@ colon:
 
 You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --selinux-label.
 
-    # ocitools generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
+   # ocitools generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbox_file_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
 
 Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
 
