@@ -13,6 +13,7 @@ import (
 	"github.com/codegangsta/cli"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/syndtr/gocapability/capability"
+	"github.com/opencontainers/ocitools/translate"
 )
 
 var generateFlags = []cli.Flag{
@@ -55,7 +56,9 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "seccomp-arch", Usage: "specifies Additional architectures permitted to be used for system calls"},
 	cli.StringSliceFlag{Name: "seccomp-syscalls", Usage: "specifies Additional architectures permitted to be used for system calls, e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op "},
 	cli.StringSliceFlag{Name: "seccomp-allow", Usage: "specifies syscalls to be added to allowed"},
+	cli.StringFlag{Name: "runtime", Usage: "select the runtime command (used for some translations)"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
+	cli.StringSliceFlag{Name: "translate", Usage: "translate higher level constructs"},
 	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
 }
 
@@ -93,12 +96,35 @@ var generateCommand = cli.Command{
 			}
 		}
 
-		err := modify(spec, context)
+		translations := context.StringSlice("translate")
+		for _, translation := range translations {
+			translator, ok := translate.Translators[translation]
+			if !ok {
+				logrus.Fatalf("unrecognized translation: %s", translation)
+			}
+			var err error
+			spec, err = translator(spec, context)
+			if err != nil {
+				logrus.Fatal(err)
+			}
+		}
+
+		buf, err := json.Marshal(spec)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		var strictSpec rspec.Spec
+		err = json.Unmarshal(buf, &strictSpec)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		err = modify(&strictSpec, context)
 		if err != nil {
 			logrus.Fatal(err)
 		}
 		cName := "config.json"
-		data, err := json.MarshalIndent(&spec, "", "\t")
+		data, err := json.MarshalIndent(&strictSpec, "", "\t")
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -108,7 +134,7 @@ var generateCommand = cli.Command{
 	},
 }
 
-func loadTemplate(path string) (spec *rspec.Spec, err error) {
+func loadTemplate(path string) (spec interface{}, err error) {
 	cf, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -709,7 +735,7 @@ func removeNamespace(namespaces *[]rspec.Namespace, namespaceType rspec.Namespac
 
 func sPtr(s string) *string { return &s }
 
-func getDefaultTemplate() *rspec.Spec {
+func getDefaultTemplate() interface{} {
 	spec := rspec.Spec{
 		Version: rspec.Version,
 		Platform: rspec.Platform{
@@ -824,5 +850,5 @@ func getDefaultTemplate() *rspec.Spec {
 		},
 	}
 
-	return &spec
+	return spec
 }
