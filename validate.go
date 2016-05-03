@@ -53,7 +53,8 @@ var bundleValidateCommand = cli.Command{
 			logrus.Fatal(err)
 		}
 
-		sf, err := os.Open(path.Join(inputPath, "config.json"))
+		configPath := path.Join(inputPath, "config.json")
+		sf, err := os.Open(configPath)
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -75,6 +76,11 @@ var bundleValidateCommand = cli.Command{
 		} else if !fi.IsDir() {
 			logrus.Fatalf("Rootfs: %v is not a directory.", spec.Root.Path)
 		}
+
+		if path.Dir(configPath) != path.Dir(rootfsPath) {
+			logrus.Fatalf("Root filesystem and 'config.json' must be present in a single directory.")
+		}
+
 		bundleValidate(spec, rootfsPath)
 		logrus.Infof("Bundle validation succeeded.")
 	},
