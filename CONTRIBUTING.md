@@ -1,7 +1,72 @@
-# Sign your work
+## Contribution Guidelines
 
-The sign-off is a simple line at the end of the explanation for the patch, which certifies that you wrote it or otherwise have the right to pass it on as an open-source patch.
-The rules are pretty simple: if you can certify the below (from [developercertificate.org](http://developercertificate.org/)):
+### Pull requests are always welcome
+
+We are always thrilled to receive pull requests, and do our best to
+process them as fast as possible. Not sure if that typo is worth a pull
+request? Do it! We will appreciate it.
+
+If your pull request is not accepted on the first try, don't be
+discouraged! If there's a problem with the implementation, hopefully you
+received feedback on what to improve.
+
+We're trying very hard to keep the project lean and focused. We don't want it
+to do everything for everybody. This means that we might decide against
+incorporating a new feature.
+
+
+### Conventions
+
+Fork the repo and make changes on your fork in a feature branch:
+
+- If it's a bugfix branch, name it XXX-something where XXX is the number of the
+  issue
+- If it's a feature branch, create an enhancement issue to announce your
+  intentions, and name it XXX-something where XXX is the number of the issue.
+
+Submit unit tests for your changes.  Go has a great test framework built in; use
+it! Take a look at existing tests for inspiration. Run the full test suite on
+your branch before submitting a pull request.
+
+Update the documentation when creating or modifying features. Test
+your documentation changes for clarity, concision, and correctness, as
+well as a clean documentation build. See ``docs/README.md`` for more
+information on building the docs and how docs get released.
+
+Write clean code. Universally formatted code promotes ease of writing, reading,
+and maintenance. Always run `gofmt -s -w file.go` on each changed file before
+committing your changes. Most editors have plugins that do this automatically.
+
+Pull requests descriptions should be as clear as possible and include a
+reference to all the issues that they address.
+
+Pull requests must not contain commits from other users or branches.
+
+Commit messages must start with a capitalized and short summary (max. 50
+chars) written in the imperative, followed by an optional, more detailed
+explanatory text which is separated from the summary by an empty line.
+
+Code review comments may be added to your pull request. Discuss, then make the
+suggested modifications and push additional commits to your feature branch. Be
+sure to post a comment after pushing. The new commits will show up in the pull
+request automatically, but the reviewers will not be notified unless you
+comment.
+
+Before the pull request is merged, make sure that you squash your commits into
+logical units of work using `git rebase -i` and `git push -f`. After every
+commit the test suite should be passing. Include documentation changes in the
+same commit so that a revert would remove all traces of the feature or fix.
+
+Commits that fix or close an issue should include a reference like `Closes #XXX`
+or `Fixes #XXX`, which will automatically close the issue when merged.
+
+### Sign your work
+
+The sign-off is a simple line at the end of the explanation for the
+patch, which certifies that you wrote it or otherwise have the right to
+pass it on as an open-source patch.  The rules are pretty simple: if you
+can certify the below (from
+[developercertificate.org](http://developercertificate.org/)):
 
 ```
 Developer Certificate of Origin
