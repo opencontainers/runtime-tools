@@ -63,10 +63,6 @@ var bundleValidateCommand = cli.Command{
 		var spec rspec.Spec
 		if err = json.NewDecoder(sf).Decode(&spec); err != nil {
 			logrus.Fatal(err)
-		} else {
-			if spec.Platform.OS != "linux" {
-				logrus.Fatalf("Operation system '%s' of the bundle is not supported yet.", spec.Platform.OS)
-			}
 		}
 
 		rootfsPath := path.Join(inputPath, spec.Root.Path)
@@ -75,6 +71,7 @@ var bundleValidateCommand = cli.Command{
 		} else if !fi.IsDir() {
 			logrus.Fatalf("Rootfs: %v is not a directory.", spec.Root.Path)
 		}
+
 		bundleValidate(spec, rootfsPath)
 		logrus.Infof("Bundle validation succeeded.")
 	},
@@ -83,6 +80,7 @@ var bundleValidateCommand = cli.Command{
 func bundleValidate(spec rspec.Spec, rootfs string) {
 	checkMandatoryField(spec)
 	checkSemVer(spec.Version)
+	checkPlatform(spec.Platform)
 	checkProcess(spec.Process, rootfs)
 	checkMounts(spec.Mounts, rootfs)
 	checkLinux(spec.Linux, rootfs)
@@ -104,6 +102,30 @@ func checkMounts(mounts []rspec.Mount, rootfs string) {
 			logrus.Fatalf("Mount point: %v is not a directory.", rootfsPath)
 		}
 	}
+}
+
+func checkPlatform(platform rspec.Platform) {
+	validCombins := map[string][]string{
+		"darwin":    {"386", "amd64", "arm", "arm64"},
+		"dragonfly": {"amd64"},
+		"freebsd":   {"386", "amd64", "arm"},
+		"linux":     {"386", "amd64", "arm", "arm64", "ppc64", "ppc64le", "mips64", "mips64le"},
+		"netbsd":    {"386", "amd64", "arm"},
+		"openbsd":   {"386", "amd64", "arm"},
+		"plan9":     {"386", "amd64"},
+		"solaris":   {"amd64"},
+		"windows":   {"386", "amd64"}}
+	for os, archs := range validCombins {
+		if os == platform.OS {
+			for _, arch := range archs {
+				if arch == platform.Arch {
+					return
+				}
+			}
+			logrus.Fatalf("Combination of '%s' and '%s' is invalid.", platform.OS, platform.Arch)
+		}
+	}
+	logrus.Fatalf("Operation system '%s' of the bundle is not supported yet.", platform.OS)
 }
 
 func checkProcess(process rspec.Process, rootfs string) {
