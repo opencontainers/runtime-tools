@@ -130,6 +130,9 @@ func modify(spec *rspec.Spec, context *cli.Context) error {
 	spec.Hostname = context.String("hostname")
 	spec.Process.User.UID = uint32(context.Int("uid"))
 	spec.Process.User.GID = uint32(context.Int("gid"))
+	if spec.Process.Args == nil {
+		spec.Process.Args = make([]string, 0)
+	}
 	spec.Process.SelinuxLabel = context.String("selinux-label")
 	spec.Linux.MountLabel = context.String("mount-label")
 	spec.Platform.OS = context.String("os")
