@@ -14,10 +14,10 @@ ocitools-generate - Generate a config.json for an OCI container
 compatable runtime like runC to run a container.
 
 # OPTIONS
-**--apparmor**="PROFILE"
+**--apparmor**=PROFILE
    Specifies the the apparmor profile for the container
 
-**--arch**="ARCH"
+**--arch**=ARCH
    Architecture used within the container.
    "amd64"
 
@@ -27,7 +27,7 @@ compatable runtime like runC to run a container.
 
    --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
 
-**--bind**=[=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]*] Bind mount
+**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]* Bind mount
    directories src:dest:(rw,ro) If you specify, ` --bind
    /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
    to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a comma
@@ -79,7 +79,7 @@ inside of the container.
 **--mount-cgroups**=[rw|ro|no]
   Mount cgroups.  The default is `no`.
 
-**--mount-label**=[=*MOUNTLABEL*]]
+**--mount-label**=MOUNTLABEL
   Mount Label
   Depending on your SELinux policy, you would specify a label that looks like
   this:
@@ -119,7 +119,7 @@ inside of the container.
   Path to command to run in prestart hooks. This command will be run before
   the container process gets launched but after the container environment.
 
-**--privileged**=*true*|*false*
+**--privileged**=true|false
   Give extended privileges to this container. The default is *false*.
 
   By default, OCI containers are
@@ -127,7 +127,7 @@ inside of the container.
 
   When the operator executes **ocitools generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
 
-**--read-only**=*true*|*false*
+**--read-only**=true|false
   Mount the container's root filesystem as read only.
 
   By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--read-only` flag the container will have its root filesystem mounted as read only prohibiting any writes.
@@ -136,7 +136,7 @@ inside of the container.
   Mount propagation for root filesystem.
   Values are "SHARED, RSHARED, PRIVATE, RPRIVATE, SLAVE, RSLAVE"
 
-**--rootfs**="*ROOTFSPATH*"
+**--rootfs**=ROOTFSPATH
   Path to the rootfs
 
 **--seccomp-arch**=ARCH
@@ -151,7 +151,7 @@ inside of the container.
   Specifies Additional syscalls permitted to be used for system calls,
   e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op
 
-**--selinux-label**=[=*SELINUXLABEL*]]
+**--selinux-label**=PROCESSLABEL
   SELinux Label
   Depending on your SELinux policy, you would specify a label that looks like
   this:
@@ -234,7 +234,7 @@ colon:
 
 You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --selinux-label.
 
-   # ocitools generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbox_file_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
+    # ocitools generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbox_file_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
 
 Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
 
