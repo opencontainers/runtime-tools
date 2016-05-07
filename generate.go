@@ -661,16 +661,28 @@ func mapStrToNamespace(ns string, path string) rspec.Namespace {
 
 func setupNamespaces(spec *rspec.Spec, context *cli.Context) {
 	namespaces := []string{"network", "pid", "mount", "ipc", "uts"}
-	var linuxNs []rspec.Namespace
 	for _, nsName := range namespaces {
+		if !context.IsSet(nsName) {
+			continue
+		}
 		nsPath := context.String(nsName)
 		if nsPath == "host" {
 			continue
 		}
 		ns := mapStrToNamespace(nsName, nsPath)
-		linuxNs = append(linuxNs, ns)
+		replaceOrAppendNamespace(&spec.Linux.Namespaces, ns)
 	}
-	spec.Linux.Namespaces = linuxNs
+}
+
+func replaceOrAppendNamespace(namespaces *[]rspec.Namespace, namespace rspec.Namespace) {
+	for i, ns := range *namespaces {
+		if ns.Type == namespace.Type {
+			(*namespaces)[i] = namespace
+			return
+		}
+	}
+	new := append(*namespaces, namespace)
+	*namespaces = new
 }
 
 func sPtr(s string) *string { return &s }
