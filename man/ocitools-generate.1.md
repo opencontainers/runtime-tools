@@ -57,7 +57,7 @@ inside of the container.
   Gid for the process inside of container
 
 **--gidmappings**=GIDMAPPINGS
-  Add GIDMappings e.g HostID:ContainerID:Size for use with User Namespace
+  Add GIDMappings e.g HostID:ContainerID:Size.  Implies **-user=**.
 
 **--groups**=GROUP
   Supplementary groups for the processes inside of container
@@ -191,7 +191,12 @@ inside of the container.
   Sets the UID used within the container.
 
 **--uidmappings**
-  Add UIDMappings e.g HostUID:ContainerID:Size for use with User Namespace
+  Add UIDMappings e.g HostUID:ContainerID:Size.  Implies **--user=**.
+
+**--user**=[*PATH*]
+  Use a user namespace.  If *PATH* is set, join that namespace.  If it
+  is unset, create a new namespace.  The special *PATH* `host` removes
+  any existing user namespace from the configuration.
 
 **--uts**=[*PATH*]
   Use a UTS namespace.  If *PATH* is set, join that namespace.  If it

@@ -31,6 +31,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "mount", Usage: "mount namespace"},
 	cli.StringFlag{Name: "pid", Usage: "pid namespace"},
 	cli.StringFlag{Name: "ipc", Usage: "ipc namespace"},
+	cli.StringFlag{Name: "user", Usage: "user namespace"},
 	cli.StringFlag{Name: "uts", Usage: "uts namespace"},
 	cli.StringFlag{Name: "selinux-label", Usage: "process selinux label"},
 	cli.StringFlag{Name: "mount-label", Usage: "selinux mount context label"},
@@ -463,10 +464,6 @@ func addIDMappings(spec *rspec.Spec, context *cli.Context) error {
 		}
 	}
 
-	if len(context.StringSlice("uidmappings")) > 0 || len(context.StringSlice("gidmappings")) > 0 {
-		spec.Linux.Namespaces = append(spec.Linux.Namespaces, rspec.Namespace{Type: "user"})
-	}
-
 	return nil
 }
 
@@ -660,9 +657,14 @@ func mapStrToNamespace(ns string, path string) rspec.Namespace {
 }
 
 func setupNamespaces(spec *rspec.Spec, context *cli.Context) {
-	namespaces := []string{"network", "pid", "mount", "ipc", "uts"}
+	var needsNewUser = false
+	if len(context.StringSlice("uidmappings")) > 0 || len(context.StringSlice("gidmappings")) > 0 {
+		needsNewUser = true
+	}
+
+	namespaces := []string{"network", "pid", "mount", "ipc", "uts", "user"}
 	for _, nsName := range namespaces {
-		if !context.IsSet(nsName) {
+		if !context.IsSet(nsName) && !(needsNewUser && nsName == "user") {
 			continue
 		}
 		nsPath := context.String(nsName)
