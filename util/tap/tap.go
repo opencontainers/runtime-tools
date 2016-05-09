@@ -45,3 +45,8 @@ func (t *T) Check(function interface{}, description string) {
 	fmt.Printf("# %s\n", err)
 	t.Ok(false, description)
 }
+
+// Count returns the number of tests completed so far.
+func (t *T) Count() int {
+	return t.nextTestNumber - 1
+}
