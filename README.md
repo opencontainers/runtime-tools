@@ -29,18 +29,19 @@ FATA[0000] Bundle path shouldn't be empty
 ## Testing OCI runtimes
 
 ```sh
-$ make
-$ sudo make install
-$ sudo ./test_runtime.sh -r runc
------------------------------------------------------------------------------------
-VALIDATING RUNTIME: runc
------------------------------------------------------------------------------------
-validating container process
-validating capabilities
-validating hostname
-validating rlimits
-validating sysctls
-Runtime runc passed validation
+
+# ocitools runtimetest --help
+NAME:
+   runtimetest - test if a runtime is comlpliant to oci specs
+
+USAGE:
+   command runtimetest [command options] [arguments...]
+
+OPTIONS:
+   --runtime, -r        runtime to be tested
+   --output, -o         output format,
+   -o=all: ouput sucessful details and statics, -o=err-only: ouput failure details and statics
+   --debug, -d  switch of debug mode, defaults to false, with '--debug' to enable debug mode
 ```
 
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/master/bundle.md
