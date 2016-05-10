@@ -123,6 +123,9 @@ func loadTemplate(path string) (spec *rspec.Spec, err error) {
 }
 
 func modify(spec *rspec.Spec, context *cli.Context) error {
+	if len(spec.Version) == 0 {
+		spec.Version = rspec.Version
+	}
 	spec.Root.Path = context.String("rootfs")
 	if context.IsSet("read-only") {
 		spec.Root.Readonly = context.Bool("read-only")
