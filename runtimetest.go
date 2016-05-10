@@ -14,11 +14,8 @@ import (
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
-const bundleCacheDir = "./bundles"
-
 var runtimetestFlags = []cli.Flag{
 	cli.StringFlag{Name: "runtime, r", Usage: "runtime to be tested"},
-	cli.BoolFlag{Name: "debug, d", Usage: "switch of debug mode, default to 'false', with '--debug' to enable debug mode"},
 }
 
 var runtimeTestCommand = cli.Command{
@@ -34,43 +31,42 @@ var runtimeTestCommand = cli.Command{
 			logrus.Fatalf("'%s' is currently not supported", runtime)
 		}
 
-		if err := os.MkdirAll(bundleCacheDir, os.ModePerm); err != nil {
-			logrus.Fatalf("Failed to create cache dir: %s", bundleCacheDir)
+		if err := os.MkdirAll(TestCacheDir, os.ModePerm); err != nil {
+			logrus.Fatalf("Failed to create cache dir: %s", TestCacheDir)
 		}
-		_, err := testState(runtime)
-		if err != nil {
-			os.RemoveAll(bundleCacheDir)
-			logrus.Fatalf("\n%v", err)
+		defer os.RemoveAll(TestCacheDir)
+
+		logrus.Info("Start to test runtime lifecycle...")
+		if _, err := testLifecycle(runtime); err != nil {
+			os.RemoveAll(TestCacheDir)
+			logrus.Fatal(err)
+		}
+		logrus.Info("Runtime lifecycle test succeeded.")
+
+		logrus.Info("Start to test runtime state...")
+		if _, err := testState(runtime); err != nil {
+			os.RemoveAll(TestCacheDir)
+			logrus.Fatal(err)
 		}
 		logrus.Info("Runtime state test succeeded.")
 
-		output, err := testMainConfigs(runtime)
-		if err != nil {
-			os.RemoveAll(bundleCacheDir)
-			logrus.Infof("\n%s", output)
-			logrus.Fatalf("\n%v", err)
-		}
-		if output != "" {
-			logrus.Infof("\n%s", output)
+		logrus.Info("Start to test runtime main config...")
+		if output, err := testMainConfigs(runtime); err != nil {
+			os.RemoveAll(TestCacheDir)
+			logrus.Info(output)
+			logrus.Fatal(err)
+		} else if output != "" {
+			logrus.Info(output)
 		}
 		logrus.Info("Runtime main config test succeeded.")
 
 	},
 }
 
-func setDebugMode(debug bool) {
-	if !debug {
-		logrus.SetLevel(logrus.InfoLevel)
-	} else {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
-}
-
 func testState(runtime string) (string, error) {
 	testConfig := getDefaultConfig()
 	testConfig.Process.Args = []string{"sleep", "60"}
-	//TODO: use UUID
-	testID := "12345678"
+	testID := GetFreeUUID(runtime)
 	unit := TestUnit{
 		Name:    "state",
 		Runtime: runtime,
@@ -94,10 +90,10 @@ func testState(runtime string) (string, error) {
 
 	defer unit.Stop()
 	if state.ID != testID {
-		return "", fmt.Errorf("Expect container ID: %s to match: %s", state.ID, testID)
+		return "", fmt.Errorf("Expected container ID: %s to match: %s", state.ID, testID)
 	}
 	if state.BundlePath != unit.GetBundlePath() {
-		return "", fmt.Errorf("Expect container bundle path: %s to match: %s", state.BundlePath, unit.GetBundlePath())
+		return "", fmt.Errorf("Expected container bundle path: %s to match: %s", state.BundlePath, unit.GetBundlePath())
 	}
 
 	unitDup := TestUnit{
@@ -112,28 +108,70 @@ func testState(runtime string) (string, error) {
 	if output, err := unitDup.GetOutput(); err != nil {
 		return output, nil
 	} else {
-		return output, errors.New("Failed to popup error with duplicated container ID")
+		return output, errors.New("Expected to get an error when start with a duplicated container ID")
 	}
+}
+
+func testLifecycle(runtime string) (string, error) {
+	OKArgs := []string{"true"}
+	OKHooks := []rspec.Hook{{Path: "/bin/true", Args: []string{"true"}}}
+	FailHooks := []rspec.Hook{{Path: "/bin/false", Args: []string{"false"}}}
+
+	allOK := getDefaultConfig()
+	allOK.Process.Args = OKArgs
+	allOK.Hooks.Prestart = OKHooks
+	allOK.Hooks.Poststart = OKHooks
+	allOK.Hooks.Poststop = OKHooks
+	allOKUnit := TestUnit{
+		Name:    "allOK",
+		Runtime: runtime,
+		Config:  allOK,
+	}
+	allOKUnit.Start()
+	defer allOKUnit.Stop()
+	if output, err := allOKUnit.GetOutput(); err != nil {
+		return output, err
+	}
+
+	prestartFailed := allOK
+	prestartFailed.Hooks.Prestart = FailHooks
+	poststartFailed := allOK
+	poststartFailed.Hooks.Poststart = FailHooks
+	poststopFailed := allOK
+	poststopFailed.Hooks.Poststop = FailHooks
+	hookFailedUnit := []TestUnit{
+		{Name: "prestart", Runtime: runtime, Config: prestartFailed},
+		{Name: "poststart", Runtime: runtime, Config: poststartFailed},
+		{Name: "poststop", Runtime: runtime, Config: poststopFailed},
+	}
+	for _, unit := range hookFailedUnit {
+		unit.Start()
+		defer unit.Stop()
+		if output, err := unit.GetOutput(); err == nil {
+			return output, fmt.Errorf("Expected to get an error when %s fails", unit.Name)
+		}
+	}
+
+	return "", nil
 }
 
 func testMainConfigs(runtime string) (string, error) {
 	testConfig := getDefaultConfig()
 	testConfig.Process.Args = []string{"./runtimetest"}
-	testConfig.Hostname = "zenlin"
 
-	hostnameUnit := TestUnit{
+	defaultUnit := TestUnit{
 		Name:           "configs",
 		Runtime:        runtime,
 		Config:         testConfig,
 		ExpectedResult: true,
 	}
 
-	hostnameUnit.Prepare()
-	defer hostnameUnit.Clean()
+	defaultUnit.Prepare()
+	defer defaultUnit.Clean()
 
 	// Copy runtimtest from plugins to rootfs
 	src := "./runtimetest"
-	dest := path.Join(hostnameUnit.GetBundlePath(), "rootfs", "runtimetest")
+	dest := path.Join(defaultUnit.GetBundlePath(), "rootfs", "runtimetest")
 	if err := copyFile(dest, src); err != nil {
 		return "", fmt.Errorf("Failed to copy '%s' to '%s': %v\n", src, dest, err)
 	}
@@ -141,16 +179,16 @@ func testMainConfigs(runtime string) (string, error) {
 		return "", fmt.Errorf("Failed to chmod runtimetest: %v\n", err)
 	}
 
-	src = path.Join(hostnameUnit.GetBundlePath(), configFile)
-	dest = path.Join(hostnameUnit.GetBundlePath(), "rootfs", configFile)
+	src = path.Join(defaultUnit.GetBundlePath(), configFile)
+	dest = path.Join(defaultUnit.GetBundlePath(), "rootfs", configFile)
 	if err := copyFile(dest, src); err != nil {
 		return "", fmt.Errorf("Failed to copy '%s' to '%s': %v\n", src, dest, err)
 	}
 
-	hostnameUnit.Start()
-	defer hostnameUnit.Stop()
-	if output, err := hostnameUnit.GetOutput(); err != nil {
-		return output, fmt.Errorf("Failed to test main config '%s' case: %v", hostnameUnit.Name, err)
+	defaultUnit.Start()
+	defer defaultUnit.Stop()
+	if output, err := defaultUnit.GetOutput(); err != nil {
+		return output, fmt.Errorf("Failed to test main config '%s' case: %v", defaultUnit.Name, err)
 	} else {
 		return output, nil
 	}

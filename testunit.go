@@ -11,10 +11,11 @@ import (
 	"path"
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/pborman/uuid"
 )
 
 const (
-	testCacheDir = "./bundles/"
+	TestCacheDir = "./bundles/"
 	configFile   = "config.json"
 	ociTools     = "ocitools"
 	TEST_READY   = "test ready"
@@ -71,12 +72,13 @@ func (unit *TestUnit) Start() error {
 	}
 
 	if unit.ID == "" {
-		unit.ID = "test"
+		unit.ID = GetFreeUUID(unit.Runtime)
 	}
 
 	var stderr bytes.Buffer
 	var stdout bytes.Buffer
 
+	//FIXME: it is runc preferred.
 	cmd := exec.Command(unit.Runtime, "start", "-b", unit.bundlePath, unit.ID)
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = &stderr
@@ -93,7 +95,7 @@ func (unit *TestUnit) Start() error {
 // Stop a test unit and remove the generated bundle
 func (unit *TestUnit) Stop() ([]byte, error) {
 	if unit.ID == "" {
-		return nil, errors.New("Could not stop a test unit which does not have an 'ID'.")
+		return nil, errors.New("Could not stop a test unit which does not have 'ID'.")
 	}
 	cmd := exec.Command(unit.Runtime, "stop", unit.ID)
 	cmd.Stdin = os.Stdin
@@ -106,7 +108,7 @@ func (unit *TestUnit) Stop() ([]byte, error) {
 // GetState return the state of a running test unit
 func (unit *TestUnit) GetState() (rspec.State, error) {
 	if unit.ID == "" {
-		return rspec.State{}, errors.New("Could not get the state of a test unit which does not have an 'ID'.")
+		return rspec.State{}, errors.New("Could not get the state of a test unit which does not have 'ID'.")
 	}
 	cmd := exec.Command(unit.Runtime, "state", unit.ID)
 	cmd.Stdin = os.Stdin
@@ -132,7 +134,7 @@ func (unit *TestUnit) GetOutput() (string, error) {
 func (unit *TestUnit) prepareBundle() error {
 	// Create bundle follder
 	cwd, _ := os.Getwd()
-	unit.bundlePath = path.Join(cwd, testCacheDir, unit.Name)
+	unit.bundlePath = path.Join(cwd, TestCacheDir, unit.Name)
 	if err := os.RemoveAll(unit.bundlePath); err != nil {
 		return err
 	}
@@ -174,4 +176,16 @@ func untarRootfs(rootfs string) error {
 		return err
 	}
 	return nil
+}
+
+// GetFreeUUID provides a free uuid
+func GetFreeUUID(runtime string) string {
+	id := uuid.NewUUID()
+
+	unit := TestUnit{ID: id.String()}
+	if _, err := unit.GetState(); err != nil {
+		return id.String()
+	} else {
+		return GetFreeUUID(runtime)
+	}
 }

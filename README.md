@@ -30,18 +30,14 @@ FATA[0000] Bundle path shouldn't be empty
 
 ```sh
 
-# ocitools runtimetest --help
-NAME:
-   runtimetest - test if a runtime is comlpliant to oci specs
-
-USAGE:
-   command runtimetest [command options] [arguments...]
-
-OPTIONS:
-   --runtime, -r        runtime to be tested
-   --output, -o         output format,
-   -o=all: ouput sucessful details and statics, -o=err-only: ouput failure details and statics
-   --debug, -d  switch of debug mode, defaults to false, with '--debug' to enable debug mode
+# ocitools runtimetest -r runc
+INFO[0000] Start to test runtime lifecircle...
+INFO[0001] Runtime lifecircle test succeeded.
+INFO[0001] Start to test runtime state...
+INFO[0006] Runtime state test succeeded.
+INFO[0006] Start to test runtime main config...
+INFO[0006] validating container process
+validating capabilities
 ```
 
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/master/bundle.md
