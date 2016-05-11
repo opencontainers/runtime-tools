@@ -591,6 +591,9 @@ func setupCapabilities(spec *rspec.Spec, context *cli.Context) error {
 			finalCapList = append(finalCapList, fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())))
 		}
 		spec.Process.Capabilities = finalCapList
+		spec.Process.SelinuxLabel = ""
+		spec.Process.ApparmorProfile = ""
+		spec.Linux.Seccomp = nil
 		return nil
 	}
 
