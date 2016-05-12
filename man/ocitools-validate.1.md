@@ -5,9 +5,7 @@
 ocitools-validate - Validate a OCI bundle
 
 # SYNOPSIS
-**ocitools validate**
-[**--help**]
-[**--path**[=*PATH*]
+**ocitools validate**  *[OPTIONS]*
 
 # DESCRIPTION
 
@@ -17,7 +15,7 @@ Validate an OCI bundle
 **--help**
   Print usage statement
 
-**--path="PATH"
+**--path=PATH
    Path to bundle
 
 # SEE ALSO
