@@ -18,29 +18,29 @@ const (
 	TestCacheDir = "./bundles/"
 	configFile   = "config.json"
 	ociTools     = "ocitools"
-	TEST_READY   = "test ready"
+)
+
+var (
+	ErrStartWithDupID     = errors.New("Expected to get an error when start with a duplicated container ID")
+	ErrStartWithoutID     = errors.New("Expected to get an error when start without provide a container ID")
+	ErrStartWithoutBundle = errors.New("Expected to get an error when start without provide a bundle")
+	ErrStateWithoutID     = errors.New("Expected to get an error when state without provide a container ID")
 )
 
 // TestUnit for storage testcase
 type TestUnit struct {
-	ID             string
-	Name           string
-	Runtime        string
-	Config         *rspec.Spec
-	ExpectedOutput string
-	ExpectedResult bool
+	ID      string
+	Name    string
+	Runtime string
+	Config  *rspec.Spec
 
 	output     string
 	err        error
 	bundlePath string
-	ready      string
 }
 
 // Prepare a bundle for a test unit
 func (unit *TestUnit) Prepare() error {
-	if unit.ready == TEST_READY {
-		return nil
-	}
 	if unit.Name == "" || unit.Runtime == "" || unit.Config == nil {
 		return errors.New("Could not prepare a test unit which does not have 'Name', 'Runtime' or 'Config'.")
 	}
@@ -49,30 +49,19 @@ func (unit *TestUnit) Prepare() error {
 		return errors.New("Failed to prepare bundle")
 	}
 
-	unit.ready = TEST_READY
 	return nil
 }
 
 // Clean the generated bundle of a test unit
 func (unit *TestUnit) Clean() error {
-	if unit.ready == TEST_READY {
-		unit.ready = ""
-		return os.RemoveAll(unit.bundlePath)
-	}
-	return nil
+	return os.RemoveAll(unit.bundlePath)
 }
 
 // Start a test unit
 // Generate a bundle from unit's args and start it by unit's runtime
 func (unit *TestUnit) Start() error {
-	if unit.ready != TEST_READY {
-		if err := unit.Prepare(); err != nil {
-			return err
-		}
-	}
-
-	if unit.ID == "" {
-		unit.ID = GetFreeUUID(unit.Runtime)
+	if unit.Runtime == "" {
+		return errors.New("'Runtime' must be set before start")
 	}
 
 	var stderr bytes.Buffer

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -43,12 +42,12 @@ var runtimeTestCommand = cli.Command{
 		}
 		logrus.Info("Runtime lifecycle test succeeded.")
 
-		logrus.Info("Start to test runtime state...")
-		if _, err := testState(runtime); err != nil {
+		logrus.Info("Start to test runtime operation...")
+		if _, err := testOperation(runtime); err != nil {
 			os.RemoveAll(TestCacheDir)
 			logrus.Fatal(err)
 		}
-		logrus.Info("Runtime state test succeeded.")
+		logrus.Info("Runtime operation test succeeded.")
 
 		logrus.Info("Start to test runtime main config...")
 		if output, err := testMainConfigs(runtime); err != nil {
@@ -63,23 +62,29 @@ var runtimeTestCommand = cli.Command{
 	},
 }
 
-func testState(runtime string) (string, error) {
-	testConfig := getDefaultConfig()
-	testConfig.Process.Args = []string{"sleep", "60"}
-	testID := GetFreeUUID(runtime)
-	unit := TestUnit{
-		Name:    "state",
+func testOperation(runtime string) (string, error) {
+	testRunningConfig := getDefaultConfig()
+	testRunningConfig.Process.Args = []string{"sleep", "60"}
+	runningUnit := TestUnit{
+		Name:    "running",
 		Runtime: runtime,
-		Config:  testConfig,
-		ID:      testID,
+		Config:  testRunningConfig,
 	}
+	if _, err := runningUnit.GetState(); err == nil {
+		return "", ErrStateWithoutID
+	}
+
+	runningID := GetFreeUUID(runtime)
+	runningUnit.ID = runningID
+	// Start a running container (terminated in 60s)
 	go func() {
-		unit.Start()
+		runningUnit.Prepare()
+		runningUnit.Start()
 	}()
 	var state rspec.State
 	var err error
 	for t := time.Now(); time.Since(t) < time.Minute; time.Sleep(time.Second * 5) {
-		if state, err = unit.GetState(); err == nil {
+		if state, err = runningUnit.GetState(); err == nil {
 			break
 		}
 	}
@@ -88,28 +93,37 @@ func testState(runtime string) (string, error) {
 		return "", err
 	}
 
-	defer unit.Stop()
-	if state.ID != testID {
-		return "", fmt.Errorf("Expected container ID: %s to match: %s", state.ID, testID)
-	}
-	if state.BundlePath != unit.GetBundlePath() {
-		return "", fmt.Errorf("Expected container bundle path: %s to match: %s", state.BundlePath, unit.GetBundlePath())
+	defer runningUnit.Stop()
+	if err := checkState(state, runningUnit); err != nil {
+		return "", err
 	}
 
-	unitDup := TestUnit{
-		Name:    "state-dup",
-		Runtime: runtime,
-		Config:  testConfig,
-		ID:      testID,
+	type testOperationUnit struct {
+		Unit        TestUnit
+		prepare     bool
+		expectedErr error
 	}
-	unitDup.Start()
-	defer unitDup.Stop()
-	// Expected to get error
-	if output, err := unitDup.GetOutput(); err != nil {
-		return output, nil
-	} else {
-		return output, errors.New("Expected to get an error when start with a duplicated container ID")
+
+	testConfig := getDefaultConfig()
+	testConfig.Process.Args = []string{"true"}
+	startOperUnits := []testOperationUnit{
+		{Unit: TestUnit{Name: "start-with-dup-id", Runtime: runtime, Config: testConfig, ID: runningID}, prepare: true, expectedErr: ErrStartWithDupID},
+		{Unit: TestUnit{Name: "start-without-id", Runtime: runtime, Config: testConfig}, prepare: true, expectedErr: ErrStartWithoutID},
+		{Unit: TestUnit{Name: "start-without-bundle", Runtime: runtime, Config: testConfig, ID: GetFreeUUID(runtime)}, prepare: false, expectedErr: ErrStartWithoutBundle},
 	}
+	for _, operUnit := range startOperUnits {
+		if operUnit.prepare {
+			operUnit.Unit.Prepare()
+		}
+		err := operUnit.Unit.Start()
+		defer operUnit.Unit.Stop()
+		if err != nil && operUnit.expectedErr == nil {
+			return "", err
+		} else if err == nil && operUnit.expectedErr != nil {
+			return "", operUnit.expectedErr
+		}
+	}
+	return "", nil
 }
 
 func testLifecycle(runtime string) (string, error) {
@@ -126,7 +140,9 @@ func testLifecycle(runtime string) (string, error) {
 		Name:    "allOK",
 		Runtime: runtime,
 		Config:  allOK,
+		ID:      GetFreeUUID(runtime),
 	}
+	allOKUnit.Prepare()
 	allOKUnit.Start()
 	defer allOKUnit.Stop()
 	if output, err := allOKUnit.GetOutput(); err != nil {
@@ -139,12 +155,13 @@ func testLifecycle(runtime string) (string, error) {
 	poststartFailed.Hooks.Poststart = FailHooks
 	poststopFailed := allOK
 	poststopFailed.Hooks.Poststop = FailHooks
-	hookFailedUnit := []TestUnit{
-		{Name: "prestart", Runtime: runtime, Config: prestartFailed},
-		{Name: "poststart", Runtime: runtime, Config: poststartFailed},
-		{Name: "poststop", Runtime: runtime, Config: poststopFailed},
+	hookFailedUnits := []TestUnit{
+		{Name: "prestart", Runtime: runtime, Config: prestartFailed, ID: GetFreeUUID(runtime)},
+		{Name: "poststart", Runtime: runtime, Config: poststartFailed, ID: GetFreeUUID(runtime)},
+		{Name: "poststop", Runtime: runtime, Config: poststopFailed, ID: GetFreeUUID(runtime)},
 	}
-	for _, unit := range hookFailedUnit {
+	for _, unit := range hookFailedUnits {
+		unit.Prepare()
 		unit.Start()
 		defer unit.Stop()
 		if output, err := unit.GetOutput(); err == nil {
@@ -160,10 +177,10 @@ func testMainConfigs(runtime string) (string, error) {
 	testConfig.Process.Args = []string{"./runtimetest"}
 
 	defaultUnit := TestUnit{
-		Name:           "configs",
-		Runtime:        runtime,
-		Config:         testConfig,
-		ExpectedResult: true,
+		Name:    "configs",
+		Runtime: runtime,
+		Config:  testConfig,
+		ID:      GetFreeUUID(runtime),
 	}
 
 	defaultUnit.Prepare()
@@ -221,4 +238,14 @@ func getDefaultConfig() *rspec.Spec {
 	config.Process.Cwd = "/"
 
 	return config
+}
+
+func checkState(state rspec.State, unit TestUnit) error {
+	if state.ID != unit.ID {
+		return fmt.Errorf("Expected container ID: %s to match: %s", state.ID, unit.ID)
+	}
+	if state.BundlePath != unit.GetBundlePath() {
+		return fmt.Errorf("Expected container bundle path: %s to match: %s", state.BundlePath, unit.GetBundlePath())
+	}
+	return nil
 }
