@@ -57,7 +57,7 @@ inside of the container.
   Gid for the process inside of container
 
 **--gidmappings**=GIDMAPPINGS
-  Add GIDMappings e.g HostID:ContainerID:Size for use with User Namespace
+  Add GIDMappings e.g HostID:ContainerID:Size.  Implies **-user=**.
 
 **--groups**=GROUP
   Supplementary groups for the processes inside of container
@@ -70,11 +70,15 @@ inside of the container.
 
    Sets the container host name that is available inside the container.
 
-**--ipc**
-  Use ipc namespace
+**--ipc**=[*PATH*]
+  Use an IPC namespace.  If *PATH* is set, join that namespace.  If it
+  is unset, create a new namespace.  The special *PATH* `host` removes
+  any existing IPC namespace from the configuration.
 
-**--mount**
-  Use a mount namespace
+**--mount**=[*PATH*]
+  Use a network namespace.  If *PATH* is set, join that namespace.  If
+  it is unset, create a new namespace.  The special *PATH* `host`
+  removes any existing mount namespace from the configuration.
 
 **--mount-cgroups**=[rw|ro|no]
   Mount cgroups.  The default is `no`.
@@ -91,8 +95,10 @@ inside of the container.
       "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
       "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
 
-**--network**
-  Use network namespace
+**--network**=[*PATH*]
+  Use a network namespace.  If *PATH* is set, join that namespace.  If
+  it is unset, create a new namespace.  The special *PATH* `host`
+  removes any existing network namespace from the configuration.
 
 **--no-new-privileges**
   Set no new privileges bit for the container process.  Setting this flag
@@ -103,8 +109,10 @@ inside of the container.
 **--os**=OS
   Operating system used within the container
 
-**--pid**
-  Use a pid namespace
+**--pid**=[*PATH*]
+  Use a PID namespace.  If *PATH* is set, join that namespace.  If it
+  is unset, create a new namespace.  The special *PATH* `host` removes
+  any existing UTS namespace from the configuration.
 
 **--poststart**=CMD
   Path to command to run in poststart hooks. This command will be run before
@@ -183,10 +191,17 @@ inside of the container.
   Sets the UID used within the container.
 
 **--uidmappings**
-  Add UIDMappings e.g HostUID:ContainerID:Size for use with User Namespace
+  Add UIDMappings e.g HostUID:ContainerID:Size.  Implies **--user=**.
 
-**--uts**
-  Use the uts namespace
+**--user**=[*PATH*]
+  Use a user namespace.  If *PATH* is set, join that namespace.  If it
+  is unset, create a new namespace.  The special *PATH* `host` removes
+  any existing user namespace from the configuration.
+
+**--uts**=[*PATH*]
+  Use a UTS namespace.  If *PATH* is set, join that namespace.  If it
+  is unset, create a new namespace.  The special *PATH* `host` removes
+  any existing UTS namespace from the configuration.
 
 # EXAMPLES
 
