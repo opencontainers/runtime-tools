@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
@@ -53,15 +55,15 @@ var bundleValidateCommand = cli.Command{
 			logrus.Fatal(err)
 		}
 
-		sf, err := os.Open(path.Join(inputPath, "config.json"))
+		content, err := ioutil.ReadFile(path.Join(inputPath, "config.json"))
 		if err != nil {
 			logrus.Fatal(err)
 		}
-
-		defer sf.Close()
-
+		if !utf8.Valid(content) {
+			logrus.Fatalf("'Config.json' is not encoded in UTF-8")
+		}
 		var spec rspec.Spec
-		if err = json.NewDecoder(sf).Decode(&spec); err != nil {
+		if err = json.Unmarshal(content, &spec); err != nil {
 			logrus.Fatal(err)
 		}
 
