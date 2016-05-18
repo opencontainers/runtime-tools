@@ -120,8 +120,8 @@ inside of the container.
   main process has been created.
 
 **--poststop**=CMD
-  Path to command to run in poststop hooks. This command will be run after the
-  container completes but before the container process is destroyed
+  Path to command to run in poststop hooks. The command will be run
+  after the container process is stopped.
 
 **--prestart**=CMD
   Path to command to run in prestart hooks. This command will be run before
