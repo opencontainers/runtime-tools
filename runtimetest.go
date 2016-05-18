@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -127,12 +128,12 @@ func testOperation(runtime string) (string, error) {
 }
 
 func testLifecycle(runtime string) (string, error) {
-	OKArgs := []string{"true"}
 	OKHooks := []rspec.Hook{{Path: "/bin/true", Args: []string{"true"}}}
 	FailHooks := []rspec.Hook{{Path: "/bin/false", Args: []string{"false"}}}
 
+	processOutput := "hello, ocitools"
 	allOK := getDefaultConfig()
-	allOK.Process.Args = OKArgs
+	allOK.Process.Args = []string{"echo", processOutput}
 	allOK.Hooks.Prestart = OKHooks
 	allOK.Hooks.Poststart = OKHooks
 	allOK.Hooks.Poststop = OKHooks
@@ -147,6 +148,8 @@ func testLifecycle(runtime string) (string, error) {
 	defer allOKUnit.Stop()
 	if output, err := allOKUnit.GetOutput(); err != nil {
 		return output, err
+	} else if processOutput != strings.TrimSpace(output) {
+		return "", fmt.Errorf("Failed to run 'Process' successfully")
 	}
 
 	prestartFailed := allOK
