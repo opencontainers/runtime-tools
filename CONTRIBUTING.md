@@ -24,6 +24,10 @@ Fork the repo and make changes on your fork in a feature branch:
 - If it's a feature branch, create an enhancement issue to announce your
   intentions, and name it XXX-something where XXX is the number of the issue.
 
+Small changes or changes that have been discussed on the project mailing list
+may be submitted without a leader issue, in which case you are free to name
+your branch however you like.
+
 Submit unit tests for your changes.  Go has a great test framework built in; use
 it! Take a look at existing tests for inspiration. Run the full test suite on
 your branch before submitting a pull request.
