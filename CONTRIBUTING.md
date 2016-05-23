@@ -44,8 +44,6 @@ committing your changes. Most editors have plugins that do this automatically.
 Pull requests descriptions should be as clear as possible and include a
 reference to all the issues that they address.
 
-Pull requests must not contain commits from other users or branches.
-
 Commit messages must start with a capitalized and short summary
 written in the imperative, followed by an optional, more detailed
 explanatory text which is separated from the summary by an empty line.
