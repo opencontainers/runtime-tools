@@ -86,7 +86,6 @@ func bundleValidate(spec rspec.Spec, rootfs string) {
 	checkSemVer(spec.Version)
 	checkPlatform(spec.Platform)
 	checkProcess(spec.Process, rootfs)
-	checkMounts(spec.Mounts, rootfs)
 	checkLinux(spec.Linux, rootfs)
 }
 
@@ -94,17 +93,6 @@ func checkSemVer(version string) {
 	re, _ := regexp.Compile("^(\\d+)?\\.(\\d+)?\\.(\\d+)?$")
 	if ok := re.Match([]byte(version)); !ok {
 		logrus.Fatalf("%q is not a valid version format, please read 'SemVer v2.0.0'", version)
-	}
-}
-
-func checkMounts(mounts []rspec.Mount, rootfs string) {
-	for _, mount := range mounts {
-		destPath := path.Join(rootfs, mount.Destination)
-		if fi, err := os.Stat(destPath); err != nil {
-			logrus.Fatalf("Cannot find the mount destination %q", destPath)
-		} else if !fi.IsDir() {
-			logrus.Fatalf("Mount destination %q is not a directory.", destPath)
-		}
 	}
 }
 
