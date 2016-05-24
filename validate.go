@@ -86,7 +86,7 @@ func bundleValidate(spec rspec.Spec, rootfs string) {
 	checkSemVer(spec.Version)
 	checkPlatform(spec.Platform)
 	checkProcess(spec.Process, rootfs)
-	checkLinux(spec.Linux, rootfs)
+	checkLinux(spec.Linux, spec.Hostname, rootfs)
 }
 
 func checkSemVer(version string) {
@@ -154,7 +154,9 @@ func checkProcess(process rspec.Process, rootfs string) {
 }
 
 //Linux only
-func checkLinux(spec rspec.Linux, rootfs string) {
+func checkLinux(spec rspec.Linux, hostname string, rootfs string) {
+	utsExists := false
+
 	if len(spec.UIDMappings) > 5 {
 		logrus.Fatalf("Only 5 UID mappings are allowed (linux kernel restriction).")
 	}
@@ -165,7 +167,13 @@ func checkLinux(spec rspec.Linux, rootfs string) {
 	for index := 0; index < len(spec.Namespaces); index++ {
 		if !namespaceValid(spec.Namespaces[index]) {
 			logrus.Fatalf("namespace %v is invalid.", spec.Namespaces[index])
+		} else if spec.Namespaces[index].Type == rspec.UTSNamespace {
+			utsExists = true
 		}
+	}
+
+	if !utsExists && hostname != "" {
+		logrus.Fatalf("Hostname requires a new UTS namespace to be specified as well")
 	}
 
 	for index := 0; index < len(spec.Devices); index++ {
