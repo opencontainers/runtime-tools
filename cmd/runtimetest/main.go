@@ -233,6 +233,17 @@ func validateMaskedPaths(spec *rspec.Spec) error {
 	return nil
 }
 
+func validateROPaths(spec *rspec.Spec) error {
+	fmt.Println("validating readonlyPaths")
+	for _, v := range spec.Linux.ReadonlyPaths {
+		err := testWriteAccess(v)
+		if err == nil {
+			return fmt.Errorf("%v should be readonly", v)
+		}
+	}
+	return nil
+}
+
 func main() {
 	spec, err := loadSpecConfig()
 	if err != nil {
@@ -247,6 +258,7 @@ func main() {
 		validateRlimits,
 		validateSysctls,
 		validateMaskedPaths,
+		validateROPaths,
 	}
 
 	for _, v := range validations {
