@@ -1,5 +1,5 @@
 % OCI(1) OCITOOLS User Manuals
-% Dan Walsh
+% OCI Community
 % APRIL 2016
 # NAME
 ocitools \- OCI (Open Container Initiative) tools
