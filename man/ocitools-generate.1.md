@@ -1,4 +1,4 @@
-% OCI(1) OCI User Manuals
+% OCI(1) OCITOOLS User Manuals
 % OCI Community
 % APRIL 2016
 # NAME
@@ -15,41 +15,41 @@ compatable runtime like runC to run a container.
 
 # OPTIONS
 **--apparmor**=PROFILE
-   Specifies the the apparmor profile for the container
+  Specifies the apparmor profile for the container
 
 **--arch**=ARCH
-   Architecture used within the container.
-   "amd64"
+  Architecture used within the container.
+  "amd64"
 
 **--args**=OPTION
-   Arguments to run within the container.  Can be specified multiple times.
-   If you were going to run a command with multiple options, you would need to specify the command and each argument in order.
+  Arguments to run within the container.  Can be specified multiple times.
+  If you were going to run a command with multiple options, you would need
+  to specify the command and each argument in order.
 
-   --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
+  --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
 
-**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]* Bind mount
-   directories src:dest:(rw,ro) If you specify, ` --bind
-   /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
-   to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a comma
-   delimited list and can be: [rw|ro] The `HOST_DIR` and
-   `CONTAINER-DIR` must be absolute paths such as `/src/docs`.  You
-   can add `:ro` or `:rw` suffix to a volume to mount it read-only or
-   read-write mode, respectively. By default, the volumes are mounted
-   read-write.
+**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]* 
+  Bind mount directories src:dest:(rw,ro) If you specify, ` --bind
+  /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
+  to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a comma
+  delimited list and can be: [rw|ro] The `HOST_DIR` and
+  `CONTAINER-DIR` must be absolute paths such as `/src/docs`.  You
+  can add `:ro` or `:rw` suffix to a volume to mount it read-only or
+  read-write mode, respectively. By default, the volumes are mounted
+  read-write.
 
 **--cap-add**=[]
-   Add Linux capabilities
+  Add Linux capabilities
 
 **--cap-drop**=[]
-   Drop Linux capabilities
+  Drop Linux capabilities
 
 **--cwd**=PATH
-   Current working directory for the process
+  Current working directory for the process
 
 **--env**=[]
-   Set environment variables
-
-   This option allows you to specify arbitrary
+  Set environment variables
+  This option allows you to specify arbitrary
 environment variables that are available for the process that will be launched
 inside of the container.
 
@@ -66,9 +66,7 @@ inside of the container.
   Print usage statement
 
 **--hostname**=""
-   Container host name
-
-   Sets the container host name that is available inside the container.
+  Set the container host name that is available inside the container.
 
 **--ipc**=[*PATH*]
   Use an IPC namespace.  If *PATH* is set, join that namespace.  If it

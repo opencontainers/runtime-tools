@@ -1,8 +1,8 @@
-% OCI(1) OCI User Manuals
+% OCI(1) OCITOOLS User Manuals
 % OCI Community
 % APRIL 2016
 # NAME
-ocitools-validate - Validate a OCI bundle
+ocitools-validate - Validate an OCI bundle
 
 # SYNOPSIS
 **ocitools validate**  *[OPTIONS]*
@@ -16,7 +16,7 @@ Validate an OCI bundle
   Print usage statement
 
 **--path=PATH
-   Path to bundle
+  Path to bundle
 
 **--hooks**
   Check specified hooks exist and are executable on the host.
