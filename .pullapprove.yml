@@ -1,0 +1,10 @@
+approve_by_comment: true
+approve_regex: ^LGTM
+reject_regex: ^Rejected
+reset_on_push: false
+reviewers:
+  members:
+  - tdc-maintainers
+  - caniszczyk
+  name: default
+  required: 2
