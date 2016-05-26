@@ -3,8 +3,8 @@ approve_regex: ^LGTM
 reject_regex: ^Rejected
 reset_on_push: false
 reviewers:
-  members:
+  teams:
   - tdc-maintainers
-  - caniszczyk
+  - admins
   name: default
   required: 2
