@@ -146,7 +146,7 @@ func validateHostname(spec *rspec.Spec) error {
 	if err != nil {
 		return err
 	}
-	if hostname != spec.Hostname {
+	if spec.Hostname != "" && hostname != spec.Hostname {
 		return fmt.Errorf("Hostname expected: %v, actual: %v", spec.Hostname, hostname)
 	}
 	return nil
