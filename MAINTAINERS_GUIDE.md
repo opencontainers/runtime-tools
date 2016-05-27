@@ -64,7 +64,9 @@ All decisions are pull requests, and the relevant maintainers make
 decisions by accepting or refusing the pull request. Review and acceptance
 by anyone is denoted by adding a comment in the pull request: `LGTM`.
 However, only currently listed `MAINTAINERS` are counted towards the required
-two LGTMs.
+two LGTMs. In addition, if a maintainer has created a pull request, they cannot
+count toward the two LGTM rule (to ensure equal amounts of review for every pull
+request, no matter who wrote it).
 
 Overall the maintainer system works because of mutual respect across the
 maintainers of the project.  The maintainers trust one another to make decisions
