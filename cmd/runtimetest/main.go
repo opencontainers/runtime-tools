@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -215,6 +216,23 @@ func validateRootFS(spec *rspec.Spec) error {
 	return nil
 }
 
+func validateMaskedPaths(spec *rspec.Spec) error {
+	fmt.Println("validating maskedPaths")
+	for _, maskedPath := range spec.Linux.MaskedPaths {
+		f, err := os.Open(maskedPath)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		b := make([]byte, 1)
+		_, err = f.Read(b)
+		if err != io.EOF {
+			return fmt.Errorf("%v should not be readable", maskedPath)
+		}
+	}
+	return nil
+}
+
 func main() {
 	spec, err := loadSpecConfig()
 	if err != nil {
@@ -228,6 +246,7 @@ func main() {
 		validateHostname,
 		validateRlimits,
 		validateSysctls,
+		validateMaskedPaths,
 	}
 
 	for _, v := range validations {
