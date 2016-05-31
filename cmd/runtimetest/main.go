@@ -191,6 +191,30 @@ func validateSysctls(spec *rspec.Spec) error {
 	return nil
 }
 
+func testWriteAccess(path string) error {
+	tmpfile, err := ioutil.TempFile(path, "Test")
+	if err != nil {
+		return err
+	}
+
+	tmpfile.Close()
+	os.RemoveAll(filepath.Join(path, tmpfile.Name()))
+
+	return nil
+}
+
+func validateRootFS(spec *rspec.Spec) error {
+	fmt.Println("validating root")
+	if spec.Root.Readonly {
+		err := testWriteAccess("/")
+		if err == nil {
+			return fmt.Errorf("Rootfs should be readonly")
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	spec, err := loadSpecConfig()
 	if err != nil {
@@ -198,6 +222,7 @@ func main() {
 	}
 
 	validations := []validation{
+		validateRootFS,
 		validateProcess,
 		validateCapabilities,
 		validateHostname,
