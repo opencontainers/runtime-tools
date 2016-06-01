@@ -89,7 +89,7 @@ func bundleValidate(spec rspec.Spec, rootfs string, hooksCheck bool) {
 	checkSemVer(spec.Version)
 	checkPlatform(spec.Platform)
 	checkProcess(spec.Process, rootfs)
-	checkLinux(spec.Linux, spec.Hostname, rootfs)
+	checkLinux(spec)
 	checkHooks(spec.Hooks, hooksCheck)
 }
 
@@ -188,39 +188,39 @@ func checkProcess(process rspec.Process, rootfs string) {
 }
 
 //Linux only
-func checkLinux(spec rspec.Linux, hostname string, rootfs string) {
+func checkLinux(spec rspec.Spec) {
 	utsExists := false
 
-	if len(spec.UIDMappings) > 5 {
+	if len(spec.Linux.UIDMappings) > 5 {
 		logrus.Fatalf("Only 5 UID mappings are allowed (linux kernel restriction).")
 	}
-	if len(spec.GIDMappings) > 5 {
+	if len(spec.Linux.GIDMappings) > 5 {
 		logrus.Fatalf("Only 5 GID mappings are allowed (linux kernel restriction).")
 	}
 
-	for index := 0; index < len(spec.Namespaces); index++ {
-		if !namespaceValid(spec.Namespaces[index]) {
-			logrus.Fatalf("namespace %v is invalid.", spec.Namespaces[index])
-		} else if spec.Namespaces[index].Type == rspec.UTSNamespace {
+	for index := 0; index < len(spec.Linux.Namespaces); index++ {
+		if !namespaceValid(spec.Linux.Namespaces[index]) {
+			logrus.Fatalf("namespace %v is invalid.", spec.Linux.Namespaces[index])
+		} else if spec.Linux.Namespaces[index].Type == rspec.UTSNamespace {
 			utsExists = true
 		}
 	}
 
-	if !utsExists && hostname != "" {
-		logrus.Fatalf("Hostname requires a new UTS namespace to be specified as well")
+	if spec.Platform.OS == "linux" && !utsExists && spec.Hostname != "" {
+		logrus.Fatalf("On Linux, hostname requires a new UTS namespace to be specified as well")
 	}
 
-	for index := 0; index < len(spec.Devices); index++ {
-		if !deviceValid(spec.Devices[index]) {
-			logrus.Fatalf("device %v is invalid.", spec.Devices[index])
+	for index := 0; index < len(spec.Linux.Devices); index++ {
+		if !deviceValid(spec.Linux.Devices[index]) {
+			logrus.Fatalf("device %v is invalid.", spec.Linux.Devices[index])
 		}
 	}
 
-	if spec.Seccomp != nil {
-		checkSeccomp(*spec.Seccomp)
+	if spec.Linux.Seccomp != nil {
+		checkSeccomp(*spec.Linux.Seccomp)
 	}
 
-	switch spec.RootfsPropagation {
+	switch spec.Linux.RootfsPropagation {
 	case "":
 	case "private":
 	case "rprivate":
