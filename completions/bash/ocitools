@@ -253,7 +253,7 @@ _ocitools_validate() {
 
 	case "$cur" in
 		-*)
-			COMPREPLY=( $( compgen -W "--path --help" -- "$cur" ) )
+			COMPREPLY=( $( compgen -W "--hooks --path --help" -- "$cur" ) )
 			;;
 	esac
 
