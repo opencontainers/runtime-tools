@@ -75,7 +75,7 @@ var bundleValidateCommand = cli.Command{
 		if fi, err := os.Stat(rootfsPath); err != nil {
 			logrus.Fatalf("Cannot find the root path %q", rootfsPath)
 		} else if !fi.IsDir() {
-			logrus.Fatalf("root path %q is not a directory.", spec.Root.Path)
+			logrus.Fatalf("The root path %q is not a directory.", rootfsPath)
 		}
 
 		hooksCheck := context.Bool("hooks")
