@@ -125,12 +125,12 @@ func checkPlatform(platform rspec.Platform) {
 }
 
 func checkHooks(hooks rspec.Hooks, hooksCheck bool) {
-	checkEventHookPaths("pre-start", hooks.Prestart, hooksCheck)
-	checkEventHookPaths("post-start", hooks.Poststart, hooksCheck)
-	checkEventHookPaths("post-stop", hooks.Poststop, hooksCheck)
+	checkEventHooks("pre-start", hooks.Prestart, hooksCheck)
+	checkEventHooks("post-start", hooks.Poststart, hooksCheck)
+	checkEventHooks("post-stop", hooks.Poststop, hooksCheck)
 }
 
-func checkEventHookPaths(hookType string, hooks []rspec.Hook, hooksCheck bool) {
+func checkEventHooks(hookType string, hooks []rspec.Hook, hooksCheck bool) {
 	for _, hook := range hooks {
 		if !filepath.IsAbs(hook.Path) {
 			logrus.Fatalf("The %s hook %v: is not absolute path", hookType, hook.Path)
@@ -143,6 +143,12 @@ func checkEventHookPaths(hookType string, hooks []rspec.Hook, hooksCheck bool) {
 			}
 			if fi.Mode()&0111 == 0 {
 				logrus.Fatalf("The %s hook %v: is not executable", hookType, hook.Path)
+			}
+		}
+
+		for _, env := range hook.Env {
+			if !envValid(env) {
+				logrus.Fatalf("Env %q for hook %v is in the invalid form.", env, hook.Path)
 			}
 		}
 	}
