@@ -145,6 +145,9 @@ inside of the container.
 **--rootfs**=ROOTFSPATH
   Path to the rootfs
 
+**--runtime**=COMMAND
+  Set the runtime command, which is used for state JSON queries in translations like **--translate=fromContainer**.
+
 **--seccomp-arch**=ARCH
   Specifies Additional architectures permitted to be used for system calls.
   By default if you turn on seccomp, only the host architecture will be allowed.
@@ -185,6 +188,10 @@ inside of the container.
     This command mounts a `tmpfs` at `/tmp` within the container.  The supported mount options are the same as the Linux default `mount` flags. If you do not specify any options, the systems uses the following options:
     `rw,noexec,nosuid,nodev,size=65536k`.
 
+**--translate**=TRANSLATION
+  Apply various higher-level spec translations.  Available
+  translations are listed in the *Translations* section.
+
 **--uid**=UID
   Sets the UID used within the container.
 
@@ -200,6 +207,18 @@ inside of the container.
   Use a UTS namespace.  If *PATH* is set, join that namespace.  If it
   is unset, create a new namespace.  The special *PATH* `host` removes
   any existing UTS namespace from the configuration.
+
+## Translations
+
+**fromContainer**
+The base OCI spec requires a namespace path in
+  `linux.namespaces[].path` to join a namespace.  However, looking up
+  that path in `/proc` can be tedious.  With a target container ID in
+  `linux.namespaces[].fromContainer`, the **fromContainer**
+  translation will query the runtime (set with **--runtime**) for the
+  state JSON, extract the container PID from that JSON, find the
+  appropriate namespace path for that PID in `/proc`, and insert that
+  path in the translated configuration as `linux.namespaces[].path`.
 
 # EXAMPLES
 
