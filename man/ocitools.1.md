@@ -30,7 +30,7 @@ ocitools is a collection of tools for working with the [OCI runtime specificatio
   See **ocitools-generate(1)** for full documentation on the **generate** command.
 
 # SEE ALSO
-**ocitools-validate**(1), **ocitools-run**(1)
+**ocitools-validate**(1), **ocitools-generate**(1)
 
 # HISTORY
 April 2016, Originally compiled by Daniel Walsh (dwalsh at redhat dot com)

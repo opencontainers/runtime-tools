@@ -11,7 +11,7 @@ ocitools-generate - Generate a config.json for an OCI container
 
 `ocitools generate` generates a `config.json` for an OCI bundle.  This
 `config.json` file can be placed into a directory and used by an OCI
-compatable runtime like runC to run a container.
+compatible runtime like runC to run a container.
 
 # OPTIONS
 **--apparmor**=PROFILE
@@ -110,7 +110,7 @@ inside of the container.
 **--pid**=[*PATH*]
   Use a PID namespace.  If *PATH* is set, join that namespace.  If it
   is unset, create a new namespace.  The special *PATH* `host` removes
-  any existing UTS namespace from the configuration.
+  any existing PID namespace from the configuration.
 
 **--poststart**=CMD
   Path to command to run in poststart hooks. This command will be run before
@@ -140,7 +140,7 @@ inside of the container.
 
 **--root-propagation**=PROPOGATIONMODE
   Mount propagation for root filesystem.
-  Values are "SHARED, RSHARED, PRIVATE, RPRIVATE, SLAVE, RSLAVE"
+  Values are "shared, rshared, private, rprivate, slave, rslave"
 
 **--rootfs**=ROOTFSPATH
   Path to the rootfs
