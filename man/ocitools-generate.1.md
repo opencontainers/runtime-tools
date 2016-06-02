@@ -74,7 +74,7 @@ inside of the container.
   any existing IPC namespace from the configuration.
 
 **--mount**=[*PATH*]
-  Use a network namespace.  If *PATH* is set, join that namespace.  If
+  Use a mount namespace.  If *PATH* is set, join that namespace.  If
   it is unset, create a new namespace.  The special *PATH* `host`
   removes any existing mount namespace from the configuration.
 
