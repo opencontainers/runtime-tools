@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/opencontainers/ocitools/cmd/runtimetest/mount"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/syndtr/gocapability/capability"
 )
@@ -237,6 +238,56 @@ func validateROPaths(spec *rspec.Spec) error {
 			return fmt.Errorf("%v should be readonly", v)
 		}
 	}
+
+	return nil
+}
+
+func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
+	if specMount.Destination != sysMount.Destination {
+		return fmt.Errorf("mount destination expected: %v, actual: %v", specMount.Destination, sysMount.Destination)
+	}
+
+	if specMount.Type != sysMount.Type {
+		return fmt.Errorf("mount %v type expected: %v, actual: %v", specMount.Destination, specMount.Type, sysMount.Type)
+	}
+
+	if specMount.Source != sysMount.Source {
+		return fmt.Errorf("mount %v source expected: %v, actual: %v", specMount.Destination, specMount.Source, sysMount.Source)
+	}
+
+	return nil
+}
+
+func validateMountsExist(spec *rspec.Spec) error {
+	fmt.Println("validating mounts exist")
+	mountInfos, err := mount.GetMounts()
+	if err != nil {
+		return err
+	}
+
+	mountsMap := make(map[string][]rspec.Mount)
+	for _, mountInfo := range mountInfos {
+		m := rspec.Mount{
+			Destination: mountInfo.Mountpoint,
+			Type:        mountInfo.Fstype,
+			Source:      mountInfo.Source,
+		}
+		mountsMap[mountInfo.Mountpoint] = append(mountsMap[mountInfo.Mountpoint], m)
+	}
+
+	for _, specMount := range spec.Mounts {
+		found := false
+		for _, sysMount := range mountsMap[specMount.Destination] {
+			if err := mountMatch(specMount, sysMount); err == nil {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("Expected mount %v does not exist", specMount)
+		}
+	}
+
 	return nil
 }
 
@@ -255,6 +306,7 @@ func main() {
 		validateSysctls,
 		validateMaskedPaths,
 		validateROPaths,
+		validateMountsExist,
 	}
 
 	for _, v := range validations {
