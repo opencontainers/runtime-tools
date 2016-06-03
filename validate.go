@@ -98,6 +98,9 @@ func checkSemVer(version string) {
 	if err != nil {
 		logrus.Fatalf("%q is not valid SemVer: %s", version, err.Error())
 	}
+	if version != rspec.Version {
+		logrus.Fatalf("internal error: validate currently only handles version %s, but the supplied configuration targets %s", rspec.Version, version)
+	}
 }
 
 func checkPlatform(platform rspec.Platform) {
