@@ -15,6 +15,7 @@ import (
 	"github.com/opencontainers/ocitools/cmd/runtimetest/mount"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/syndtr/gocapability/capability"
+	"github.com/urfave/cli"
 )
 
 type validation func(*rspec.Spec) error
@@ -291,10 +292,10 @@ func validateMountsExist(spec *rspec.Spec) error {
 	return nil
 }
 
-func main() {
+func validate(context *cli.Context) error {
 	spec, err := loadSpecConfig()
 	if err != nil {
-		logrus.Fatalf("Failed to load configuration: %q", err)
+		return err
 	}
 
 	validations := []validation{
@@ -311,7 +312,19 @@ func main() {
 
 	for _, v := range validations {
 		if err := v(spec); err != nil {
-			logrus.Fatalf("Validation failed: %q", err)
+			return err
 		}
 	}
+
+	return nil
+}
+
+func main() {
+	app := cli.NewApp()
+	app.Name = "runtimetest"
+	app.Version = "0.0.1"
+	app.Usage = "Compare the environment with an OCI configuration"
+	app.UsageText = "runtimetest [options]"
+	app.Action = validate
+	app.Run(os.Args)
 }
