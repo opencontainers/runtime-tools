@@ -38,6 +38,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
+	cli.StringFlag{Name: "cgroups-path", Usage: "specify the path to the cgroups"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
 	cli.StringSliceFlag{Name: "prestart", Usage: "path to prestart hooks"},
@@ -138,6 +139,7 @@ func modify(spec *rspec.Spec, context *cli.Context) error {
 		spec.Process.Args = make([]string, 0)
 	}
 	spec.Process.SelinuxLabel = context.String("selinux-label")
+	spec.Linux.CgroupsPath = sPtr(context.String("cgroups-path"))
 	spec.Linux.MountLabel = context.String("mount-label")
 	spec.Platform.OS = context.String("os")
 	spec.Platform.Arch = context.String("arch")
