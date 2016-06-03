@@ -101,25 +101,11 @@ func validateProcess(spec *rspec.Spec) error {
 
 func validateCapabilities(spec *rspec.Spec) error {
 	fmt.Println("validating capabilities")
-	capabilityMap := make(map[string]capability.Cap)
-	expectedCaps := make(map[capability.Cap]bool)
+
 	last := capability.CAP_LAST_CAP
 	// workaround for RHEL6 which has no /proc/sys/kernel/cap_last_cap
 	if last == capability.Cap(63) {
 		last = capability.CAP_BLOCK_SUSPEND
-	}
-	for _, cap := range capability.List() {
-		if cap > last {
-			continue
-		}
-		capKey := fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String()))
-		capabilityMap[capKey] = cap
-		expectedCaps[cap] = false
-	}
-
-	for _, ec := range spec.Process.Capabilities {
-		cap := capabilityMap[ec]
-		expectedCaps[cap] = true
 	}
 
 	processCaps, err := capability.NewPid(1)
@@ -127,8 +113,18 @@ func validateCapabilities(spec *rspec.Spec) error {
 		return err
 	}
 
+	expectedCaps := make(map[string]bool)
+	for _, ec := range spec.Process.Capabilities {
+		expectedCaps[ec] = true
+	}
+
 	for _, cap := range capability.List() {
-		expectedSet := expectedCaps[cap]
+		if cap > last {
+			continue
+		}
+
+		capKey := fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String()))
+		expectedSet := expectedCaps[capKey]
 		actuallySet := processCaps.Get(capability.EFFECTIVE, cap)
 		if expectedSet != actuallySet {
 			if expectedSet {
