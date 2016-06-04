@@ -48,6 +48,7 @@ var bundleValidateCommand = cli.Command{
 	Name:  "validate",
 	Usage: "validate a OCI bundle",
 	Flags: bundleValidateFlags,
+	Before: before,
 	Action: func(context *cli.Context) error {
 		inputPath := context.String("path")
 		if inputPath == "" {

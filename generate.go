@@ -83,6 +83,7 @@ var generateCommand = cli.Command{
 	Name:  "generate",
 	Usage: "generate a OCI spec file",
 	Flags: generateFlags,
+	Before: before,
 	Action: func(context *cli.Context) error {
 		spec := getDefaultTemplate()
 		template := context.String("template")
