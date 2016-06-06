@@ -8,12 +8,12 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/blang/semver"
 	"github.com/codegangsta/cli"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 )
@@ -94,9 +94,12 @@ func bundleValidate(spec rspec.Spec, rootfs string, hooksCheck bool) {
 }
 
 func checkSemVer(version string) {
-	re, _ := regexp.Compile("^(\\d+)?\\.(\\d+)?\\.(\\d+)?$")
-	if ok := re.Match([]byte(version)); !ok {
-		logrus.Fatalf("%q is not a valid version format, please read 'SemVer v2.0.0'", version)
+	_, err := semver.Parse(version)
+	if err != nil {
+		logrus.Fatalf("%q is not valid SemVer: %s", version, err.Error())
+	}
+	if version != rspec.Version {
+		logrus.Fatalf("internal error: validate currently only handles version %s, but the supplied configuration targets %s", rspec.Version, version)
 	}
 }
 
