@@ -84,7 +84,7 @@ var generateCommand = cli.Command{
 	Usage: "generate a OCI spec file",
 	Flags: generateFlags,
 	Action: func(context *cli.Context) {
-		spec := getDefaultTemplate()
+		spec := GetDefaultTemplate()
 		template := context.String("template")
 		if template != "" {
 			var err error
@@ -152,10 +152,11 @@ func modify(spec *rspec.Spec, context *cli.Context) error {
 		spec.Process.Terminal = context.Bool("tty")
 	}
 
+	fmt.Println(context.StringSlice("args"))
 	for i, a := range context.StringSlice("args") {
 		if a != "" {
 			if i == 0 {
-				// Replace "sh" from getDefaultTemplate()
+				// Replace "sh" from GetDefaultTemplate()
 				spec.Process.Args[0] = a
 			} else {
 				spec.Process.Args = append(spec.Process.Args, a)
@@ -711,7 +712,8 @@ func removeNamespace(namespaces *[]rspec.Namespace, namespaceType rspec.Namespac
 
 func sPtr(s string) *string { return &s }
 
-func getDefaultTemplate() *rspec.Spec {
+//GetDefaultTemplate provides a default oci spec.
+func GetDefaultTemplate() *rspec.Spec {
 	spec := rspec.Spec{
 		Version: rspec.Version,
 		Platform: rspec.Platform{

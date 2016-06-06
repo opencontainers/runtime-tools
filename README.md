@@ -29,18 +29,15 @@ FATA[0000] Bundle path shouldn't be empty
 ## Testing OCI runtimes
 
 ```sh
-$ make
-$ sudo make install
-$ sudo ./test_runtime.sh -r runc
------------------------------------------------------------------------------------
-VALIDATING RUNTIME: runc
------------------------------------------------------------------------------------
-validating container process
+
+# ocitools runtimetest -r runc
+INFO[0000] Start to test runtime lifecycle...
+INFO[0001] Runtime lifecycle test succeeded.
+INFO[0001] Start to test runtime operation...
+INFO[0006] Runtime operation test succeeded.
+INFO[0006] Start to test runtime main config...
+INFO[0006] validating container process
 validating capabilities
-validating hostname
-validating rlimits
-validating sysctls
-Runtime runc passed validation
 ```
 
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/master/bundle.md
