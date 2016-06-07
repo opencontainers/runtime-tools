@@ -64,7 +64,7 @@ cp runtimetest ${TESTDIR}
 
 
 pushd $TESTDIR > /dev/null
-ocitools generate --args /runtimetest --rootfs ""
+ocitools generate --args /runtimetest --rootfs "" --mount-cgroups=no
 popd > /dev/null
 
 TESTCMD="${RUNTIME} start $(uuidgen)"
