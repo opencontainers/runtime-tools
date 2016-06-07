@@ -14,8 +14,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/blang/semver"
-	"github.com/codegangsta/cli"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/urfave/cli"
 )
 
 var bundleValidateFlags = []cli.Flag{
