@@ -83,29 +83,30 @@ var generateCommand = cli.Command{
 	Name:  "generate",
 	Usage: "generate a OCI spec file",
 	Flags: generateFlags,
-	Action: func(context *cli.Context) {
+	Action: func(context *cli.Context) error {
 		spec := getDefaultTemplate()
 		template := context.String("template")
 		if template != "" {
 			var err error
 			spec, err = loadTemplate(template)
 			if err != nil {
-				logrus.Fatal(err)
+				return err
 			}
 		}
 
 		err := modify(spec, context)
 		if err != nil {
-			logrus.Fatal(err)
+			return err
 		}
 		cName := "config.json"
 		data, err := json.MarshalIndent(&spec, "", "\t")
 		if err != nil {
-			logrus.Fatal(err)
+			return err
 		}
 		if err := ioutil.WriteFile(cName, data, 0666); err != nil {
-			logrus.Fatal(err)
+			return err
 		}
+		return nil
 	},
 }
 

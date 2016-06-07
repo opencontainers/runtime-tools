@@ -48,39 +48,40 @@ var bundleValidateCommand = cli.Command{
 	Name:  "validate",
 	Usage: "validate a OCI bundle",
 	Flags: bundleValidateFlags,
-	Action: func(context *cli.Context) {
+	Action: func(context *cli.Context) error {
 		inputPath := context.String("path")
 		if inputPath == "" {
-			logrus.Fatalf("Bundle path shouldn't be empty")
+			return fmt.Errorf("Bundle path shouldn't be empty")
 		}
 
 		if _, err := os.Stat(inputPath); err != nil {
-			logrus.Fatal(err)
+			return err
 		}
 
 		configPath := path.Join(inputPath, "config.json")
 		content, err := ioutil.ReadFile(configPath)
 		if err != nil {
-			logrus.Fatal(err)
+			return err
 		}
 		if !utf8.Valid(content) {
-			logrus.Fatalf("%q is not encoded in UTF-8", configPath)
+			return fmt.Errorf("%q is not encoded in UTF-8", configPath)
 		}
 		var spec rspec.Spec
 		if err = json.Unmarshal(content, &spec); err != nil {
-			logrus.Fatal(err)
+			return err
 		}
 
 		rootfsPath := path.Join(inputPath, spec.Root.Path)
 		if fi, err := os.Stat(rootfsPath); err != nil {
-			logrus.Fatalf("Cannot find the root path %q", rootfsPath)
+			return fmt.Errorf("Cannot find the root path %q", rootfsPath)
 		} else if !fi.IsDir() {
-			logrus.Fatalf("The root path %q is not a directory.", rootfsPath)
+			return fmt.Errorf("The root path %q is not a directory.", rootfsPath)
 		}
 
 		hooksCheck := context.Bool("hooks")
 		bundleValidate(spec, rootfsPath, hooksCheck)
 		logrus.Infof("Bundle validation succeeded.")
+		return nil
 	},
 }
 
