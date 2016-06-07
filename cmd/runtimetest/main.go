@@ -201,7 +201,7 @@ func testWriteAccess(path string) error {
 }
 
 func validateRootFS(spec *rspec.Spec) error {
-	fmt.Println("validating root")
+	fmt.Println("validating root filesystem")
 	if spec.Root.Readonly {
 		err := testWriteAccess("/")
 		if err == nil {
