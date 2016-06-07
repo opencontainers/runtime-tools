@@ -76,13 +76,13 @@ func validateProcess(spec *rspec.Spec) error {
 		return err
 	}
 
-	args := strings.Split(string(bytes.Trim(cmdlineBytes, "\x00")), " ")
+	args := bytes.Split(bytes.Trim(cmdlineBytes, "\x00"), []byte("\x00"))
 	if len(args) != len(spec.Process.Args) {
 		return fmt.Errorf("Process arguments expected: %v, actual: %v", len(spec.Process.Args), len(args))
 	}
 	for i, a := range args {
-		if a != spec.Process.Args[i] {
-			return fmt.Errorf("Process arguments expected: %v, actual: %v", a, spec.Process.Args[i])
+		if string(a) != spec.Process.Args[i] {
+			return fmt.Errorf("Process arguments expected: %v, actual: %v", string(a), spec.Process.Args[i])
 		}
 	}
 
