@@ -19,7 +19,7 @@ import (
 )
 
 var bundleValidateFlags = []cli.Flag{
-	cli.StringFlag{Name: "path", Usage: "path to a bundle"},
+	cli.StringFlag{Name: "path", Value: ".", Usage: "path to a bundle"},
 	cli.BoolFlag{Name: "hooks", Usage: "Check specified hooks exist and are executable on the host."},
 }
 

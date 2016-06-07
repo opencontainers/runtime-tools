@@ -19,11 +19,12 @@ $ cat config.json
 ## Validating an OCI bundle
 
 [`ocitools validate`][validate.1] validates an OCI bundle.
+The error message will be printed if the OCI bundle failed the validation procedure.
 
 ```sh
 $ ocitools generate
 $ ocitools validate
-FATA[0000] Bundle path shouldn't be empty
+INFO[0000] Bundle validation succeeded.
 ```
 
 ## Testing OCI runtimes
