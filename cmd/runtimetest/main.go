@@ -18,6 +18,10 @@ import (
 	"github.com/urfave/cli"
 )
 
+// PR_GET_NO_NEW_PRIVS isn't exposed in Golang so we define it ourselves copying the value from
+// the kernel
+const PR_GET_NO_NEW_PRIVS = 39
+
 type validation func(*rspec.Spec) error
 
 func loadSpecConfig() (spec *rspec.Spec, err error) {
@@ -96,6 +100,17 @@ func validateProcess(spec *rspec.Spec) error {
 		if actualValue != expectedValue {
 			return fmt.Errorf("Env %v expected: %v, actual: %v", key, expectedValue, actualValue)
 		}
+	}
+
+	ret, _, errno := syscall.Syscall6(syscall.SYS_PRCTL, PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0, 0)
+	if errno != 0 {
+		return errno
+	}
+	if spec.Process.NoNewPrivileges && ret != 1 {
+		return fmt.Errorf("NoNewPrivileges expected: true, actual: false")
+	}
+	if !spec.Process.NoNewPrivileges && ret != 0 {
+		return fmt.Errorf("NoNewPrivileges expected: false, actual: true")
 	}
 
 	return nil
@@ -334,7 +349,7 @@ func main() {
 	app.UsageText = "runtimetest [options]"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "log-level",
+			Name:  "log-level",
 			Value: "error",
 			Usage: "Log level (panic, fatal, error, warn, info, or debug)",
 		},
