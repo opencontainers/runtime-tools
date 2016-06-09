@@ -3,11 +3,23 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+BASH="${BASH_VERSION%.*}"
+BASH_MAJOR="${BASH%.*}"
+BASH_MINOR="${BASH#*.}"
+
+if test "${BASH_MAJOR}" -eq 3 && test "${BASH_MINOR}" -eq 0
+then
+	echo "ERROR: ${0} requires Bash version >= 3.1" >&2
+	echo "you're running ${BASH}, which doesn't support += array assignment" >&2
+	exit 1
+fi
+
 RUNTIME="runc"
+TEST_ARGS=('--args' '/runtimetest')
 KEEP=0 # Track whether we keep the test directory around or clean it up
 
 usage() {
-	echo "$0 -r <runtime> -k -h"
+	echo "$0 -l <log-level> -r <runtime> -k -h"
 }
 
 error() {
@@ -19,8 +31,11 @@ info() {
 	echo $*
 }
 
-while getopts "r:kh" opt; do
+while getopts "l:r:kh" opt; do
 	case "${opt}" in
+		l)
+			TEST_ARGS+=('--args' "--log-level=${OPTARG}")
+			;;
 		r)
 			RUNTIME=${OPTARG}
 			;;
@@ -62,9 +77,8 @@ trap cleanup EXIT
 tar -xf  rootfs.tar.gz -C ${TESTDIR}
 cp runtimetest ${TESTDIR}
 
-
 pushd $TESTDIR > /dev/null
-ocitools generate --args /runtimetest --rootfs ""
+ocitools generate "${TEST_ARGS[@]}" --rootfs ""
 popd > /dev/null
 
 TESTCMD="${RUNTIME} start $(uuidgen)"

@@ -15,6 +15,7 @@ import (
 	"github.com/opencontainers/ocitools/cmd/runtimetest/mount"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/syndtr/gocapability/capability"
+	"github.com/urfave/cli"
 )
 
 type validation func(*rspec.Spec) error
@@ -36,7 +37,7 @@ func loadSpecConfig() (spec *rspec.Spec, err error) {
 }
 
 func validateProcess(spec *rspec.Spec) error {
-	fmt.Println("validating container process")
+	logrus.Debugf("validating container process")
 	uid := os.Getuid()
 	if uint32(uid) != spec.Process.User.UID {
 		return fmt.Errorf("UID expected: %v, actual: %v", spec.Process.User.UID, uid)
@@ -101,7 +102,7 @@ func validateProcess(spec *rspec.Spec) error {
 }
 
 func validateCapabilities(spec *rspec.Spec) error {
-	fmt.Println("validating capabilities")
+	logrus.Debugf("validating capabilities")
 
 	last := capability.CAP_LAST_CAP
 	// workaround for RHEL6 which has no /proc/sys/kernel/cap_last_cap
@@ -139,7 +140,7 @@ func validateCapabilities(spec *rspec.Spec) error {
 }
 
 func validateHostname(spec *rspec.Spec) error {
-	fmt.Println("validating hostname")
+	logrus.Debugf("validating hostname")
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
@@ -151,7 +152,7 @@ func validateHostname(spec *rspec.Spec) error {
 }
 
 func validateRlimits(spec *rspec.Spec) error {
-	fmt.Println("validating rlimits")
+	logrus.Debugf("validating rlimits")
 	for _, r := range spec.Process.Rlimits {
 		rl, err := strToRlimit(r.Type)
 		if err != nil {
@@ -174,7 +175,7 @@ func validateRlimits(spec *rspec.Spec) error {
 }
 
 func validateSysctls(spec *rspec.Spec) error {
-	fmt.Println("validating sysctls")
+	logrus.Debugf("validating sysctls")
 	for k, v := range spec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
 		vBytes, err := ioutil.ReadFile(keyPath)
@@ -202,7 +203,7 @@ func testWriteAccess(path string) error {
 }
 
 func validateRootFS(spec *rspec.Spec) error {
-	fmt.Println("validating root filesystem")
+	logrus.Debugf("validating root filesystem")
 	if spec.Root.Readonly {
 		err := testWriteAccess("/")
 		if err == nil {
@@ -214,7 +215,7 @@ func validateRootFS(spec *rspec.Spec) error {
 }
 
 func validateMaskedPaths(spec *rspec.Spec) error {
-	fmt.Println("validating maskedPaths")
+	logrus.Debugf("validating maskedPaths")
 	for _, maskedPath := range spec.Linux.MaskedPaths {
 		f, err := os.Open(maskedPath)
 		if err != nil {
@@ -231,7 +232,7 @@ func validateMaskedPaths(spec *rspec.Spec) error {
 }
 
 func validateROPaths(spec *rspec.Spec) error {
-	fmt.Println("validating readonlyPaths")
+	logrus.Debugf("validating readonlyPaths")
 	for _, v := range spec.Linux.ReadonlyPaths {
 		err := testWriteAccess(v)
 		if err == nil {
@@ -259,7 +260,7 @@ func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
 }
 
 func validateMountsExist(spec *rspec.Spec) error {
-	fmt.Println("validating mounts exist")
+	logrus.Debugf("validating mounts exist")
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
 		return err
@@ -291,10 +292,17 @@ func validateMountsExist(spec *rspec.Spec) error {
 	return nil
 }
 
-func main() {
+func validate(context *cli.Context) error {
+	logLevelString := context.String("log-level")
+	logLevel, err := logrus.ParseLevel(logLevelString)
+	if err != nil {
+		return err
+	}
+	logrus.SetLevel(logLevel)
+
 	spec, err := loadSpecConfig()
 	if err != nil {
-		logrus.Fatalf("Failed to load configuration: %q", err)
+		return err
 	}
 
 	validations := []validation{
@@ -311,7 +319,27 @@ func main() {
 
 	for _, v := range validations {
 		if err := v(spec); err != nil {
-			logrus.Fatalf("Validation failed: %q", err)
+			return err
 		}
 	}
+
+	return nil
+}
+
+func main() {
+	app := cli.NewApp()
+	app.Name = "runtimetest"
+	app.Version = "0.0.1"
+	app.Usage = "Compare the environment with an OCI configuration"
+	app.UsageText = "runtimetest [options]"
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name: "log-level",
+			Value: "error",
+			Usage: "Log level (panic, fatal, error, warn, info, or debug)",
+		},
+	}
+
+	app.Action = validate
+	app.Run(os.Args)
 }
