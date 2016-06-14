@@ -10,7 +10,7 @@ This approval process hopes to encourage early consistent consensus building dur
 
 **Making a release:** OCI specification projects MUST announce intentions to release with two project maintainer sponsors (listed in the repo MAINTAINERS file) on the dev@opencontainers.org mailing list. After the announcement a two-thirds super majority of project maintainers MUST reply to the list with an LGTM within one week for the release to be approved. The maintainers MUST wait a full week for maintainers to reply but if all maintainers reply with an LGTM then the release MAY release earlier except in the case of a major releases.
 
-**Rejecting a release:** A project maintainer MAY choose to reply with REJECT and MUST include a list of concerns filed as GitHub issues. The project maintainers SHOULD try to resolve the concerns and wait for the rejecting maintainer to change their opinion to LGTM. However, a release MAY continue with a single REJECT as long two-thirds of the project maintainers approved the release.
+**Rejecting a release:** A project maintainer MAY choose to reply with REJECT and MUST include a list of concerns filed as GitHub issues. The project maintainers SHOULD try to resolve the concerns and wait for the rejecting maintainer to change their opinion to LGTM. However, a release MAY continue with REJECTs as long two-thirds of the project maintainers approved the release.
 
 **Timelines:** Specifications have a variety of different timelines in their lifecycle. In early stages the spec SHOULD release often to garner feedback. In later stages there will be bug fix releases, security fix releases, and major breaking change releases. Each of these should have a different level of notification.
 
@@ -23,6 +23,6 @@ This approval process hopes to encourage early consistent consensus building dur
 
 **Making a release:** OCI application projects MUST announce intentions to release with two project maintainer sponsors on the dev@opencontainers.org mailing list. After the announcement at least one more project maintainer MUST reply to the list with an LGTM within one week for the release to be approved. The maintainers SHOULD wait one week for maintainers to reply and review. If all maintainers reply with an LGTM then the release MAY release earlier.
 
-**Rejecting a release:** A project maintainer MAY choose to reply with REJECT and MUST include a list of concerns filed as GitHub issues. The project maintainers SHOULD try to resolve the concerns and wait for the rejecting maintainer to change their opinion to LGTM. However, a release MAY continue with a single REJECT.
+**Rejecting a release:** A project maintainer MAY choose to reply with REJECT and MUST include a list of concerns filed as GitHub issues. The project maintainers SHOULD try to resolve the concerns and wait for the rejecting maintainer to change their opinion to LGTM. However, a release MAY continue with REJECTs as long two-thirds of the project maintainers approved the release.
 
 Security fix releases MUST follow a special release process that substitutes the dev@opencontainers.org email for security@opencontainers.org.
