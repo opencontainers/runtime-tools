@@ -21,7 +21,7 @@ This approval process hopes to encourage early consistent consensus building dur
 
 ## Conformance/Testing and Applications Releases
 
-**Making a release:** OCI application projects MUST announce intentions to release with two project maintainer sponsors on the dev@opencontainers.org mailing list. After the announcement at least one more project maintainer MUST reply to the list with an LGTM within two business days for the release to be approved. The maintainers SHOULD wait two business days for maintainers to reply and review. If all maintainers reply with an LGTM then the release MAY release earlier.
+**Making a release:** OCI application projects MUST announce intentions to release with two project maintainer sponsors on the dev@opencontainers.org mailing list. After the announcement at least one more project maintainer MUST reply to the list with an LGTM within one week for the release to be approved. The maintainers SHOULD wait one week for maintainers to reply and review. If all maintainers reply with an LGTM then the release MAY release earlier.
 
 **Rejecting a release:** A project maintainer MAY choose to reply with REJECT and MUST include a list of concerns filed as GitHub issues. The project maintainers SHOULD try to resolve the concerns and wait for the rejecting maintainer to change their opinion to LGTM. However, a release MAY continue with a single REJECT.
 
