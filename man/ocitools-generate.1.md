@@ -159,6 +159,15 @@ inside of the container.
 **--seccomp-syscalls**=SYSCALLS
   Specifies Additional syscalls permitted to be used for system calls,
   e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op
+  See --seccomp-allow and --seccomp-errno for convenient way to set seccomp syscall options.
+
+**--seccomp-allow**=SYSCALL
+  Specifies syscalls to be added to the ALLOW list.
+  See --seccomp-syscalls for setting limits on arguments.
+
+**--seccomp-errno**=SYSCALL
+  Specifies syscalls to be added to the ERRNO list.
+  See --seccomp-syscalls for setting limits on arguments.
 
 **--selinux-label**=PROCESSLABEL
   SELinux Label
