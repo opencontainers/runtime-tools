@@ -271,9 +271,12 @@ func envValid(env string) bool {
 	if len(items) < 2 {
 		return false
 	}
-	for _, ch := range strings.TrimSpace(items[0]) {
+	for i, ch := range strings.TrimSpace(items[0]) {
 		if !unicode.IsDigit(ch) && !unicode.IsLetter(ch) && ch != '_' {
 			return false
+		}
+		if i == 0 && unicode.IsDigit(ch) {
+			logrus.Warnf("Env %v: variable name beginning with digit is not recommended.", env)
 		}
 	}
 	return true
