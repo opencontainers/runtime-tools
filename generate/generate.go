@@ -196,6 +196,16 @@ func (g *Generator) Spec() *rspec.Spec {
 func (g *Generator) Save(w io.Writer, exportOpts ExportOptions) (err error) {
 	var data []byte
 
+	if g.spec.Linux != nil {
+		buf, err := json.Marshal(g.spec.Linux)
+		if err != nil {
+			return err
+		}
+		if string(buf) == "{}" {
+			g.spec.Linux = nil
+		}
+	}
+
 	if exportOpts.Seccomp {
 		data, err = json.MarshalIndent(g.spec.Linux.Seccomp, "", "\t")
 	} else {
