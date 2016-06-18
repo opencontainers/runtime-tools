@@ -78,7 +78,7 @@ tar -xf  rootfs.tar.gz -C ${TESTDIR}
 cp runtimetest ${TESTDIR}
 
 pushd $TESTDIR > /dev/null
-ocitools generate "${TEST_ARGS[@]}" --rootfs '.'
+ocitools generate "${TEST_ARGS[@]}" --rootfs '.' --user '' --uidmappings "$(id -u):0:1" --gidmappings "$(id -g):0:1"
 popd > /dev/null
 
 TESTCMD="${RUNTIME} start $(uuidgen)"
