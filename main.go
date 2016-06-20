@@ -14,7 +14,7 @@ func main() {
 	app.Usage = "Utilities for OCI"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "log-level",
+			Name:  "log-level",
 			Value: "error",
 			Usage: "Log level (panic, fatal, error, warn, info, or debug)",
 		},
