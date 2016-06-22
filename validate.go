@@ -308,6 +308,7 @@ func namespaceValid(ns rspec.Namespace) bool {
 	case rspec.IPCNamespace:
 	case rspec.UTSNamespace:
 	case rspec.UserNamespace:
+	case rspec.CgroupNamespace:
 	default:
 		return false
 	}
