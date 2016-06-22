@@ -1,6 +1,6 @@
 # OCI Project Release Approval Process v1.0
 
-OCI projects need a standard process for making releases so the community of maintainers can consistently know when something can be tagged and released. This approval process hopes to encourage early consistent consensus building during project and specification development. The mechanisms used are regular community communication on the mailing list about progress, scheduled meetings for issue resolution and release triage, and regularly paced and communicated releases. An anti-pattern that we want to avoid is heavy development or discussions "late cycle" around major releases. We want do build a community that is involved and communicates consistently through all releases instead of relying on "silent periods" as a judge of stability.
+OCI projects need a standard process for making releases so the community of maintainers can consistently know when something can be tagged and released. This approval process hopes to encourage early consistent consensus building during project and specification development. The mechanisms used are regular community communication on the mailing list about progress, scheduled meetings for issue resolution and release triage, and regularly paced and communicated releases. An anti-pattern that we want to avoid is heavy development or discussions "late cycle" around major releases. We want to build a community that is involved and communicates consistently through all releases instead of relying on "silent periods" as a judge of stability.
 
 ## List-based voting
 
