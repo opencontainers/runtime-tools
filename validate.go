@@ -45,9 +45,9 @@ var (
 )
 
 var bundleValidateCommand = cli.Command{
-	Name:  "validate",
-	Usage: "validate a OCI bundle",
-	Flags: bundleValidateFlags,
+	Name:   "validate",
+	Usage:  "validate a OCI bundle",
+	Flags:  bundleValidateFlags,
 	Before: before,
 	Action: func(context *cli.Context) error {
 		inputPath := context.String("path")
@@ -168,6 +168,10 @@ func checkProcess(process rspec.Process, rootfs string) {
 		if !envValid(env) {
 			logrus.Fatalf("env %q should be in the form of 'key=value'. The left hand side must consist solely of letters, digits, and underscores '_'.", env)
 		}
+	}
+
+	if len(process.Args) < 1 {
+		logrus.Fatalf("args should not be empty")
 	}
 
 	for index := 0; index < len(process.Capabilities); index++ {
