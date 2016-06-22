@@ -70,7 +70,7 @@ $ echo $?
 
 [posix-encoding]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap06.html#tag_06_02
 [posix-lang]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
-[posix-locale-encoding: http://www.unicode.org/reports/tr35/#Bundle_vs_Item_Lookup
+[posix-locale-encoding]: http://www.unicode.org/reports/tr35/#Bundle_vs_Item_Lookup
 [standard-streams]: https://github.com/opencontainers/specs/blob/v0.1.1/runtime-linux.md#file-descriptors
 [systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
 [UTF-8]: http://www.unicode.org/versions/Unicode8.0.0/ch03.pdf
