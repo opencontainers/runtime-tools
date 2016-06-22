@@ -35,7 +35,7 @@ Print the runtime version and exit.
   * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
 * *Exit code:* The runtime MUST exit with zero.
 
-Example:
+#### Example
 
 ```
 $ funC version
@@ -59,7 +59,7 @@ Start a container from a bundle directory.
     For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the application process (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
 * *Exit code:* The runtime MUST exit with the application process's exit code.
 
-Example:
+#### Example
 
 ```
 # in a bundle directory with a process that echos "hello" and exits 42
