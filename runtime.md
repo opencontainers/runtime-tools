@@ -36,7 +36,8 @@ Print the runtime version and exit.
 * *Exit code:* The runtime MUST exit with zero.
 
 Example:
-```sh
+
+```
 $ funC version
 funC 1.0.0
 Built for x86_64-pc-linux-gnu
@@ -59,7 +60,8 @@ Start a container from a bundle directory.
 * *Exit code:* The runtime MUST exit with the application process's exit code.
 
 Example:
-```sh
+
+```
 # in a bundle directory with a process that echos "hello" and exits 42
 $ funC start --id hello-1
 hello
