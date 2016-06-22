@@ -17,8 +17,8 @@ If the runtime is invoked with an unrecognized command, it MUST exit with a nonz
 
 ## Character encodings
 
-This API specification does not cover character encodings, but runtimes should conform to their native operating system.
-For example, POSIX systems define [`LANG` and related environment variables][posix-lang] for [declaring][posix-locale-encoding] [locale-specific character encodings][posix-encoding], so a runtime in an `en_US.UTF-8` locale should write its [version](#version) to stdout in [UTF-8][].
+This API specification does not cover character encodings, but runtimes SHOULD conform to their native operating system.
+For example, POSIX systems define [`LANG` and related environment variables][posix-lang] for [declaring][posix-locale-encoding] [locale-specific character encodings][posix-encoding], so a runtime in an `en_US.UTF-8` locale SHOULD write its [version](#version) to stdout in [UTF-8][].
 
 ## Commands
 
