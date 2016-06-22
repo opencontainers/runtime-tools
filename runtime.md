@@ -70,6 +70,38 @@ $ echo $?
 42
 ```
 
+### state
+
+Request the container state.
+
+* *Arguments*
+  * *`<ID>`* The container whose state is being requested.
+* *Standard streams:*
+  * *stdin:* The runtime MUST NOT attempt to read from its stdin.
+  * *stdout:* The runtime MUST print the state JSON to its stdout.
+  * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+* *Exit code:* Zero if the state was successfully written to stdout and non-zero on errors.
+
+#### Example
+
+```
+# in a bundle directory with a process that sleeps for several seconds
+$ funC start --id sleeper-1 &
+$ funC state sleeper-1
+{
+  "ociVersion": "1.0.0-rc1",
+  "id": "sleeper-1",
+  "status": "running",
+  "pid": 4422,
+  "bundlePath": "/containers/sleeper",
+  "annotations" {
+    "myKey": "myValue"
+  }
+}
+$ echo $?
+0
+```
+
 [posix-encoding]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap06.html#tag_06_02
 [posix-lang]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
 [posix-locale-encoding]: http://www.unicode.org/reports/tr35/#Bundle_vs_Item_Lookup
