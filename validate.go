@@ -383,7 +383,7 @@ func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, paren
 	mandatory := !strings.Contains(tagField.Tag.Get("json"), "omitempty")
 	switch field.Kind() {
 	case reflect.Ptr:
-		if mandatory && field.IsNil() == true {
+		if mandatory && field.IsNil() {
 			msgs = append(msgs, fmt.Sprintf("'%s.%s' should not be empty.", parent, tagField.Name))
 			return msgs, false
 		}
@@ -393,7 +393,7 @@ func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, paren
 			return msgs, false
 		}
 	case reflect.Slice:
-		if mandatory && (field.Len() == 0) {
+		if mandatory && (field.IsNil() || field.Len() == 0) {
 			msgs = append(msgs, fmt.Sprintf("'%s.%s' should not be empty.", parent, tagField.Name))
 			return msgs, false
 		}
@@ -409,7 +409,7 @@ func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, paren
 		}
 		return msgs, valid
 	case reflect.Map:
-		if mandatory && ((field.IsNil() == true) || (field.Len() == 0)) {
+		if mandatory && (field.IsNil() || field.Len() == 0) {
 			msgs = append(msgs, fmt.Sprintf("'%s.%s' should not be empty.", parent, tagField.Name))
 			return msgs, false
 		}
