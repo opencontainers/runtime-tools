@@ -22,6 +22,15 @@ import (
 // the kernel
 const PR_GET_NO_NEW_PRIVS = 39
 
+var (
+	defaultFS = map[string]string{
+		"/proc":    "proc",
+		"/sys":     "sysfs",
+		"/dev/pts": "devpts",
+		"/dev/shm": "tmpfs",
+	}
+)
+
 type validation func(*rspec.Spec) error
 
 func loadSpecConfig() (spec *rspec.Spec, err error) {
@@ -229,6 +238,28 @@ func validateRootFS(spec *rspec.Spec) error {
 	return nil
 }
 
+func validateDefaultFS(spec *rspec.Spec) error {
+	logrus.Debugf("validating linux default filesystem")
+
+	mountInfos, err := mount.GetMounts()
+	if err != nil {
+		return err
+	}
+
+	mountsMap := make(map[string]string)
+	for _, mountInfo := range mountInfos {
+		mountsMap[mountInfo.Mountpoint] = mountInfo.Fstype
+	}
+
+	for fs, fstype := range defaultFS {
+		if !(mountsMap[fs] == fstype) {
+			return fmt.Errorf("%v must exist and expected type is %v", fs, fstype)
+		}
+	}
+
+	return nil
+}
+
 func validateMaskedPaths(spec *rspec.Spec) error {
 	logrus.Debugf("validating maskedPaths")
 	for _, maskedPath := range spec.Linux.MaskedPaths {
@@ -276,6 +307,7 @@ func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
 
 func validateMountsExist(spec *rspec.Spec) error {
 	logrus.Debugf("validating mounts exist")
+
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
 		return err
@@ -321,6 +353,7 @@ func validate(context *cli.Context) error {
 	}
 
 	validations := []validation{
+		validateDefaultFS,
 		validateRootFS,
 		validateProcess,
 		validateCapabilities,
