@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -20,7 +21,7 @@ import (
 
 var bundleValidateFlags = []cli.Flag{
 	cli.StringFlag{Name: "path", Value: ".", Usage: "path to a bundle"},
-	cli.BoolFlag{Name: "hooks", Usage: "Check specified hooks exist and are executable on the host."},
+	cli.BoolFlag{Name: "host-specific", Usage: "Check host specific configs."},
 }
 
 var (
@@ -79,20 +80,21 @@ var bundleValidateCommand = cli.Command{
 			return fmt.Errorf("The root path %q is not a directory.", rootfsPath)
 		}
 
-		hooksCheck := context.Bool("hooks")
-		bundleValidate(spec, rootfsPath, hooksCheck)
+		hostCheck := context.Bool("host-specific")
+		bundleValidate(spec, rootfsPath, hostCheck)
 		logrus.Infof("Bundle validation succeeded.")
 		return nil
 	},
 }
 
-func bundleValidate(spec rspec.Spec, rootfs string, hooksCheck bool) {
+func bundleValidate(spec rspec.Spec, rootfs string, hostCheck bool) {
 	checkMandatoryField(spec)
 	checkSemVer(spec.Version)
 	checkPlatform(spec.Platform)
 	checkProcess(spec.Process, rootfs)
+	checkMounts(spec, hostCheck)
 	checkLinux(spec)
-	checkHooks(spec.Hooks, hooksCheck)
+	checkHooks(spec.Hooks, hostCheck)
 }
 
 func checkSemVer(version string) {
@@ -129,19 +131,19 @@ func checkPlatform(platform rspec.Platform) {
 	logrus.Fatalf("Operation system %q of the bundle is not supported yet.", platform.OS)
 }
 
-func checkHooks(hooks rspec.Hooks, hooksCheck bool) {
-	checkEventHooks("pre-start", hooks.Prestart, hooksCheck)
-	checkEventHooks("post-start", hooks.Poststart, hooksCheck)
-	checkEventHooks("post-stop", hooks.Poststop, hooksCheck)
+func checkHooks(hooks rspec.Hooks, hostCheck bool) {
+	checkEventHooks("pre-start", hooks.Prestart, hostCheck)
+	checkEventHooks("post-start", hooks.Poststart, hostCheck)
+	checkEventHooks("post-stop", hooks.Poststop, hostCheck)
 }
 
-func checkEventHooks(hookType string, hooks []rspec.Hook, hooksCheck bool) {
+func checkEventHooks(hookType string, hooks []rspec.Hook, hostCheck bool) {
 	for _, hook := range hooks {
 		if !filepath.IsAbs(hook.Path) {
 			logrus.Fatalf("The %s hook %v: is not absolute path", hookType, hook.Path)
 		}
 
-		if hooksCheck {
+		if hostCheck {
 			fi, err := os.Stat(hook.Path)
 			if err != nil {
 				logrus.Fatalf("Cannot find %s hook: %v", hookType, hook.Path)
@@ -188,6 +190,63 @@ func checkProcess(process rspec.Process, rootfs string) {
 		_, err := os.Stat(profilePath)
 		if err != nil {
 			logrus.Fatal(err)
+		}
+	}
+}
+
+func supportedMountTypes(OS string, hostCheck bool) (map[string]bool, error) {
+	supportedTypes := make(map[string]bool)
+
+	if OS != "linux" && OS != "windows" {
+		logrus.Warnf("%v is not supported to check mount type", OS)
+		return nil, nil
+	} else if OS == "windows" {
+		supportedTypes["ntfs"] = true
+		return supportedTypes, nil
+	}
+
+	if hostCheck {
+		f, err := os.Open("/proc/filesystems")
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+
+		s := bufio.NewScanner(f)
+		for s.Scan() {
+			if err := s.Err(); err != nil {
+				return supportedTypes, err
+			}
+
+			text := s.Text()
+			parts := strings.Split(text, "\t")
+			if len(parts) > 1 {
+				supportedTypes[parts[1]] = true
+			} else {
+				supportedTypes[parts[0]] = true
+			}
+		}
+
+		supportedTypes["bind"] = true
+
+		return supportedTypes, nil
+	} else {
+		logrus.Warn("Checking linux mount types without --host-specific is not supported yet")
+		return nil, nil
+	}
+}
+
+func checkMounts(spec rspec.Spec, hostCheck bool) {
+	supportedTypes, err := supportedMountTypes(spec.Platform.OS, hostCheck)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	if supportedTypes != nil {
+		for _, mount := range spec.Mounts {
+			if !supportedTypes[mount.Type] {
+				logrus.Fatalf("Unsupported mount type %q", mount.Type)
+			}
 		}
 	}
 }
