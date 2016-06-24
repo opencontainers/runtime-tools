@@ -274,6 +274,7 @@ _ocitools_generate() {
 	      --bind
 	      --cap-add
 	      --cap-drop
+	      --cgroup
 	      --cwd
 	      --env
 	      --gid
@@ -281,8 +282,12 @@ _ocitools_generate() {
 	      --groups
 	      --hostname
 	      --help
+	      --ipc
+	      --mount
 	      --mount-cgroups
+	      --network
 	      --os
+	      --pid
 	      --poststart
 	      --poststop
 	      --prestart
@@ -297,17 +302,14 @@ _ocitools_generate() {
 	      --tmpfs
 	      --uid
 	      --uidmappings
+	      --uts
 	"
 
 	local boolean_options="
-	      --ipc
-	      --network
 	      --no-new-privileges
-	      --mount
-	      --pid
 	      --privileged
 	      --read-only
-	      --uts
+	      --tty
 	"
 
 	local all_options="$options_with_args $boolean_options"

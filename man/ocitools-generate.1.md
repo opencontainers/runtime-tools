@@ -44,6 +44,11 @@ compatible runtime like runC to run a container.
 **--cap-drop**=[]
   Drop Linux capabilities
 
+**--cgroup**=[*PATH*]
+  Use a Cgroup namespace.  If *PATH* is set, join that namespace.  If it
+  is unset, create a new namespace.  The special *PATH* `host` removes
+  any existing Cgroup namespace from the configuration.
+
 **--cgroups-path**=""
   Specifiy the path to the cgroups relative to the cgroups mount point.
 
