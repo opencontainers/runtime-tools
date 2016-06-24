@@ -352,22 +352,33 @@ func validate(context *cli.Context) error {
 		return err
 	}
 
-	validations := []validation{
-		validateDefaultFS,
+	defaultValidations := []validation{
 		validateRootFS,
 		validateProcess,
 		validateCapabilities,
 		validateHostname,
 		validateRlimits,
-		validateSysctls,
-		validateMaskedPaths,
-		validateROPaths,
 		validateMountsExist,
 	}
 
-	for _, v := range validations {
+	linuxValidations := []validation{
+		validateDefaultFS,
+		validateSysctls,
+		validateMaskedPaths,
+		validateROPaths,
+	}
+
+	for _, v := range defaultValidations {
 		if err := v(spec); err != nil {
 			return err
+		}
+	}
+
+	if spec.Platform.OS == "linux" {
+		for _, v := range linuxValidations {
+			if err := v(spec); err != nil {
+				return err
+			}
 		}
 	}
 
