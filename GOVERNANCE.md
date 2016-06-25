@@ -10,7 +10,7 @@ OCI projects need a standard process for making releases so the community of mai
 
 ## Security fixes
 
-Security fix releases MUST use security@opencontainers.org instead of dev@opencontainers.org, but should otherwise follow the standard [list-based voting process](#list-based-voting).
+Security fix releases MUST use security@opencontainers.org instead of dev@opencontainers.org, but should otherwise follow the standard [list-based voting process](#list-based-voting). The security@opencontainers.org email includes all members of the TOB; the TOB will guide the security sensitive release with project maintainers.
 
 ## Parallel proposals
 
