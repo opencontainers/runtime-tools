@@ -195,6 +195,9 @@ func checkProcess(process rspec.Process, rootfs string) {
 //Linux only
 func checkLinux(spec rspec.Spec) {
 	utsExists := false
+	ipcExists := false
+	mountExists := false
+	netExists := false
 
 	if len(spec.Linux.UIDMappings) > 5 {
 		logrus.Fatalf("Only 5 UID mappings are allowed (linux kernel restriction).")
@@ -206,8 +209,27 @@ func checkLinux(spec rspec.Spec) {
 	for index := 0; index < len(spec.Linux.Namespaces); index++ {
 		if !namespaceValid(spec.Linux.Namespaces[index]) {
 			logrus.Fatalf("namespace %v is invalid.", spec.Linux.Namespaces[index])
-		} else if spec.Linux.Namespaces[index].Type == rspec.UTSNamespace {
-			utsExists = true
+		} else if len(spec.Linux.Namespaces[index].Path) == 0 {
+			if spec.Linux.Namespaces[index].Type == rspec.UTSNamespace {
+				utsExists = true
+			} else if spec.Linux.Namespaces[index].Type == rspec.IPCNamespace {
+				ipcExists = true
+			} else if spec.Linux.Namespaces[index].Type == rspec.NetworkNamespace {
+				netExists = true
+			} else if spec.Linux.Namespaces[index].Type == rspec.MountNamespace {
+				mountExists = true
+			}
+		}
+	}
+
+	for k := range spec.Linux.Sysctl {
+		if strings.HasPrefix(k, "net.") && !netExists {
+			logrus.Fatalf("Sysctl %v requires a new Network namespace to be specified as well", k)
+		}
+		if strings.HasPrefix(k, "fs.mqueue.") {
+			if !mountExists || !ipcExists {
+				logrus.Fatalf("Sysctl %v requires a new IPC namespace and Mount namespace to be specified as well", k)
+			}
 		}
 	}
 
