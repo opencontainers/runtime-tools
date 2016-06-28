@@ -27,6 +27,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "groups", Usage: "supplementary groups for the process"},
 	cli.StringSliceFlag{Name: "cap-add", Usage: "add capabilities"},
 	cli.StringSliceFlag{Name: "cap-drop", Usage: "drop capabilities"},
+	cli.StringFlag{Name: "cgroup", Usage: "cgroup namespace"},
 	cli.StringFlag{Name: "network", Usage: "network namespace"},
 	cli.StringFlag{Name: "mount", Usage: "mount namespace"},
 	cli.StringFlag{Name: "pid", Usage: "pid namespace"},
@@ -672,6 +673,8 @@ func mapStrToNamespace(ns string, path string) rspec.Namespace {
 		return rspec.Namespace{Type: rspec.UTSNamespace, Path: path}
 	case "user":
 		return rspec.Namespace{Type: rspec.UserNamespace, Path: path}
+	case "cgroup":
+		return rspec.Namespace{Type: rspec.CgroupNamespace, Path: path}
 	default:
 		logrus.Fatalf("Should not reach here!")
 	}
@@ -684,7 +687,7 @@ func setupNamespaces(spec *rspec.Spec, context *cli.Context) {
 		needsNewUser = true
 	}
 
-	namespaces := []string{"network", "pid", "mount", "ipc", "uts", "user"}
+	namespaces := []string{"network", "pid", "mount", "ipc", "uts", "user", "cgroup"}
 	for _, nsName := range namespaces {
 		if !context.IsSet(nsName) && !(needsNewUser && nsName == "user") {
 			continue
