@@ -45,7 +45,7 @@ compatible runtime like runC to run a container.
   Drop Linux capabilities
 
 **--cgroups-path**=""
-  Specifiy the path to the cgroups relative to the cgroups mount point.
+  Specifies the path to the cgroups relative to the cgroups mount point.
 
 **--cwd**=PATH
   Current working directory for the process
