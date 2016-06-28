@@ -260,6 +260,11 @@ func checkSeccomp(s rspec.Seccomp) {
 		case rspec.ArchMIPSEL:
 		case rspec.ArchMIPSEL64:
 		case rspec.ArchMIPSEL64N32:
+		case rspec.ArchPPC:
+		case rspec.ArchPPC64:
+		case rspec.ArchPPC64LE:
+		case rspec.ArchS390:
+		case rspec.ArchS390X:
 		default:
 			logrus.Fatalf("seccomp architecture %q is invalid", s.Architectures[index])
 		}
@@ -358,6 +363,7 @@ func syscallValid(s rspec.Syscall) bool {
 		arg := s.Args[index]
 		switch arg.Op {
 		case rspec.OpNotEqual:
+		case rspec.OpLessThan:
 		case rspec.OpLessEqual:
 		case rspec.OpEqualTo:
 		case rspec.OpGreaterEqual:
