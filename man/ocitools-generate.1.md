@@ -153,7 +153,7 @@ inside of the container.
   By default if you turn on seccomp, only the host architecture will be allowed.
 
 **--seccomp-default**=ACTION
-  Specifies the the defaultaction of Seccomp syscall restrictions
+  Specifies the the default action of Seccomp syscall restrictions
   Values: KILL,ERRNO,TRACE,ALLOW
 
 **--seccomp-syscalls**=SYSCALLS
