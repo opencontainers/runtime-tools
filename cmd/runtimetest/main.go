@@ -29,6 +29,17 @@ var (
 		"/dev/pts": "devpts",
 		"/dev/shm": "tmpfs",
 	}
+
+	defaultDevices = []string{
+		"/dev/null",
+		"/dev/zero",
+		"/dev/full",
+		"/dev/random",
+		"/dev/urandom",
+		"/dev/tty",
+		"/dev/console",
+		"/dev/ptmx",
+	}
 )
 
 type validation func(*rspec.Spec) error
@@ -260,6 +271,27 @@ func validateDefaultFS(spec *rspec.Spec) error {
 	return nil
 }
 
+func validateDefaultDevices(spec *rspec.Spec) error {
+	logrus.Debugf("validating linux default devices")
+
+	for _, device := range defaultDevices {
+		fi, err := os.Stat(device)
+		if err != nil {
+			if os.IsNotExist(err) {
+				return fmt.Errorf("device node %v not found", device)
+			} else {
+				return err
+			}
+		} else {
+			if fi.Mode() != os.ModeDevice {
+				return fmt.Errorf("file %v is not a device as expected", device)
+			}
+		}
+	}
+
+	return nil
+}
+
 func validateMaskedPaths(spec *rspec.Spec) error {
 	logrus.Debugf("validating maskedPaths")
 	for _, maskedPath := range spec.Linux.MaskedPaths {
@@ -363,6 +395,7 @@ func validate(context *cli.Context) error {
 
 	linuxValidations := []validation{
 		validateDefaultFS,
+		validateDefaultDevices,
 		validateSysctls,
 		validateMaskedPaths,
 		validateROPaths,
