@@ -16,6 +16,7 @@ import (
 )
 
 var generateFlags = []cli.Flag{
+	cli.StringFlag{Name: "output", Value: "output", Usage: "output file (defaults to stdout)"},
 	cli.StringFlag{Name: "rootfs", Value: "rootfs", Usage: "path to the rootfs"},
 	cli.BoolFlag{Name: "read-only", Usage: "make the container's rootfs read-only"},
 	cli.BoolFlag{Name: "privileged", Usage: "enabled privileged container settings"},
@@ -101,13 +102,20 @@ var generateCommand = cli.Command{
 		if err != nil {
 			return err
 		}
-		cName := "config.json"
 		data, err := json.MarshalIndent(&spec, "", "\t")
 		if err != nil {
 			return err
 		}
-		if err := ioutil.WriteFile(cName, data, 0666); err != nil {
-			return err
+		if context.IsSet("output") {
+			output := context.String("output")
+			if err := ioutil.WriteFile(output, data, 0666); err != nil {
+				return err
+			}
+		} else {
+			_, err = os.Stdout.Write(data)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	},

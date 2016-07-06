@@ -9,9 +9,10 @@ ocitools-generate - Generate a config.json for an OCI container
 
 # DESCRIPTION
 
-`ocitools generate` generates a `config.json` for an OCI bundle.  This
-`config.json` file can be placed into a directory and used by an OCI
-compatible runtime like runC to run a container.
+`ocitools generate` generates configuration JSON for an OCI bundle.
+By default, it writes the JSON to stdout, but you can use **--output**
+to direct it to a file.  OCI-compatible runtimes like runC expect to
+read the configuration from `config.json`.
 
 # OPTIONS
 **--apparmor**=PROFILE
@@ -111,6 +112,11 @@ inside of the container.
   will block the container processes from gaining any additional privileges
   using tools like setuid apps.  It is a good idea to run unprivileged
   containers with this flag.
+
+**--output**=PATH
+  Instead of writing the configuration JSON to stdout, write it to a
+  file at *PATH* (overwriting the existing content if a file already
+  exists at *PATH*).
 
 **--os**=OS
   Operating system used within the container
