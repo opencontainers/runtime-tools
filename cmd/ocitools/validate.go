@@ -16,6 +16,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/blang/semver"
+	"github.com/opencontainers/ocitools/generate"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/urfave/cli"
 )
@@ -422,7 +423,7 @@ func envValid(env string) bool {
 }
 
 func capValid(capability string) bool {
-	for _, val := range defaultCaps {
+	for _, val := range generate.DefaultCaps {
 		if val == capability {
 			return true
 		}
