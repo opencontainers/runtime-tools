@@ -84,7 +84,7 @@ var (
 
 var generateCommand = cli.Command{
 	Name:   "generate",
-	Usage:  "generate a OCI spec file",
+	Usage:  "generate an OCI spec file",
 	Flags:  generateFlags,
 	Before: before,
 	Action: func(context *cli.Context) error {
