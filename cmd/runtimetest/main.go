@@ -283,7 +283,7 @@ func validateDefaultDevices(spec *rspec.Spec) error {
 				return err
 			}
 		} else {
-			if fi.Mode() != os.ModeDevice {
+			if fi.Mode()&os.ModeDevice != os.ModeDevice {
 				return fmt.Errorf("file %v is not a device as expected", device)
 			}
 		}
