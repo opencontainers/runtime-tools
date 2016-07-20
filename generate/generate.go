@@ -110,7 +110,7 @@ func New() Generator {
 				Options:     []string{"nosuid", "noexec", "nodev", "ro"},
 			},
 		},
-		Linux: rspec.Linux{
+		Linux: &rspec.Linux{
 			Resources: &rspec.Resources{
 				Devices: []rspec.DeviceCgroup{
 					{
