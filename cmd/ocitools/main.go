@@ -18,6 +18,10 @@ func main() {
 			Value: "error",
 			Usage: "Log level (panic, fatal, error, warn, info, or debug)",
 		},
+		cli.BoolFlag{
+			Name:  "host-specific",
+			Usage: "generate host-specific configs or do host-specific validations",
+		},
 	}
 
 	app.Commands = []cli.Command{

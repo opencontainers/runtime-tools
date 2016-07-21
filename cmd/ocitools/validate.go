@@ -24,7 +24,6 @@ type configCheck func(rspec.Spec, string, bool) []string
 
 var bundleValidateFlags = []cli.Flag{
 	cli.StringFlag{Name: "path", Value: ".", Usage: "path to a bundle"},
-	cli.BoolFlag{Name: "host-specific", Usage: "Check host specific configs."},
 }
 
 var (
@@ -99,7 +98,7 @@ var bundleValidateCommand = cli.Command{
 			return fmt.Errorf("The root path %q is not a directory.", rootfsPath)
 		}
 
-		hostCheck := context.Bool("host-specific")
+		hostCheck := context.GlobalBool("host-specific")
 
 		checks := []configCheck{
 			checkMandatoryFields,
