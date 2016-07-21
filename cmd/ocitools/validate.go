@@ -109,10 +109,9 @@ var bundleValidateCommand = cli.Command{
 			errMsg = fmt.Sprintf("%d Errors detected:\n%s", i-1, errMsg)
 			return errors.New(errMsg)
 
-		} else {
-			fmt.Println("Bundle validation succeeded.")
-			return nil
 		}
+		fmt.Println("Bundle validation succeeded.")
+		return nil
 	},
 }
 
@@ -270,10 +269,9 @@ func supportedMountTypes(OS string, hostCheck bool) (map[string]bool, error) {
 		supportedTypes["bind"] = true
 
 		return supportedTypes, nil
-	} else {
-		logrus.Warn("Checking linux mount types without --host-specific is not supported yet")
-		return nil, nil
 	}
+	logrus.Warn("Checking linux mount types without --host-specific is not supported yet")
+	return nil, nil
 }
 
 func checkMounts(spec rspec.Spec, rootfs string, hostCheck bool) (msgs []string) {
