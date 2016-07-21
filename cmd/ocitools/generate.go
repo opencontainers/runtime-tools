@@ -78,7 +78,7 @@ var generateCommand = cli.Command{
 			}
 		}
 
-		err := setupSpec(specgen, context)
+		err := setupSpec(&specgen, context)
 		if err != nil {
 			return err
 		}
@@ -96,8 +96,12 @@ var generateCommand = cli.Command{
 	},
 }
 
-func setupSpec(g generate.Generator, context *cli.Context) error {
-	spec := g.GetSpec()
+func setupSpec(g *generate.Generator, context *cli.Context) error {
+	if context.GlobalBool("host-specific") {
+		g.HostSpecific = true
+	}
+
+	spec := g.Spec()
 
 	if len(spec.Version) == 0 {
 		g.SetVersion(rspec.Version)
@@ -369,7 +373,7 @@ func checkNs(nsMaps map[string]string, nsName string) bool {
 	return true
 }
 
-func setupLinuxNamespaces(g generate.Generator, needsNewUser bool, nsMaps map[string]string) {
+func setupLinuxNamespaces(g *generate.Generator, needsNewUser bool, nsMaps map[string]string) {
 	for _, nsName := range generate.Namespaces {
 		if !checkNs(nsMaps, nsName) && !(needsNewUser && nsName == "user") {
 			continue
