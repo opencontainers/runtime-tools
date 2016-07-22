@@ -226,6 +226,16 @@ inside of the container.
 
 # EXAMPLES
 
+## Generate a default configuration
+
+With choices that the ocitools developers think are sane.
+
+    $ ocitools generate
+    {
+            "ociVersion": "0.5.0",
+            …
+    }
+
 ## Generating container in read-only mode
 
 During container image development, containers often need to write to the image
