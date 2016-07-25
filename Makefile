@@ -23,7 +23,7 @@ install: man
 	install -m 644 completions/bash/ocitools $(PREFIX)/share/bash-completion/completions
 
 clean:
-	rm -f ocitools runtimetest
+	rm -f ocitools runtimetest *.1
 
 .PHONY: test .gofmt .govet .golint
 
