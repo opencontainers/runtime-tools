@@ -22,9 +22,9 @@ type Spec struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// Linux is platform specific configuration for Linux based containers.
-	Linux Linux `json:"linux" platform:"linux,omitempty"`
+	Linux *Linux `json:"linux,omitempty" platform:"linux"`
 	// Solaris is platform specific configuration for Solaris containers.
-	Solaris Solaris `json:"solaris" platform:"solaris,omitempty"`
+	Solaris *Solaris `json:"solaris,omitempty" platform:"solaris"`
 }
 
 // Process contains information to start a specific application inside the container.
@@ -47,7 +47,7 @@ type Process struct {
 	// NoNewPrivileges controls whether additional privileges could be gained by processes in the container.
 	NoNewPrivileges bool `json:"noNewPrivileges,omitempty"`
 
-	// ApparmorProfile specified the apparmor profile for the container. (this field is platform dependent)
+	// ApparmorProfile specifies the apparmor profile for the container. (this field is platform dependent)
 	ApparmorProfile string `json:"apparmorProfile,omitempty" platform:"linux"`
 	// SelinuxLabel specifies the selinux context that the container process is run as. (this field is platform dependent)
 	SelinuxLabel string `json:"selinuxLabel,omitempty" platform:"linux"`
@@ -371,9 +371,9 @@ type Solaris struct {
 	// Specification for automatic creation of network resources for this container.
 	Anet []Anet `json:"anet,omitempty"`
 	// Set limit on the amount of CPU time that can be used by container.
-	CappedCPU CappedCPU `json:"cappedCPU,omitempty"`
+	CappedCPU *CappedCPU `json:"cappedCPU,omitempty"`
 	// The physical and swap caps on the memory that can be used by this container.
-	CappedMemory CappedMemory `json:"cappedMemory,omitempty"`
+	CappedMemory *CappedMemory `json:"cappedMemory,omitempty"`
 }
 
 // CappedCPU allows users to set limit on the amount of CPU time that can be used by container.

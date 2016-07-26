@@ -15,8 +15,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
-			"Comment": "v1.0.0-rc1-15-g6de52a7",
-			"Rev": "6de52a7d39c52a1e287182d0b4e6c03068236639"
+			"Comment": "v1.0.0-rc1-31-gbb6925e",
+			"Rev": "bb6925ea99f0e366a3f7d1c975f6577475ca25f0"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
