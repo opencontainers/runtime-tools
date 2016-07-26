@@ -16,7 +16,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/blang/semver"
-	"github.com/opencontainers/ocitools/generate"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/urfave/cli"
 )
@@ -46,6 +45,22 @@ var (
 		"RLIMIT_NICE",
 		"RLIMIT_RTPRIO",
 		"RLIMIT_RTTIME",
+	}
+	defaultCaps = []string{
+		"CAP_CHOWN",
+		"CAP_DAC_OVERRIDE",
+		"CAP_FSETID",
+		"CAP_FOWNER",
+		"CAP_MKNOD",
+		"CAP_NET_RAW",
+		"CAP_SETGID",
+		"CAP_SETUID",
+		"CAP_SETFCAP",
+		"CAP_SETPCAP",
+		"CAP_NET_BIND_SERVICE",
+		"CAP_SYS_CHROOT",
+		"CAP_KILL",
+		"CAP_AUDIT_WRITE",
 	}
 )
 
@@ -421,7 +436,7 @@ func envValid(env string) bool {
 }
 
 func capValid(capability string) bool {
-	for _, val := range generate.DefaultCaps {
+	for _, val := range defaultCaps {
 		if val == capability {
 			return true
 		}
