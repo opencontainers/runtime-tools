@@ -10,7 +10,7 @@ import (
 )
 
 var generateFlags = []cli.Flag{
-	cli.StringFlag{Name: "output", Value: "output", Usage: "output file (defaults to stdout)"},
+	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.StringFlag{Name: "rootfs", Value: "rootfs", Usage: "path to the rootfs"},
 	cli.BoolFlag{Name: "read-only", Usage: "make the container's rootfs read-only"},
 	cli.BoolFlag{Name: "privileged", Usage: "enabled privileged container settings"},
