@@ -7,25 +7,11 @@ ocitools is a collection of tools for working with the [OCI runtime specificatio
 [`ocitools generate`][generate.1] generates [configuration JSON][config.json] for an [OCI bundle][bundle].
 [OCI-compatible runtimes][runtime-spec] like [runC][] expect to read the configuration from `config.json`.
 
-```sh
-$ ocitools generate --output config.json
-$ cat config.json
-{
-        "ociVersion": "0.5.0",
-        …
-}
-```
-
 ## Validating an OCI bundle
 
 [`ocitools validate`][validate.1] validates an OCI bundle.
 The error message will be printed if the OCI bundle failed the validation procedure.
 
-```sh
-$ ocitools generate
-$ ocitools validate
-INFO[0000] Bundle validation succeeded.
-```
 
 ## Testing OCI runtimes
 

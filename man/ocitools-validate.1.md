@@ -28,6 +28,23 @@ Validate an OCI bundle
   launching this container"), but will fail with it ("this host is not capable
   of launching this container").
 
+# EXAMPLES
+
+Generate a basic configuration:
+
+    $ ocitools generate --output config.json
+    $ mkdir rootfs
+
+Validate it for specification compliance:
+
+    $ ocitools validate
+    Bundle validation succeeded.
+
+Check whether it will run on your current host:
+
+    $ ocitools validate --host-specific
+    Bundle validation succeeded.
+
 # SEE ALSO
 **ocitools**(1)
 
