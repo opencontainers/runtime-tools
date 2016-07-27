@@ -845,11 +845,26 @@ func (g *Generator) AddPostStartHook(s string) error {
 
 // AddTmpfsMount adds a tmpfs mount into g.spec.Mounts.
 func (g *Generator) AddTmpfsMount(dest string) error {
-	mnt := rspec.Mount{
-		Destination: dest,
-		Type:        "tmpfs",
-		Source:      "tmpfs",
-		Options:     []string{"nosuid", "nodev", "mode=755"},
+	mnt := rspec.Mount{}
+
+	parts := strings.Split(dest, ":")
+	if len(parts) == 2 {
+		options := strings.Split(parts[1], ",")
+		mnt = rspec.Mount{
+			Destination: parts[0],
+			Type:        "tmpfs",
+			Source:      "tmpfs",
+			Options:     options,
+		}
+	} else if len(parts) == 1 {
+		mnt = rspec.Mount{
+			Destination: parts[0],
+			Type:        "tmpfs",
+			Source:      "tmpfs",
+			Options:     []string{"rw", "noexec", "nosuid", "nodev", "size=65536k"},
+		}
+	} else {
+		return fmt.Errorf("invalid value for --tmpfs")
 	}
 
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
