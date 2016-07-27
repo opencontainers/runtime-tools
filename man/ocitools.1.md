@@ -15,10 +15,25 @@ ocitools is a collection of tools for working with the [OCI runtime specificatio
 
 # OPTIONS
 **--help**
-  Print usage statement
+  Print usage statement.
 
 **-v**, **--version**
   Print version information.
+
+**--log-level**
+  Log level (panic, fatal, error, warn, info, or debug) (default: "error").
+
+**--host-specific**
+  Generate host-specific configs or do host-specific validations.
+
+  By default, generator generates configs without checking whether they are
+  supported on the current host. With this flag, generator will first check
+  whether each config is supported on the current host, and only add it into
+  the config file if it passes the checking.
+
+  By default, validation only tests for compatibility with a hypothetical host.
+  With this flag, validation will also run more specific tests to see whether
+  the current host is capable of launching a container from the configuration.
 
 # COMMANDS
 **validate**
