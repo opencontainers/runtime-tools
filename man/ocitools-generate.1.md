@@ -29,7 +29,7 @@ read the configuration from `config.json`.
 
   --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
 
-**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]* 
+**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]*
   Bind mount directories src:dest:(rw,ro) If you specify, ` --bind
   /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
   to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a comma
@@ -143,7 +143,7 @@ inside of the container.
   Give extended privileges to this container. The default is *false*.
 
   By default, OCI containers are
-“unprivileged” (=false) and cannot do some of the things a normal root process can do. 
+“unprivileged” (=false) and cannot do some of the things a normal root process can do.
 
   When the operator executes **ocitools generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
 
@@ -159,26 +159,47 @@ inside of the container.
 **--rootfs**=ROOTFSPATH
   Path to the rootfs
 
+**--seccomp-only**
+  Specifies that only the seccomp configuration should be exported to a file
+  named config.seccomp.
+
 **--seccomp-arch**=ARCH
   Specifies Additional architectures permitted to be used for system calls.
   By default if you turn on seccomp, only the host architecture will be allowed.
 
 **--seccomp-default**=ACTION
-  Specifies the the default action of Seccomp syscall restrictions
-  Values: KILL,ERRNO,TRACE,ALLOW
+  Specifies the the defaultaction of Seccomp syscall restrictions
+  Values: kill,errno,trace,trap,allow
 
-**--seccomp-syscalls**=SYSCALLS
-  Specifies Additional syscalls permitted to be used for system calls,
-  e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op
-  See --seccomp-allow and --seccomp-errno for convenient way to set seccomp syscall options.
-
-**--seccomp-allow**=SYSCALL
+**--seccomp-allow**=SYSCALL,SYSCALL:INDEX:ARG1:ARG2:OP,...
   Specifies syscalls to be added to the ALLOW list.
-  See --seccomp-syscalls for setting limits on arguments.
+  You can specify just the name of the syscall or you can specify arguments by
+  using a `:` seperated list. You can specify as many as you want by using ','
+  e.g Syscall:index:arg1:arg2:Op,Syscall,Syscall,...
 
 **--seccomp-errno**=SYSCALL
   Specifies syscalls to be added to the ERRNO list.
-  See --seccomp-syscalls for setting limits on arguments.
+  You can specify just the name of the syscall or you can specify arguments by
+  using a `:` seperated list. You can specify as many as you want by using ','
+  e.g Syscall:index:arg1:arg2:Op,Syscall,Syscall,...
+
+**--seccomp-trace**=SYSCALL
+  Specifies syscalls to be added to the TRACE list.
+  You can specify just the name of the syscall or you can specify arguments by
+  using a `:` seperated list. You can specify as many as you want by using ','
+  e.g Syscall:index:arg1:arg2:Op,Syscall,Syscall,...
+
+**--seccomp-trap**=SYSCALL
+  Specifies syscalls to be added to the TRAP list.
+  You can specify just the name of the syscall or you can specify arguments by
+  using a `:` seperated list. You can specify as many as you want by using ','
+  e.g Syscall:index:arg1:arg2:Op,Syscall,Syscall,...
+
+**--seccomp-kill**=SYSCALL
+  Specifies syscalls to be added to the KILL list.
+  You can specify just the name of the syscall or you can specify arguments by
+  using a `:` seperated list. You can specify as many as you want by using ','
+  e.g Syscall:index:arg1:arg2:Op,Syscall,Syscall,...
 
 **--selinux-label**=PROCESSLABEL
   SELinux Label
