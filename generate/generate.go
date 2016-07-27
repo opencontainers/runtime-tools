@@ -903,6 +903,7 @@ func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
 	switch mountCgroupOption {
 	case "ro":
 	case "rw":
+		break
 	case "no":
 		return nil
 	default:
