@@ -275,6 +275,7 @@ _ocitools_generate() {
 	      --cap-add
 	      --cap-drop
 	      --cgroup
+	      --cgroup-path
 	      --cwd
 	      --env
 	      --gid
@@ -283,25 +284,31 @@ _ocitools_generate() {
 	      --hostname
 	      --help
 	      --ipc
+	      --label
 	      --mount
 	      --mount-cgroups
+	      --mount-label
 	      --network
 	      --os
+	      --output
 	      --pid
 	      --poststart
 	      --poststop
 	      --prestart
 	      --root-propagation
 	      --rootfs
-	      --seccomp-default
+	      --seccomp-allow
 	      --seccomp-arch
+	      --seccomp-default
+	      --seccomp-errno
 	      --seccomp-syscalls
 	      --selinux-label
-	      --mount-label
 	      --sysctl
+	      --tmplate
 	      --tmpfs
 	      --uid
 	      --uidmappings
+	      --user
 	      --uts
 	"
 
@@ -322,11 +329,6 @@ _ocitools_generate() {
 
 		--arch)
 			COMPREPLY=( $( compgen -W $( __ocitools_complete_arches ) -- "$cur" ) )
-			return
-			;;
-
-		--seccomp-default)
-			__ocitools_complete_seccomp_actions
 			return
 			;;
 
