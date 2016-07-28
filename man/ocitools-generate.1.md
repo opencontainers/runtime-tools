@@ -29,7 +29,7 @@ read the configuration from `config.json`.
 
   --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
 
-**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]* 
+**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]*
   Bind mount directories src:dest:(rw,ro) If you specify, ` --bind
   /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
   to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a comma
@@ -45,10 +45,11 @@ read the configuration from `config.json`.
 **--cap-drop**=[]
   Drop Linux capabilities
 
-**--cgroup**=[*PATH*]
-  Use a Cgroup namespace.  If *PATH* is set, join that namespace.  If it
-  is unset, create a new namespace.  The special *PATH* `host` removes
-  any existing Cgroup namespace from the configuration.
+**--cgroup**=*PATH*
+  Use a Cgroup namespace where *PATH* is an existing Cgroup namespace file
+  to join. The special *PATH*  empty-string  creates a new namespace.
+  The special *PATH* `host` removes any existing Cgroup namespace from
+  the configuration.
 
 **--cgroups-path**=""
   Specifies the path to the cgroups relative to the cgroups mount point.
@@ -77,15 +78,17 @@ inside of the container.
 **--hostname**=""
   Set the container host name that is available inside the container.
 
-**--ipc**=[*PATH*]
-  Use an IPC namespace.  If *PATH* is set, join that namespace.  If it
-  is unset, create a new namespace.  The special *PATH* `host` removes
-  any existing IPC namespace from the configuration.
+**--ipc**=*PATH*
+  Use an IPC namespace where *PATH* is an existing IPC namespace file
+  to join. The special *PATH*  empty-string  creates a new namespace.
+  The special *PATH* `host` removes any existing IPC namespace from the
+  configuration.
 
-**--mount**=[*PATH*]
-  Use a mount namespace.  If *PATH* is set, join that namespace.  If
-  it is unset, create a new namespace.  The special *PATH* `host`
-  removes any existing mount namespace from the configuration.
+**--mount**=*PATH*
+  Use a mount namespace where *PATH* is an existing mount namespace file
+  to join. The special *PATH*  empty-string  creates a new namespace.
+  The special *PATH* `host` removes any existing mount namespace from the
+  configuration.
 
 **--mount-cgroups**=[rw|ro|no]
   Mount cgroups.  The default is `no`.
@@ -102,10 +105,11 @@ inside of the container.
       "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
       "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
 
-**--network**=[*PATH*]
-  Use a network namespace.  If *PATH* is set, join that namespace.  If
-  it is unset, create a new namespace.  The special *PATH* `host`
-  removes any existing network namespace from the configuration.
+**--network**=*PATH*
+  Use a network namespace where *PATH* is an existing network namespace file
+  to join. The special *PATH*  empty-string  creates a new namespace.
+  The special *PATH* `host` removes any existing network namespace from the
+  configuration.
 
 **--no-new-privileges**
   Set no new privileges bit for the container process.  Setting this flag
@@ -121,10 +125,11 @@ inside of the container.
 **--os**=OS
   Operating system used within the container
 
-**--pid**=[*PATH*]
-  Use a PID namespace.  If *PATH* is set, join that namespace.  If it
-  is unset, create a new namespace.  The special *PATH* `host` removes
-  any existing PID namespace from the configuration.
+**--pid**=*PATH*
+  Use a PID namespace where *PATH* is an existing PID namespace file
+  to join. The special *PATH*  empty-string  creates a new namespace.
+  The special *PATH* `host` removes any existing PID namespace from
+  the configuration.
 
 **--poststart**=CMD
   Path to command to run in poststart hooks. This command will be run before
@@ -143,7 +148,7 @@ inside of the container.
   Give extended privileges to this container. The default is *false*.
 
   By default, OCI containers are
-“unprivileged” (=false) and cannot do some of the things a normal root process can do. 
+“unprivileged” (=false) and cannot do some of the things a normal root process can do.
 
   When the operator executes **ocitools generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
 
@@ -214,15 +219,17 @@ inside of the container.
 **--uidmappings**
   Add UIDMappings e.g HostUID:ContainerID:Size.  Implies **--user=**.
 
-**--user**=[*PATH*]
-  Use a user namespace.  If *PATH* is set, join that namespace.  If it
-  is unset, create a new namespace.  The special *PATH* `host` removes
-  any existing user namespace from the configuration.
+**--user**=*PATH*
+  Use a user namespace where *PATH* is an existing user namespace file
+  to join. The special *PATH*  empty-string  creates a new namespace.
+  The special *PATH* `host` removes any existing user namespace from
+  the configuration.
 
-**--uts**=[*PATH*]
-  Use a UTS namespace.  If *PATH* is set, join that namespace.  If it
-  is unset, create a new namespace.  The special *PATH* `host` removes
-  any existing UTS namespace from the configuration.
+**--uts**=*PATH*
+  Use a UTS namespace where *PATH* is an existing UTS namespace file
+  to join. The special *PATH*  empty-string  creates a new namespace.
+  The special *PATH* `host` removes any existing UTS namespace from
+  the configuration.
 
 # EXAMPLES
 
