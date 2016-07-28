@@ -206,34 +206,37 @@ func (g *Generator) SaveToFile(path string) error {
 
 // SetVersion sets g.spec.Version.
 func (g *Generator) SetVersion(version string) {
+	g.initSpec()
 	g.spec.Version = version
 }
 
 // SetRootPath sets g.spec.Root.Path.
 func (g *Generator) SetRootPath(path string) {
+	g.initSpec()
 	g.spec.Root.Path = path
 }
 
 // SetRootReadonly sets g.spec.Root.Readonly.
 func (g *Generator) SetRootReadonly(b bool) {
+	g.initSpec()
 	g.spec.Root.Readonly = b
 }
 
 // SetHostname sets g.spec.Hostname.
 func (g *Generator) SetHostname(s string) {
+	g.initSpec()
 	g.spec.Hostname = s
 }
 
 // ClearAnnotations clears g.spec.Annotations.
 func (g *Generator) ClearAnnotations() {
+	g.initSpec()
 	g.spec.Annotations = make(map[string]string)
 }
 
 // AddAnnotation adds an annotation into g.spec.Annotations.
 func (g *Generator) AddAnnotation(s string) error {
-	if g.spec.Annotations == nil {
-		g.spec.Annotations = make(map[string]string)
-	}
+	g.initSpecAnnotations()
 
 	pair := strings.Split(s, "=")
 	if len(pair) != 2 {
@@ -245,7 +248,7 @@ func (g *Generator) AddAnnotation(s string) error {
 
 // RemoveAnnotation remove an annotation from g.spec.Annotations.
 func (g *Generator) RemoveAnnotation(key string) {
-	if g.spec.Annotations == nil {
+	if g.spec == nil || g.spec.Annotations == nil {
 		return
 	}
 	delete(g.spec.Annotations, key)
@@ -253,61 +256,73 @@ func (g *Generator) RemoveAnnotation(key string) {
 
 // SetPlatformOS sets g.spec.Process.OS.
 func (g *Generator) SetPlatformOS(os string) {
+	g.initSpec()
 	g.spec.Platform.OS = os
 }
 
 // SetPlatformArch sets g.spec.Platform.Arch.
 func (g *Generator) SetPlatformArch(arch string) {
+	g.initSpec()
 	g.spec.Platform.Arch = arch
 }
 
 // SetProcessUID sets g.spec.Process.User.UID.
 func (g *Generator) SetProcessUID(uid uint32) {
+	g.initSpec()
 	g.spec.Process.User.UID = uid
 }
 
 // SetProcessGID sets g.spec.Process.User.GID.
 func (g *Generator) SetProcessGID(gid uint32) {
+	g.initSpec()
 	g.spec.Process.User.GID = gid
 }
 
 // SetProcessCwd sets g.spec.Process.Cwd.
 func (g *Generator) SetProcessCwd(cwd string) {
+	g.initSpec()
 	g.spec.Process.Cwd = cwd
 }
 
 // SetProcessNoNewPrivileges sets g.spec.Process.NoNewPrivileges.
 func (g *Generator) SetProcessNoNewPrivileges(b bool) {
+	g.initSpec()
 	g.spec.Process.NoNewPrivileges = b
 }
 
 // SetProcessTerminal sets g.spec.Process.Terminal.
 func (g *Generator) SetProcessTerminal(b bool) {
+	g.initSpec()
 	g.spec.Process.Terminal = b
 }
 
 // SetProcessApparmorProfile sets g.spec.Process.ApparmorProfile.
 func (g *Generator) SetProcessApparmorProfile(prof string) {
+	g.initSpec()
 	g.spec.Process.ApparmorProfile = prof
 }
 
 // SetProcessArgs sets g.spec.Process.Args.
 func (g *Generator) SetProcessArgs(args []string) {
+	g.initSpec()
 	g.spec.Process.Args = args
 }
 
 // ClearProcessEnv clears g.spec.Process.Env.
 func (g *Generator) ClearProcessEnv() {
+	g.initSpec()
 	g.spec.Process.Env = []string{}
 }
 
 // AddProcessEnv adds env into g.spec.Process.Env.
 func (g *Generator) AddProcessEnv(env string) {
+	g.initSpec()
 	g.spec.Process.Env = append(g.spec.Process.Env, env)
 }
 
 // ClearProcessAdditionalGids clear g.spec.Process.AdditionalGids.
 func (g *Generator) ClearProcessAdditionalGids() {
+	g.initSpec()
 	g.spec.Process.User.AdditionalGids = []uint32{}
 }
 
@@ -318,6 +333,7 @@ func (g *Generator) AddProcessAdditionalGid(gid string) error {
 		return err
 	}
 
+	g.initSpec()
 	for _, group := range g.spec.Process.User.AdditionalGids {
 		if group == uint32(groupID) {
 			return nil
@@ -329,94 +345,111 @@ func (g *Generator) AddProcessAdditionalGid(gid string) error {
 
 // SetProcessSelinuxLabel sets g.spec.Process.SelinuxLabel.
 func (g *Generator) SetProcessSelinuxLabel(label string) {
+	g.initSpec()
 	g.spec.Process.SelinuxLabel = label
 }
 
 // SetLinuxCgroupsPath sets g.spec.Linux.CgroupsPath.
 func (g *Generator) SetLinuxCgroupsPath(path string) {
+	g.initSpecLinux()
 	g.spec.Linux.CgroupsPath = strPtr(path)
 }
 
 // SetLinuxMountLabel sets g.spec.Linux.MountLabel.
 func (g *Generator) SetLinuxMountLabel(label string) {
+	g.initSpecLinux()
 	g.spec.Linux.MountLabel = label
 }
 
 // SetLinuxResourcesCPUShares sets g.spec.Linux.Resources.CPU.Shares.
 func (g *Generator) SetLinuxResourcesCPUShares(shares uint64) {
+	g.initSpecLinuxResourcesCPU()
 	g.spec.Linux.Resources.CPU.Shares = &shares
 }
 
 // SetLinuxResourcesCPUQuota sets g.spec.Linux.Resources.CPU.Quota.
 func (g *Generator) SetLinuxResourcesCPUQuota(quota uint64) {
+	g.initSpecLinuxResourcesCPU()
 	g.spec.Linux.Resources.CPU.Quota = &quota
 }
 
 // SetLinuxResourcesCPUPeriod sets g.spec.Linux.Resources.CPU.Period.
 func (g *Generator) SetLinuxResourcesCPUPeriod(period uint64) {
+	g.initSpecLinuxResourcesCPU()
 	g.spec.Linux.Resources.CPU.Period = &period
 }
 
 // SetLinuxResourcesCPURealtimeRuntime sets g.spec.Linux.Resources.CPU.RealtimeRuntime.
 func (g *Generator) SetLinuxResourcesCPURealtimeRuntime(time uint64) {
+	g.initSpecLinuxResourcesCPU()
 	g.spec.Linux.Resources.CPU.RealtimeRuntime = &time
 }
 
 // SetLinuxResourcesCPURealtimePeriod sets g.spec.Linux.Resources.CPU.RealtimePeriod.
 func (g *Generator) SetLinuxResourcesCPURealtimePeriod(period uint64) {
+	g.initSpecLinuxResourcesCPU()
 	g.spec.Linux.Resources.CPU.RealtimePeriod = &period
 }
 
 // SetLinuxResourcesCPUCpus sets g.spec.Linux.Resources.CPU.Cpus.
 func (g *Generator) SetLinuxResourcesCPUCpus(cpus string) {
+	g.initSpecLinuxResourcesCPU()
 	g.spec.Linux.Resources.CPU.Cpus = &cpus
 }
 
 // SetLinuxResourcesCPUMems sets g.spec.Linux.Resources.CPU.Mems.
 func (g *Generator) SetLinuxResourcesCPUMems(mems string) {
+	g.initSpecLinuxResourcesCPU()
 	g.spec.Linux.Resources.CPU.Mems = &mems
 }
 
 // SetLinuxResourcesMemoryLimit sets g.spec.Linux.Resources.Memory.Limit.
 func (g *Generator) SetLinuxResourcesMemoryLimit(limit uint64) {
+	g.initSpecLinuxResourcesMemory()
 	g.spec.Linux.Resources.Memory.Limit = &limit
 }
 
 // SetLinuxResourcesMemoryReservation sets g.spec.Linux.Resources.Memory.Reservation.
 func (g *Generator) SetLinuxResourcesMemoryReservation(reservation uint64) {
+	g.initSpecLinuxResourcesMemory()
 	g.spec.Linux.Resources.Memory.Reservation = &reservation
 }
 
 // SetLinuxResourcesMemorySwap sets g.spec.Linux.Resources.Memory.Swap.
 func (g *Generator) SetLinuxResourcesMemorySwap(swap uint64) {
+	g.initSpecLinuxResourcesMemory()
 	g.spec.Linux.Resources.Memory.Swap = &swap
 }
 
 // SetLinuxResourcesMemoryKernel sets g.spec.Linux.Resources.Memory.Kernel.
 func (g *Generator) SetLinuxResourcesMemoryKernel(kernel uint64) {
+	g.initSpecLinuxResourcesMemory()
 	g.spec.Linux.Resources.Memory.Kernel = &kernel
 }
 
 // SetLinuxResourcesMemoryKernelTCP sets g.spec.Linux.Resources.Memory.KernelTCP.
 func (g *Generator) SetLinuxResourcesMemoryKernelTCP(kernelTCP uint64) {
+	g.initSpecLinuxResourcesMemory()
 	g.spec.Linux.Resources.Memory.KernelTCP = &kernelTCP
 }
 
 // SetLinuxResourcesMemorySwappiness sets g.spec.Linux.Resources.Memory.Swappiness.
 func (g *Generator) SetLinuxResourcesMemorySwappiness(swappiness uint64) {
+	g.initSpecLinuxResourcesMemory()
 	g.spec.Linux.Resources.Memory.Swappiness = &swappiness
 }
 
 // ClearLinuxSysctl clears g.spec.Linux.Sysctl.
 func (g *Generator) ClearLinuxSysctl() {
+	if g.spec == nil {
+		return
+	}
 	g.spec.Linux.Sysctl = make(map[string]string)
 }
 
 // AddLinuxSysctl adds a new sysctl config into g.spec.Linux.Sysctl.
 func (g *Generator) AddLinuxSysctl(s string) error {
-	if g.spec.Linux.Sysctl == nil {
-		g.spec.Linux.Sysctl = make(map[string]string)
-	}
+	g.initSpecLinuxSysctl()
 
 	pair := strings.Split(s, "=")
 	if len(pair) != 2 {
@@ -428,7 +461,7 @@ func (g *Generator) AddLinuxSysctl(s string) error {
 
 // RemoveLinuxSysctl removes a sysctl config from g.spec.Linux.Sysctl.
 func (g *Generator) RemoveLinuxSysctl(key string) {
-	if g.spec.Linux.Sysctl == nil {
+	if g.spec == nil || g.spec.Linux.Sysctl == nil {
 		return
 	}
 	delete(g.spec.Linux.Sysctl, key)
@@ -449,10 +482,7 @@ func (g *Generator) SetLinuxSeccompDefault(sdefault string) error {
 			"SCMP_ACT_ALLOW")
 	}
 
-	if g.spec.Linux.Seccomp == nil {
-		g.spec.Linux.Seccomp = &rspec.Seccomp{}
-	}
-
+	g.initSpecLinuxSeccomp()
 	g.spec.Linux.Seccomp.DefaultAction = rspec.Action(sdefault)
 	return nil
 }
@@ -483,7 +513,7 @@ func checkSeccompArch(arch string) error {
 
 // ClearLinuxSeccompArch clears g.spec.Linux.Seccomp.Architectures.
 func (g *Generator) ClearLinuxSeccompArch() {
-	if g.spec.Linux.Seccomp == nil {
+	if g.spec == nil || g.spec.Linux.Seccomp == nil {
 		return
 	}
 
@@ -496,10 +526,7 @@ func (g *Generator) AddLinuxSeccompArch(sArch string) error {
 		return err
 	}
 
-	if g.spec.Linux.Seccomp == nil {
-		g.spec.Linux.Seccomp = &rspec.Seccomp{}
-	}
-
+	g.initSpecLinuxSeccomp()
 	g.spec.Linux.Seccomp.Architectures = append(g.spec.Linux.Seccomp.Architectures, rspec.Arch(sArch))
 
 	return nil
@@ -511,7 +538,7 @@ func (g *Generator) RemoveSeccompArch(sArch string) error {
 		return err
 	}
 
-	if g.spec.Linux.Seccomp == nil {
+	if g.spec == nil || g.spec.Linux.Seccomp == nil {
 		return nil
 	}
 
@@ -611,7 +638,7 @@ func parseSeccompSyscall(s string) (rspec.Syscall, error) {
 
 // ClearLinuxSeccompSyscall clears g.spec.Linux.Seccomp.Syscalls.
 func (g *Generator) ClearLinuxSeccompSyscall() {
-	if g.spec.Linux.Seccomp == nil {
+	if g.spec == nil || g.spec.Linux.Seccomp == nil {
 		return
 	}
 
@@ -625,44 +652,37 @@ func (g *Generator) AddLinuxSeccompSyscall(sSyscall string) error {
 		return err
 	}
 
-	if g.spec.Linux.Seccomp == nil {
-		g.spec.Linux.Seccomp = &rspec.Seccomp{}
-	}
-
+	g.initSpecLinuxSeccomp()
 	g.spec.Linux.Seccomp.Syscalls = append(g.spec.Linux.Seccomp.Syscalls, f)
 	return nil
 }
 
 // AddLinuxSeccompSyscallAllow adds seccompAllow into g.spec.Linux.Seccomp.Syscalls.
 func (g *Generator) AddLinuxSeccompSyscallAllow(seccompAllow string) {
-	if g.spec.Linux.Seccomp == nil {
-		g.spec.Linux.Seccomp = &rspec.Seccomp{}
-	}
-
 	syscall := rspec.Syscall{
 		Name:   seccompAllow,
 		Action: "SCMP_ACT_ALLOW",
 	}
+
+	g.initSpecLinuxSeccomp()
 	g.spec.Linux.Seccomp.Syscalls = append(g.spec.Linux.Seccomp.Syscalls, syscall)
 }
 
 // AddLinuxSeccompSyscallErrno adds seccompErrno into g.spec.Linux.Seccomp.Syscalls.
 func (g *Generator) AddLinuxSeccompSyscallErrno(seccompErrno string) {
-	if g.spec.Linux.Seccomp == nil {
-		g.spec.Linux.Seccomp = &rspec.Seccomp{}
-	}
-
 	syscall := rspec.Syscall{
 		Name:   seccompErrno,
 		Action: "SCMP_ACT_ERRNO",
 	}
+
+	g.initSpecLinuxSeccomp()
 	g.spec.Linux.Seccomp.Syscalls = append(g.spec.Linux.Seccomp.Syscalls, syscall)
 }
 
 // RemoveSeccompSyscallByName removes all the seccomp syscalls with the given
 // name from g.spec.Linux.Seccomp.Syscalls.
 func (g *Generator) RemoveSeccompSyscallByName(name string) error {
-	if g.spec.Linux.Seccomp == nil {
+	if g.spec == nil || g.spec.Linux.Seccomp == nil {
 		return nil
 	}
 
@@ -679,7 +699,7 @@ func (g *Generator) RemoveSeccompSyscallByName(name string) error {
 // RemoveSeccompSyscallByAction removes all the seccomp syscalls with the given
 // action from g.spec.Linux.Seccomp.Syscalls.
 func (g *Generator) RemoveSeccompSyscallByAction(action string) error {
-	if g.spec.Linux.Seccomp == nil {
+	if g.spec == nil || g.spec.Linux.Seccomp == nil {
 		return nil
 	}
 
@@ -700,7 +720,7 @@ func (g *Generator) RemoveSeccompSyscallByAction(action string) error {
 // RemoveSeccompSyscall removes all the seccomp syscalls with the given
 // name and action from g.spec.Linux.Seccomp.Syscalls.
 func (g *Generator) RemoveSeccompSyscall(name string, action string) error {
-	if g.spec.Linux.Seccomp == nil {
+	if g.spec == nil || g.spec.Linux.Seccomp == nil {
 		return nil
 	}
 
@@ -750,6 +770,9 @@ func parseIDMapping(idms string) (rspec.IDMapping, error) {
 
 // ClearLinuxUIDMappings clear g.spec.Linux.UIDMappings.
 func (g *Generator) ClearLinuxUIDMappings() {
+	if g.spec == nil {
+		return
+	}
 	g.spec.Linux.UIDMappings = []rspec.IDMapping{}
 }
 
@@ -760,12 +783,16 @@ func (g *Generator) AddLinuxUIDMapping(uidMap string) error {
 		return err
 	}
 
+	g.initSpecLinux()
 	g.spec.Linux.UIDMappings = append(g.spec.Linux.UIDMappings, r)
 	return nil
 }
 
 // ClearLinuxGIDMappings clear g.spec.Linux.GIDMappings.
 func (g *Generator) ClearLinuxGIDMappings() {
+	if g.spec == nil {
+		return
+	}
 	g.spec.Linux.GIDMappings = []rspec.IDMapping{}
 }
 
@@ -776,6 +803,7 @@ func (g *Generator) AddLinuxGIDMapping(gidMap string) error {
 		return err
 	}
 
+	g.initSpecLinux()
 	g.spec.Linux.GIDMappings = append(g.spec.Linux.GIDMappings, r)
 	return nil
 }
@@ -793,6 +821,7 @@ func (g *Generator) SetLinuxRootPropagation(rp string) error {
 	default:
 		return fmt.Errorf("rootfs-propagation must be empty or one of private|rprivate|slave|rslave|shared|rshared")
 	}
+	g.initSpecLinux()
 	g.spec.Linux.RootfsPropagation = rp
 	return nil
 }
@@ -809,36 +838,48 @@ func parseHook(s string) rspec.Hook {
 
 // ClearPreStartHooks clear g.spec.Hooks.Prestart.
 func (g *Generator) ClearPreStartHooks() {
+	if g.spec == nil {
+		return
+	}
 	g.spec.Hooks.Prestart = []rspec.Hook{}
 }
 
 // AddPreStartHook add a prestart hook into g.spec.Hooks.Prestart.
 func (g *Generator) AddPreStartHook(s string) error {
 	hook := parseHook(s)
+	g.initSpec()
 	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, hook)
 	return nil
 }
 
 // ClearPostStopHooks clear g.spec.Hooks.Poststop.
 func (g *Generator) ClearPostStopHooks() {
+	if g.spec == nil {
+		return
+	}
 	g.spec.Hooks.Poststop = []rspec.Hook{}
 }
 
 // AddPostStopHook adds a poststop hook into g.spec.Hooks.Poststop.
 func (g *Generator) AddPostStopHook(s string) error {
 	hook := parseHook(s)
+	g.initSpec()
 	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, hook)
 	return nil
 }
 
 // ClearPostStartHooks clear g.spec.Hooks.Poststart.
 func (g *Generator) ClearPostStartHooks() {
+	if g.spec == nil {
+		return
+	}
 	g.spec.Hooks.Poststart = []rspec.Hook{}
 }
 
 // AddPostStartHook adds a poststart hook into g.spec.Hooks.Poststart.
 func (g *Generator) AddPostStartHook(s string) error {
 	hook := parseHook(s)
+	g.initSpec()
 	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, hook)
 	return nil
 }
@@ -852,6 +893,7 @@ func (g *Generator) AddTmpfsMount(dest string) error {
 		Options:     []string{"nosuid", "nodev", "mode=755"},
 	}
 
+	g.initSpec()
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
 	return nil
 }
@@ -873,6 +915,7 @@ func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
 		Source:      "cgroup",
 		Options:     []string{"nosuid", "noexec", "nodev", "relatime", mountCgroupOption},
 	}
+	g.initSpec()
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
 
 	return nil
@@ -899,6 +942,7 @@ func (g *Generator) AddBindMount(bind string) error {
 		Source:      source,
 		Options:     append(defaultOptions, options),
 	}
+	g.initSpec()
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
 	return nil
 }
@@ -911,6 +955,7 @@ func (g *Generator) SetupPrivileged(privileged bool) {
 		for _, cap := range capability.List() {
 			finalCapList = append(finalCapList, fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())))
 		}
+		g.initSpecLinux()
 		g.spec.Process.Capabilities = finalCapList
 		g.spec.Process.SelinuxLabel = ""
 		g.spec.Process.ApparmorProfile = ""
@@ -937,6 +982,9 @@ func checkCap(c string) error {
 
 // ClearProcessCapabilities clear g.spec.Process.Capabilities.
 func (g *Generator) ClearProcessCapabilities() {
+	if g.spec == nil {
+		return
+	}
 	g.spec.Process.Capabilities = []string{}
 }
 
@@ -948,6 +996,7 @@ func (g *Generator) AddProcessCapability(c string) error {
 
 	cp := fmt.Sprintf("CAP_%s", strings.ToUpper(c))
 
+	g.initSpec()
 	for _, cap := range g.spec.Process.Capabilities {
 		if strings.ToUpper(cap) == cp {
 			return nil
@@ -966,6 +1015,7 @@ func (g *Generator) DropProcessCapability(c string) error {
 
 	cp := fmt.Sprintf("CAP_%s", strings.ToUpper(c))
 
+	g.initSpec()
 	for i, cap := range g.spec.Process.Capabilities {
 		if strings.ToUpper(cap) == cp {
 			g.spec.Process.Capabilities = append(g.spec.Process.Capabilities[:i], g.spec.Process.Capabilities[i+1:]...)
@@ -999,6 +1049,9 @@ func mapStrToNamespace(ns string, path string) (rspec.Namespace, error) {
 
 // ClearLinuxNamespaces clear g.spec.Linux.Namespaces.
 func (g *Generator) ClearLinuxNamespaces() {
+	if g.spec == nil {
+		return
+	}
 	g.spec.Linux.Namespaces = []rspec.Namespace{}
 }
 
@@ -1010,6 +1063,7 @@ func (g *Generator) AddOrReplaceLinuxNamespace(ns string, path string) error {
 		return err
 	}
 
+	g.initSpecLinux()
 	for i, ns := range g.spec.Linux.Namespaces {
 		if ns.Type == namespace.Type {
 			g.spec.Linux.Namespaces[i] = namespace
@@ -1027,6 +1081,9 @@ func (g *Generator) RemoveLinuxNamespace(ns string) error {
 		return err
 	}
 
+	if g.spec == nil {
+		return nil
+	}
 	for i, ns := range g.spec.Linux.Namespaces {
 		if ns.Type == namespace.Type {
 			g.spec.Linux.Namespaces = append(g.spec.Linux.Namespaces[:i], g.spec.Linux.Namespaces[i+1:]...)
