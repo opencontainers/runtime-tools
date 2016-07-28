@@ -237,7 +237,9 @@ func (g *Generator) SetHostname(s string) {
 
 // ClearAnnotations clears g.spec.Annotations.
 func (g *Generator) ClearAnnotations() {
-	g.initSpec()
+	if g.spec == nil {
+		return
+	}
 	g.spec.Annotations = make(map[string]string)
 }
 
@@ -317,7 +319,9 @@ func (g *Generator) SetProcessArgs(args []string) {
 
 // ClearProcessEnv clears g.spec.Process.Env.
 func (g *Generator) ClearProcessEnv() {
-	g.initSpec()
+	if g.spec == nil {
+		return
+	}
 	g.spec.Process.Env = []string{}
 }
 
@@ -329,7 +333,9 @@ func (g *Generator) AddProcessEnv(env string) {
 
 // ClearProcessAdditionalGids clear g.spec.Process.AdditionalGids.
 func (g *Generator) ClearProcessAdditionalGids() {
-	g.initSpec()
+	if g.spec == nil {
+		return
+	}
 	g.spec.Process.User.AdditionalGids = []uint32{}
 }
 
