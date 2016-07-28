@@ -107,7 +107,7 @@ inside of the container.
   it is unset, create a new namespace.  The special *PATH* `host`
   removes any existing network namespace from the configuration.
 
-**--no-new-privileges**
+**--no-new-privileges**=true|false
   Set no new privileges bit for the container process.  Setting this flag
   will block the container processes from gaining any additional privileges
   using tools like setuid apps.  It is a good idea to run unprivileged
@@ -207,6 +207,9 @@ inside of the container.
 
     This command mounts a `tmpfs` at `/tmp` within the container.  The supported mount options are the same as the Linux default `mount` flags. If you do not specify any options, the systems uses the following options:
     `rw,noexec,nosuid,nodev,size=65536k`.
+
+**--tty**=true|false
+  Allocate a new tty for the container process. The default is *false*.
 
 **--uid**=UID
   Sets the UID used within the container.
