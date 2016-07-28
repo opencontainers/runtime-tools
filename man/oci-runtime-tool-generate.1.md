@@ -215,26 +215,42 @@ read the configuration from `config.json`.
 **--rootfs**=ROOTFSPATH
   Path to the rootfs
 
-**--seccomp-arch**=ARCH
-  Specifies Additional architectures permitted to be used for system calls.
-  By default if you turn on seccomp, only the host architecture will be allowed.
-
 **--seccomp-allow**=SYSCALL
   Specifies syscalls to be added to the ALLOW list.
   See --seccomp-syscalls for setting limits on arguments.
 
+**--seccomp-arch**=ARCH
+  Specifies Additional architectures permitted to be used for system calls.
+  By default if you turn on seccomp, only the host architecture will be allowed.
+
 **--seccomp-default**=ACTION
+  Specifies the the default action of Seccomp syscall restrictions and removes existing restrictions with the specified action
+  Values: KILL,ERRNO,TRACE,ALLOW
+
+**--seccomp-default-force**=ACTION
   Specifies the the default action of Seccomp syscall restrictions
   Values: KILL,ERRNO,TRACE,ALLOW
 
 **--seccomp-errno**=SYSCALL
-  Specifies syscalls to be added to the ERRNO list.
-  See --seccomp-syscalls for setting limits on arguments.
+  Specifies syscalls to create seccomp rule to respond with ERRNO.
 
-**--seccomp-syscalls**=SYSCALLS
-  Specifies Additional syscalls permitted to be used for system calls,
-  e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op
-  See --seccomp-allow and --seccomp-errno for convenient way to set seccomp syscall options.
+**--seccomp-kill**=SYSCALL
+  Specifies syscalls to create seccomp rule to respond with KILL.
+
+**--seccomp-only**
+  Option to only export the seccomp section of output
+
+**--seccomp-remove**
+  Specifies syscall restrictions to remove from the configuration.
+
+**--seccomp-remove-all**
+  Option to remove all syscall restrictions.
+
+**--seccomp-trace**=SYSCALL
+  Specifies syscalls to create seccomp rule to respond with TRACE.
+
+**--seccomp-trap**=SYSCALL
+  Specifies syscalls to create seccomp rule to respond with TRAP.
 
 **--selinux-label**=PROCESSLABEL
   SELinux Label

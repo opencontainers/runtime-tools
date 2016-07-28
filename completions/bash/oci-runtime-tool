@@ -302,7 +302,14 @@ _oci-runtime-tool_generate() {
 	      --seccomp-allow
 	      --seccomp-arch
 	      --seccomp-default
+		  --seccomp-default-force
 	      --seccomp-errno
+		  --seccomp-kill
+		  --seccomp-only
+		  --seccomp-remove
+		  --seccomp-remove-all
+		  --seccomp-trace
+		  --seccomp-trap
 	      --seccomp-syscalls
 	      --selinux-label
 	      --sysctl
