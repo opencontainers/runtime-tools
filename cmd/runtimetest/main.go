@@ -279,9 +279,8 @@ func validateDefaultDevices(spec *rspec.Spec) error {
 		if err != nil {
 			if os.IsNotExist(err) {
 				return fmt.Errorf("device node %v not found", device)
-			} else {
-				return err
 			}
+			return err
 		} else {
 			if fi.Mode()&os.ModeDevice != os.ModeDevice {
 				return fmt.Errorf("file %v is not a device as expected", device)
