@@ -244,14 +244,9 @@ func (g *Generator) ClearAnnotations() {
 }
 
 // AddAnnotation adds an annotation into g.spec.Annotations.
-func (g *Generator) AddAnnotation(s string) error {
+func (g *Generator) AddAnnotation(key, value string) error {
 	g.initSpecAnnotations()
-
-	pair := strings.Split(s, "=")
-	if len(pair) != 2 {
-		return fmt.Errorf("incorrectly specified annotation: %s", s)
-	}
-	g.spec.Annotations[pair[0]] = pair[1]
+	g.spec.Annotations[key] = value
 	return nil
 }
 
@@ -461,14 +456,9 @@ func (g *Generator) ClearLinuxSysctl() {
 }
 
 // AddLinuxSysctl adds a new sysctl config into g.spec.Linux.Sysctl.
-func (g *Generator) AddLinuxSysctl(s string) error {
+func (g *Generator) AddLinuxSysctl(key, value string) error {
 	g.initSpecLinuxSysctl()
-
-	pair := strings.Split(s, "=")
-	if len(pair) != 2 {
-		return fmt.Errorf("incorrectly specified sysctl: %s", s)
-	}
-	g.spec.Linux.Sysctl[pair[0]] = pair[1]
+	g.spec.Linux.Sysctl[key] = value
 	return nil
 }
 
@@ -752,35 +742,6 @@ func (g *Generator) RemoveSeccompSyscall(name string, action string) error {
 	return nil
 }
 
-func parseIDMapping(idms string) (rspec.IDMapping, error) {
-	idm := strings.Split(idms, ":")
-	if len(idm) != 3 {
-		return rspec.IDMapping{}, fmt.Errorf("idmappings error: %s", idms)
-	}
-
-	hid, err := strconv.Atoi(idm[0])
-	if err != nil {
-		return rspec.IDMapping{}, err
-	}
-
-	cid, err := strconv.Atoi(idm[1])
-	if err != nil {
-		return rspec.IDMapping{}, err
-	}
-
-	size, err := strconv.Atoi(idm[2])
-	if err != nil {
-		return rspec.IDMapping{}, err
-	}
-
-	idMapping := rspec.IDMapping{
-		HostID:      uint32(hid),
-		ContainerID: uint32(cid),
-		Size:        uint32(size),
-	}
-	return idMapping, nil
-}
-
 // ClearLinuxUIDMappings clear g.spec.Linux.UIDMappings.
 func (g *Generator) ClearLinuxUIDMappings() {
 	if g.spec == nil || g.spec.Linux == nil {
@@ -790,14 +751,15 @@ func (g *Generator) ClearLinuxUIDMappings() {
 }
 
 // AddLinuxUIDMapping adds uidMap into g.spec.Linux.UIDMappings.
-func (g *Generator) AddLinuxUIDMapping(uidMap string) error {
-	r, err := parseIDMapping(uidMap)
-	if err != nil {
-		return err
+func (g *Generator) AddLinuxUIDMapping(hid, cid, size uint32) error {
+	idMapping := rspec.IDMapping{
+		HostID:      hid,
+		ContainerID: cid,
+		Size:        size,
 	}
 
 	g.initSpecLinux()
-	g.spec.Linux.UIDMappings = append(g.spec.Linux.UIDMappings, r)
+	g.spec.Linux.UIDMappings = append(g.spec.Linux.UIDMappings, idMapping)
 	return nil
 }
 
@@ -810,14 +772,15 @@ func (g *Generator) ClearLinuxGIDMappings() {
 }
 
 // AddLinuxGIDMapping adds gidMap into g.spec.Linux.GIDMappings.
-func (g *Generator) AddLinuxGIDMapping(gidMap string) error {
-	r, err := parseIDMapping(gidMap)
-	if err != nil {
-		return err
+func (g *Generator) AddLinuxGIDMapping(hid, cid, size uint32) error {
+	idMapping := rspec.IDMapping{
+		HostID:      hid,
+		ContainerID: cid,
+		Size:        size,
 	}
 
 	g.initSpecLinux()
-	g.spec.Linux.GIDMappings = append(g.spec.Linux.GIDMappings, r)
+	g.spec.Linux.GIDMappings = append(g.spec.Linux.GIDMappings, idMapping)
 	return nil
 }
 
@@ -839,16 +802,6 @@ func (g *Generator) SetLinuxRootPropagation(rp string) error {
 	return nil
 }
 
-func parseHook(s string) rspec.Hook {
-	parts := strings.Split(s, ":")
-	args := []string{}
-	path := parts[0]
-	if len(parts) > 1 {
-		args = parts[1:]
-	}
-	return rspec.Hook{Path: path, Args: args}
-}
-
 // ClearPreStartHooks clear g.spec.Hooks.Prestart.
 func (g *Generator) ClearPreStartHooks() {
 	if g.spec == nil {
@@ -858,9 +811,9 @@ func (g *Generator) ClearPreStartHooks() {
 }
 
 // AddPreStartHook add a prestart hook into g.spec.Hooks.Prestart.
-func (g *Generator) AddPreStartHook(s string) error {
-	hook := parseHook(s)
+func (g *Generator) AddPreStartHook(path string, args []string) error {
 	g.initSpec()
+	hook := rspec.Hook{Path: path, Args: args}
 	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, hook)
 	return nil
 }
@@ -874,9 +827,9 @@ func (g *Generator) ClearPostStopHooks() {
 }
 
 // AddPostStopHook adds a poststop hook into g.spec.Hooks.Poststop.
-func (g *Generator) AddPostStopHook(s string) error {
-	hook := parseHook(s)
+func (g *Generator) AddPostStopHook(path string, args []string) error {
 	g.initSpec()
+	hook := rspec.Hook{Path: path, Args: args}
 	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, hook)
 	return nil
 }
@@ -890,35 +843,20 @@ func (g *Generator) ClearPostStartHooks() {
 }
 
 // AddPostStartHook adds a poststart hook into g.spec.Hooks.Poststart.
-func (g *Generator) AddPostStartHook(s string) error {
-	hook := parseHook(s)
+func (g *Generator) AddPostStartHook(path string, args []string) error {
 	g.initSpec()
+	hook := rspec.Hook{Path: path, Args: args}
 	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, hook)
 	return nil
 }
 
 // AddTmpfsMount adds a tmpfs mount into g.spec.Mounts.
-func (g *Generator) AddTmpfsMount(dest string) error {
-	mnt := rspec.Mount{}
-
-	parts := strings.Split(dest, ":")
-	if len(parts) == 2 {
-		options := strings.Split(parts[1], ",")
-		mnt = rspec.Mount{
-			Destination: parts[0],
-			Type:        "tmpfs",
-			Source:      "tmpfs",
-			Options:     options,
-		}
-	} else if len(parts) == 1 {
-		mnt = rspec.Mount{
-			Destination: parts[0],
-			Type:        "tmpfs",
-			Source:      "tmpfs",
-			Options:     []string{"rw", "noexec", "nosuid", "nodev", "size=65536k"},
-		}
-	} else {
-		return fmt.Errorf("invalid value for --tmpfs")
+func (g *Generator) AddTmpfsMount(dest string, options []string) error {
+	mnt := rspec.Mount{
+		Destination: dest,
+		Type:        "tmpfs",
+		Source:      "tmpfs",
+		Options:     options,
 	}
 
 	g.initSpec()
@@ -950,20 +888,13 @@ func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
 }
 
 // AddBindMount adds a bind mount into g.spec.Mounts.
-func (g *Generator) AddBindMount(bind string) error {
-	var source, dest string
-	options := "ro"
-	bparts := strings.SplitN(bind, ":", 3)
-	switch len(bparts) {
-	case 2:
-		source, dest = bparts[0], bparts[1]
-	case 3:
-		source, dest, options = bparts[0], bparts[1], bparts[2]
-	default:
-		return fmt.Errorf("--bind should have format src:dest:[options]")
+func (g *Generator) AddBindMount(source, dest, options string) error {
+	if options == "" {
+		options = "ro"
 	}
 
 	defaultOptions := []string{"bind"}
+
 	mnt := rspec.Mount{
 		Destination: dest,
 		Type:        "bind",
