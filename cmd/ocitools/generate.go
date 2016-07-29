@@ -124,9 +124,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if len(pair) != 2 {
 				return fmt.Errorf("incorrectly specified annotation: %s", s)
 			}
-			if err := g.AddAnnotation(pair[0], pair[1]); err != nil {
-				return err
-			}
+			g.AddAnnotation(pair[0], pair[1])
 		}
 	}
 
@@ -254,9 +252,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if err != nil {
 				return err
 			}
-			if err := g.AddTmpfsMount(dest, options); err != nil {
-				return err
-			}
+			g.AddTmpfsMount(dest, options)
 		}
 	}
 
@@ -272,10 +268,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if err != nil {
 				return err
 			}
-
-			if err := g.AddBindMount(source, dest, options); err != nil {
-				return err
-			}
+			g.AddBindMount(source, dest, options)
 		}
 	}
 
@@ -283,9 +276,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		preStartHooks := context.StringSlice("prestart")
 		for _, hook := range preStartHooks {
 			path, args := parseHook(hook)
-			if err := g.AddPreStartHook(path, args); err != nil {
-				return err
-			}
+			g.AddPreStartHook(path, args)
 		}
 	}
 
@@ -293,9 +284,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		postStopHooks := context.StringSlice("poststop")
 		for _, hook := range postStopHooks {
 			path, args := parseHook(hook)
-			if err := g.AddPostStopHook(path, args); err != nil {
-				return err
-			}
+			g.AddPostStopHook(path, args)
 		}
 	}
 
@@ -303,9 +292,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		postStartHooks := context.StringSlice("poststart")
 		for _, hook := range postStartHooks {
 			path, args := parseHook(hook)
-			if err := g.AddPostStartHook(path, args); err != nil {
-				return err
-			}
+			g.AddPostStartHook(path, args)
 		}
 	}
 
@@ -322,9 +309,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			return err
 		}
 
-		if err := g.AddLinuxUIDMapping(hid, cid, size); err != nil {
-			return err
-		}
+		g.AddLinuxUIDMapping(hid, cid, size)
 	}
 
 	for _, gidMap := range gidMaps {
@@ -333,9 +318,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			return err
 		}
 
-		if err := g.AddLinuxGIDMapping(hid, cid, size); err != nil {
-			return err
-		}
+		g.AddLinuxGIDMapping(hid, cid, size)
 	}
 
 	var sd string
