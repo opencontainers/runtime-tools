@@ -174,7 +174,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("groups") {
 		groups := context.StringSlice("groups")
 		for _, group := range groups {
-			g.AddProcessAdditionalGid(group)
+			groupID, err := strconv.Atoi(group)
+			if err != nil {
+				return err
+			}
+			g.AddProcessAdditionalGid(uint32(groupID))
 		}
 	}
 
