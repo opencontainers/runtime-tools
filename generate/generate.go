@@ -330,20 +330,14 @@ func (g *Generator) ClearProcessAdditionalGids() {
 }
 
 // AddProcessAdditionalGid adds an additional gid into g.spec.Process.AdditionalGids.
-func (g *Generator) AddProcessAdditionalGid(gid string) error {
-	groupID, err := strconv.Atoi(gid)
-	if err != nil {
-		return err
-	}
-
+func (g *Generator) AddProcessAdditionalGid(gid uint32) {
 	g.initSpec()
 	for _, group := range g.spec.Process.User.AdditionalGids {
-		if group == uint32(groupID) {
-			return nil
+		if group == gid {
+			return
 		}
 	}
-	g.spec.Process.User.AdditionalGids = append(g.spec.Process.User.AdditionalGids, uint32(groupID))
-	return nil
+	g.spec.Process.User.AdditionalGids = append(g.spec.Process.User.AdditionalGids, gid)
 }
 
 // SetProcessSelinuxLabel sets g.spec.Process.SelinuxLabel.
