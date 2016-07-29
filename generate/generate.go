@@ -240,10 +240,9 @@ func (g *Generator) ClearAnnotations() {
 }
 
 // AddAnnotation adds an annotation into g.spec.Annotations.
-func (g *Generator) AddAnnotation(key, value string) error {
+func (g *Generator) AddAnnotation(key, value string) {
 	g.initSpecAnnotations()
 	g.spec.Annotations[key] = value
-	return nil
 }
 
 // RemoveAnnotation remove an annotation from g.spec.Annotations.
@@ -452,10 +451,9 @@ func (g *Generator) ClearLinuxSysctl() {
 }
 
 // AddLinuxSysctl adds a new sysctl config into g.spec.Linux.Sysctl.
-func (g *Generator) AddLinuxSysctl(key, value string) error {
+func (g *Generator) AddLinuxSysctl(key, value string) {
 	g.initSpecLinuxSysctl()
 	g.spec.Linux.Sysctl[key] = value
-	return nil
 }
 
 // RemoveLinuxSysctl removes a sysctl config from g.spec.Linux.Sysctl.
@@ -747,7 +745,7 @@ func (g *Generator) ClearLinuxUIDMappings() {
 }
 
 // AddLinuxUIDMapping adds uidMap into g.spec.Linux.UIDMappings.
-func (g *Generator) AddLinuxUIDMapping(hid, cid, size uint32) error {
+func (g *Generator) AddLinuxUIDMapping(hid, cid, size uint32) {
 	idMapping := rspec.IDMapping{
 		HostID:      hid,
 		ContainerID: cid,
@@ -756,7 +754,6 @@ func (g *Generator) AddLinuxUIDMapping(hid, cid, size uint32) error {
 
 	g.initSpecLinux()
 	g.spec.Linux.UIDMappings = append(g.spec.Linux.UIDMappings, idMapping)
-	return nil
 }
 
 // ClearLinuxGIDMappings clear g.spec.Linux.GIDMappings.
@@ -768,7 +765,7 @@ func (g *Generator) ClearLinuxGIDMappings() {
 }
 
 // AddLinuxGIDMapping adds gidMap into g.spec.Linux.GIDMappings.
-func (g *Generator) AddLinuxGIDMapping(hid, cid, size uint32) error {
+func (g *Generator) AddLinuxGIDMapping(hid, cid, size uint32) {
 	idMapping := rspec.IDMapping{
 		HostID:      hid,
 		ContainerID: cid,
@@ -777,7 +774,6 @@ func (g *Generator) AddLinuxGIDMapping(hid, cid, size uint32) error {
 
 	g.initSpecLinux()
 	g.spec.Linux.GIDMappings = append(g.spec.Linux.GIDMappings, idMapping)
-	return nil
 }
 
 // SetLinuxRootPropagation sets g.spec.Linux.RootfsPropagation.
@@ -807,11 +803,10 @@ func (g *Generator) ClearPreStartHooks() {
 }
 
 // AddPreStartHook add a prestart hook into g.spec.Hooks.Prestart.
-func (g *Generator) AddPreStartHook(path string, args []string) error {
+func (g *Generator) AddPreStartHook(path string, args []string) {
 	g.initSpec()
 	hook := rspec.Hook{Path: path, Args: args}
 	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, hook)
-	return nil
 }
 
 // ClearPostStopHooks clear g.spec.Hooks.Poststop.
@@ -823,11 +818,10 @@ func (g *Generator) ClearPostStopHooks() {
 }
 
 // AddPostStopHook adds a poststop hook into g.spec.Hooks.Poststop.
-func (g *Generator) AddPostStopHook(path string, args []string) error {
+func (g *Generator) AddPostStopHook(path string, args []string) {
 	g.initSpec()
 	hook := rspec.Hook{Path: path, Args: args}
 	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, hook)
-	return nil
 }
 
 // ClearPostStartHooks clear g.spec.Hooks.Poststart.
@@ -839,15 +833,14 @@ func (g *Generator) ClearPostStartHooks() {
 }
 
 // AddPostStartHook adds a poststart hook into g.spec.Hooks.Poststart.
-func (g *Generator) AddPostStartHook(path string, args []string) error {
+func (g *Generator) AddPostStartHook(path string, args []string) {
 	g.initSpec()
 	hook := rspec.Hook{Path: path, Args: args}
 	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, hook)
-	return nil
 }
 
 // AddTmpfsMount adds a tmpfs mount into g.spec.Mounts.
-func (g *Generator) AddTmpfsMount(dest string, options []string) error {
+func (g *Generator) AddTmpfsMount(dest string, options []string) {
 	mnt := rspec.Mount{
 		Destination: dest,
 		Type:        "tmpfs",
@@ -857,7 +850,6 @@ func (g *Generator) AddTmpfsMount(dest string, options []string) error {
 
 	g.initSpec()
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
-	return nil
 }
 
 // AddCgroupsMount adds a cgroup mount into g.spec.Mounts.
@@ -884,7 +876,7 @@ func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
 }
 
 // AddBindMount adds a bind mount into g.spec.Mounts.
-func (g *Generator) AddBindMount(source, dest, options string) error {
+func (g *Generator) AddBindMount(source, dest, options string) {
 	if options == "" {
 		options = "ro"
 	}
@@ -899,7 +891,6 @@ func (g *Generator) AddBindMount(source, dest, options string) error {
 	}
 	g.initSpec()
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
-	return nil
 }
 
 // SetupPrivileged sets up the priviledge-related fields inside g.spec.
