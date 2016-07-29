@@ -1,4 +1,4 @@
-# ocitools
+# ocitools [![Build Status](https://travis-ci.org/opencontainers/ocitools.svg?branch=master)](https://travis-ci.org/opencontainers/ocitools)
 
 ocitools is a collection of tools for working with the [OCI runtime specification][runtime-spec].
 
