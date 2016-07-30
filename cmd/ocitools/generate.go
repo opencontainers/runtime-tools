@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/opencontainers/ocitools/generate"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
@@ -48,11 +49,14 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "sysctl", Usage: "add sysctl settings e.g net.ipv4.forward=1"},
 	cli.StringFlag{Name: "apparmor", Usage: "specifies the the apparmor profile for the container"},
-	cli.StringFlag{Name: "seccomp-default", Usage: "specifies the the defaultaction of Seccomp syscall restrictions"},
-	cli.StringSliceFlag{Name: "seccomp-arch", Usage: "specifies Additional architectures permitted to be used for system calls"},
-	cli.StringSliceFlag{Name: "seccomp-syscalls", Usage: "specifies Additional architectures permitted to be used for system calls, e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op "},
-	cli.StringSliceFlag{Name: "seccomp-allow", Usage: "specifies syscalls to be added to allowed"},
-	cli.StringSliceFlag{Name: "seccomp-errno", Usage: "specifies syscalls to be added to list that returns an error"},
+	cli.BoolFlag{Name: "seccomp-only", Usage: "specifies to export just a seccomp configuration file"},
+	cli.StringFlag{Name: "seccomp-arch", Usage: "specifies additional architectures permitted to be used for system calls"},
+	cli.StringFlag{Name: "seccomp-default", Usage: "specifies default action to be used for system calls"},
+	cli.StringFlag{Name: "seccomp-allow", Usage: "specifies syscalls to respond with allow"},
+	cli.StringFlag{Name: "seccomp-trap", Usage: "specifies syscalls to respond with trap"},
+	cli.StringFlag{Name: "seccomp-errno", Usage: "specifies syscalls to respond with errno"},
+	cli.StringFlag{Name: "seccomp-trace", Usage: "specifies syscalls to respond with trace"},
+	cli.StringFlag{Name: "seccomp-kill", Usage: "specifies syscalls to respond with kill"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
 }
@@ -82,13 +86,15 @@ var generateCommand = cli.Command{
 		if err != nil {
 			return err
 		}
+		var exportOpts generate.ExportOptions
+		exportOpts.Seccomp = context.Bool("seccomp-only")
 
 		if context.IsSet("output") {
-			output := context.String("output")
-			err = specgen.SaveToFile(output)
+			err = specgen.SaveToFile(context.String("output"), exportOpts)
 		} else {
-			err = specgen.Save(os.Stdout)
+			err = specgen.Save(os.Stdout, exportOpts)
 		}
+
 		if err != nil {
 			return err
 		}
@@ -305,65 +311,85 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	var sd string
-	var sa, ss []string
-
-	if context.IsSet("seccomp-default") {
-		sd = context.String("seccomp-default")
-	}
-
-	if context.IsSet("seccomp-arch") {
-		sa = context.StringSlice("seccomp-arch")
-	}
-
-	if context.IsSet("seccomp-syscalls") {
-		ss = context.StringSlice("seccomp-syscalls")
-	}
-
-	if sd == "" && len(sa) == 0 && len(ss) == 0 {
-		return nil
-	}
-
-	// Set the DefaultAction of seccomp
-	if context.IsSet("seccomp-default") {
-		if err := g.SetLinuxSeccompDefault(sd); err != nil {
-			return err
-		}
-	}
-
-	// Add the additional architectures permitted to be used for system calls
-	if context.IsSet("seccomp-arch") {
-		for _, arch := range sa {
-			if err := g.AddLinuxSeccompArch(arch); err != nil {
-				return err
-			}
-		}
-	}
-
-	// Set syscall restrict in Seccomp
-	if context.IsSet("seccomp-syscalls") {
-		for _, syscall := range ss {
-			if err := g.AddLinuxSeccompSyscall(syscall); err != nil {
-				return err
-			}
-		}
-	}
-
-	if context.IsSet("seccomp-allow") {
-		seccompAllows := context.StringSlice("seccomp-allow")
-		for _, s := range seccompAllows {
-			g.AddLinuxSeccompSyscallAllow(s)
-		}
-	}
-
-	if context.IsSet("seccomp-errno") {
-		seccompErrnos := context.StringSlice("seccomp-errno")
-		for _, s := range seccompErrnos {
-			g.AddLinuxSeccompSyscallErrno(s)
-		}
+	g, err := addSeccomp(g, context)
+	if err != nil {
+		return err
 	}
 
 	return nil
+}
+
+func addSeccomp(g generate.Generator, context *cli.Context) (generate.Generator, error) {
+	seccompDefault := context.String("seccomp-default")
+	seccompArch := context.String("seccomp-arch")
+	seccompKill := context.String("seccomp-kill")
+	seccompTrace := context.String("seccomp-trace")
+	seccompErrno := context.String("seccomp-errno")
+	seccompTrap := context.String("seccomp-trap")
+	seccompAllow := context.String("seccomp-allow")
+
+	// Set the DefaultAction of seccomp
+	if seccompDefault == "" {
+		seccompDefault = "errno"
+	}
+
+	err := g.SetDefaultSeccompAction(seccompDefault)
+	if err != nil {
+		return g, err
+	}
+
+	// Add the additional architectures permitted to be used for system calls
+	if seccompArch == "" {
+		seccompArch = "amd64,x86,x32" // Default Architectures
+	}
+
+	architectureArgs := strings.Split(seccompArch, ",")
+	err = g.SetSeccompArchitectures(architectureArgs)
+	if err != nil {
+		return g, err
+	}
+
+	if seccompKill != "" {
+		killArgs := strings.Split(seccompKill, ",")
+		err = g.SetSyscallActions("kill", killArgs)
+		if err != nil {
+			return g, err
+		}
+	}
+
+	if seccompTrace != "" {
+		traceArgs := strings.Split(seccompTrace, ",")
+		err = g.SetSyscallActions("trace", traceArgs)
+		if err != nil {
+			return g, err
+		}
+	}
+
+	if seccompErrno != "" {
+		errnoArgs := strings.Split(seccompErrno, ",")
+		err = g.SetSyscallActions("errno", errnoArgs)
+		if err != nil {
+			return g, err
+		}
+	}
+
+	if seccompTrap != "" {
+		trapArgs := strings.Split(seccompTrap, ",")
+		err = g.SetSyscallActions("trap", trapArgs)
+		if err != nil {
+			return g, err
+		}
+	}
+
+	if seccompAllow != "" {
+		allowArgs := strings.Split(seccompAllow, ",")
+		err = g.SetSyscallActions("allow", allowArgs)
+		if err != nil {
+			return g, err
+		}
+	}
+
+	return g, nil
 }
 
 func checkNs(nsMaps map[string]string, nsName string) bool {
