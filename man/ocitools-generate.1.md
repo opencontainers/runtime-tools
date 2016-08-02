@@ -117,6 +117,9 @@ inside of the container.
   using tools like setuid apps.  It is a good idea to run unprivileged
   containers with this flag.
 
+**--oom-score-adj**=adj
+  Specifies oom_score_adj for the container.
+
 **--output**=PATH
   Instead of writing the configuration JSON to stdout, write it to a
   file at *PATH* (overwriting the existing content if a file already
