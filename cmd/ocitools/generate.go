@@ -241,13 +241,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		needsNewUser = true
 	}
 
-	nsMaps := map[string]string{}
-	for _, nsName := range generate.Namespaces {
-		if context.IsSet(nsName) {
-			nsMaps[nsName] = context.String(nsName)
-		}
-	}
-	setupLinuxNamespaces(g, needsNewUser, nsMaps)
+	setupLinuxNamespaces(context, g, needsNewUser)
 
 	if context.IsSet("tmpfs") {
 		tmpfsSlice := context.StringSlice("tmpfs")
@@ -386,19 +380,12 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	return nil
 }
 
-func checkNs(nsMaps map[string]string, nsName string) bool {
-	if _, ok := nsMaps[nsName]; !ok {
-		return false
-	}
-	return true
-}
-
-func setupLinuxNamespaces(g *generate.Generator, needsNewUser bool, nsMaps map[string]string) {
+func setupLinuxNamespaces(context *cli.Context, g *generate.Generator, needsNewUser bool) {
 	for _, nsName := range generate.Namespaces {
-		if !checkNs(nsMaps, nsName) && !(needsNewUser && nsName == "user") {
+		if !context.IsSet(nsName) && !(needsNewUser && nsName == "user") {
 			continue
 		}
-		nsPath := nsMaps[nsName]
+		nsPath := context.String(nsName)
 		if nsPath == "host" {
 			g.RemoveLinuxNamespace(nsName)
 			continue
