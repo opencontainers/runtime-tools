@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"runtime"
+	"strconv"
+	"strings"
 
 	"github.com/opencontainers/ocitools/generate"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
@@ -117,9 +120,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("label") {
 		annotations := context.StringSlice("label")
 		for _, s := range annotations {
-			if err := g.AddAnnotation(s); err != nil {
-				return err
+			pair := strings.Split(s, "=")
+			if len(pair) != 2 {
+				return fmt.Errorf("incorrectly specified annotation: %s", s)
 			}
+			g.AddAnnotation(pair[0], pair[1])
 		}
 	}
 
@@ -169,7 +174,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("groups") {
 		groups := context.StringSlice("groups")
 		for _, group := range groups {
-			g.AddProcessAdditionalGid(group)
+			groupID, err := strconv.Atoi(group)
+			if err != nil {
+				return err
+			}
+			g.AddProcessAdditionalGid(uint32(groupID))
 		}
 	}
 
@@ -184,7 +193,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("sysctl") {
 		sysctls := context.StringSlice("sysctl")
 		for _, s := range sysctls {
-			g.AddLinuxSysctl(s)
+			pair := strings.Split(s, "=")
+			if len(pair) != 2 {
+				return fmt.Errorf("incorrectly specified sysctl: %s", s)
+			}
+			g.AddLinuxSysctl(pair[0], pair[1])
 		}
 	}
 
@@ -239,9 +252,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("tmpfs") {
 		tmpfsSlice := context.StringSlice("tmpfs")
 		for _, s := range tmpfsSlice {
-			if err := g.AddTmpfsMount(s); err != nil {
+			dest, options, err := parseTmpfsMount(s)
+			if err != nil {
 				return err
 			}
+			g.AddTmpfsMount(dest, options)
 		}
 	}
 
@@ -253,36 +268,35 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("bind") {
 		binds := context.StringSlice("bind")
 		for _, bind := range binds {
-			if err := g.AddBindMount(bind); err != nil {
+			source, dest, options, err := parseBindMount(bind)
+			if err != nil {
 				return err
 			}
+			g.AddBindMount(source, dest, options)
 		}
 	}
 
 	if context.IsSet("prestart") {
 		preStartHooks := context.StringSlice("prestart")
 		for _, hook := range preStartHooks {
-			if err := g.AddPreStartHook(hook); err != nil {
-				return err
-			}
+			path, args := parseHook(hook)
+			g.AddPreStartHook(path, args)
 		}
 	}
 
 	if context.IsSet("poststop") {
 		postStopHooks := context.StringSlice("poststop")
 		for _, hook := range postStopHooks {
-			if err := g.AddPostStopHook(hook); err != nil {
-				return err
-			}
+			path, args := parseHook(hook)
+			g.AddPostStopHook(path, args)
 		}
 	}
 
 	if context.IsSet("poststart") {
 		postStartHooks := context.StringSlice("poststart")
 		for _, hook := range postStartHooks {
-			if err := g.AddPostStartHook(hook); err != nil {
-				return err
-			}
+			path, args := parseHook(hook)
+			g.AddPostStartHook(path, args)
 		}
 	}
 
@@ -294,15 +308,21 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	for _, uidMap := range uidMaps {
-		if err := g.AddLinuxUIDMapping(uidMap); err != nil {
+		hid, cid, size, err := parseIDMapping(uidMap)
+		if err != nil {
 			return err
 		}
+
+		g.AddLinuxUIDMapping(hid, cid, size)
 	}
 
 	for _, gidMap := range gidMaps {
-		if err := g.AddLinuxGIDMapping(gidMap); err != nil {
+		hid, cid, size, err := parseIDMapping(gidMap)
+		if err != nil {
 			return err
 		}
+
+		g.AddLinuxGIDMapping(hid, cid, size)
 	}
 
 	var sd string
@@ -385,4 +405,74 @@ func setupLinuxNamespaces(g *generate.Generator, needsNewUser bool, nsMaps map[s
 		}
 		g.AddOrReplaceLinuxNamespace(nsName, nsPath)
 	}
+}
+
+func parseIDMapping(idms string) (uint32, uint32, uint32, error) {
+	idm := strings.Split(idms, ":")
+	if len(idm) != 3 {
+		return 0, 0, 0, fmt.Errorf("idmappings error: %s", idms)
+	}
+
+	hid, err := strconv.Atoi(idm[0])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	cid, err := strconv.Atoi(idm[1])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	size, err := strconv.Atoi(idm[2])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return uint32(hid), uint32(cid), uint32(size), nil
+}
+
+func parseHook(s string) (string, []string) {
+	parts := strings.Split(s, ":")
+	args := []string{}
+	path := parts[0]
+	if len(parts) > 1 {
+		args = parts[1:]
+	}
+	return path, args
+}
+
+func parseTmpfsMount(s string) (string, []string, error) {
+	var dest string
+	var options []string
+	var err error
+
+	parts := strings.Split(s, ":")
+	if len(parts) == 2 {
+		dest = parts[0]
+		options = strings.Split(parts[1], ",")
+	} else if len(parts) == 1 {
+		dest = parts[0]
+		options = []string{"rw", "noexec", "nosuid", "nodev", "size=65536k"}
+	} else {
+		err = fmt.Errorf("invalid value for --tmpfs")
+	}
+
+	return dest, options, err
+}
+
+func parseBindMount(s string) (string, string, string, error) {
+	var source, dest string
+	options := "ro"
+
+	bparts := strings.SplitN(s, ":", 3)
+	switch len(bparts) {
+	case 2:
+		source, dest = bparts[0], bparts[1]
+	case 3:
+		source, dest, options = bparts[0], bparts[1], bparts[2]
+	default:
+		return source, dest, options, fmt.Errorf("--bind should have format src:dest:[options]")
+	}
+
+	return source, dest, options, nil
 }
