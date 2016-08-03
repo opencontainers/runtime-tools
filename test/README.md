@@ -27,8 +27,10 @@ And read the `Makefile` source to find other useful targets
 
 * [GNU Core Utilities][coreutils] for [`cat`][cat.1],
   [`echo`][echo.1], [`head`][head.1], and [`sed][sed.1].
+* [jq] for [`jq`][jq.1].
 
 [coreutils]: http://www.gnu.org/software/coreutils/coreutils.html
+[jq]: https://stedolan.github.io/jq/
 [prove]: http://perldoc.perl.org/prove.html
 [Sharness]: http://mlafeldt.github.io/sharness/
 [submodule]: http://git-scm.com/docs/git-submodule
@@ -36,4 +38,5 @@ And read the `Makefile` source to find other useful targets
 [cat.1]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cat.html
 [echo.1]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/echo.html
 [head.1]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/head.html
+[jq.1]: https://stedolan.github.io/jq/manual/
 [sed.1]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/head.html
