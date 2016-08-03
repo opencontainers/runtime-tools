@@ -17,6 +17,21 @@ Run the tests with:
 And read the `Makefile` source to find other useful targets
 (e.g. [`prove`][prove]).
 
+## Naming
+
+0 - Global `oci-runtime-tool` options.
+
+## Dependencies
+
+* [GNU Core Utilities][coreutils] for [`cat`][cat.1],
+  [`echo`][echo.1], [`head`][head.1], and [`sed][sed.1].
+
+[coreutils]: http://www.gnu.org/software/coreutils/coreutils.html
 [prove]: http://perldoc.perl.org/prove.html
 [Sharness]: http://mlafeldt.github.io/sharness/
 [submodule]: http://git-scm.com/docs/git-submodule
+
+[cat.1]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cat.html
+[echo.1]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/echo.html
+[head.1]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/head.html
+[sed.1]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/head.html
