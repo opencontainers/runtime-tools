@@ -21,6 +21,8 @@ And read the `Makefile` source to find other useful targets
 
 0 - Global `oci-runtime-tool` options.
 
+1 - `oci-runtime-tool generate`.
+
 ## Dependencies
 
 * [GNU Core Utilities][coreutils] for [`cat`][cat.1],
