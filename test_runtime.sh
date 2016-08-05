@@ -77,9 +77,9 @@ trap cleanup EXIT
 tar -xf  rootfs.tar.gz -C ${TESTDIR}
 cp runtimetest ${TESTDIR}
 
-ocitools generate --output "${TESTDIR}/config.json" "${TEST_ARGS[@]}" --rootfs '.'
+ocitools generate --tty --output "${TESTDIR}/config.json" "${TEST_ARGS[@]}" --rootfs '.'
 
-TESTCMD="${RUNTIME} start $(uuidgen)"
+TESTCMD="${RUNTIME} run $(uuidgen)"
 pushd $TESTDIR > /dev/null
 if ! ${TESTCMD}; then
 	error "Runtime ${RUNTIME} failed validation"
