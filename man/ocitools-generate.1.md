@@ -58,10 +58,10 @@ read the configuration from `config.json`.
   Current working directory for the process
 
 **--env**=[]
-  Set environment variables
-  This option allows you to specify arbitrary
-environment variables that are available for the process that will be launched
-inside of the container.
+  Set environment variables e.g. key=value.
+  This option allows you to specify arbitrary environment variables
+  that are available for the process that will be launched inside of
+  the container.
 
 **--gid**=GID
   Gid for the process inside of container
@@ -83,6 +83,9 @@ inside of the container.
   to join. The special *PATH*  empty-string  creates a new namespace.
   The special *PATH* `host` removes any existing IPC namespace from the
   configuration.
+
+**--label**=[]
+  Add annotations to the configuration e.g. key=value.
 
 **--mount**=*PATH*
   Use a mount namespace where *PATH* is an existing mount namespace file
