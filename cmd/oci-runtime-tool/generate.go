@@ -92,21 +92,23 @@ var generateCommand = cli.Command{
 	Before: before,
 	Action: func(context *cli.Context) error {
 		// Start from the default template.
-		specgen := generate.New()
+		specgen, err := generate.New(nil)
+		if err != nil {
+			return err
+		}
 
 		var template string
 		if context.IsSet("template") {
 			template = context.String("template")
 		}
 		if template != "" {
-			var err error
 			specgen, err = generate.NewFromFile(template)
 			if err != nil {
 				return err
 			}
 		}
 
-		err := setupSpec(&specgen, context)
+		err = setupSpec(&specgen, context)
 		if err != nil {
 			return err
 		}

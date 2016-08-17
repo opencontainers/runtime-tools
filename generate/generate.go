@@ -30,8 +30,14 @@ type ExportOptions struct {
 	Seccomp bool // seccomp toggles if only seccomp should be exported
 }
 
-// New creates a spec Generator with the default spec.
-func New() Generator {
+// New creates a spec Generator with the default spec for the target
+// OS (which defaults to runtime.GOOS).
+func New(os *string) (generator Generator, err error) {
+	var goos string
+	goos = runtime.GOOS
+	if os == nil {
+		os = &goos
+	}
 	spec := rspec.Spec{
 		Version: rspec.Version,
 		Platform: rspec.Platform{
@@ -44,41 +50,45 @@ func New() Generator {
 		},
 		Process: rspec.Process{
 			Terminal: false,
-			User:     rspec.User{},
 			Args: []string{
 				"sh",
 			},
-			Env: []string{
-				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-				"TERM=xterm",
-			},
-			Cwd: "/",
-			Capabilities: []string{
-				"CAP_CHOWN",
-				"CAP_DAC_OVERRIDE",
-				"CAP_FSETID",
-				"CAP_FOWNER",
-				"CAP_MKNOD",
-				"CAP_NET_RAW",
-				"CAP_SETGID",
-				"CAP_SETUID",
-				"CAP_SETFCAP",
-				"CAP_SETPCAP",
-				"CAP_NET_BIND_SERVICE",
-				"CAP_SYS_CHROOT",
-				"CAP_KILL",
-				"CAP_AUDIT_WRITE",
-			},
-			Rlimits: []rspec.Rlimit{
-				{
-					Type: "RLIMIT_NOFILE",
-					Hard: uint64(1024),
-					Soft: uint64(1024),
-				},
-			},
 		},
 		Hostname: "mrsdalloway",
-		Mounts: []rspec.Mount{
+	}
+
+	if *os == "linux" {
+		spec.Process.User = rspec.User{}
+		spec.Process.Env = []string{
+			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			"TERM=xterm",
+		}
+		spec.Process.Cwd = "/"
+		spec.Process.Capabilities = []string{
+			"CAP_CHOWN",
+			"CAP_DAC_OVERRIDE",
+			"CAP_FSETID",
+			"CAP_FOWNER",
+			"CAP_MKNOD",
+			"CAP_NET_RAW",
+			"CAP_SETGID",
+			"CAP_SETUID",
+			"CAP_SETFCAP",
+			"CAP_SETPCAP",
+			"CAP_NET_BIND_SERVICE",
+			"CAP_SYS_CHROOT",
+			"CAP_KILL",
+			"CAP_AUDIT_WRITE",
+		}
+		spec.Process.Rlimits = []rspec.Rlimit{
+			{
+				Type: "RLIMIT_NOFILE",
+				Hard: uint64(1024),
+				Soft: uint64(1024),
+			},
+		}
+
+		spec.Mounts = []rspec.Mount{
 			{
 				Destination: "/proc",
 				Type:        "proc",
@@ -115,8 +125,9 @@ func New() Generator {
 				Source:      "sysfs",
 				Options:     []string{"nosuid", "noexec", "nodev", "ro"},
 			},
-		},
-		Linux: &rspec.Linux{
+		}
+
+		spec.Linux = &rspec.Linux{
 			Resources: &rspec.Resources{
 				Devices: []rspec.DeviceCgroup{
 					{
@@ -143,12 +154,15 @@ func New() Generator {
 				},
 			},
 			Devices: []rspec.Device{},
-		},
+		}
+	} else {
+		return generator, fmt.Errorf("no defaults configured for %s", *os)
 	}
 	spec.Linux.Seccomp = seccomp.DefaultProfile(&spec)
-	return Generator{
+	generator = Generator{
 		spec: &spec,
 	}
+	return generator, nil
 }
 
 // NewFromSpec creates a spec Generator from a given spec.
