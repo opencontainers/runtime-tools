@@ -6,7 +6,10 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	mount := rspec.Mount{
 		Destination: "/tmp",
 		Type:        "tmpfs",
@@ -19,7 +22,7 @@ func main() {
 		},
 	}
 	g.AddMount(mount)
-	err := util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

@@ -8,12 +8,15 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetProcessCwd("/test")
 	g.AddProcessEnv("testa", "valuea")
 	g.AddProcessEnv("testb", "123")
 
-	err := util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, func(path string) error {
 		pathName := filepath.Join(path, "test")
 		return os.MkdirAll(pathName, 0700)
 	})

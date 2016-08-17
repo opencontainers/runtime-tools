@@ -22,9 +22,15 @@ func main() {
 	}
 	defer os.RemoveAll(bundleDir)
 
-	stoppedConfig := util.GetDefaultGenerator()
+	stoppedConfig, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	stoppedConfig.SetProcessArgs([]string{"true"})
-	runningConfig := util.GetDefaultGenerator()
+	runningConfig, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	runningConfig.SetProcessArgs([]string{"sleep", "30"})
 	containerID := uuid.NewV4().String()
 
@@ -62,12 +68,12 @@ func main() {
 				// the 'runningConfig' testcase sleeps 30 seconds, so 10 seconds are enough for this case
 				util.WaitingForStatus(*r, util.LifecycleStatusCreated|util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 				// KILL MUST be supported and KILL cannot be trapped
-				err := r.Kill("KILL")
+				err = r.Kill("KILL")
 				util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 				return err
 			},
 		}
-		err := util.RuntimeLifecycleValidate(config)
+		err = util.RuntimeLifecycleValidate(config)
 		util.SpecErrorOK(t, (err == nil) == c.errExpected, c.err, err)
 	}
 

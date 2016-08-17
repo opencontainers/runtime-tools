@@ -141,11 +141,14 @@ func PrepareBundle() (string, error) {
 }
 
 // GetDefaultGenerator creates a default configuration generator.
-func GetDefaultGenerator() *generate.Generator {
-	g := generate.New()
+func GetDefaultGenerator() (*generate.Generator, error) {
+	g, err := generate.New(runtime.GOOS)
+	if err != nil {
+		return nil, err
+	}
 	g.SetRootPath(".")
 	g.SetProcessArgs([]string{"/runtimetest", "--path=/"})
-	return &g
+	return &g, err
 }
 
 // WaitingForStatus waits an expected runtime status, return error if

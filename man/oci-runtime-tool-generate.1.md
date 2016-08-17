@@ -356,6 +356,9 @@ read the configuration from `config.json`.
   Remove all mounts inside the container. The default is *false*.
   When specified with --mount-add, this option will be parsed first.
 
+**--os**=OS
+  Operating system used within the container.
+
 **--output**=PATH
   Instead of writing the configuration JSON to stdout, write it to a
   file at *PATH* (overwriting the existing content if a file already

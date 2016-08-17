@@ -23,10 +23,13 @@ func main() {
 		Actions: util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete,
 		PreCreate: func(r *util.Runtime) error {
 			r.SetID(uuid.NewV4().String())
-			g := util.GetDefaultGenerator()
+			g, err := util.GetDefaultGenerator()
+			if err != nil {
+				util.Fatal(err)
+			}
 			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
 			shPath := filepath.Join(r.BundleDir, g.Spec().Root.Path, "/bin/sh")
-			err := g.AddPreStartHook(rspec.Hook{
+			err = g.AddPreStartHook(rspec.Hook{
 				Path: shPath,
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'pre-start1 called' >> %s", output),
@@ -92,7 +95,7 @@ func main() {
 	err := util.RuntimeLifecycleValidate(config)
 	outputData, _ := ioutil.ReadFile(output)
 	if err == nil && string(outputData) != "pre-start1 called\npre-start2 called\npost-start1\npost-start2\npost-stop1\npost-stop2\n" {
-		err := specerror.NewError(specerror.PosixHooksCalledInOrder, fmt.Errorf("Hooks MUST be called in the listed order"), rspec.Version)
+		err = specerror.NewError(specerror.PosixHooksCalledInOrder, fmt.Errorf("Hooks MUST be called in the listed order"), rspec.Version)
 		diagnostic := map[string]string{
 			"error": err.Error(),
 		}

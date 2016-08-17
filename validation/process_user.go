@@ -7,7 +7,10 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 
 	switch runtime.GOOS {
 	case "linux", "solaris":
@@ -19,7 +22,7 @@ func main() {
 	default:
 	}
 
-	err := util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

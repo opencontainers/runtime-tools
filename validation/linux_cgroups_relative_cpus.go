@@ -12,14 +12,17 @@ func main() {
 	var period uint64 = 100000
 	var quota int64 = 50000
 	var cpus, mems string = "0-1", "0"
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetLinuxCgroupsPath(cgroups.RelCgroupPath)
 	g.SetLinuxResourcesCPUShares(shares)
 	g.SetLinuxResourcesCPUQuota(quota)
 	g.SetLinuxResourcesCPUPeriod(period)
 	g.SetLinuxResourcesCPUCpus(cpus)
 	g.SetLinuxResourcesCPUMems(mems)
-	err := util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
+	err = util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
 		t := tap.New()
 		t.Header(0)
 

@@ -9,12 +9,15 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.AddLinuxMaskedPaths("/masked-dir")
 	g.AddLinuxMaskedPaths("/masked-file")
-	err := util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, func(path string) error {
 		testDir := filepath.Join(path, "masked-dir")
-		err := os.MkdirAll(testDir, 0777)
+		err = os.MkdirAll(testDir, 0777)
 		if err != nil {
 			return err
 		}

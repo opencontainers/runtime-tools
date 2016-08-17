@@ -30,7 +30,10 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("echo 'process called' >> %s", "/output")})
 	err = r.SetConfig(g)
 	if err != nil {
@@ -62,7 +65,7 @@ func main() {
 	if err != nil {
 		util.SpecErrorOK(t, false, specerror.NewError(specerror.StartProcImplement, fmt.Errorf("`start` operation MUST run the user-specified program as specified by `process`"), rspecs.Version), err)
 	} else {
-		err := util.WaitingForStatus(r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
+		err = util.WaitingForStatus(r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 		if err != nil {
 			util.Fatal(err)
 		}

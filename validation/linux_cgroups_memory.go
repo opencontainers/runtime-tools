@@ -8,7 +8,10 @@ import (
 func main() {
 	var limit int64 = 50593792
 	var swappiness uint64 = 50
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.SetLinuxResourcesMemoryLimit(limit)
 	g.SetLinuxResourcesMemoryReservation(limit)
@@ -17,7 +20,7 @@ func main() {
 	g.SetLinuxResourcesMemoryKernelTCP(limit)
 	g.SetLinuxResourcesMemorySwappiness(swappiness)
 	g.SetLinuxResourcesMemoryDisableOOMKiller(true)
-	err := util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesMemory)
+	err = util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesMemory)
 	if err != nil {
 		util.Fatal(err)
 	}

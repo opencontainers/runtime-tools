@@ -8,7 +8,10 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 
 	// add char device
 	cdev := rspecs.LinuxDevice{}
@@ -48,7 +51,7 @@ func main() {
 	pdev.FileMode = &pmode
 	g.AddDevice(pdev)
 
-	err := util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

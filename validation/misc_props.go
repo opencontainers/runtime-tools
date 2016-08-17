@@ -40,7 +40,10 @@ func main() {
 	}
 
 	containerID := uuid.NewV4().String()
-	basicConfig := util.GetDefaultGenerator()
+	basicConfig, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	basicConfig.SetProcessArgs([]string{"true"})
 	annotationConfig := basicConfig
 	annotationConfig.AddAnnotation(fmt.Sprintf("org.%s", containerID), "")
@@ -71,7 +74,7 @@ func main() {
 				return nil
 			},
 		}
-		err := util.RuntimeLifecycleValidate(config)
+		err = util.RuntimeLifecycleValidate(config)
 		util.SpecErrorOK(t, (err == nil) == c.errExpected, c.err, err)
 	}
 

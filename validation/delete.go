@@ -22,9 +22,15 @@ func main() {
 	}
 	defer os.RemoveAll(bundleDir)
 
-	stoppedConfig := util.GetDefaultGenerator()
+	stoppedConfig, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	stoppedConfig.SetProcessArgs([]string{"true"})
-	runningConfig := util.GetDefaultGenerator()
+	runningConfig, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	runningConfig.SetProcessArgs([]string{"sleep", "30"})
 	containerID := uuid.NewV4().String()
 	testRuntime, _ := util.NewRuntime(util.RuntimeCommand, bundleDir)
@@ -67,7 +73,7 @@ func main() {
 		if c.effectCheck {
 			// waiting for the error of State, just in case the delete operation takes time
 			util.WaitingForStatus(testRuntime, util.LifecycleActionNone, time.Second*10, time.Second*1)
-			_, err := testRuntime.State()
+			_, err = testRuntime.State()
 			// err == nil means the 'delete' operation does NOT take effect
 			util.SpecErrorOK(t, err == nil, specerror.NewError(specerror.DeleteNonStopHaveNoEffect, fmt.Errorf("attempting to `delete` a container that is not `stopped` MUST have no effect on the container"), rspecs.Version), err)
 		}

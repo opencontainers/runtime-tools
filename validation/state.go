@@ -15,7 +15,10 @@ func main() {
 	t := tap.New()
 	t.Header(0)
 
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetProcessArgs([]string{"true"})
 	containerID := uuid.NewV4().String()
 
@@ -39,11 +42,11 @@ func main() {
 				return nil
 			},
 			PostCreate: func(r *util.Runtime) error {
-				_, err := r.State()
+				_, err = r.State()
 				return err
 			},
 		}
-		err := util.RuntimeLifecycleValidate(config)
+		err = util.RuntimeLifecycleValidate(config)
 		// DefaultStateJSONPattern might returns
 		if e, ok := err.(*specerror.Error); ok {
 			diagnostic := map[string]string{

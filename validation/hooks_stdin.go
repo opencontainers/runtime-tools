@@ -60,7 +60,10 @@ func main() {
 
 	annotationKey := "org.opencontainers.runtime-tools"
 	annotationValue := "hook stdin test"
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	outputDir := filepath.Join(bundleDir, g.Spec().Root.Path)
 	timeout := 1
 	g.AddAnnotation(annotationKey, annotationValue)
@@ -117,7 +120,7 @@ func main() {
 		Annotations: map[string]string{annotationKey: annotationValue},
 	}
 	for _, file := range []string{"prestart", "poststart", "poststop"} {
-		err := stdinStateCheck(outputDir, file, expectedState)
+		err = stdinStateCheck(outputDir, file, expectedState)
 		util.SpecErrorOK(t, err == nil, specerror.NewError(specerror.PosixHooksStateToStdin, fmt.Errorf("the state of the container MUST be passed to %q hook over stdin", file), rspecs.Version), err)
 	}
 

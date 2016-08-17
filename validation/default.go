@@ -5,8 +5,11 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
-	err := util.RuntimeInsideValidate(g, nil)
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
+	err = util.RuntimeInsideValidate(g, nil)
 	if err != nil {
 		util.Fatal(err)
 	}
