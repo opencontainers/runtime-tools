@@ -29,7 +29,7 @@ oci-runtime-tool is a collection of tools for working with the [OCI runtime spec
   With this flag, validation will also run more specific tests to see whether
   the current host is capable of launching a container from the configuration.
 
-**--log-level**
+**--log-level**=LEVEL
   Log level (panic, fatal, error, warn, info, or debug) (default: "error").
 
 **-v**, **--version**
