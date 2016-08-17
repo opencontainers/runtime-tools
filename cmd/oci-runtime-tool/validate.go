@@ -333,6 +333,13 @@ func checkLinux(spec rspec.Spec, rootfs string, hostCheck bool) (msgs []string) 
 			} else if spec.Linux.Namespaces[index].Type == rspec.UserNamespace {
 				userExists = true
 			}
+		} else if hostCheck {
+			_, err := os.Stat(spec.Linux.Namespaces[index].Path)
+			if os.IsNotExist(err) {
+				msgs = append(msgs, fmt.Sprintf("Path of %v not exist", spec.Linux.Namespaces[index].Type))
+			} else if err != nil {
+				msgs = append(msgs, fmt.Sprintf("%v is invalid: %s", spec.Linux.Namespaces[index].Type, err.Error()))
+			}
 		}
 	}
 
