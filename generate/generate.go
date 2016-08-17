@@ -11,6 +11,7 @@ import (
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate/seccomp"
+	"github.com/Sirupsen/logrus"
 	"github.com/syndtr/gocapability/capability"
 )
 
@@ -284,15 +285,23 @@ func (g *Generator) RemoveAnnotation(key string) {
 }
 
 // SetPlatformOS sets g.spec.Process.OS.
-func (g *Generator) SetPlatformOS(os string) {
+func (g *Generator) SetPlatformOS(os string) error {
+	if g.HostSpecific && os != runtime.GOOS {
+		return fmt.Errorf("cannot set platform.os to %s on a %s host", os, runtime.GOOS)
+	}
 	g.initSpec()
 	g.spec.Platform.OS = os
+	return nil
 }
 
 // SetPlatformArch sets g.spec.Platform.Arch.
-func (g *Generator) SetPlatformArch(arch string) {
+func (g *Generator) SetPlatformArch(arch string) error {
+	if g.HostSpecific && arch != runtime.GOARCH {
+		logrus.Warnf("setting platform.arch to %s on a %s host", arch, runtime.GOARCH)
+	}
 	g.initSpec()
 	g.spec.Platform.Arch = arch
+	return nil
 }
 
 // SetProcessUID sets g.spec.Process.User.UID.

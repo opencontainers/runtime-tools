@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -15,7 +14,7 @@ import (
 
 var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "apparmor", Usage: "specifies the the apparmor profile for the container"},
-	cli.StringFlag{Name: "arch", Value: runtime.GOARCH, Usage: "architecture the container is created for"},
+	cli.StringFlag{Name: "arch", Usage: "architecture the container is created for"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest[:options...]"},
 	cli.StringSliceFlag{Name: "cap-add", Usage: "add Linux capabilities"},
@@ -52,7 +51,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "network", Usage: "network namespace"},
 	cli.BoolFlag{Name: "no-new-privileges", Usage: "set no new privileges bit for the container process"},
 	cli.IntFlag{Name: "oom-score-adj", Usage: "oom_score_adj for the container"},
-	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
+	cli.StringFlag{Name: "os", Usage: "operating system the container is created for"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.StringFlag{Name: "pid", Usage: "pid namespace"},
 	cli.StringSliceFlag{Name: "poststart", Usage: "set command to run in poststart hooks"},
@@ -92,7 +91,12 @@ var generateCommand = cli.Command{
 	Before: before,
 	Action: func(context *cli.Context) error {
 		// Start from the default template.
-		specgen, err := generate.New(nil)
+		var osPointer *string
+		if context.IsSet("os") {
+			goos := context.String("os")
+			osPointer = &goos
+		}
+		specgen, err := generate.New(osPointer)
 		if err != nil {
 			return err
 		}
@@ -143,8 +147,19 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetHostname(context.String("hostname"))
 	}
 
-	g.SetPlatformOS(context.String("os"))
-	g.SetPlatformArch(context.String("arch"))
+	if context.IsSet("os") {
+		err := g.SetPlatformOS(context.String("os"))
+		if err != nil {
+			return err
+		}
+	}
+
+	if context.IsSet("arch") {
+		err := g.SetPlatformArch(context.String("arch"))
+		if err != nil {
+			return err
+		}
+	}
 
 	if context.IsSet("label") {
 		annotations := context.StringSlice("label")
