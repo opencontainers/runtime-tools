@@ -24,6 +24,7 @@ import (
 	"github.com/syndtr/gocapability/capability"
 
 	"github.com/opencontainers/runtime-tools/specerror"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 const specConfig = "config.json"
@@ -47,6 +48,8 @@ var (
 		"RLIMIT_SIGPENDING",
 		"RLIMIT_STACK",
 	}
+
+	configSchemaTemplate = "https://raw.githubusercontent.com/opencontainers/runtime-spec/v%s/schema/config-schema.json"
 )
 
 // Validator represents a validator for runtime bundle
@@ -102,6 +105,7 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string)
 // CheckAll checks all parts of runtime bundle
 func (v *Validator) CheckAll() error {
 	var errs *multierror.Error
+	errs = multierror.Append(errs, v.CheckJSONSchema())
 	errs = multierror.Append(errs, v.CheckPlatform())
 	errs = multierror.Append(errs, v.CheckRoot())
 	errs = multierror.Append(errs, v.CheckMandatoryFields())
@@ -112,6 +116,49 @@ func (v *Validator) CheckAll() error {
 	errs = multierror.Append(errs, v.CheckLinux())
 
 	return errs.ErrorOrNil()
+}
+
+// JSONSchemaURL returns the URL for the JSON Schema specifying the
+// configuration format.  It consumes configSchemaTemplate, but we
+// provide it as a function to isolate consumers from inconsistent
+// naming as runtime-spec evolves.
+func JSONSchemaURL(version string) (url string, err error) {
+	ver, err := semver.Parse(version)
+	if err != nil {
+		return "", err
+	}
+	configRenamedToConfigSchemaVersion, err := semver.Parse("1.0.0-rc2") // config.json became config-schema.json in 1.0.0-rc2
+	if ver.Compare(configRenamedToConfigSchemaVersion) == -1 {
+		return "", fmt.Errorf("unsupported configuration version (older than %s)", configRenamedToConfigSchemaVersion)
+	}
+	return fmt.Sprintf(configSchemaTemplate, version), nil
+}
+
+// CheckJSONSchema validates the configuration against the
+// runtime-spec JSON Schema, using the version of the schema that
+// matches the configuration's declared version.
+func (v *Validator) CheckJSONSchema() (errs error) {
+	url, err := JSONSchemaURL(v.spec.Version)
+	if err != nil {
+		errs = multierror.Append(errs, err)
+		return errs
+	}
+
+	schemaLoader := gojsonschema.NewReferenceLoader(url)
+	documentLoader := gojsonschema.NewGoLoader(v.spec)
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		errs = multierror.Append(errs, err)
+		return errs
+	}
+
+	if !result.Valid() {
+		for _, resultError := range result.Errors() {
+			errs = multierror.Append(errs, errors.New(resultError.String()))
+		}
+	}
+
+	return errs
 }
 
 // CheckRoot checks status of v.spec.Root
