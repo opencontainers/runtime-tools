@@ -361,6 +361,11 @@ func checkLinux(spec rspec.Spec, rootfs string, hostCheck bool) (msgs []string) 
 		}
 	}
 
+	if spec.Linux.Resources != nil {
+		ms := checkLinuxResources(*spec.Linux.Resources, hostCheck)
+		msgs = append(msgs, ms...)
+	}
+
 	if spec.Linux.Seccomp != nil {
 		ms := checkSeccomp(*spec.Linux.Seccomp)
 		msgs = append(msgs, ms...)
@@ -376,6 +381,21 @@ func checkLinux(spec rspec.Spec, rootfs string, hostCheck bool) (msgs []string) 
 	case "rshared":
 	default:
 		msgs = append(msgs, "rootfsPropagation must be empty or one of \"private|rprivate|slave|rslave|shared|rshared\"")
+	}
+
+	return
+}
+
+func checkLinuxResources(r rspec.Resources, hostCheck bool) (msgs []string) {
+	logrus.Debugf("check linux resources")
+
+	if r.Memory != nil {
+		if r.Memory.Limit != nil && r.Memory.Swap != nil && uint64(*r.Memory.Limit) > uint64(*r.Memory.Swap) {
+			msgs = append(msgs, fmt.Sprintf("Minimum memoryswap should be larger than memory limit"))
+		}
+		if r.Memory.Limit != nil && r.Memory.Reservation != nil && uint64(*r.Memory.Reservation) > uint64(*r.Memory.Limit) {
+			msgs = append(msgs, fmt.Sprintf("Minimum memory limit should be larger than memory reservation"))
+		}
 	}
 
 	return
