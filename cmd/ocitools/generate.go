@@ -36,7 +36,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "mount-label", Usage: "selinux mount context label"},
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
-	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
+	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringFlag{Name: "cgroups-path", Usage: "specify the path to the cgroups"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
