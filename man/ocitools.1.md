@@ -38,11 +38,11 @@ ocitools is a collection of tools for working with the [OCI runtime specificatio
 # COMMANDS
 **validate**
   Validating OCI bundle
-  See **ocitools-validate(1)** for full documentation on the **validate** command.
+  See **ocitools-validate**(1) for full documentation on the **validate** command.
 
 **generate**
   Generating OCI runtime spec configuration files
-  See **ocitools-generate(1)** for full documentation on the **generate** command.
+  See **ocitools-generate**(1) for full documentation on the **generate** command.
 
 # SEE ALSO
 **ocitools-validate**(1), **ocitools-generate**(1)

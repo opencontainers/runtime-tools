@@ -36,7 +36,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "mount-label", Usage: "selinux mount context label"},
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
-	cli.StringSliceFlag{Name: "env", Usage: "add environment variable"},
+	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringFlag{Name: "cgroups-path", Usage: "specify the path to the cgroups"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
@@ -58,6 +58,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "seccomp-errno", Usage: "specifies syscalls to be added to list that returns an error"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
+	cli.IntFlag{Name: "oom-score-adj", Usage: "oom_score_adj for the container"},
 }
 
 var generateCommand = cli.Command{
@@ -317,6 +318,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 
 		g.AddLinuxGIDMapping(hid, cid, size)
+	}
+
+	if context.IsSet("oom-score-adj") {
+		g.SetLinuxResourcesOOMScoreAdj(context.Int("oom-score-adj"))
 	}
 
 	var sd string

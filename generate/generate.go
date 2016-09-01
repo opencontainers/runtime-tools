@@ -194,11 +194,7 @@ func (g *Generator) Save(w io.Writer) error {
 	}
 
 	_, err = w.Write(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // SaveToFile writes the spec into a file.
@@ -360,6 +356,12 @@ func (g *Generator) SetLinuxCgroupsPath(path string) {
 func (g *Generator) SetLinuxMountLabel(label string) {
 	g.initSpecLinux()
 	g.spec.Linux.MountLabel = label
+}
+
+// SetLinuxResourcesOOMScoreAdj sets g.spec.Linux.Resources.OOMScoreAdj.
+func (g *Generator) SetLinuxResourcesOOMScoreAdj(adj int) {
+	g.initSpecLinuxResources()
+	g.spec.Linux.Resources.OOMScoreAdj = &adj
 }
 
 // SetLinuxResourcesCPUShares sets g.spec.Linux.Resources.CPU.Shares.
@@ -855,6 +857,7 @@ func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
 	switch mountCgroupOption {
 	case "ro":
 	case "rw":
+		break
 	case "no":
 		return nil
 	default:
