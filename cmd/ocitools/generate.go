@@ -59,6 +59,19 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
 	cli.IntFlag{Name: "oom-score-adj", Usage: "oom_score_adj for the container"},
+	cli.Uint64Flag{Name: "linux-cpu-shares", Usage: "the relative share of CPU time available to the tasks in a cgroup"},
+	cli.Uint64Flag{Name: "linux-cpu-period", Usage: "the CPU period to be used for hardcapping (in usecs)"},
+	cli.Uint64Flag{Name: "linux-cpu-quota", Usage: "the allowed CPU time in a given period (in usecs)"},
+	cli.Uint64Flag{Name: "linux-realtime-runtime", Usage: "the time realtime scheduling may use (in usecs)"},
+	cli.Uint64Flag{Name: "linux-realtime-period", Usage: "CPU period to be used for realtime scheduling (in usecs)"},
+	cli.StringFlag{Name: "linux-cpus", Usage: "CPUs to use within the cpuset (default is to use any CPU available)"},
+	cli.StringFlag{Name: "linux-mems", Usage: "list of memory nodes in the cpuset (default is to use any available memory node)"},
+	cli.Uint64Flag{Name: "linux-mem-limit", Usage: "memory limit (in bytes)"},
+	cli.Uint64Flag{Name: "linux-mem-reservation", Usage: "memory reservation or soft limit (in bytes)"},
+	cli.Uint64Flag{Name: "linux-mem-swap", Usage: "total memory limit (memory + swap) (in bytes)"},
+	cli.Uint64Flag{Name: "linux-mem-kernel-limit", Usage: "kernel memory limit (in bytes)"},
+	cli.Uint64Flag{Name: "linux-mem-kernel-tcp", Usage: "kernel memory limit for tcp (in bytes)"},
+	cli.Uint64Flag{Name: "linux-mem-swappiness", Usage: "how aggressive the kernel will swap memory pages (Range from 0 to 100)"},
 }
 
 var generateCommand = cli.Command{
@@ -322,6 +335,58 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("oom-score-adj") {
 		g.SetLinuxResourcesOOMScoreAdj(context.Int("oom-score-adj"))
+	}
+
+	if context.IsSet("linux-cpu-shares") {
+		g.SetLinuxResourcesCPUShares(context.Uint64("linux-cpu-shares"))
+	}
+
+	if context.IsSet("linux-cpu-period") {
+		g.SetLinuxResourcesCPUPeriod(context.Uint64("linux-cpu-period"))
+	}
+
+	if context.IsSet("linux-cpu-quota") {
+		g.SetLinuxResourcesCPUQuota(context.Uint64("linux-cpu-quota"))
+	}
+
+	if context.IsSet("linux-realtime-runtime") {
+		g.SetLinuxResourcesCPURealtimeRuntime(context.Uint64("linux-realtime-runtime"))
+	}
+
+	if context.IsSet("linux-realtime-period") {
+		g.SetLinuxResourcesCPURealtimePeriod(context.Uint64("linux-realtime-period"))
+	}
+
+	if context.IsSet("linux-cpus") {
+		g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
+	}
+
+	if context.IsSet("linux-mems") {
+		g.SetLinuxResourcesCPUMems(context.String("linux-mems"))
+	}
+
+	if context.IsSet("linux-mem-limit") {
+		g.SetLinuxResourcesMemoryLimit(context.Uint64("linux-mem-limit"))
+	}
+
+	if context.IsSet("linux-mem-reservation") {
+		g.SetLinuxResourcesMemoryReservation(context.Uint64("linux-mem-reservation"))
+	}
+
+	if context.IsSet("linux-mem-swap") {
+		g.SetLinuxResourcesMemorySwap(context.Uint64("linux-mem-swap"))
+	}
+
+	if context.IsSet("linux-mem-kernel-limit") {
+		g.SetLinuxResourcesMemoryKernel(context.Uint64("linux-mem-kernel-limit"))
+	}
+
+	if context.IsSet("linux-mem-kernel-tcp") {
+		g.SetLinuxResourcesMemoryKernelTCP(context.Uint64("linux-mem-kernel-tcp"))
+	}
+
+	if context.IsSet("linux-mem-swappiness") {
+		g.SetLinuxResourcesMemorySwappiness(context.Uint64("linux-mem-swappiness"))
 	}
 
 	var sd string

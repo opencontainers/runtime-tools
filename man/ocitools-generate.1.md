@@ -87,6 +87,45 @@ read the configuration from `config.json`.
 **--label**=[]
   Add annotations to the configuration e.g. key=value.
 
+**--linux-cpu-shares**=CPUSHARES
+  Specifies a relative share of CPU time available to the tasks in a cgroup.
+
+**--linux-cpu-period**=CPUPERIOD
+  Specifies a period of time in microseconds for how regularly a cgroup's access to CPU resources should be reallocated (CFS scheduler only).
+
+**--linux-cpu-quota**=CPUQUOTA
+  Specifies the total amount of time in microseconds for which all tasks in a cgroup can run during one period.
+
+**--linux-realtime-runtime**=REALTIMERUNTIME
+  Specifies a period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources.
+
+**--linux-realtime-period**=REALTIMEPERIOD
+  Sets the CPU period to be used for realtime scheduling (in usecs). Same as **--linux-cpu-period** but applies to realtime scheduler only.
+
+**--linux-cpus**=CPUS
+  Sets the CPUs to use within the cpuset (default is to use any CPU available).
+
+**--linux-mems**=MEMS
+  Sets the list of memory nodes in the cpuset (default is to use any available memory node).
+
+**--linux-mem-limit**=MEMLIMIT
+  Sets the limit of memory usage in bytes.
+
+**--linux-mem-reservation**=MEMRESERVATION
+  Sets the soft limit of memory usage in bytes.
+
+**--linux-mem-swap**=MEMSWAP
+  Sets the total memory limit (memory + swap) in bytes.
+
+**--linux-mem-kernel-limit**=MEMKERNELLIMIT
+  Sets the hard limit of kernel memory in bytes.
+
+**--linux-mem-kernel-tcp**=MEMKERNELTCP
+  Sets the hard limit of kernel TCP buffer memory in bytes.
+
+**--linux-mem-swappiness**=MEMSWAPPINESS
+  Sets the swappiness of how the kernel will swap memory pages (Range from 0 to 100).
+
 **--mount**=*PATH*
   Use a mount namespace where *PATH* is an existing mount namespace file
   to join. The special *PATH*  empty-string  creates a new namespace.
