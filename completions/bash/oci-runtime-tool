@@ -277,6 +277,7 @@ _oci-runtime-tool_generate() {
 	      --cgroup
 	      --cgroup-path
 	      --cwd
+	      --disable-oom-kill
 	      --env
 	      --gid
 	      --gidmappings

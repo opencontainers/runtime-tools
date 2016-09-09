@@ -58,6 +58,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "seccomp-errno", Usage: "specifies syscalls to be added to list that returns an error"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
+	cli.BoolFlag{Name: "disable-oom-kill", Usage: "disable OOM Killer"},
 	cli.IntFlag{Name: "oom-score-adj", Usage: "oom_score_adj for the container"},
 	cli.Uint64Flag{Name: "linux-cpu-shares", Usage: "the relative share of CPU time available to the tasks in a cgroup"},
 	cli.Uint64Flag{Name: "linux-cpu-period", Usage: "the CPU period to be used for hardcapping (in usecs)"},
@@ -331,6 +332,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 
 		g.AddLinuxGIDMapping(hid, cid, size)
+	}
+
+	if context.IsSet("disable-oom-kill") {
+		g.SetLinuxResourcesDisableOOMKiller(context.Bool("disable-oom-kill"))
 	}
 
 	if context.IsSet("oom-score-adj") {
