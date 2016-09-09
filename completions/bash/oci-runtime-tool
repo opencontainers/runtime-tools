@@ -285,6 +285,7 @@ _oci-runtime-tool_generate() {
 	      --help
 	      --ipc
 	      --label
+	      --linux-pids-limit
 	      --mount
 	      --mount-cgroups
 	      --mount-label

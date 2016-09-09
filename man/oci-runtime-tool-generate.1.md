@@ -126,6 +126,9 @@ read the configuration from `config.json`.
 **--linux-mem-swappiness**=MEMSWAPPINESS
   Sets the swappiness of how the kernel will swap memory pages (Range from 0 to 100).
 
+**--linux-pids-limit**=PIDSLIMIT
+  Set maximum number of PIDs.
+
 **--mount**=*PATH*
   Use a mount namespace where *PATH* is an existing mount namespace file
   to join. The special *PATH*  empty-string  creates a new namespace.
