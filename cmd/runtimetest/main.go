@@ -409,6 +409,79 @@ func validateOOMScoreAdj(spec *rspec.Spec) error {
 	return nil
 }
 
+func getIDMappings(path string) ([]rspec.IDMapping, error) {
+	var idMaps []rspec.IDMapping
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		if err := s.Err(); err != nil {
+			return nil, err
+		}
+
+		idMap := strings.Fields(strings.TrimSpace(s.Text()))
+		if len(idMap) == 3 {
+			hostID, err := strconv.ParseUint(idMap[0], 0, 32)
+			if err != nil {
+				return nil, err
+			}
+			containerID, err := strconv.ParseUint(idMap[1], 0, 32)
+			if err != nil {
+				return nil, err
+			}
+			mapSize, err := strconv.ParseUint(idMap[2], 0, 32)
+			if err != nil {
+				return nil, err
+			}
+			idMaps = append(idMaps, rspec.IDMapping{HostID: uint32(hostID), ContainerID: uint32(containerID), Size: uint32(mapSize)})
+		} else {
+			return nil, fmt.Errorf("invalid format in %v", path)
+		}
+	}
+
+	return idMaps, nil
+}
+
+func validateIDMappings(mappings []rspec.IDMapping, path string, property string) error {
+	idMaps, err := getIDMappings(path)
+	if err != nil {
+		return fmt.Errorf("can not get items: %v", err)
+	}
+	if len(mappings) != 0 && len(mappings) != len(idMaps) {
+		return fmt.Errorf("expected %d entries in %v, but acutal is %d", len(mappings), path, len(idMaps))
+	}
+	for _, v := range mappings {
+		exist := false
+		for _, cv := range idMaps {
+			if v.HostID == cv.HostID && v.ContainerID == cv.ContainerID && v.Size == cv.Size {
+				exist = true
+				break
+			}
+		}
+		if !exist {
+			return fmt.Errorf("%v is not applied as expected", property)
+		}
+	}
+
+	return nil
+}
+
+func validateUIDMappings(spec *rspec.Spec) error {
+	logrus.Debugf("validating uidMappings")
+
+	return validateIDMappings(spec.Linux.UIDMappings, "/proc/self/uid_map", "linux.uidMappings")
+}
+
+func validateGIDMappings(spec *rspec.Spec) error {
+	logrus.Debugf("validating gidMappings")
+
+	return validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
+}
+
 func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
 	if specMount.Destination != sysMount.Destination {
 		return fmt.Errorf("mount destination expected: %v, actual: %v", specMount.Destination, sysMount.Destination)
@@ -489,6 +562,8 @@ func validate(context *cli.Context) error {
 		validateMaskedPaths,
 		validateROPaths,
 		validateOOMScoreAdj,
+		validateUIDMappings,
+		validateGIDMappings,
 	}
 
 	for _, v := range defaultValidations {
