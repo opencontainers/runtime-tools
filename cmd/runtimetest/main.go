@@ -12,8 +12,8 @@ import (
 	"syscall"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/opencontainers/ocitools/cmd/runtimetest/mount"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	"github.com/syndtr/gocapability/capability"
 	"github.com/urfave/cli"
 )

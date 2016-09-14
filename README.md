@@ -1,14 +1,14 @@
-# ocitools [![Build Status](https://travis-ci.org/opencontainers/ocitools.svg?branch=master)](https://travis-ci.org/opencontainers/ocitools)
+# oci-runtime-tool [![Build Status](https://travis-ci.org/opencontainers/oci-runtime-tool.svg?branch=master)](https://travis-ci.org/opencontainers/oci-runtime-tool)
 
-ocitools is a collection of tools for working with the [OCI runtime specification][runtime-spec].
+oci-runtime-tool is a collection of tools for working with the [OCI runtime specification][runtime-spec].
 
 ## Generating an OCI runtime spec configuration files
 
-[`ocitools generate`][generate.1] generates [configuration JSON][config.json] for an [OCI bundle][bundle].
+[`oci-runtime-tool generate`][generate.1] generates [configuration JSON][config.json] for an [OCI bundle][bundle].
 [OCI-compatible runtimes][runtime-spec] like [runC][] expect to read the configuration from `config.json`.
 
 ```sh
-$ ocitools generate --output config.json
+$ oci-runtime-tool generate --output config.json
 $ cat config.json
 {
         "ociVersion": "0.5.0",
@@ -18,12 +18,12 @@ $ cat config.json
 
 ## Validating an OCI bundle
 
-[`ocitools validate`][validate.1] validates an OCI bundle.
+[`oci-runtime-tool validate`][validate.1] validates an OCI bundle.
 The error message will be printed if the OCI bundle failed the validation procedure.
 
 ```sh
-$ ocitools generate
-$ ocitools validate
+$ oci-runtime-tool generate
+$ oci-runtime-tool validate
 INFO[0000] Bundle validation succeeded.
 ```
 
@@ -49,5 +49,5 @@ Runtime runc passed validation
 [runC]: https://github.com/opencontainers/runc
 [runtime-spec]: https://github.com/opencontainers/runtime-spec
 
-[generate.1]: man/ocitools-generate.1.md
-[validate.1]: man/ocitools-validate.1.md
+[generate.1]: man/oci-runtime-tool-generate.1.md
+[validate.1]: man/oci-runtime-tool-validate.1.md

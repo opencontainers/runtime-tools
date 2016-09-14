@@ -1,16 +1,16 @@
-% OCI(1) OCITOOLS User Manuals
+% OCI(1) OCI-RUNTIME-TOOL User Manuals
 % OCI Community
 % APRIL 2016
 # NAME
-ocitools \- OCI (Open Container Initiative) tools
+oci-runtime-tool \- OCI (Open Container Initiative) runtime tools
 
 # SYNOPSIS
-**ocitools** [OPTIONS] COMMAND [arg...]
+**oci-runtime-tool** [OPTIONS] COMMAND [arg...]
 
-**ocitools** [--help|-v|--version]
+**oci-runtime-tool** [--help|-v|--version]
 
 # DESCRIPTION
-ocitools is a collection of tools for working with the [OCI runtime specification](https://github.com/opencontainers/runtime-spec).
+oci-runtime-tool is a collection of tools for working with the [OCI runtime specification](https://github.com/opencontainers/runtime-spec).
 
 
 # OPTIONS
@@ -38,14 +38,14 @@ ocitools is a collection of tools for working with the [OCI runtime specificatio
 # COMMANDS
 **validate**
   Validating OCI bundle
-  See **ocitools-validate(1)** for full documentation on the **validate** command.
+  See **oci-runtime-tool-validate(1)** for full documentation on the **validate** command.
 
 **generate**
   Generating OCI runtime spec configuration files
-  See **ocitools-generate(1)** for full documentation on the **generate** command.
+  See **oci-runtime-tool-generate(1)** for full documentation on the **generate** command.
 
 # SEE ALSO
-**ocitools-validate**(1), **ocitools-generate**(1)
+**oci-runtime-tool-validate**(1), **oci-runtime-tool-generate**(1)
 
 # HISTORY
 April 2016, Originally compiled by Daniel Walsh (dwalsh at redhat dot com)
