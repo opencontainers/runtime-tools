@@ -1,11 +1,11 @@
-% OCI(1) OCITOOLS User Manuals
+% OCI(1) OCI-RUNTIME-TOOL User Manuals
 % OCI Community
 % APRIL 2016
 # NAME
-ocitools-validate - Validate an OCI bundle
+oci-runtime-tool-validate - Validate an OCI runtime bundle
 
 # SYNOPSIS
-**ocitools validate**  *[OPTIONS]*
+**oci-runtime-tool validate**  *[OPTIONS]*
 
 # DESCRIPTION
 
@@ -19,7 +19,7 @@ Validate an OCI bundle
   Path to bundle
 
 # SEE ALSO
-**ocitools**(1)
+**oci-runtime-tool**(1)
 
 # HISTORY
 April 2016, Originally compiled by Dan Walsh (dwalsh at redhat dot com)

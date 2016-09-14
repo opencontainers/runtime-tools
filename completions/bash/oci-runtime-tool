@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# bash completion file for core ocitools commands
+# bash completion file for core oci-runtime-tool commands
 #
 # This script provides completion of:
 #  - commands and their options
@@ -9,9 +9,9 @@
 # To enable the completions either:
 #  - place this file in /usr/share/bash-completion/completions
 #  or
-#  - copy this file to e.g. ~/.ocitools-completion.sh and add the line
+#  - copy this file to e.g. ~/.oci-runtime-tool-completion.sh and add the line
 #    below to your .bashrc after bash completion features are loaded
-#    . ~/.ocitools-completion.sh
+#    . ~/.oci-runtime-tool-completion.sh
 #
 # Configuration:
 #
@@ -22,10 +22,10 @@
 # options immediately following their corresponding long form.
 # This order should be applied to lists, alternatives and code blocks.
 
-__ocitools_previous_extglob_setting=$(shopt -p extglob)
+__oci-runtime-tool_previous_extglob_setting=$(shopt -p extglob)
 shopt -s extglob
 
-__ocitools_pos_first_nonflag() {
+__oci-runtime-tool_pos_first_nonflag() {
 	local argument_flags=$1
 
 	local counter=$((${subcommand_pos:-${command_pos}} + 1))
@@ -49,8 +49,8 @@ __ocitools_pos_first_nonflag() {
 
 # Transforms a multiline list of strings into a single line string
 # with the words separated by "|".
-# This is used to prepare arguments to __ocitools_pos_first_nonflag().
-__ocitools_to_alternatives() {
+# This is used to prepare arguments to __oci-runtime-tool_pos_first_nonflag().
+__oci-runtime-tool_to_alternatives() {
 	local parts=( $1 )
 	local IFS='|'
 	echo "${parts[*]}"
@@ -58,8 +58,8 @@ __ocitools_to_alternatives() {
 
 # Transforms a multiline list of options into an extglob pattern
 # suitable for use in case statements.
-__ocitools_to_extglob() {
-	local extglob=$( __ocitools_to_alternatives "$1" )
+__oci-runtime-tool_to_extglob() {
+	local extglob=$( __oci-runtime-tool_to_alternatives "$1" )
 	echo "@($extglob)"
 }
 
@@ -73,16 +73,16 @@ __ocitools_to_extglob() {
 # TODO if the preceding command has options that accept arguments and an
 # argument is equal ot one of the subcommands, this is falsely detected as
 # a match.
-__ocitools_subcommands() {
+__oci-runtime-tool_subcommands() {
 	local subcommands="$1"
 
 	local counter=$(($command_pos + 1))
 	while [ $counter -lt $cword ]; do
 		case "${words[$counter]}" in
-			$(__ocitools_to_extglob "$subcommands") )
+			$(__oci-runtime-tool_to_extglob "$subcommands") )
 				subcommand_pos=$counter
 				local subcommand=${words[$counter]}
-				local completions_func=_ocitools_${command}_${subcommand}
+				local completions_func=_oci-runtime-tool_${command}_${subcommand}
 				declare -F $completions_func >/dev/null && $completions_func
 				return 0
 				;;
@@ -93,22 +93,22 @@ __ocitools_subcommands() {
 }
 
 # List groups
-__ocitools_groups() {
+__oci-runtime-tool_groups() {
     cat /etc/group | cut -d: -f 1
 }
 
 # List installed hooks
-__ocitools_hooks() {
+__oci-runtime-tool_hooks() {
      ls /usr/libexec/oci/hooks.d/*
 }
 
 # suppress trailing whitespace
-__ocitools_nospace() {
+__oci-runtime-tool_nospace() {
 	# compopt is not available in ancient bash versions
 	type compopt &>/dev/null && compopt -o nospace
 }
 
-__ocitools_complete_propagations() {
+__oci-runtime-tool_complete_propagations() {
 	COMPREPLY=( $( compgen -W "
 		private
 		rprivate
@@ -120,8 +120,8 @@ __ocitools_complete_propagations() {
 }
 
 # a selection of the available arches that is most likely of interest in the
-# context of ocitools containers.
-__ocitools_complete_arches() {
+# context of oci-runtime-tool containers.
+__oci-runtime-tool_complete_arches() {
 	COMPREPLY=( $( compgen -W "
 		386
 		amd64
@@ -130,8 +130,8 @@ __ocitools_complete_arches() {
 }
 
 # a selection of the available arches that is most likely of interest in the
-# context of ocitools containers.
-__ocitools_complete_seccomp_arches() {
+# context of oci-runtime-tool containers.
+__oci-runtime-tool_complete_seccomp_arches() {
 	COMPREPLY=( $( compgen -W "
 		SCMP_ARCH_X86
 		SCMP_ARCH_X86_64
@@ -148,8 +148,8 @@ __ocitools_complete_seccomp_arches() {
 }
 
 # a selection of the available actions that is most likely of interest in the
-# context of ocitools containers.
-__ocitools_complete_seccomp_actions() {
+# context of oci-runtime-tool containers.
+__oci-runtime-tool_complete_seccomp_actions() {
 	COMPREPLY=( $( compgen -W "
 		SCMP_ACT_ALLOW
 		SCMP_ACT_ERRNO
@@ -158,7 +158,7 @@ __ocitools_complete_seccomp_actions() {
 		SCMP_ACT_TRAP
 	" -- "$cur" ) )
 }
-__ocitools_complete_capabilities() {
+__oci-runtime-tool_complete_capabilities() {
 	# The list of capabilities is defined in types.go, ALL was added manually.
 	COMPREPLY=( $( compgen -W "
 		ALL
@@ -204,8 +204,8 @@ __ocitools_complete_capabilities() {
 }
 
 
-# global options that may appear after the ocitools command
-_ocitools_ocitools() {
+# global options that may appear after the oci-runtime-tool command
+_oci-runtime-tool_oci-runtime-tool() {
 	local boolean_options="
 		$global_boolean_options
 		--help
@@ -213,7 +213,7 @@ _ocitools_ocitools() {
 	"
 
 	case "$prev" in
-		$(__ocitools_to_extglob "$global_options_with_args") )
+		$(__oci-runtime-tool_to_extglob "$global_options_with_args") )
 			return
 			;;
 	esac
@@ -223,7 +223,7 @@ _ocitools_ocitools() {
 			COMPREPLY=( $( compgen -W "$boolean_options $global_options_with_args" -- "$cur" ) )
 			;;
 		*)
-			local counter=$( __ocitools_pos_first_nonflag $(__ocitools_to_extglob "$global_options_with_args") )
+			local counter=$( __oci-runtime-tool_pos_first_nonflag $(__oci-runtime-tool_to_extglob "$global_options_with_args") )
 			if [ $cword -eq $counter ]; then
 				COMPREPLY=( $( compgen -W "${commands[*]} help" -- "$cur" ) )
 			fi
@@ -231,7 +231,7 @@ _ocitools_ocitools() {
 	esac
 }
 
-_ocitools_validate() {
+_oci-runtime-tool_validate() {
 	case "$prev" in
 		--path)
 			case "$cur" in
@@ -240,11 +240,11 @@ _ocitools_validate() {
 					;;
 				'')
 					COMPREPLY=( $( compgen -W '/' -- "$cur" ) )
-					__ocitools_nospace
+					__oci-runtime-tool_nospace
 					;;
 				/*)
 					_filedir
-					__ocitools_nospace
+					__oci-runtime-tool_nospace
 					;;
 			esac
 			return
@@ -259,14 +259,14 @@ _ocitools_validate() {
 
 }
 
-_ocitools_help() {
-	local counter=$(__ocitools_pos_first_nonflag)
+_oci-runtime-tool_help() {
+	local counter=$(__oci-runtime-tool_pos_first_nonflag)
 	if [ $cword -eq $counter ]; then
 		COMPREPLY=( $( compgen -W "${commands[*]}" -- "$cur" ) )
 	fi
 }
 
-_ocitools_generate() {
+_oci-runtime-tool_generate() {
 	local options_with_args="
 	      --arch
 	      --apparmor
@@ -323,27 +323,27 @@ _ocitools_generate() {
 
 	case "$prev" in
 		--seccomp-arch)
-			COMPREPLY=( $( compgen -W $( __ocitools_complete_seccomp_arches ) -- "$cur" ) )
+			COMPREPLY=( $( compgen -W $( __oci-runtime-tool_complete_seccomp_arches ) -- "$cur" ) )
 			return
 			;;
 
 		--arch)
-			COMPREPLY=( $( compgen -W $( __ocitools_complete_arches ) -- "$cur" ) )
+			COMPREPLY=( $( compgen -W $( __oci-runtime-tool_complete_arches ) -- "$cur" ) )
 			return
 			;;
 
 		--seccomp-default)
-			__ocitools_complete_seccomp_actions
+			__oci-runtime-tool_complete_seccomp_actions
 			return
 			;;
 
 		--root-propagation)
-			__ocitools_complete_propagations
+			__oci-runtime-tool_complete_propagations
 			return
 			;;
 
 		--cap-add|--cap-drop)
-			__ocitools_complete_capabilities
+			__oci-runtime-tool_complete_capabilities
 			return
 			;;
 
@@ -358,14 +358,14 @@ _ocitools_generate() {
 			;;
 
 		--groups)
-			COMPREPLY=( $( compgen -W "$( __ocitools_groups )" -- "$cur" ) )
-			__ocitools_nospace
+			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_groups )" -- "$cur" ) )
+			__oci-runtime-tool_nospace
 			return
 			;;
 
 		--poststart|--poststop|--prestart)
-			COMPREPLY=( $( compgen -W "$( __ocitools_hooks )" -- "$cur" ) )
-			__ocitools_nospace
+			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_hooks )" -- "$cur" ) )
+			__oci-runtime-tool_nospace
 			return
 			;;
 
@@ -376,21 +376,21 @@ _ocitools_generate() {
 					;;
 				'')
 					COMPREPLY=( $( compgen -W '/' -- "$cur" ) )
-					__ocitools_nospace
+					__oci-runtime-tool_nospace
 					;;
 				*)
 					_filedir
-					__ocitools_nospace
+					__oci-runtime-tool_nospace
 					;;
 			esac
 			return
 			;;
 		--env|-e)
 			COMPREPLY=( $( compgen -e -- "$cur" ) )
-			__ocitools_nospace
+			__oci-runtime-tool_nospace
 			return
 			;;
-		$(__ocitools_to_extglob "$options_with_args") )
+		$(__oci-runtime-tool_to_extglob "$options_with_args") )
 			return
 			;;
 	esac
@@ -402,7 +402,7 @@ _ocitools_generate() {
 	esac
 }
 
-_ocitools() {
+_oci-runtime-tool() {
 	local previous_extglob_setting=$(shopt -p extglob)
 	shopt -s extglob
 
@@ -412,7 +412,7 @@ _ocitools() {
 	)
 
 	# These options are valid as global options for all client commands
-	# and valid as command options for `ocitools daemon`
+	# and valid as command options for `oci-runtime-tool daemon`
 	local global_boolean_options="
 		--help -h
 		--version -v
@@ -426,7 +426,7 @@ _ocitools() {
 	local cur prev words cword
 	_get_comp_words_by_ref -n : cur prev words cword
 
-	local command='ocitools' command_pos=0 subcommand_pos
+	local command='oci-runtime-tool' command_pos=0 subcommand_pos
 	local counter=1
 	while [ $counter -lt $cword ]; do
 		case "${words[$counter]}" in
@@ -444,14 +444,14 @@ _ocitools() {
 		(( counter++ ))
 	done
 
-	local completions_func=_ocitools_${command}
+	local completions_func=_oci-runtime-tool_${command}
 	declare -F $completions_func >/dev/null && $completions_func
 
 	eval "$previous_extglob_setting"
 	return 0
 }
 
-eval "$__ocitools_previous_extglob_setting"
-unset __ocitools_previous_extglob_setting
+eval "$__oci-runtime-tool_previous_extglob_setting"
+unset __oci-runtime-tool_previous_extglob_setting
 
-complete -F _ocitools ocitools
+complete -F _oci-runtime-tool oci-runtime-tool
