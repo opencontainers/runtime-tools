@@ -77,7 +77,7 @@ trap cleanup EXIT
 tar -xf  rootfs.tar.gz -C ${TESTDIR}
 cp runtimetest ${TESTDIR}
 
-ocitools generate --output "${TESTDIR}/config.json" "${TEST_ARGS[@]}" --rootfs '.'
+oci-runtime-tool generate --output "${TESTDIR}/config.json" "${TEST_ARGS[@]}" --rootfs '.'
 
 TESTCMD="${RUNTIME} start $(uuidgen)"
 pushd $TESTDIR > /dev/null

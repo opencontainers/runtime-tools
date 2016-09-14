@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/opencontainers/ocitools/generate"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/urfave/cli"
 )
 

@@ -5,25 +5,25 @@ BUILDTAGS=
 export GOPATH:=$(CURDIR)/Godeps/_workspace:$(GOPATH)
 
 all:
-	go build -tags "$(BUILDTAGS)" -o ocitools ./cmd/ocitools
+	go build -tags "$(BUILDTAGS)" -o oci-runtime-tool ./cmd/oci-runtime-tool
 	go build -tags "$(BUILDTAGS)" -o runtimetest ./cmd/runtimetest
 
 .PHONY: man
 man:
-	go-md2man -in "man/ocitools.1.md" -out "ocitools.1"
-	go-md2man -in "man/ocitools-generate.1.md" -out "ocitools-generate.1"
-	go-md2man -in "man/ocitools-validate.1.md" -out "ocitools-validate.1"
+	go-md2man -in "man/oci-runtime-tool.1.md" -out "oci-runtime-tool.1"
+	go-md2man -in "man/oci-runtime-tool-generate.1.md" -out "oci-runtime-tool-generate.1"
+	go-md2man -in "man/oci-runtime-tool-validate.1.md" -out "oci-runtime-tool-validate.1"
 
 install: man
 	install -d -m 755 $(BINDIR)
-	install -m 755 ocitools $(BINDIR)
+	install -m 755 oci-runtime-tool $(BINDIR)
 	install -d -m 755 $(PREFIX)/share/man/man1
 	install -m 644 *.1 $(PREFIX)/share/man/man1
 	install -d -m 755 $(PREFIX)/share/bash-completion/completions
-	install -m 644 completions/bash/ocitools $(PREFIX)/share/bash-completion/completions
+	install -m 644 completions/bash/oci-runtime-tool $(PREFIX)/share/bash-completion/completions
 
 clean:
-	rm -f ocitools runtimetest *.1
+	rm -f oci-runtime-tool runtimetest *.1
 
 .PHONY: test .gofmt .govet .golint
 
