@@ -1,15 +1,15 @@
-% OCI(1) OCITOOLS User Manuals
+% OCI(1) OCI-RUNTIME-TOOL User Manuals
 % OCI Community
 % APRIL 2016
 # NAME
-ocitools-generate - Generate a config.json for an OCI container
+oci-runtime-tool-generate - Generate a config.json for an OCI container
 
 # SYNOPSIS
-**ocitools generate** *[OPTIONS]*
+**oci-runtime-tool generate** *[OPTIONS]*
 
 # DESCRIPTION
 
-`ocitools generate` generates configuration JSON for an OCI bundle.
+`oci-runtime-tool generate` generates configuration JSON for an OCI bundle.
 By default, it writes the JSON to stdout, but you can use **--output**
 to direct it to a file.  OCI-compatible runtimes like runC expect to
 read the configuration from `config.json`.
@@ -195,7 +195,7 @@ read the configuration from `config.json`.
   By default, OCI containers are
 “unprivileged” (=false) and cannot do some of the things a normal root process can do.
 
-  When the operator executes **ocitools generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
+  When the operator executes **oci-runtime-tool generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
 
 **--read-only**=true|false
   Mount the container's root filesystem as read only.
@@ -253,7 +253,7 @@ read the configuration from `config.json`.
 **--tmpfs**=[] Create a tmpfs mount
   Mount a temporary filesystem (`tmpfs`) mount into a container, for example:
 
-    $ ocitools generate -d --tmpfs /tmp:rw,size=787448k,mode=1777 my_image
+    $ oci-runtime-tool generate -d --tmpfs /tmp:rw,size=787448k,mode=1777 my_image
 
     This command mounts a `tmpfs` at `/tmp` within the container.  The supported mount options are the same as the Linux default `mount` flags. If you do not specify any options, the systems uses the following options:
     `rw,noexec,nosuid,nodev,size=65536k`.
@@ -289,14 +289,14 @@ This protects the containers image from modification. Read only containers may
 still need to write temporary data.  The best way to handle this is to mount
 tmpfs directories on /generate and /tmp.
 
-    # ocitools generate --read-only --tmpfs /generate --tmpfs /tmp --tmpfs /run  --rootfs /var/lib/containers/fedora /bin/bash
+    # oci-runtime-tool generate --read-only --tmpfs /generate --tmpfs /tmp --tmpfs /run  --rootfs /var/lib/containers/fedora /bin/bash
 
 ## Exposing log messages from the container to the host's log
 
 If you want messages that are logged in your container to show up in the host's
 syslog/journal then you should bind mount the /dev/log directory as follows.
 
-    # ocitools generate --bind /dev/log:/dev/log  --rootfs /var/lib/containers/fedora /bin/bash
+    # oci-runtime-tool generate --bind /dev/log:/dev/log  --rootfs /var/lib/containers/fedora /bin/bash
 
 From inside the container you can test this by sending a message to the log.
 
@@ -316,13 +316,13 @@ To mount a host directory as a container volume, specify the absolute path to
 the directory and the absolute path for the container directory separated by a
 colon:
 
-    # ocitools generate --bind /var/db:/data1  --rootfs /var/lib/containers/fedora --args bash
+    # oci-runtime-tool generate --bind /var/db:/data1  --rootfs /var/lib/containers/fedora --args bash
 
 ## Using SELinux
 
 You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --selinux-label.
 
-    # ocitools generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbox_file_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
+    # oci-runtime-tool generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbox_file_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
 
 Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
 
@@ -347,7 +347,7 @@ Now, writing to the /data1 volume in the container will be allowed and the
 changes will also be reflected on the host in /var/db.
 
 # SEE ALSO
-**runc**(1), **ocitools**(1)
+**runc**(1), **oci-runtime-tool**(1)
 
 # HISTORY
 April 2016, Originally compiled by Dan Walsh (dwalsh at redhat dot com)
