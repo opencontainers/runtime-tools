@@ -9,9 +9,9 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "oci"
+	app.Name = "oci-runtime-tool"
 	app.Version = "0.0.1"
-	app.Usage = "Utilities for OCI"
+	app.Usage = "OCI (Open Container Initiative) runtime tools"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "log-level",
