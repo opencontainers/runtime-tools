@@ -11,6 +11,7 @@ import (
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate/seccomp"
+	"github.com/opencontainers/runtime-tools/validate"
 	"github.com/syndtr/gocapability/capability"
 )
 
@@ -754,11 +755,10 @@ func (g *Generator) AddBindMount(source, dest string, options []string) {
 
 // SetupPrivileged sets up the privilege-related fields inside g.spec.
 func (g *Generator) SetupPrivileged(privileged bool) {
-	if privileged {
-		// Add all capabilities in privileged mode.
+	if privileged { // Add all capabilities in privileged mode.
 		var finalCapList []string
 		for _, cap := range capability.List() {
-			if g.HostSpecific && cap > lastCap() {
+			if g.HostSpecific && cap > validate.LastCap() {
 				continue
 			}
 			finalCapList = append(finalCapList, fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())))
@@ -771,36 +771,6 @@ func (g *Generator) SetupPrivileged(privileged bool) {
 	}
 }
 
-func lastCap() capability.Cap {
-	last := capability.CAP_LAST_CAP
-	// hack for RHEL6 which has no /proc/sys/kernel/cap_last_cap
-	if last == capability.Cap(63) {
-		last = capability.CAP_BLOCK_SUSPEND
-	}
-
-	return last
-}
-
-func checkCap(c string, hostSpecific bool) error {
-	isValid := false
-	cp := strings.ToUpper(c)
-
-	for _, cap := range capability.List() {
-		if cp == strings.ToUpper(cap.String()) {
-			if hostSpecific && cap > lastCap() {
-				return fmt.Errorf("CAP_%s is not supported on the current host", cp)
-			}
-			isValid = true
-			break
-		}
-	}
-
-	if !isValid {
-		return fmt.Errorf("Invalid value passed for adding capability")
-	}
-	return nil
-}
-
 // ClearProcessCapabilities clear g.spec.Process.Capabilities.
 func (g *Generator) ClearProcessCapabilities() {
 	if g.spec == nil {
@@ -811,11 +781,10 @@ func (g *Generator) ClearProcessCapabilities() {
 
 // AddProcessCapability adds a process capability into g.spec.Process.Capabilities.
 func (g *Generator) AddProcessCapability(c string) error {
-	if err := checkCap(c, g.HostSpecific); err != nil {
+	cp := strings.ToUpper(c)
+	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
 		return err
 	}
-
-	cp := fmt.Sprintf("CAP_%s", strings.ToUpper(c))
 
 	g.initSpec()
 	for _, cap := range g.spec.Process.Capabilities {
@@ -830,11 +799,10 @@ func (g *Generator) AddProcessCapability(c string) error {
 
 // DropProcessCapability drops a process capability from g.spec.Process.Capabilities.
 func (g *Generator) DropProcessCapability(c string) error {
-	if err := checkCap(c, g.HostSpecific); err != nil {
+	cp := strings.ToUpper(c)
+	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
 		return err
 	}
-
-	cp := fmt.Sprintf("CAP_%s", strings.ToUpper(c))
 
 	g.initSpec()
 	for i, cap := range g.spec.Process.Capabilities {

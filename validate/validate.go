@@ -15,28 +15,29 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/blang/semver"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/syndtr/gocapability/capability"
 )
 
 const specConfig = "config.json"
 
 var (
 	defaultRlimits = []string{
-		"RLIMIT_CPU",
-		"RLIMIT_FSIZE",
-		"RLIMIT_DATA",
-		"RLIMIT_STACK",
-		"RLIMIT_CORE",
-		"RLIMIT_RSS",
-		"RLIMIT_NPROC",
-		"RLIMIT_NOFILE",
-		"RLIMIT_MEMLOCK",
 		"RLIMIT_AS",
+		"RLIMIT_CORE",
+		"RLIMIT_CPU",
+		"RLIMIT_DATA",
+		"RLIMIT_FSIZE",
 		"RLIMIT_LOCKS",
-		"RLIMIT_SIGPENDING",
+		"RLIMIT_MEMLOCK",
 		"RLIMIT_MSGQUEUE",
 		"RLIMIT_NICE",
+		"RLIMIT_NOFILE",
+		"RLIMIT_NPROC",
+		"RLIMIT_RSS",
 		"RLIMIT_RTPRIO",
 		"RLIMIT_RTTIME",
+		"RLIMIT_SIGPENDING",
+		"RLIMIT_STACK",
 	}
 	defaultCaps = []string{
 		"CAP_CHOWN",
@@ -243,19 +244,15 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		}
 	}
 
-	for index := 0; index < len(process.Capabilities); index++ {
-		capability := process.Capabilities[index]
-		if !capValid(capability) {
-			msgs = append(msgs, fmt.Sprintf("capability %q is not valid, man capabilities(7)", process.Capabilities[index]))
+	for _, capability := range process.Capabilities {
+		if err := CapValid(capability, v.HostSpecific); err != nil {
+			msgs = append(msgs, fmt.Sprintf("capability %q is not valid, man capabilities(7)", capability))
 		}
 	}
 
-	for index := 0; index < len(process.Rlimits); index++ {
-		if !rlimitValid(process.Rlimits[index].Type) {
-			msgs = append(msgs, fmt.Sprintf("rlimit type %q is invalid.", process.Rlimits[index].Type))
-		}
-		if process.Rlimits[index].Hard < process.Rlimits[index].Soft {
-			msgs = append(msgs, fmt.Sprintf("hard limit of rlimit %s should not be less than soft limit.", process.Rlimits[index].Type))
+	for _, rlimit := range process.Rlimits {
+		if err := rlimitValid(rlimit); err != nil {
+			msgs = append(msgs, err.Error())
 		}
 	}
 
@@ -483,6 +480,38 @@ func (v *Validator) CheckSeccomp() (msgs []string) {
 	return
 }
 
+func CapValid(c string, hostSpecific bool) error {
+	isValid := false
+
+	if !strings.HasPrefix(c, "CAP_") {
+		return fmt.Errorf("capability %s must start with CAP_", c)
+	}
+	for _, cap := range capability.List() {
+		if c == fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())) {
+			if hostSpecific && cap > LastCap() {
+				return fmt.Errorf("CAP_%s is not supported on the current host", c)
+			}
+			isValid = true
+			break
+		}
+	}
+
+	if !isValid {
+		return fmt.Errorf("Invalid capability: %s", c)
+	}
+	return nil
+}
+
+func LastCap() capability.Cap {
+	last := capability.CAP_LAST_CAP
+	// hack for RHEL6 which has no /proc/sys/kernel/cap_last_cap
+	if last == capability.Cap(63) {
+		last = capability.CAP_BLOCK_SUSPEND
+	}
+
+	return last
+}
+
 func envValid(env string) bool {
 	items := strings.Split(env, "=")
 	if len(items) < 2 {
@@ -499,22 +528,16 @@ func envValid(env string) bool {
 	return true
 }
 
-func capValid(capability string) bool {
-	for _, val := range defaultCaps {
-		if val == capability {
-			return true
-		}
-	}
-	return false
-}
-
-func rlimitValid(rlimit string) bool {
+func rlimitValid(rlimit rspec.Rlimit) error {
 	for _, val := range defaultRlimits {
-		if val == rlimit {
-			return true
+		if val == rlimit.Type {
+			if rlimit.Hard < rlimit.Soft {
+				return fmt.Errorf("hard limit of rlimit %s should not be less than soft limit.", rlimit.Type)
+			}
+			return nil
 		}
 	}
-	return false
+	return fmt.Errorf("rlimit type %q is invalid.", rlimit.Type)
 }
 
 func namespaceValid(ns rspec.Namespace) bool {
