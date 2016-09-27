@@ -1,4 +1,4 @@
-# oci-runtime-tool [![Build Status](https://travis-ci.org/opencontainers/oci-runtime-tool.svg?branch=master)](https://travis-ci.org/opencontainers/oci-runtime-tool)
+# oci-runtime-tool [![Build Status](https://travis-ci.org/opencontainers/runtime-tools.svg?branch=master)](https://travis-ci.org/opencontainers/runtime-tools)
 
 oci-runtime-tool is a collection of tools for working with the [OCI runtime specification][runtime-spec].
 
