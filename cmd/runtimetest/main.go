@@ -271,6 +271,65 @@ func validateDefaultFS(spec *rspec.Spec) error {
 	return nil
 }
 
+func validateLinuxDevices(spec *rspec.Spec) error {
+	logrus.Debugf("validating linux devices")
+
+	for _, device := range spec.Linux.Devices {
+		fi, err := os.Stat(device.Path)
+		if err != nil {
+			return err
+		}
+		fStat, ok := fi.Sys().(*syscall.Stat_t)
+		if !ok {
+			return fmt.Errorf("cannot determine state for device %s", device.Path)
+		}
+		var devType string
+		switch fStat.Mode & syscall.S_IFMT {
+		case syscall.S_IFCHR:
+			devType = "c"
+			break
+		case syscall.S_IFBLK:
+			devType = "b"
+			break
+		case syscall.S_IFIFO:
+			devType = "p"
+			break
+		default:
+			devType = "unmatched"
+		}
+		if devType != device.Type || (devType == "c" && device.Type == "u") {
+			return fmt.Errorf("device %v expected type is %v, actual is %v", device.Path, device.Type, devType)
+		}
+		if devType != "p" {
+			dev := fStat.Rdev
+			major := (dev >> 8) & 0xfff
+			minor := (dev & 0xff) | ((dev >> 12) & 0xfff00)
+			if int64(major) != device.Major || int64(minor) != device.Minor {
+				return fmt.Errorf("%v device number expected is %v:%v, actual is %v:%v", device.Path, device.Major, device.Minor, major, minor)
+			}
+		}
+		if device.FileMode != nil {
+			expected_perm := *device.FileMode & os.ModePerm
+			actual_perm := fi.Mode() & os.ModePerm
+			if expected_perm != actual_perm {
+				return fmt.Errorf("%v filemode expected is %v, actual is %v", device.Path, expected_perm, actual_perm)
+			}
+		}
+		if device.UID != nil {
+			if *device.UID != fStat.Uid {
+				return fmt.Errorf("%v uid expected is %v, actual is %v", device.Path, *device.UID, fStat.Uid)
+			}
+		}
+		if device.GID != nil {
+			if *device.GID != fStat.Gid {
+				return fmt.Errorf("%v uid expected is %v, actual is %v", device.Path, *device.GID, fStat.Gid)
+			}
+		}
+	}
+
+	return nil
+}
+
 func validateDefaultDevices(spec *rspec.Spec) error {
 	logrus.Debugf("validating linux default devices")
 
@@ -394,6 +453,7 @@ func validate(context *cli.Context) error {
 	linuxValidations := []validation{
 		validateDefaultFS,
 		validateDefaultDevices,
+		validateLinuxDevices,
 		validateSysctls,
 		validateMaskedPaths,
 		validateROPaths,
