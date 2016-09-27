@@ -234,6 +234,9 @@ func checkProcess(spec rspec.Spec, rootfs string, hostCheck bool) (msgs []string
 		if !rlimitValid(process.Rlimits[index].Type) {
 			msgs = append(msgs, fmt.Sprintf("rlimit type %q is invalid.", process.Rlimits[index].Type))
 		}
+		if process.Rlimits[index].Hard < process.Rlimits[index].Soft {
+			msgs = append(msgs, fmt.Sprintf("hard limit of rlimit %s should not be less than soft limit.", process.Rlimits[index].Type))
+		}
 	}
 
 	if len(process.ApparmorProfile) > 0 {
