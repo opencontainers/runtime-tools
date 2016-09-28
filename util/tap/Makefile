@@ -1,4 +1,4 @@
-TESTS = known auto
+TESTS = auto check known
 
 .PHONY: $(TESTS)
 
