@@ -5,5 +5,5 @@ TESTS = known auto
 all: $(TESTS)
 
 $(TESTS): %: test/%/main.go
-	go build -o $@ test/$@/main.go
-	prove -v -e '' ./$@
+	go build -o test/$@/test test/$@/main.go
+	prove -v -e '' test/$@/test
