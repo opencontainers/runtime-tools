@@ -1,5 +1,9 @@
-.PHONY: test
+TESTS = known auto
 
-test:
-	go build main/test.go
-	prove -v -e '' ./test
+.PHONY: $(TESTS)
+
+all: $(TESTS)
+
+$(TESTS): %: test/%/main.go
+	go build -o $@ test/$@/main.go
+	prove -v -e '' ./$@
