@@ -1,4 +1,4 @@
-package tap
+package tap // import "github.com/mndrix/tap-go"
 
 import "fmt"
 import "testing/quick"
