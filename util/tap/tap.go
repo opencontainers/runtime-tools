@@ -15,10 +15,14 @@ func New() *T {
 }
 
 // Header displays a TAP header including version number and expected
-// number of tests to run.
+// number of tests to run.  For an unknown number of tests, set
+// testCount to zero (in which case the plan is not written); this is
+// useful with AutoPlan.
 func (t *T) Header(testCount int) {
 	fmt.Printf("TAP version 13\n")
-	fmt.Printf("1..%d\n", testCount)
+	if testCount > 0 {
+		fmt.Printf("1..%d\n", testCount)
+	}
 }
 
 // Ok generates TAP output indicating whether a test passed or failed.
