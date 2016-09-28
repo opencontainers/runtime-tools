@@ -2,11 +2,14 @@ TESTS = known auto
 
 .PHONY: $(TESTS)
 
-all: $(TESTS)
+all: test/*/test
+	prove -v -e '' test/*/test
 
 clean:
 	rm -f test/*/test
 
-$(TESTS): %: test/%/main.go
-	go build -o test/$@/test test/$@/main.go
+test/%/test: test/%/main.go
+	go build -o $@ $<
+
+$(TESTS): %: test/%/test
 	prove -v -e '' test/$@/test
