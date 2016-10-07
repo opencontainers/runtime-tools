@@ -74,16 +74,23 @@ cleanup() {
 }
 trap cleanup EXIT
 
+die() {
+	echo $1
+	exit 1
+}
+
 tar -xf  rootfs.tar.gz -C ${TESTDIR}
 cp runtimetest ${TESTDIR}
 
 oci-runtime-tool generate --output "${TESTDIR}/config.json" "${TEST_ARGS[@]}" --rootfs-path '.'
 
-TESTCMD="${RUNTIME} start $(uuidgen)"
+CONID=$(uuidgen)
+
+CREATECMD="${RUNTIME} create ${CONID}"
+TESTCMD="${RUNTIME} start ${CONID}"
+DELCMD="${RUNTIME} delete ${CONID}"
 pushd $TESTDIR > /dev/null
-if ! ${TESTCMD}; then
-	error "Runtime ${RUNTIME} failed validation"
-else
-	info "Runtime ${RUNTIME} passed validation"
-fi
+${CREATECMD} || die "failed to create ${CONID}"
+${TESTCMD} || die "failed to start ${CONID}"
+sleep 1 && ${DELCMD} || die "failed to delete ${CONID}"
 popd > /dev/null
