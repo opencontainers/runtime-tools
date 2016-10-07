@@ -79,8 +79,17 @@ cp runtimetest ${TESTDIR}
 
 oci-runtime-tool generate --output "${TESTDIR}/config.json" "${TEST_ARGS[@]}" --rootfs '.'
 
-TESTCMD="${RUNTIME} run $(uuidgen)"
+conID=$(uuidgen)
+
+CREATECMD="${RUNTIME} create ${conID}"
+TESTCMD="${RUNTIME} start ${conID}"
 pushd $TESTDIR > /dev/null
+if ! ${CREATECMD}; then
+	info "Runtime is ${RUNTIME}, no need to create before start"
+else
+	info "Runtime is ${RUNTIME}, need to create before start"
+fi
+
 if ! ${TESTCMD}; then
 	error "Runtime ${RUNTIME} failed validation"
 else
