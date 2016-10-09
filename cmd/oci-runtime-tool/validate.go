@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -78,7 +77,7 @@ var bundleValidateCommand = cli.Command{
 			return err
 		}
 
-		configPath := path.Join(inputPath, "config.json")
+		configPath := filepath.Join(inputPath, "config.json")
 		content, err := ioutil.ReadFile(configPath)
 		if err != nil {
 			return err
@@ -91,7 +90,12 @@ var bundleValidateCommand = cli.Command{
 			return err
 		}
 
-		rootfsPath := path.Join(inputPath, spec.Root.Path)
+		var rootfsPath string
+		if filepath.IsAbs(spec.Root.Path) {
+			rootfsPath = spec.Root.Path
+		} else {
+			rootfsPath = filepath.Join(inputPath, spec.Root.Path)
+		}
 		if fi, err := os.Stat(rootfsPath); err != nil {
 			return fmt.Errorf("Cannot find the root path %q", rootfsPath)
 		} else if !fi.IsDir() {
@@ -213,7 +217,7 @@ func checkProcess(spec rspec.Spec, rootfs string, hostCheck bool) (msgs []string
 	logrus.Debugf("check process")
 
 	process := spec.Process
-	if !path.IsAbs(process.Cwd) {
+	if !filepath.IsAbs(process.Cwd) {
 		msgs = append(msgs, fmt.Sprintf("cwd %q is not an absolute path", process.Cwd))
 	}
 
@@ -237,7 +241,7 @@ func checkProcess(spec rspec.Spec, rootfs string, hostCheck bool) (msgs []string
 	}
 
 	if len(process.ApparmorProfile) > 0 {
-		profilePath := path.Join(rootfs, "/etc/apparmor.d", process.ApparmorProfile)
+		profilePath := filepath.Join(rootfs, "/etc/apparmor.d", process.ApparmorProfile)
 		_, err := os.Stat(profilePath)
 		if err != nil {
 			msgs = append(msgs, err.Error())
