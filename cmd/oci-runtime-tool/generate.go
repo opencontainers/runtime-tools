@@ -26,11 +26,19 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "hostname", Usage: "hostname value for the container"},
 	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
 	cli.StringFlag{Name: "linux-apparmor", Usage: "specifies the the apparmor profile for the container"},
+	cli.IntFlag{Name: "linux-blkio-leaf-weight", Usage: "Block IO (relative leaf weight), the range is from 10 to 1000"},
+	cli.StringSliceFlag{Name: "linux-blkio-leaf-weight-device", Usage: "Block IO (relative device leaf weight), e.g. major:minor:leaf-weight"},
+	cli.StringSliceFlag{Name: "linux-blkio-read-bps-device", Usage: "Limit read rate (bytes per second) from a device"},
+	cli.StringSliceFlag{Name: "linux-blkio-read-iops-device", Usage: "Limit read rate (IO per second) from a device"},
+	cli.IntFlag{Name: "linux-blkio-weight", Usage: "Block IO (relative weight), the range is from 10 to 1000"},
+	cli.StringSliceFlag{Name: "linux-blkio-weight-device", Usage: "Block IO (relative device weight), e.g. major:minor:weight"},
+	cli.StringSliceFlag{Name: "linux-blkio-write-bps-device", Usage: "Limit write rate (bytes per second) to a device"},
+	cli.StringSliceFlag{Name: "linux-blkio-write-iops-device", Usage: "Limit write rate (IO per second) to a device"},
 	cli.StringFlag{Name: "linux-cgroups-path", Usage: "specify the path to the cgroups"},
 	cli.Uint64Flag{Name: "linux-cpu-period", Usage: "the CPU period to be used for hardcapping (in usecs)"},
 	cli.Uint64Flag{Name: "linux-cpu-quota", Usage: "the allowed CPU time in a given period (in usecs)"},
-	cli.Uint64Flag{Name: "linux-cpu-shares", Usage: "the relative share of CPU time available to the tasks in a cgroup"},
 	cli.StringFlag{Name: "linux-cpus", Usage: "CPUs to use within the cpuset (default is to use any CPU available)"},
+	cli.Uint64Flag{Name: "linux-cpu-shares", Usage: "the relative share of CPU time available to the tasks in a cgroup"},
 	cli.StringSliceFlag{Name: "linux-device-add", Usage: "add a device which must be made available in the container"},
 	cli.StringSliceFlag{Name: "linux-device-remove", Usage: "remove a device which must be made available in the container"},
 	cli.BoolFlag{Name: "linux-device-remove-all", Usage: "remove all devices which must be made available in the container"},
@@ -386,6 +394,104 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("linux-oom-score-adj") {
 		g.SetProcessOOMScoreAdj(context.Int("linux-oom-score-adj"))
+	}
+
+	if context.IsSet("linux-blkio-leaf-weight") {
+		g.SetLinuxResourcesBlockIOLeafWeight(uint16(context.Uint64("linux-blkio-leaf-weight")))
+	}
+
+	if context.IsSet("linux-blkio-leaf-weight-device") {
+		devLeafWeight := context.StringSlice("linux-blkio-leaf-weight-device")
+		for _, v := range devLeafWeight {
+			major, minor, leafWeight, err := parseDeviceWeight(v)
+			if err != nil {
+				return err
+			}
+			if leafWeight == -1 {
+				g.DropLinuxResourcesBlockIOLeafWeightDevice(major, minor)
+			} else {
+				g.AddLinuxResourcesBlockIOLeafWeightDevice(major, minor, uint16(leafWeight))
+			}
+		}
+	}
+
+	if context.IsSet("linux-blkio-read-bps-device") {
+		throttleDevices := context.StringSlice("linux-blkio-read-bps-device")
+		for _, v := range throttleDevices {
+			major, minor, rate, err := parseThrottleDevice(v)
+			if err != nil {
+				return err
+			}
+			if rate == -1 {
+				g.DropLinuxResourcesBlockIOThrottleReadBpsDevice(major, minor)
+			} else {
+				g.AddLinuxResourcesBlockIOThrottleReadBpsDevice(major, minor, uint64(rate))
+			}
+		}
+	}
+
+	if context.IsSet("linux-blkio-read-iops-device") {
+		throttleDevices := context.StringSlice("linux-blkio-read-iops-device")
+		for _, v := range throttleDevices {
+			major, minor, rate, err := parseThrottleDevice(v)
+			if err != nil {
+				return err
+			}
+			if rate == -1 {
+				g.DropLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor)
+			} else {
+				g.AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor, uint64(rate))
+			}
+		}
+	}
+
+	if context.IsSet("linux-blkio-weight") {
+		g.SetLinuxResourcesBlockIOWeight(uint16(context.Uint64("linux-blkio-weight")))
+	}
+
+	if context.IsSet("linux-blkio-weight-device") {
+		devWeight := context.StringSlice("linux-blkio-weight-device")
+		for _, v := range devWeight {
+			major, minor, weight, err := parseDeviceWeight(v)
+			if err != nil {
+				return err
+			}
+			if weight == -1 {
+				g.DropLinuxResourcesBlockIOWeightDevice(major, minor)
+			} else {
+				g.AddLinuxResourcesBlockIOWeightDevice(major, minor, uint16(weight))
+			}
+		}
+	}
+
+	if context.IsSet("linux-blkio-write-bps-device") {
+		throttleDevices := context.StringSlice("linux-blkio-write-bps-device")
+		for _, v := range throttleDevices {
+			major, minor, rate, err := parseThrottleDevice(v)
+			if err != nil {
+				return err
+			}
+			if rate == -1 {
+				g.DropLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor)
+			} else {
+				g.AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor, uint64(rate))
+			}
+		}
+	}
+
+	if context.IsSet("linux-blkio-write-iops-device") {
+		throttleDevices := context.StringSlice("linux-blkio-write-iops-device")
+		for _, v := range throttleDevices {
+			major, minor, rate, err := parseThrottleDevice(v)
+			if err != nil {
+				return err
+			}
+			if rate == -1 {
+				g.DropLinuxResourcesBlockIOThrottleWriteIOPSDevice(major, minor)
+			} else {
+				g.AddLinuxResourcesBlockIOThrottleWriteIOPSDevice(major, minor, uint64(rate))
+			}
+		}
 	}
 
 	if context.IsSet("linux-cpu-shares") {
@@ -1002,4 +1108,52 @@ type ErrBadEnvVariable struct {
 
 func (e ErrBadEnvVariable) Error() string {
 	return fmt.Sprintf("poorly formatted environment: %s", e.msg)
+}
+
+func parseDeviceWeight(weightDevice string) (int64, int64, int16, error) {
+	list := strings.Split(weightDevice, ":")
+	if len(list) != 3 {
+		return 0, 0, 0, fmt.Errorf("invalid format: %s", weightDevice)
+	}
+
+	major, err := strconv.Atoi(list[0])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	minor, err := strconv.Atoi(list[1])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	weight, err := strconv.Atoi(list[2])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return int64(major), int64(minor), int16(weight), nil
+}
+
+func parseThrottleDevice(throttleDevice string) (int64, int64, int64, error) {
+	list := strings.Split(throttleDevice, ":")
+	if len(list) != 3 {
+		return 0, 0, 0, fmt.Errorf("invalid format: %s", throttleDevice)
+	}
+
+	major, err := strconv.Atoi(list[0])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	minor, err := strconv.Atoi(list[1])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	rate, err := strconv.Atoi(list[2])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return int64(major), int64(minor), int64(rate), nil
 }

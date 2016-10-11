@@ -490,6 +490,144 @@ func (g *Generator) SetProcessOOMScoreAdj(adj int) {
 	g.spec.Process.OOMScoreAdj = &adj
 }
 
+// SetLinuxResourcesBlockIOLeafWeight sets g.spec.Linux.Resources.BlockIO.LeafWeight.
+func (g *Generator) SetLinuxResourcesBlockIOLeafWeight(weight uint16) {
+	g.initSpecLinuxResourcesBlockIO()
+	g.spec.Linux.Resources.BlockIO.LeafWeight = &weight
+}
+
+// AddLinuxResourcesBlockIOLeafWeightDevice adds or sets g.spec.Linux.Resources.BlockIO.WeightDevice.LeafWeight.
+func (g *Generator) AddLinuxResourcesBlockIOLeafWeightDevice(major int64, minor int64, weight uint16) {
+	g.initSpecLinuxResourcesBlockIO()
+	for i, weightDevice := range g.spec.Linux.Resources.BlockIO.WeightDevice {
+		if weightDevice.Major == major && weightDevice.Minor == minor {
+			g.spec.Linux.Resources.BlockIO.WeightDevice[i].LeafWeight = &weight
+			return
+		}
+	}
+	weightDevice := new(rspec.LinuxWeightDevice)
+	weightDevice.Major = major
+	weightDevice.Minor = minor
+	weightDevice.LeafWeight = &weight
+	g.spec.Linux.Resources.BlockIO.WeightDevice = append(g.spec.Linux.Resources.BlockIO.WeightDevice, *weightDevice)
+}
+
+// DropLinuxResourcesBlockIOLeafWeightDevice drops a item form g.spec.Linux.Resources.BlockIO.WeightDevice.LeafWeight
+func (g *Generator) DropLinuxResourcesBlockIOLeafWeightDevice(major int64, minor int64) {
+	g.initSpecLinuxResourcesBlockIO()
+	for i, weightDevice := range g.spec.Linux.Resources.BlockIO.WeightDevice {
+		if weightDevice.Major == major && weightDevice.Minor == minor {
+			if weightDevice.Weight != nil {
+				newWeightDevice := new(rspec.LinuxWeightDevice)
+				newWeightDevice.Major = major
+				newWeightDevice.Minor = minor
+				newWeightDevice.Weight = weightDevice.Weight
+				g.spec.Linux.Resources.BlockIO.WeightDevice[i] = *newWeightDevice
+			} else {
+				g.spec.Linux.Resources.BlockIO.WeightDevice = append(g.spec.Linux.Resources.BlockIO.WeightDevice[:i], g.spec.Linux.Resources.BlockIO.WeightDevice[i+1:]...)
+			}
+			return
+		}
+	}
+}
+
+// SetLinuxResourcesBlockIOWeight sets g.spec.Linux.Resources.BlockIO.Weight.
+func (g *Generator) SetLinuxResourcesBlockIOWeight(weight uint16) {
+	g.initSpecLinuxResourcesBlockIO()
+	g.spec.Linux.Resources.BlockIO.Weight = &weight
+}
+
+// AddLinuxResourcesBlockIOWeightDevice adds or sets g.spec.Linux.Resources.BlockIO.WeightDevice.Weight.
+func (g *Generator) AddLinuxResourcesBlockIOWeightDevice(major int64, minor int64, weight uint16) {
+	g.initSpecLinuxResourcesBlockIO()
+	for i, weightDevice := range g.spec.Linux.Resources.BlockIO.WeightDevice {
+		if weightDevice.Major == major && weightDevice.Minor == minor {
+			g.spec.Linux.Resources.BlockIO.WeightDevice[i].Weight = &weight
+			return
+		}
+	}
+	weightDevice := new(rspec.LinuxWeightDevice)
+	weightDevice.Major = major
+	weightDevice.Minor = minor
+	weightDevice.Weight = &weight
+	g.spec.Linux.Resources.BlockIO.WeightDevice = append(g.spec.Linux.Resources.BlockIO.WeightDevice, *weightDevice)
+}
+
+// DropLinuxResourcesBlockIOWeightDevice drops a item form g.spec.Linux.Resources.BlockIO.WeightDevice.Weight
+func (g *Generator) DropLinuxResourcesBlockIOWeightDevice(major int64, minor int64) {
+	g.initSpecLinuxResourcesBlockIO()
+	for i, weightDevice := range g.spec.Linux.Resources.BlockIO.WeightDevice {
+		if weightDevice.Major == major && weightDevice.Minor == minor {
+			if weightDevice.LeafWeight != nil {
+				newWeightDevice := new(rspec.LinuxWeightDevice)
+				newWeightDevice.Major = major
+				newWeightDevice.Minor = minor
+				newWeightDevice.LeafWeight = weightDevice.LeafWeight
+				g.spec.Linux.Resources.BlockIO.WeightDevice[i] = *newWeightDevice
+			} else {
+				g.spec.Linux.Resources.BlockIO.WeightDevice = append(g.spec.Linux.Resources.BlockIO.WeightDevice[:i], g.spec.Linux.Resources.BlockIO.WeightDevice[i+1:]...)
+			}
+			return
+		}
+	}
+}
+
+// AddLinuxResourcesBlockIOThrottleReadBpsDevice adds or sets g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice.
+func (g *Generator) AddLinuxResourcesBlockIOThrottleReadBpsDevice(major int64, minor int64, rate uint64) {
+	g.initSpecLinuxResourcesBlockIO()
+	throttleDevices := addOrReplaceBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice, major, minor, rate)
+	g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice = throttleDevices
+}
+
+// DropLinuxResourcesBlockIOThrottleReadBpsDevice drops a item from g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice.
+func (g *Generator) DropLinuxResourcesBlockIOThrottleReadBpsDevice(major int64, minor int64) {
+	g.initSpecLinuxResourcesBlockIO()
+	throttleDevices := dropBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice, major, minor)
+	g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice = throttleDevices
+}
+
+// AddLinuxResourcesBlockIOThrottleReadIOPSDevice adds or sets g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice.
+func (g *Generator) AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major int64, minor int64, rate uint64) {
+	g.initSpecLinuxResourcesBlockIO()
+	throttleDevices := addOrReplaceBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice, major, minor, rate)
+	g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice = throttleDevices
+}
+
+// DropLinuxResourcesBlockIOThrottleReadIOPSDevice drops a item from g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice.
+func (g *Generator) DropLinuxResourcesBlockIOThrottleReadIOPSDevice(major int64, minor int64) {
+	g.initSpecLinuxResourcesBlockIO()
+	throttleDevices := dropBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice, major, minor)
+	g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice = throttleDevices
+}
+
+// AddLinuxResourcesBlockIOThrottleWriteBpsDevice adds or sets g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice.
+func (g *Generator) AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major int64, minor int64, rate uint64) {
+	g.initSpecLinuxResourcesBlockIO()
+	throttleDevices := addOrReplaceBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice, major, minor, rate)
+	g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice = throttleDevices
+}
+
+// DropLinuxResourcesBlockIOThrottleWriteBpsDevice drops a item from g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice.
+func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteBpsDevice(major int64, minor int64) {
+	g.initSpecLinuxResourcesBlockIO()
+	throttleDevices := dropBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice, major, minor)
+	g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice = throttleDevices
+}
+
+// AddLinuxResourcesBlockIOThrottleWriteIOPSDevice adds or sets g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice.
+func (g *Generator) AddLinuxResourcesBlockIOThrottleWriteIOPSDevice(major int64, minor int64, rate uint64) {
+	g.initSpecLinuxResourcesBlockIO()
+	throttleDevices := addOrReplaceBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice, major, minor, rate)
+	g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice = throttleDevices
+}
+
+// DropLinuxResourcesBlockIOThrottleWriteIOPSDevice drops a item from g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice.
+func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteIOPSDevice(major int64, minor int64) {
+	g.initSpecLinuxResourcesBlockIO()
+	throttleDevices := dropBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice, major, minor)
+	g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice = throttleDevices
+}
+
 // SetLinuxResourcesCPUShares sets g.spec.Linux.Resources.CPU.Shares.
 func (g *Generator) SetLinuxResourcesCPUShares(shares uint64) {
 	g.initSpecLinuxResourcesCPU()
@@ -1123,4 +1261,33 @@ func (g *Generator) AddLinuxMaskedPaths(path string) {
 func (g *Generator) AddLinuxReadonlyPaths(path string) {
 	g.initSpecLinux()
 	g.spec.Linux.ReadonlyPaths = append(g.spec.Linux.ReadonlyPaths, path)
+}
+
+func addOrReplaceBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64, minor int64, rate uint64) []rspec.LinuxThrottleDevice {
+	throttleDevices := tmpList
+	for i, throttleDevice := range throttleDevices {
+		if throttleDevice.Major == major && throttleDevice.Minor == minor {
+			throttleDevices[i].Rate = rate
+			return throttleDevices
+		}
+	}
+	throttleDevice := new(rspec.LinuxThrottleDevice)
+	throttleDevice.Major = major
+	throttleDevice.Minor = minor
+	throttleDevice.Rate = rate
+	throttleDevices = append(throttleDevices, *throttleDevice)
+
+	return throttleDevices
+}
+
+func dropBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64, minor int64) []rspec.LinuxThrottleDevice {
+	throttleDevices := tmpList
+	for i, throttleDevice := range throttleDevices {
+		if throttleDevice.Major == major && throttleDevice.Minor == minor {
+			throttleDevices = append(throttleDevices[:i], throttleDevices[i+1:]...)
+			return throttleDevices
+		}
+	}
+
+	return throttleDevices
 }
