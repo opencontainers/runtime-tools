@@ -72,6 +72,7 @@ var generateFlags = []cli.Flag{
 	cli.Uint64Flag{Name: "linux-mem-kernel-limit", Usage: "kernel memory limit (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-kernel-tcp", Usage: "kernel memory limit for tcp (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-swappiness", Usage: "how aggressive the kernel will swap memory pages (Range from 0 to 100)"},
+	cli.Int64Flag{Name: "linux-pids-limit", Usage: "maximum number of PIDs"},
 }
 
 var generateCommand = cli.Command{
@@ -387,6 +388,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("linux-mem-swappiness") {
 		g.SetLinuxResourcesMemorySwappiness(context.Uint64("linux-mem-swappiness"))
+	}
+
+	if context.IsSet("linux-pids-limit") {
+		g.SetLinuxResourcesPidsLimit(context.Int64("linux-pids-limit"))
 	}
 
 	var sd string

@@ -446,6 +446,12 @@ func (g *Generator) SetLinuxResourcesMemorySwappiness(swappiness uint64) {
 	g.spec.Linux.Resources.Memory.Swappiness = &swappiness
 }
 
+// SetLinuxResourcesPidsLimit sets g.spec.Linux.Resources.Pids.Limit.
+func (g *Generator) SetLinuxResourcesPidsLimit(limit int64) {
+	g.initSpecLinuxResourcesPids()
+	g.spec.Linux.Resources.Pids.Limit = &limit
+}
+
 // ClearLinuxSysctl clears g.spec.Linux.Sysctl.
 func (g *Generator) ClearLinuxSysctl() {
 	if g.spec == nil || g.spec.Linux == nil {
