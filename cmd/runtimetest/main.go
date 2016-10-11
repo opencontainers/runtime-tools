@@ -309,10 +309,10 @@ func validateLinuxDevices(spec *rspec.Spec) error {
 			}
 		}
 		if device.FileMode != nil {
-			expected_perm := *device.FileMode & os.ModePerm
-			actual_perm := fi.Mode() & os.ModePerm
-			if expected_perm != actual_perm {
-				return fmt.Errorf("%v filemode expected is %v, actual is %v", device.Path, expected_perm, actual_perm)
+			expectedPerm := *device.FileMode & os.ModePerm
+			actualPerm := fi.Mode() & os.ModePerm
+			if expectedPerm != actualPerm {
+				return fmt.Errorf("%v filemode expected is %v, actual is %v", device.Path, expectedPerm, actualPerm)
 			}
 		}
 		if device.UID != nil {
