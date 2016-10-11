@@ -57,6 +57,9 @@ read the configuration from `config.json`.
 **--cwd**=PATH
   Current working directory for the process
 
+**--disable-oom-kill**=true|false
+  Whether to disable OOM Killer for the container or not.
+
 **--env**=[]
   Set environment variables e.g. key=value.
   This option allows you to specify arbitrary environment variables

@@ -362,6 +362,12 @@ func (g *Generator) SetLinuxMountLabel(label string) {
 	g.spec.Linux.MountLabel = label
 }
 
+// SetLinuxResourcesDisableOOMKiller sets g.spec.Linux.Resources.DisableOOMKiller.
+func (g *Generator) SetLinuxResourcesDisableOOMKiller(disable bool) {
+	g.initSpecLinuxResources()
+	g.spec.Linux.Resources.DisableOOMKiller = &disable
+}
+
 // SetLinuxResourcesOOMScoreAdj sets g.spec.Linux.Resources.OOMScoreAdj.
 func (g *Generator) SetLinuxResourcesOOMScoreAdj(adj int) {
 	g.initSpecLinuxResources()
