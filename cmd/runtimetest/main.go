@@ -24,6 +24,8 @@ import (
 // the kernel
 const PR_GET_NO_NEW_PRIVS = 39
 
+const specConfig = "config.json"
+
 var (
 	defaultFS = map[string]string{
 		"/proc":    "proc",
@@ -47,11 +49,10 @@ var (
 type validation func(*rspec.Spec) error
 
 func loadSpecConfig() (spec *rspec.Spec, err error) {
-	cPath := "config.json"
-	cf, err := os.Open(cPath)
+	cf, err := os.Open(specConfig)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("config.json not found")
+			return nil, fmt.Errorf("%s not found", specConfig)
 		}
 	}
 	defer cf.Close()

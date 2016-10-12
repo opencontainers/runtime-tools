@@ -19,6 +19,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+const specConfig = "config.json"
+
 type configCheck func(rspec.Spec, string, bool) []string
 
 var bundleValidateFlags = []cli.Flag{
@@ -77,7 +79,7 @@ var bundleValidateCommand = cli.Command{
 			return err
 		}
 
-		configPath := filepath.Join(inputPath, "config.json")
+		configPath := filepath.Join(inputPath, specConfig)
 		content, err := ioutil.ReadFile(configPath)
 		if err != nil {
 			return err
