@@ -17,12 +17,6 @@ oci-runtime-tool is a collection of tools for working with the [OCI runtime spec
 **--help**
   Print usage statement.
 
-**-v**, **--version**
-  Print version information.
-
-**--log-level**
-  Log level (panic, fatal, error, warn, info, or debug) (default: "error").
-
 **--host-specific**
   Generate host-specific configs or do host-specific validations.
 
@@ -34,6 +28,12 @@ oci-runtime-tool is a collection of tools for working with the [OCI runtime spec
   By default, validation only tests for compatibility with a hypothetical host.
   With this flag, validation will also run more specific tests to see whether
   the current host is capable of launching a container from the configuration.
+
+**--log-level**
+  Log level (panic, fatal, error, warn, info, or debug) (default: "error").
+
+**-v**, **--version**
+  Print version information.
 
 # COMMANDS
 **validate**

@@ -13,14 +13,14 @@ func main() {
 	app.Version = "0.0.1"
 	app.Usage = "OCI (Open Container Initiative) runtime tools"
 	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:  "host-specific",
+			Usage: "generate host-specific configs or do host-specific validations",
+		},
 		cli.StringFlag{
 			Name:  "log-level",
 			Value: "error",
 			Usage: "Log level (panic, fatal, error, warn, info, or debug)",
-		},
-		cli.BoolFlag{
-			Name:  "host-specific",
-			Usage: "generate host-specific configs or do host-specific validations",
 		},
 	}
 

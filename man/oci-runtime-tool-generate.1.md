@@ -99,17 +99,14 @@ read the configuration from `config.json`.
 **--linux-cpu-quota**=CPUQUOTA
   Specifies the total amount of time in microseconds for which all tasks in a cgroup can run during one period.
 
-**--linux-realtime-runtime**=REALTIMERUNTIME
-  Specifies a period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources.
-
-**--linux-realtime-period**=REALTIMEPERIOD
-  Sets the CPU period to be used for realtime scheduling (in usecs). Same as **--linux-cpu-period** but applies to realtime scheduler only.
-
 **--linux-cpus**=CPUS
   Sets the CPUs to use within the cpuset (default is to use any CPU available).
 
-**--linux-mems**=MEMS
-  Sets the list of memory nodes in the cpuset (default is to use any available memory node).
+**--linux-mem-kernel-limit**=MEMKERNELLIMIT
+  Sets the hard limit of kernel memory in bytes.
+
+**--linux-mem-kernel-tcp**=MEMKERNELTCP
+  Sets the hard limit of kernel TCP buffer memory in bytes.
 
 **--linux-mem-limit**=MEMLIMIT
   Sets the limit of memory usage in bytes.
@@ -120,17 +117,20 @@ read the configuration from `config.json`.
 **--linux-mem-swap**=MEMSWAP
   Sets the total memory limit (memory + swap) in bytes.
 
-**--linux-mem-kernel-limit**=MEMKERNELLIMIT
-  Sets the hard limit of kernel memory in bytes.
-
-**--linux-mem-kernel-tcp**=MEMKERNELTCP
-  Sets the hard limit of kernel TCP buffer memory in bytes.
-
 **--linux-mem-swappiness**=MEMSWAPPINESS
   Sets the swappiness of how the kernel will swap memory pages (Range from 0 to 100).
 
+**--linux-mems**=MEMS
+  Sets the list of memory nodes in the cpuset (default is to use any available memory node).
+
 **--linux-pids-limit**=PIDSLIMIT
   Set maximum number of PIDs.
+
+**--linux-realtime-period**=REALTIMEPERIOD
+  Sets the CPU period to be used for realtime scheduling (in usecs). Same as **--linux-cpu-period** but applies to realtime scheduler only.
+
+**--linux-realtime-runtime**=REALTIMERUNTIME
+  Specifies a period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources.
 
 **--mount**=*PATH*
   Use a mount namespace where *PATH* is an existing mount namespace file
@@ -168,13 +168,13 @@ read the configuration from `config.json`.
 **--oom-score-adj**=adj
   Specifies oom_score_adj for the container.
 
+**--os**=OS
+  Operating system used within the container
+
 **--output**=PATH
   Instead of writing the configuration JSON to stdout, write it to a
   file at *PATH* (overwriting the existing content if a file already
   exists at *PATH*).
-
-**--os**=OS
-  Operating system used within the container
 
 **--pid**=*PATH*
   Use a PID namespace where *PATH* is an existing PID namespace file
@@ -219,22 +219,22 @@ read the configuration from `config.json`.
   Specifies Additional architectures permitted to be used for system calls.
   By default if you turn on seccomp, only the host architecture will be allowed.
 
+**--seccomp-allow**=SYSCALL
+  Specifies syscalls to be added to the ALLOW list.
+  See --seccomp-syscalls for setting limits on arguments.
+
 **--seccomp-default**=ACTION
   Specifies the the default action of Seccomp syscall restrictions
   Values: KILL,ERRNO,TRACE,ALLOW
+
+**--seccomp-errno**=SYSCALL
+  Specifies syscalls to be added to the ERRNO list.
+  See --seccomp-syscalls for setting limits on arguments.
 
 **--seccomp-syscalls**=SYSCALLS
   Specifies Additional syscalls permitted to be used for system calls,
   e.g Name:Action:Arg1_index/Arg1_value/Arg1_valuetwo/Arg1_op, Arg2_index/Arg2_value/Arg2_valuetwo/Arg2_op
   See --seccomp-allow and --seccomp-errno for convenient way to set seccomp syscall options.
-
-**--seccomp-allow**=SYSCALL
-  Specifies syscalls to be added to the ALLOW list.
-  See --seccomp-syscalls for setting limits on arguments.
-
-**--seccomp-errno**=SYSCALL
-  Specifies syscalls to be added to the ERRNO list.
-  See --seccomp-syscalls for setting limits on arguments.
 
 **--selinux-label**=PROCESSLABEL
   SELinux Label
