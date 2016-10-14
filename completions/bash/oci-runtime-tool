@@ -300,6 +300,8 @@ _oci-runtime-tool_generate() {
 		--linux-device-add
 		--linux-device-remove
 		--linux-gidmappings
+		--linux-hugepage-limits-add
+		--linux-hugepage-limits-drop
 		--linux-masked-paths
 		--linux-mem-kernel-limit
 		--linux-mem-kernel-tcp
