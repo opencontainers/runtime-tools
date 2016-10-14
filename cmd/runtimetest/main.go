@@ -549,20 +549,20 @@ func validate(context *cli.Context) error {
 	defaultValidations := []validation{
 		validateRootFS,
 		validateProcess,
-		validateCapabilities,
 		validateHostname,
-		validateRlimits,
 		validateMountsExist,
 	}
 
 	linuxValidations := []validation{
+		validateCapabilities,
 		validateDefaultFS,
 		validateDefaultDevices,
 		validateLinuxDevices,
-		validateSysctls,
 		validateMaskedPaths,
-		validateROPaths,
 		validateOOMScoreAdj,
+		validateROPaths,
+		validateRlimits,
+		validateSysctls,
 		validateUIDMappings,
 		validateGIDMappings,
 	}
