@@ -182,18 +182,21 @@ read the configuration from `config.json`.
   The special *PATH* `host` removes any existing PID namespace from
   the configuration.
 
-**--poststart**=CMD
-  Path to command to run in poststart hooks. This command will be run before
-  the container process gets launched but after the container environment and
-  main process has been created.
+**--poststart**=CMD[:ARGS...]
+  Set command to run in poststart hooks. Can be specified multiple times.
+  The multiple commands will be run in order before the container process
+  gets launched but after the container environment and main process has been
+  created.
 
-**--poststop**=CMD
-  Path to command to run in poststop hooks. The command will be run
-  after the container process is stopped.
+**--poststop**=CMD[:ARGS...]
+  Set command to run in poststop hooks. Can be specified multiple times.
+  The multiple commands will be run in order after the container process
+  is stopped.
 
-**--prestart**=CMD
-  Path to command to run in prestart hooks. This command will be run before
-  the container process gets launched but after the container environment.
+**--prestart**=CMD[:ARGS...]
+  Set command to run in prestart hooks. Can be specified multiple times.
+  The multiple commands will be run in order after the container process
+  has been created but before it executes the user-configured code.
 
 **--privileged**=true|false
   Give extended privileges to this container. The default is *false*.
