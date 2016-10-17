@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -378,6 +380,35 @@ func validateROPaths(spec *rspec.Spec) error {
 	return nil
 }
 
+func validateOOMScoreAdj(spec *rspec.Spec) error {
+	logrus.Debugf("validating oomScoreAdj")
+	if spec.Linux.Resources != nil && spec.Linux.Resources.OOMScoreAdj != nil {
+		expected := *spec.Linux.Resources.OOMScoreAdj
+		f, err := os.Open("/proc/1/oom_score_adj")
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		s := bufio.NewScanner(f)
+		for s.Scan() {
+			if err := s.Err(); err != nil {
+				return err
+			}
+			text := strings.TrimSpace(s.Text())
+			actual, err := strconv.Atoi(text)
+			if err != nil {
+				return err
+			}
+			if actual != expected {
+				return fmt.Errorf("oomScoreAdj expected: %v, actual: %v", expected, actual)
+			}
+		}
+	}
+
+	return nil
+}
+
 func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
 	if specMount.Destination != sysMount.Destination {
 		return fmt.Errorf("mount destination expected: %v, actual: %v", specMount.Destination, sysMount.Destination)
@@ -457,6 +488,7 @@ func validate(context *cli.Context) error {
 		validateSysctls,
 		validateMaskedPaths,
 		validateROPaths,
+		validateOOMScoreAdj,
 	}
 
 	for _, v := range defaultValidations {
