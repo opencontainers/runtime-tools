@@ -57,16 +57,19 @@ var (
 	}
 )
 
+// Validator represents a validator for runtime bundle
 type Validator struct {
 	spec         *rspec.Spec
 	bundlePath   string
 	HostSpecific bool
 }
 
+// NewValidator creates a Validator
 func NewValidator(spec *rspec.Spec, bundlePath string, hostSpecific bool) Validator {
 	return Validator{spec: spec, bundlePath: bundlePath, HostSpecific: hostSpecific}
 }
 
+// NewValidatorFromPath creates a Validator with specified bundle path
 func NewValidatorFromPath(bundlePath string, hostSpecific bool) (Validator, error) {
 	if bundlePath == "" {
 		return Validator{}, fmt.Errorf("Bundle path shouldn't be empty")
@@ -92,6 +95,7 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool) (Validator, erro
 	return NewValidator(&spec, bundlePath, hostSpecific), nil
 }
 
+// CheckAll checks all parts of runtime bundle
 func (v *Validator) CheckAll() (msgs []string) {
 	msgs = append(msgs, v.CheckRootfsPath()...)
 	msgs = append(msgs, v.CheckMandatoryFields()...)
@@ -105,6 +109,7 @@ func (v *Validator) CheckAll() (msgs []string) {
 	return
 }
 
+// CheckRootfsPath checks status of v.spec.Root.Path
 func (v *Validator) CheckRootfsPath() (msgs []string) {
 	logrus.Debugf("check rootfs path")
 
@@ -124,6 +129,8 @@ func (v *Validator) CheckRootfsPath() (msgs []string) {
 	return
 
 }
+
+// CheckSemVer checks v.spec.Version
 func (v *Validator) CheckSemVer() (msgs []string) {
 	logrus.Debugf("check semver")
 
@@ -139,6 +146,7 @@ func (v *Validator) CheckSemVer() (msgs []string) {
 	return
 }
 
+// CheckPlatform checks v.spec.Platform
 func (v *Validator) CheckPlatform() (msgs []string) {
 	logrus.Debugf("check platform")
 
@@ -169,6 +177,7 @@ func (v *Validator) CheckPlatform() (msgs []string) {
 	return
 }
 
+// CheckHooks check v.spec.Hooks
 func (v *Validator) CheckHooks() (msgs []string) {
 	logrus.Debugf("check hooks")
 
@@ -205,6 +214,7 @@ func checkEventHooks(hookType string, hooks []rspec.Hook, hostSpecific bool) (ms
 	return
 }
 
+// CheckProcess checks v.spec.Process
 func (v *Validator) CheckProcess() (msgs []string) {
 	logrus.Debugf("check process")
 
@@ -308,6 +318,7 @@ func supportedMountTypes(OS string, hostSpecific bool) (map[string]bool, error) 
 	return nil, nil
 }
 
+// CheckMounts checks v.spec.Mounts
 func (v *Validator) CheckMounts() (msgs []string) {
 	logrus.Debugf("check mounts")
 
@@ -332,7 +343,7 @@ func (v *Validator) CheckMounts() (msgs []string) {
 	return
 }
 
-//Linux only
+// CheckLinux checks v.spec.Linux
 func (v *Validator) CheckLinux() (msgs []string) {
 	logrus.Debugf("check linux")
 
@@ -426,6 +437,7 @@ func (v *Validator) CheckLinux() (msgs []string) {
 	return
 }
 
+// CheckLinuxResources checks v.spec.Linux.Resources
 func (v *Validator) CheckLinuxResources() (msgs []string) {
 	logrus.Debugf("check linux resources")
 
@@ -442,6 +454,7 @@ func (v *Validator) CheckLinuxResources() (msgs []string) {
 	return
 }
 
+// CheckSeccomp checkc v.spec.Linux.Seccomp
 func (v *Validator) CheckSeccomp() (msgs []string) {
 	logrus.Debugf("check linux seccomp")
 
@@ -480,6 +493,7 @@ func (v *Validator) CheckSeccomp() (msgs []string) {
 	return
 }
 
+// CapValid checks whether a capability is valid
 func CapValid(c string, hostSpecific bool) error {
 	isValid := false
 
@@ -502,6 +516,7 @@ func CapValid(c string, hostSpecific bool) error {
 	return nil
 }
 
+// LastCap return last cap of system
 func LastCap() capability.Cap {
 	last := capability.CAP_LAST_CAP
 	// hack for RHEL6 which has no /proc/sys/kernel/cap_last_cap
@@ -529,15 +544,15 @@ func envValid(env string) bool {
 }
 
 func rlimitValid(rlimit rspec.Rlimit) error {
+	if rlimit.Hard < rlimit.Soft {
+		return fmt.Errorf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type)
+	}
 	for _, val := range defaultRlimits {
 		if val == rlimit.Type {
-			if rlimit.Hard < rlimit.Soft {
-				return fmt.Errorf("hard limit of rlimit %s should not be less than soft limit.", rlimit.Type)
-			}
 			return nil
 		}
 	}
-	return fmt.Errorf("rlimit type %q is invalid.", rlimit.Type)
+	return fmt.Errorf("rlimit type %q is invalid", rlimit.Type)
 }
 
 func namespaceValid(ns rspec.Namespace) bool {
@@ -685,6 +700,7 @@ func checkMandatory(obj interface{}) (msgs []string) {
 	return
 }
 
+// CheckMandatoryFields checks mandatory field of container's config file
 func (v *Validator) CheckMandatoryFields() []string {
 	logrus.Debugf("check mandatory fields")
 
