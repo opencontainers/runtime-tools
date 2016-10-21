@@ -851,3 +851,15 @@ func (g *Generator) RemoveAllSeccompRules() error {
 	g.initSpecLinuxSeccomp()
 	return seccomp.RemoveAllSeccompRules(g.spec.Linux.Seccomp)
 }
+
+// AddLinuxMaskedPaths adds masked paths into g.spec.Linux.MaskedPaths.
+func (g *Generator) AddLinuxMaskedPaths(path string) {
+	g.initSpecLinux()
+	g.spec.Linux.MaskedPaths = append(g.spec.Linux.MaskedPaths, path)
+}
+
+// AddLinuxReadonlyPaths adds readonly paths into g.spec.Linux.MaskedPaths.
+func (g *Generator) AddLinuxReadonlyPaths(path string) {
+	g.initSpecLinux()
+	g.spec.Linux.ReadonlyPaths = append(g.spec.Linux.ReadonlyPaths, path)
+}
