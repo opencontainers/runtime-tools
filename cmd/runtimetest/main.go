@@ -63,8 +63,36 @@ func loadSpecConfig() (spec *rspec.Spec, err error) {
 	return spec, nil
 }
 
-func validateProcess(spec *rspec.Spec) error {
+// should be included by other platform specified process validation
+func validateGeneralProcess(spec *rspec.Spec) error {
+	if spec.Process.Cwd != "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		if cwd != spec.Process.Cwd {
+			return fmt.Errorf("Cwd expected: %v, actual: %v", spec.Process.Cwd, cwd)
+		}
+	}
+
+	for _, env := range spec.Process.Env {
+		parts := strings.Split(env, "=")
+		key := parts[0]
+		expectedValue := parts[1]
+		actualValue := os.Getenv(key)
+		if actualValue != expectedValue {
+			return fmt.Errorf("Env %v expected: %v, actual: %v", key, expectedValue, actualValue)
+		}
+	}
+
+	return nil
+}
+
+func validateLinuxProcess(spec *rspec.Spec) error {
 	logrus.Debugf("validating container process")
+
+	validateGeneralProcess(spec)
+
 	uid := os.Getuid()
 	if uint32(uid) != spec.Process.User.UID {
 		return fmt.Errorf("UID expected: %v, actual: %v", spec.Process.User.UID, uid)
@@ -90,16 +118,6 @@ func validateProcess(spec *rspec.Spec) error {
 		}
 	}
 
-	if spec.Process.Cwd != "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		if cwd != spec.Process.Cwd {
-			return fmt.Errorf("Cwd expected: %v, actual: %v", spec.Process.Cwd, cwd)
-		}
-	}
-
 	cmdlineBytes, err := ioutil.ReadFile("/proc/1/cmdline")
 	if err != nil {
 		return err
@@ -112,16 +130,6 @@ func validateProcess(spec *rspec.Spec) error {
 	for i, a := range args {
 		if string(a) != spec.Process.Args[i] {
 			return fmt.Errorf("Process arguments expected: %v, actual: %v", string(a), spec.Process.Args[i])
-		}
-	}
-
-	for _, env := range spec.Process.Env {
-		parts := strings.Split(env, "=")
-		key := parts[0]
-		expectedValue := parts[1]
-		actualValue := os.Getenv(key)
-		if actualValue != expectedValue {
-			return fmt.Errorf("Env %v expected: %v, actual: %v", key, expectedValue, actualValue)
 		}
 	}
 
@@ -548,7 +556,6 @@ func validate(context *cli.Context) error {
 
 	defaultValidations := []validation{
 		validateRootFS,
-		validateProcess,
 		validateHostname,
 		validateMountsExist,
 	}
@@ -558,6 +565,7 @@ func validate(context *cli.Context) error {
 		validateDefaultFS,
 		validateDefaultDevices,
 		validateLinuxDevices,
+		validateLinuxProcess,
 		validateMaskedPaths,
 		validateOOMScoreAdj,
 		validateROPaths,
