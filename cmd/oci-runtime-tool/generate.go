@@ -59,10 +59,10 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "poststop", Usage: "set command to run in poststop hooks"},
 	cli.StringSliceFlag{Name: "prestart", Usage: "set command to run in prestart hooks"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
-	cli.BoolFlag{Name: "read-only", Usage: "make the container's rootfs read-only"},
 	cli.StringSliceFlag{Name: "readonly-paths", Usage: "specifies paths readonly inside container"},
-	cli.StringFlag{Name: "root-propagation", Usage: "mount propagation for root"},
-	cli.StringFlag{Name: "rootfs", Value: "rootfs", Usage: "path to the rootfs"},
+	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
+	cli.StringFlag{Name: "rootfs-propagation", Usage: "mount propagation for rootfs"},
+	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
 	cli.StringFlag{Name: "seccomp-allow", Usage: "specifies syscalls to respond with allow"},
 	cli.StringFlag{Name: "seccomp-arch", Usage: "specifies additional architectures permitted to be used for system calls"},
 	cli.StringFlag{Name: "seccomp-default", Usage: "specifies default action to be used for system calls and removes existing rules with specified action"},
@@ -155,10 +155,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	g.SetRootPath(context.String("rootfs"))
+	g.SetRootPath(context.String("rootfs-path"))
 
-	if context.IsSet("read-only") {
-		g.SetRootReadonly(context.Bool("read-only"))
+	if context.IsSet("rootfs-readonly") {
+		g.SetRootReadonly(context.Bool("rootfs-readonly"))
 	}
 
 	if context.IsSet("uid") {
@@ -335,8 +335,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("root-propagation") {
-		rp := context.String("root-propagation")
+	if context.IsSet("rootfs-propagation") {
+		rp := context.String("rootfs-propagation")
 		if err := g.SetLinuxRootPropagation(rp); err != nil {
 			return err
 		}

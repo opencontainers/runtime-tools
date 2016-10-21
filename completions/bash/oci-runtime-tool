@@ -299,8 +299,8 @@ _oci-runtime-tool_generate() {
 	      --poststop
 	      --prestart
 	      --readonly-paths
-	      --root-propagation
-	      --rootfs
+	      --rootfs-path
+	      --rootfs-propagation
 	      --seccomp-allow
 	      --seccomp-arch
 	      --seccomp-default
@@ -326,7 +326,7 @@ _oci-runtime-tool_generate() {
 	local boolean_options="
 	      --no-new-privileges
 	      --privileged
-	      --read-only
+	      --rootfs-readonly
 	      --tty
 	"
 

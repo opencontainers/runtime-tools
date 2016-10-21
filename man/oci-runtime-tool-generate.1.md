@@ -214,17 +214,17 @@ read the configuration from `config.json`.
   Specifies paths readonly inside container. e.g. --readonly-paths=/proc/sys
   This option can be specified multiple times.
 
-**--read-only**=true|false
-  Mount the container's root filesystem as read only.
+**--rootfs-path**=ROOTFSPATH
+  Path to the root filesystem
 
-  By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--read-only` flag the container will have its root filesystem mounted as read only prohibiting any writes.
-
-**--root-propagation**=PROPOGATIONMODE
+**--rootfs-propagation**=PROPOGATIONMODE
   Mount propagation for root filesystem.
   Values are "shared, rshared, private, rprivate, slave, rslave"
 
-**--rootfs**=ROOTFSPATH
-  Path to the rootfs
+**--rootfs-readonly**=true|false
+  Mount the container's root filesystem as read only.
+
+  By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--rootfs-readonly` flag the container will have its root filesystem mounted as read only prohibiting any writes.
 
 **--seccomp-allow**=SYSCALL
   Specifies syscalls to be added to the ALLOW list.
