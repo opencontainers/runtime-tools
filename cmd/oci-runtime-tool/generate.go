@@ -45,6 +45,7 @@ var generateFlags = []cli.Flag{
 	cli.Int64Flag{Name: "linux-pids-limit", Usage: "maximum number of PIDs"},
 	cli.Uint64Flag{Name: "linux-realtime-period", Usage: "CPU period to be used for realtime scheduling (in usecs)"},
 	cli.Uint64Flag{Name: "linux-realtime-runtime", Usage: "the time realtime scheduling may use (in usecs)"},
+	cli.StringSliceFlag{Name: "masked-paths", Usage: "specifies paths can not be read inside container"},
 	cli.StringFlag{Name: "mount", Usage: "mount namespace"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringFlag{Name: "mount-label", Usage: "selinux mount context label"},
@@ -59,6 +60,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "prestart", Usage: "set command to run in prestart hooks"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
 	cli.BoolFlag{Name: "read-only", Usage: "make the container's rootfs read-only"},
+	cli.StringSliceFlag{Name: "readonly-paths", Usage: "specifies paths readonly inside container"},
 	cli.StringFlag{Name: "root-propagation", Usage: "mount propagation for root"},
 	cli.StringFlag{Name: "rootfs", Value: "rootfs", Usage: "path to the rootfs"},
 	cli.StringFlag{Name: "seccomp-allow", Usage: "specifies syscalls to respond with allow"},
@@ -209,6 +211,20 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("cgroups-path") {
 		g.SetLinuxCgroupsPath(context.String("cgroups-path"))
+	}
+
+	if context.IsSet("masked-paths") {
+		paths := context.StringSlice("masked-paths")
+		for _, path := range paths {
+			g.AddLinuxMaskedPaths(path)
+		}
+	}
+
+	if context.IsSet("readonly-paths") {
+		paths := context.StringSlice("readonly-paths")
+		for _, path := range paths {
+			g.AddLinuxReadonlyPaths(path)
+		}
 	}
 
 	if context.IsSet("mount-label") {

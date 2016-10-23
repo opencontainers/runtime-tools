@@ -132,6 +132,10 @@ read the configuration from `config.json`.
 **--linux-realtime-runtime**=REALTIMERUNTIME
   Specifies a period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources.
 
+**--masked-paths**=[]
+  Specifies paths can not be read inside container. e.g. --masked-paths=/proc/kcore
+  This option can be specified multiple times.
+
 **--mount**=*PATH*
   Use a mount namespace where *PATH* is an existing mount namespace file
   to join. The special *PATH*  empty-string  creates a new namespace.
@@ -205,6 +209,10 @@ read the configuration from `config.json`.
 “unprivileged” (=false) and cannot do some of the things a normal root process can do.
 
   When the operator executes **oci-runtime-tool generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
+
+**--readonly-paths**=[]
+  Specifies paths readonly inside container. e.g. --readonly-paths=/proc/sys
+  This option can be specified multiple times.
 
 **--read-only**=true|false
   Mount the container's root filesystem as read only.
