@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strings"
 	"unicode"
@@ -401,15 +402,40 @@ func (v *Validator) CheckMounts() (msgs []string) {
 		return
 	}
 
-	for _, mount := range v.spec.Mounts {
-		if supportedTypes != nil {
-			if !supportedTypes[mount.Type] {
-				msgs = append(msgs, fmt.Sprintf("Unsupported mount type %q", mount.Type))
+	for i, mountA := range v.spec.Mounts {
+		if supportedTypes != nil && !supportedTypes[mountA.Type] {
+			msgs = append(msgs, fmt.Sprintf("Unsupported mount type %q", mountA.Type))
+		}
+		if v.platform == "windows" {
+			if err := pathValid(v.platform, mountA.Destination); err != nil {
+				msgs = append(msgs, err.Error())
+			}
+			if err := pathValid(v.platform, mountA.Source); err != nil {
+				msgs = append(msgs, err.Error())
+			}
+		} else {
+			if err := pathValid(v.platform, mountA.Destination); err != nil {
+				msgs = append(msgs, err.Error())
 			}
 		}
-
-		if !filepath.IsAbs(mount.Destination) {
-			msgs = append(msgs, fmt.Sprintf("destination %v is not an absolute path", mount.Destination))
+		for j, mountB := range v.spec.Mounts {
+			if i == j {
+				continue
+			}
+			// whether B.Desination is nested within A.Destination
+			nested, err := nestedValid(v.platform, mountA.Destination, mountB.Destination)
+			if err != nil {
+				msgs = append(msgs, err.Error())
+				continue
+			}
+			if nested {
+				if v.platform == "windows" && i < j {
+					msgs = append(msgs, fmt.Sprintf("On Windows, %v nested within %v is forbidden", mountB.Destination, mountA.Destination))
+				}
+				if i > j {
+					logrus.Warnf("%v will be covered by %v", mountB.Destination, mountA.Destination)
+				}
+			}
 		}
 	}
 
@@ -706,6 +732,65 @@ func namespaceValid(ns rspec.LinuxNamespace) bool {
 	}
 
 	return true
+}
+
+func pathValid(os, path string) error {
+	if os == "windows" {
+		matched, err := regexp.MatchString("^[a-zA-Z]:(\\\\[^\\\\/<>|:*?\"]+)+$", path)
+		if err != nil {
+			return err
+		}
+		if !matched {
+			return fmt.Errorf("invalid windows path %v", path)
+		}
+		return nil
+	}
+	if !filepath.IsAbs(path) {
+		return fmt.Errorf("%v is not an absolute path", path)
+	}
+	return nil
+}
+
+// Check whether pathB is nested whithin pathA
+func nestedValid(os, pathA, pathB string) (bool, error) {
+	if pathA == pathB {
+		return false, nil
+	}
+	if pathA == "/" && pathB != "" {
+		return true, nil
+	}
+
+	var sep string
+	if os == "windows" {
+		sep = "\\"
+	} else {
+		sep = "/"
+	}
+
+	splitedPathA := strings.Split(filepath.Clean(pathA), sep)
+	splitedPathB := strings.Split(filepath.Clean(pathB), sep)
+	lenA := len(splitedPathA)
+	lenB := len(splitedPathB)
+
+	if lenA > lenB {
+		if (lenA - lenB) == 1 {
+			// if pathA is longer but not end with separator
+			if splitedPathA[lenA-1] != "" {
+				return false, nil
+			}
+			splitedPathA = splitedPathA[:lenA-1]
+		} else {
+			return false, nil
+		}
+	}
+
+	for i, partA := range splitedPathA {
+		if partA != splitedPathB[i] {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 func deviceValid(d rspec.LinuxDevice) bool {
