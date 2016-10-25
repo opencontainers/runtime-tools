@@ -286,6 +286,8 @@ _oci-runtime-tool_generate() {
 	      --help
 	      --ipc
 	      --label
+	      --linux-network-classid
+	      --linux-network-priorities
 	      --linux-pids-limit
 	      --masked-paths
 	      --mount

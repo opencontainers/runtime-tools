@@ -123,6 +123,15 @@ read the configuration from `config.json`.
 **--linux-mems**=MEMS
   Sets the list of memory nodes in the cpuset (default is to use any available memory node).
 
+**--linux-network-classid**=CLASSID
+  Specifies network class identifier which will be tagged by container's network packets.
+
+**--linux-network-priorities**=[]
+  Specifies network priorities of network traffic, format is NAME:PRIORITY.
+  e.g. --linux-network-priorities=eth0:123
+  This option can be specified multiple times. If a interface name was specified more than once, the last PRIORITY makes sense.
+  The special *PRIORITY*  -1  removes existing setting for interface NAME.
+
 **--linux-pids-limit**=PIDSLIMIT
   Set maximum number of PIDs.
 
