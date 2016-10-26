@@ -1,7 +1,6 @@
 {
 	"ImportPath": "github.com/opencontainers/runtime-tools",
 	"GoVersion": "go1.4",
-	"GodepVersion": "v74",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -24,8 +23,8 @@
 		},
 		{
 			"ImportPath": "github.com/urfave/cli",
-			"Comment": "v1.18.0",
-			"Rev": "1efa31f08b9333f1bd4882d61f9d668a70cd902e"
+			"Comment": "v1.18.0-72-g3c2bce5",
+			"Rev": "3c2bce5807d92a07ae1d3adf503a9811525e3e4b"
 		}
 	]
 }
