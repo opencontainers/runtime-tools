@@ -384,6 +384,18 @@ func (v *Validator) CheckLinux() (msgs []string) {
 		msgs = append(msgs, "rootfsPropagation must be empty or one of \"private|rprivate|slave|rslave|shared|rshared\"")
 	}
 
+	for _, maskedPath := range v.spec.Linux.MaskedPaths {
+		if !strings.HasPrefix(maskedPath, "/") {
+			msgs = append(msgs, "maskedPath %v is not an absolute path", maskedPath)
+		}
+	}
+
+	for _, readonlyPath := range v.spec.Linux.ReadonlyPaths {
+		if !strings.HasPrefix(readonlyPath, "/") {
+			msgs = append(msgs, "readonlyPath %v is not an absolute path", readonlyPath)
+		}
+	}
+
 	return
 }
 
