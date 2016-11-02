@@ -384,6 +384,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetLinuxResourcesCPURealtimeRuntime(context.Uint64("linux-realtime-runtime"))
 	}
 
+	if context.IsSet("linux-pids-limit") {
+		g.SetLinuxResourcesPidsLimit(context.Int64("linux-pids-limit"))
+	}
+
 	if context.IsSet("linux-realtime-period") {
 		g.SetLinuxResourcesCPURealtimePeriod(context.Uint64("linux-realtime-period"))
 	}
