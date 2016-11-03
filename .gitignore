@@ -31,3 +31,6 @@ oci
 
 *.1
 *.patch
+
+# Temporary symbol links
+Godeps/_workspace/src/github.com/opencontainers/runtime-tools
