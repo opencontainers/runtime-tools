@@ -131,9 +131,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.HostSpecific = true
 	}
 
-	spec := g.Spec()
-
-	if len(spec.Version) == 0 {
+	if len(g.Config.Version) == 0 {
 		g.SetVersion(rspec.Version)
 	}
 
