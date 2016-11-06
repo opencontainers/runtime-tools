@@ -17,7 +17,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "apparmor", Usage: "specifies the the apparmor profile for the container"},
 	cli.StringFlag{Name: "arch", Value: runtime.GOARCH, Usage: "architecture the container is created for"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
-	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest:(rw,ro)"},
+	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest[:options...]"},
 	cli.StringSliceFlag{Name: "cap-add", Usage: "add Linux capabilities"},
 	cli.StringSliceFlag{Name: "cap-drop", Usage: "drop Linux capabilities"},
 	cli.StringFlag{Name: "cgroup", Usage: "cgroup namespace"},
@@ -491,18 +491,18 @@ func parseTmpfsMount(s string) (string, []string, error) {
 	return dest, options, err
 }
 
-func parseBindMount(s string) (string, string, string, error) {
+func parseBindMount(s string) (string, string, []string, error) {
 	var source, dest string
-	options := "ro"
+	options := []string{}
 
 	bparts := strings.SplitN(s, ":", 3)
 	switch len(bparts) {
 	case 2:
 		source, dest = bparts[0], bparts[1]
 	case 3:
-		source, dest, options = bparts[0], bparts[1], bparts[2]
+		source, dest, options = bparts[0], bparts[1], strings.Split(bparts[2], ":")
 	default:
-		return source, dest, options, fmt.Errorf("--bind should have format src:dest:[options]")
+		return source, dest, options, fmt.Errorf("--bind should have format src:dest[:options...]")
 	}
 
 	return source, dest, options, nil
