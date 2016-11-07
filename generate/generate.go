@@ -633,18 +633,29 @@ func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
 }
 
 // AddBindMount adds a bind mount into g.spec.Mounts.
-func (g *Generator) AddBindMount(source, dest, options string) {
-	if options == "" {
-		options = "ro"
+func (g *Generator) AddBindMount(source, dest string, options []string) {
+	if len(options) == 0 {
+		options = []string{"rw"}
 	}
 
-	defaultOptions := []string{"bind"}
+	// We have to make sure that there is a bind option set, otherwise it won't
+	// be an actual bindmount.
+	foundBindOption := false
+	for _, opt := range options {
+		if opt == "bind" || opt == "rbind" {
+			foundBindOption = true
+			break
+		}
+	}
+	if !foundBindOption {
+		options = append(options, "bind")
+	}
 
 	mnt := rspec.Mount{
 		Destination: dest,
 		Type:        "bind",
 		Source:      source,
-		Options:     append(defaultOptions, options),
+		Options:     options,
 	}
 	g.initSpec()
 	g.spec.Mounts = append(g.spec.Mounts, mnt)

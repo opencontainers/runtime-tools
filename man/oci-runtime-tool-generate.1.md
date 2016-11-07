@@ -29,15 +29,15 @@ read the configuration from `config.json`.
 
   --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
 
-**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS]]*
+**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS...]]*
   Bind mount directories src:dest:(rw,ro) If you specify, ` --bind
   /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
-  to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a comma
-  delimited list and can be: [rw|ro] The `HOST_DIR` and
-  `CONTAINER-DIR` must be absolute paths such as `/src/docs`.  You
-  can add `:ro` or `:rw` suffix to a volume to mount it read-only or
-  read-write mode, respectively. By default, the volumes are mounted
-  read-write.
+  to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a colon
+  delimited list and can be any mount option support by the runtime such
+  as [rw|ro|rbind|bind|...]. The `HOST_DIR` and `CONTAINER-DIR` must be
+  absolute paths such as `/src/docs`.  You can set the `ro` or `rw`
+  options to a bind-mount to mount it read-only or read-write mode,
+  respectively. By default, bind-mounts are mounted read-write.
 
 **--cap-add**=[]
   Add Linux capabilities
