@@ -131,16 +131,18 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.HostSpecific = true
 	}
 
+	g.InitConfigLinuxResources()
+
 	if len(g.Config.Version) == 0 {
-		g.SetVersion(rspec.Version)
+		g.Config.Version = rspec.Version
 	}
 
 	if context.IsSet("hostname") {
-		g.SetHostname(context.String("hostname"))
+		g.Config.Hostname = context.String("hostname")
 	}
 
-	g.SetPlatformOS(context.String("os"))
-	g.SetPlatformArch(context.String("arch"))
+	g.Config.Platform.OS = context.String("os")
+	g.Config.Platform.Arch = context.String("arch")
 
 	if context.IsSet("label") {
 		annotations := context.StringSlice("label")
@@ -149,51 +151,48 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if len(pair) != 2 {
 				return fmt.Errorf("incorrectly specified annotation: %s", s)
 			}
-			g.AddAnnotation(pair[0], pair[1])
+			g.Config.Annotations[pair[0]] = pair[1]
 		}
 	}
 
-	g.SetRootPath(context.String("rootfs"))
+	g.Config.Root.Path = context.String("rootfs")
 
 	if context.IsSet("read-only") {
-		g.SetRootReadonly(context.Bool("read-only"))
+		g.Config.Root.Readonly = context.Bool("read-only")
 	}
 
 	if context.IsSet("uid") {
-		g.SetProcessUID(uint32(context.Int("uid")))
+		g.Config.Process.User.UID = uint32(context.Int("uid"))
 	}
 
 	if context.IsSet("gid") {
-		g.SetProcessGID(uint32(context.Int("gid")))
+		g.Config.Process.User.GID = uint32(context.Int("gid"))
 	}
 
 	if context.IsSet("selinux-label") {
-		g.SetProcessSelinuxLabel(context.String("selinux-label"))
+		g.Config.Process.SelinuxLabel = context.String("selinux-label")
 	}
 
-	g.SetProcessCwd(context.String("cwd"))
+	g.Config.Process.Cwd = context.String("cwd")
 
 	if context.IsSet("apparmor") {
-		g.SetProcessApparmorProfile(context.String("apparmor"))
+		g.Config.Process.ApparmorProfile = context.String("apparmor")
 	}
 
 	if context.IsSet("no-new-privileges") {
-		g.SetProcessNoNewPrivileges(context.Bool("no-new-privileges"))
+		g.Config.Process.NoNewPrivileges = context.Bool("no-new-privileges")
 	}
 
 	if context.IsSet("tty") {
-		g.SetProcessTerminal(context.Bool("tty"))
+		g.Config.Process.Terminal = context.Bool("tty")
 	}
 
 	if context.IsSet("args") {
-		g.SetProcessArgs(context.StringSlice("args"))
+		g.Config.Process.Args = context.StringSlice("args")
 	}
 
 	if context.IsSet("env") {
-		envs := context.StringSlice("env")
-		for _, env := range envs {
-			g.AddProcessEnv(env)
-		}
+		g.Config.Process.Env = append(g.Config.Process.Env, context.StringSlice("env")...)
 	}
 
 	if context.IsSet("groups") {
@@ -208,25 +207,19 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("cgroups-path") {
-		g.SetLinuxCgroupsPath(context.String("cgroups-path"))
+		g.Config.Linux.CgroupsPath = generate.StrPtr(context.String("cgroups-path"))
 	}
 
 	if context.IsSet("masked-paths") {
-		paths := context.StringSlice("masked-paths")
-		for _, path := range paths {
-			g.AddLinuxMaskedPaths(path)
-		}
+		g.Config.Linux.MaskedPaths = append(g.Config.Linux.MaskedPaths, context.StringSlice("masked-paths")...)
 	}
 
 	if context.IsSet("readonly-paths") {
-		paths := context.StringSlice("readonly-paths")
-		for _, path := range paths {
-			g.AddLinuxReadonlyPaths(path)
-		}
+		g.Config.Linux.ReadonlyPaths = append(g.Config.Linux.ReadonlyPaths, context.StringSlice("readonly-paths")...)
 	}
 
 	if context.IsSet("mount-label") {
-		g.SetLinuxMountLabel(context.String("mount-label"))
+		g.Config.Linux.MountLabel = context.String("mount-label")
 	}
 
 	if context.IsSet("sysctl") {
@@ -236,15 +229,13 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if len(pair) != 2 {
 				return fmt.Errorf("incorrectly specified sysctl: %s", s)
 			}
-			g.AddLinuxSysctl(pair[0], pair[1])
+			g.Config.Linux.Sysctl[pair[0]] = pair[1]
 		}
 	}
 
-	privileged := false
-	if context.IsSet("privileged") {
-		privileged = context.Bool("privileged")
+	if context.IsSet("privileged") && context.Bool("privileged") {
+		g.SetupPrivileged()
 	}
-	g.SetupPrivileged(privileged)
 
 	if context.IsSet("cap-add") {
 		addCaps := context.StringSlice("cap-add")
@@ -285,137 +276,133 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("tmpfs") {
 		tmpfsSlice := context.StringSlice("tmpfs")
 		for _, s := range tmpfsSlice {
-			dest, options, err := parseTmpfsMount(s)
+			mnt, err := parseTmpfsMount(s)
 			if err != nil {
 				return err
 			}
-			g.AddTmpfsMount(dest, options)
+			g.Config.Mounts = append(g.Config.Mounts, mnt)
 		}
 	}
 
-	mountCgroupOption := context.String("mount-cgroups")
-	if err := g.AddCgroupsMount(mountCgroupOption); err != nil {
-		return err
+	if context.IsSet("mount-cgroups") && context.String("mount-cgroups") != "no" {
+		g.Config.Mounts = append(g.Config.Mounts, rspec.Mount{
+			Destination: "/sys/fs/cgroup",
+			Type: "cgroup",
+			Source: "cgroup",
+			Options: []string{"nosuid", "noexec", "nodev", "relatime", context.String("mount-cgroups")},
+		})
 	}
 
 	if context.IsSet("bind") {
 		binds := context.StringSlice("bind")
 		for _, bind := range binds {
-			source, dest, options, err := parseBindMount(bind)
+			mnt, err := parseBindMount(bind)
 			if err != nil {
 				return err
 			}
-			g.AddBindMount(source, dest, options)
+			g.Config.Mounts = append(g.Config.Mounts, mnt)
 		}
 	}
 
 	if context.IsSet("prestart") {
 		preStartHooks := context.StringSlice("prestart")
 		for _, hook := range preStartHooks {
-			path, args := parseHook(hook)
-			g.AddPreStartHook(path, args)
+			g.Config.Hooks.Prestart = append(g.Config.Hooks.Prestart, parseHook(hook))
 		}
 	}
 
 	if context.IsSet("poststop") {
 		postStopHooks := context.StringSlice("poststop")
 		for _, hook := range postStopHooks {
-			path, args := parseHook(hook)
-			g.AddPostStopHook(path, args)
+			g.Config.Hooks.Poststop = append(g.Config.Hooks.Poststop, parseHook(hook))
 		}
 	}
 
 	if context.IsSet("poststart") {
 		postStartHooks := context.StringSlice("poststart")
 		for _, hook := range postStartHooks {
-			path, args := parseHook(hook)
-			g.AddPostStartHook(path, args)
+			g.Config.Hooks.Poststart = append(g.Config.Hooks.Poststart, parseHook(hook))
 		}
 	}
 
 	if context.IsSet("root-propagation") {
-		rp := context.String("root-propagation")
-		if err := g.SetLinuxRootPropagation(rp); err != nil {
-			return err
-		}
+		g.Config.Linux.RootfsPropagation = context.String("root-propagation")
 	}
 
 	for _, uidMap := range uidMaps {
-		hid, cid, size, err := parseIDMapping(uidMap)
+		mapping, err := parseIDMapping(uidMap)
 		if err != nil {
 			return err
 		}
-
-		g.AddLinuxUIDMapping(hid, cid, size)
+		g.Config.Linux.UIDMappings = append(g.Config.Linux.UIDMappings, mapping)
 	}
 
 	for _, gidMap := range gidMaps {
-		hid, cid, size, err := parseIDMapping(gidMap)
+		mapping, err := parseIDMapping(gidMap)
 		if err != nil {
 			return err
 		}
-
-		g.AddLinuxGIDMapping(hid, cid, size)
+		g.Config.Linux.GIDMappings = append(g.Config.Linux.GIDMappings, mapping)
 	}
 
 	if context.IsSet("disable-oom-kill") {
-		g.SetLinuxResourcesDisableOOMKiller(context.Bool("disable-oom-kill"))
+		g.Config.Linux.Resources.DisableOOMKiller = generate.BoolPtr(context.Bool("disable-oom-kill"))
 	}
 
 	if context.IsSet("oom-score-adj") {
-		g.SetLinuxResourcesOOMScoreAdj(context.Int("oom-score-adj"))
+		g.Config.Linux.Resources.OOMScoreAdj = generate.IntPtr(context.Int("oom-score-adj"))
 	}
 
 	if context.IsSet("linux-cpu-shares") {
-		g.SetLinuxResourcesCPUShares(context.Uint64("linux-cpu-shares"))
+		g.Config.Linux.Resources.CPU.Shares = generate.Uint64Ptr(context.Uint64("linux-cpu-shares"))
 	}
 
 	if context.IsSet("linux-cpu-period") {
-		g.SetLinuxResourcesCPUPeriod(context.Uint64("linux-cpu-period"))
+		g.Config.Linux.Resources.CPU.Period = generate.Uint64Ptr(context.Uint64("linux-cpu-period"))
 	}
 
 	if context.IsSet("linux-cpu-quota") {
-		g.SetLinuxResourcesCPUQuota(context.Uint64("linux-cpu-quota"))
+		g.Config.Linux.Resources.CPU.Quota = generate.Uint64Ptr(context.Uint64("linux-cpu-quota"))
 	}
 
 	if context.IsSet("linux-realtime-runtime") {
-		g.SetLinuxResourcesCPURealtimeRuntime(context.Uint64("linux-realtime-runtime"))
+		g.Config.Linux.Resources.CPU.RealtimeRuntime = generate.Uint64Ptr(context.Uint64("linux-realtime-runtime"))
 	}
 
 	if context.IsSet("linux-realtime-period") {
-		g.SetLinuxResourcesCPURealtimePeriod(context.Uint64("linux-realtime-period"))
+		g.Config.Linux.Resources.CPU.RealtimePeriod = generate.Uint64Ptr(context.Uint64("linux-realtime-period"))
 	}
 
 	if context.IsSet("linux-cpus") {
-		g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
+		g.Config.Linux.Resources.CPU.Cpus = generate.StrPtr(context.String("linux-cpus"))
 	}
 
 	if context.IsSet("linux-mems") {
-		g.SetLinuxResourcesCPUMems(context.String("linux-mems"))
+		g.Config.Linux.Resources.CPU.Mems = generate.StrPtr(context.String("linux-mems"))
 	}
 
 	if context.IsSet("linux-mem-limit") {
-		g.SetLinuxResourcesMemoryLimit(context.Uint64("linux-mem-limit"))
+		g.Config.Linux.Resources.Memory.Limit = generate.Uint64Ptr(context.Uint64("linux-mem-limit"))
 	}
 
 	if context.IsSet("linux-mem-reservation") {
-		g.SetLinuxResourcesMemoryReservation(context.Uint64("linux-mem-reservation"))
+		g.Config.Linux.Resources.Memory.Reservation = generate.Uint64Ptr(context.Uint64("linux-mem-reservation"))
 	}
 
 	if context.IsSet("linux-mem-swap") {
-		g.SetLinuxResourcesMemorySwap(context.Uint64("linux-mem-swap"))
+		g.Config.Linux.Resources.Memory.Swap = generate.Uint64Ptr(context.Uint64("linux-mem-swap"))
 	}
 
 	if context.IsSet("linux-mem-kernel-limit") {
-		g.SetLinuxResourcesMemoryKernel(context.Uint64("linux-mem-kernel-limit"))
+		g.Config.Linux.Resources.Memory.Kernel = generate.Uint64Ptr(context.Uint64("linux-mem-kernel-limit"))
 	}
 
 	if context.IsSet("linux-mem-kernel-tcp") {
-		g.SetLinuxResourcesMemoryKernelTCP(context.Uint64("linux-mem-kernel-tcp"))
+		g.Config.Linux.Resources.Memory.KernelTCP = generate.Uint64Ptr(context.Uint64("linux-mem-kernel-tcp"))
 	}
 
 	if context.IsSet("linux-mem-swappiness") {
-		g.SetLinuxResourcesMemorySwappiness(context.Uint64("linux-mem-swappiness"))
+		g.Config.Linux.Resources.Memory.Swappiness = generate.Uint64Ptr(context.Uint64("linux-mem-swappiness"))
 	}
 
 	err := addSeccomp(context, g)
@@ -436,74 +423,72 @@ func setupLinuxNamespaces(context *cli.Context, g *generate.Generator, needsNewU
 	}
 }
 
-func parseIDMapping(idms string) (uint32, uint32, uint32, error) {
+func parseIDMapping(idms string) (mapping rspec.IDMapping, err error) {
 	idm := strings.Split(idms, ":")
 	if len(idm) != 3 {
-		return 0, 0, 0, fmt.Errorf("idmappings error: %s", idms)
+		return mapping, fmt.Errorf("idmappings error: %s", idms)
 	}
 
 	hid, err := strconv.Atoi(idm[0])
 	if err != nil {
-		return 0, 0, 0, err
+		return mapping, err
 	}
 
 	cid, err := strconv.Atoi(idm[1])
 	if err != nil {
-		return 0, 0, 0, err
+		return mapping, err
 	}
 
 	size, err := strconv.Atoi(idm[2])
 	if err != nil {
-		return 0, 0, 0, err
+		return mapping, err
 	}
 
-	return uint32(hid), uint32(cid), uint32(size), nil
+	mapping.HostID = uint32(hid)
+	mapping.ContainerID = uint32(cid)
+	mapping.Size = uint32(size)
+	return mapping, nil
 }
 
-func parseHook(s string) (string, []string) {
+func parseHook(s string) (hook rspec.Hook) {
 	parts := strings.Split(s, ":")
-	args := []string{}
-	path := parts[0]
-	if len(parts) > 1 {
-		args = parts[1:]
-	}
-	return path, args
+	hook.Path = parts[0]
+	hook.Args = parts[1:]
+	return hook
 }
 
-func parseTmpfsMount(s string) (string, []string, error) {
-	var dest string
-	var options []string
-	var err error
-
+func parseTmpfsMount(s string) (mnt rspec.Mount, err error) {
 	parts := strings.Split(s, ":")
 	if len(parts) == 2 {
-		dest = parts[0]
-		options = strings.Split(parts[1], ",")
+		mnt.Destination = parts[0]
+		mnt.Options = strings.Split(parts[1], ",")
 	} else if len(parts) == 1 {
-		dest = parts[0]
-		options = []string{"rw", "noexec", "nosuid", "nodev", "size=65536k"}
+		mnt.Destination = parts[0]
+		mnt.Options = []string{"rw", "noexec", "nosuid", "nodev", "size=65536k"}
 	} else {
-		err = fmt.Errorf("invalid value for --tmpfs")
+		return mnt, fmt.Errorf("invalid value for --tmpfs")
 	}
-
-	return dest, options, err
+	mnt.Type = "tmpfs"
+	mnt.Source = "tmpfs"
+	return mnt, err
 }
 
-func parseBindMount(s string) (string, string, string, error) {
-	var source, dest string
-	options := "ro"
-
+func parseBindMount(s string) (mnt rspec.Mount, err error) {
 	bparts := strings.SplitN(s, ":", 3)
 	switch len(bparts) {
 	case 2:
-		source, dest = bparts[0], bparts[1]
+		mnt.Source = bparts[0]
+		mnt.Destination = bparts[1]
+		mnt.Options = []string{"ro"}
 	case 3:
-		source, dest, options = bparts[0], bparts[1], bparts[2]
+		mnt.Source = bparts[0]
+		mnt.Destination = bparts[1]
+		mnt.Options = strings.Split(bparts[2], ",")
 	default:
-		return source, dest, options, fmt.Errorf("--bind should have format src:dest:[options]")
+		return mnt, fmt.Errorf("--bind should have format src:dest:[options]")
 	}
 
-	return source, dest, options, nil
+	return mnt, nil
 }
 
 func addSeccomp(context *cli.Context, g *generate.Generator) error {
