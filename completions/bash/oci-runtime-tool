@@ -303,6 +303,9 @@ _oci-runtime-tool_generate() {
 	      --readonly-paths
 	      --rootfs-path
 	      --rootfs-propagation
+	      --rlimits-add
+	      --rlimits-remove
+	      --rlimits-remove-all
 	      --seccomp-allow
 	      --seccomp-arch
 	      --seccomp-default
