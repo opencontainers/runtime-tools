@@ -23,6 +23,11 @@ install: man
 	install -d -m 755 $(PREFIX)/share/bash-completion/completions
 	install -m 644 completions/bash/oci-runtime-tool $(PREFIX)/share/bash-completion/completions
 
+uninstall:
+	rm -f $(BINDIR)/oci-runtime-tool
+	rm -f $(PREFIX)/share/man/man1/oci-runtime-tool*.1
+	rm -f $(PREFIX)/share/bash-completion/completions/oci-runtime-tool
+
 clean:
 	rm -f oci-runtime-tool runtimetest *.1
 	rm -f $(RUNTIME_TOOLS_LINK)
