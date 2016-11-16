@@ -215,7 +215,9 @@ read the configuration from `config.json`.
   This option can be specified multiple times.
 
 **--rootfs-path**=ROOTFSPATH
-  Path to the root filesystem
+  Path to the rootfs, which can be an absolute path or relative to bundle path.
+  e.g the absolute path of rootfs is /to/bundle/rootfs, bundle path is /to/bundle,
+  then the value set as ROOTFSPATH should be `/to/bundle/rootfs` or `rootfs`.
 
 **--rootfs-propagation**=PROPOGATIONMODE
   Mount propagation for root filesystem.
