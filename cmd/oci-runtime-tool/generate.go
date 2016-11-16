@@ -42,6 +42,8 @@ var generateFlags = []cli.Flag{
 	cli.Uint64Flag{Name: "linux-mem-swap", Usage: "total memory limit (memory + swap) (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-swappiness", Usage: "how aggressive the kernel will swap memory pages (Range from 0 to 100)"},
 	cli.StringFlag{Name: "linux-mems", Usage: "list of memory nodes in the cpuset (default is to use any available memory node)"},
+	cli.IntFlag{Name: "linux-network-classid", Usage: "specifies class identifier tagged by container's network packets"},
+	cli.StringSliceFlag{Name: "linux-network-priorities", Usage: "specifies priorities of network traffic"},
 	cli.Int64Flag{Name: "linux-pids-limit", Usage: "maximum number of PIDs"},
 	cli.Uint64Flag{Name: "linux-realtime-period", Usage: "CPU period to be used for realtime scheduling (in usecs)"},
 	cli.Uint64Flag{Name: "linux-realtime-runtime", Usage: "the time realtime scheduling may use (in usecs)"},
@@ -424,6 +426,25 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetLinuxResourcesMemorySwappiness(context.Uint64("linux-mem-swappiness"))
 	}
 
+	if context.IsSet("linux-network-classid") {
+		g.SetLinuxResourcesNetworkClassID(uint32(context.Int("linux-network-classid")))
+	}
+
+	if context.IsSet("linux-network-priorities") {
+		priorities := context.StringSlice("linux-network-priorities")
+		for _, p := range priorities {
+			name, priority, err := parseNetworkPriority(p)
+			if err != nil {
+				return err
+			}
+			if priority == -1 {
+				g.DropLinuxResourcesNetworkPriorities(name)
+			} else {
+				g.AddLinuxResourcesNetworkPriorities(name, uint32(priority))
+			}
+		}
+	}
+
 	err := addSeccomp(context, g)
 	return err
 }
@@ -474,6 +495,21 @@ func parseHook(s string) (string, []string) {
 		args = parts[1:]
 	}
 	return path, args
+}
+
+func parseNetworkPriority(np string) (string, int32, error) {
+	var err error
+
+	parts := strings.Split(np, ":")
+	if len(parts) != 2 {
+		return "", 0, fmt.Errorf("invalid value %v for --linux-network-priorities", np)
+	}
+	priority, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return "", 0, err
+	}
+
+	return parts[0], int32(priority), nil
 }
 
 func parseTmpfsMount(s string) (string, []string, error) {
