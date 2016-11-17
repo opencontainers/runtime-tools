@@ -1,4 +1,4 @@
-PREFIX ?= $(DESTDIR)/usr
+
 BINDIR ?= $(DESTDIR)/usr/bin
 
 BUILDTAGS=
@@ -42,7 +42,7 @@ localvalidation:
 
 .PHONY: test .gofmt .govet .golint
 
-test: .gofmt .govet .golint
+test: .gofmt .govet .golint .gotest
 
 .gofmt:
 	OUT=$$(go fmt ./...); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
@@ -53,3 +53,6 @@ test: .gofmt .govet .golint
 .golint:
 	golint -set_exit_status ./...
 
+UTDIRS = ./validate/...
+.gotest:
+	go test $(UTDIRS)
