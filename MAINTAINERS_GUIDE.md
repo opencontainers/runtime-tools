@@ -50,7 +50,7 @@ All decisions affecting this project, big and small, follow the same 3 steps:
 
 * Step 2: Discuss the pull request. Anyone can do this.
 
-* Step 3: Accept (`LGTM`) or refuse a pull request. The relevant maintainers do 
+* Step 3: Accept (`LGTM`) or refuse a pull request. The relevant maintainers do
 this (see below "Who decides what?")
 
 ### I'm a maintainer, should I make pull requests too?
@@ -62,27 +62,29 @@ made through a pull request.
 
 All decisions are pull requests, and the relevant maintainers make
 decisions by accepting or refusing the pull request. Review and acceptance
-by anyone is denoted by adding a comment in the pull request: `LGTM`. 
+by anyone is denoted by adding a comment in the pull request: `LGTM`.
 However, only currently listed `MAINTAINERS` are counted towards the required
-two LGTMs.
+two LGTMs. In addition, if a maintainer has created a pull request, they cannot
+count toward the two LGTM rule (to ensure equal amounts of review for every pull
+request, no matter who wrote it).
 
 Overall the maintainer system works because of mutual respect across the
 maintainers of the project.  The maintainers trust one another to make decisions
-in the best interests of the project.  Sometimes maintainers can disagree and 
+in the best interests of the project.  Sometimes maintainers can disagree and
 this is part of a healthy project to represent the point of views of various people.
-In the case where maintainers cannot find agreement on a specific change the 
-role of a Chief Maintainer comes into play.  
+In the case where maintainers cannot find agreement on a specific change the
+role of a Chief Maintainer comes into play.
 
-The Chief Maintainer for the project is responsible for overall architecture 
-of the project to maintain conceptual integrity.  Large decisions and 
-architecture changes should be reviewed by the chief maintainer.  
-The current chief maintainer for the project is the first person listed 
-in the MAINTAINERS file.  
+The Chief Maintainer for the project is responsible for overall architecture
+of the project to maintain conceptual integrity.  Large decisions and
+architecture changes should be reviewed by the chief maintainer.
+The current chief maintainer for the project is the first person listed
+in the MAINTAINERS file.
 
 Even though the maintainer system is built on trust, if there is a conflict
-with the chief maintainer on a decision, their decision can be challenged 
-and brought to the technical oversight board if two-thirds of the 
-maintainers vote for an appeal. It is expected that this would be a 
+with the chief maintainer on a decision, their decision can be challenged
+and brought to the technical oversight board if two-thirds of the
+maintainers vote for an appeal. It is expected that this would be a
 very exceptional event.
 
 
@@ -90,15 +92,15 @@ very exceptional event.
 
 The best maintainers have a vested interest in the project.  Maintainers
 are first and foremost contributors that have shown they are committed to
-the long term success of the project.  Contributors wanting to become 
-maintainers are expected to be deeply involved in contributing code, 
+the long term success of the project.  Contributors wanting to become
+maintainers are expected to be deeply involved in contributing code,
 pull request review, and triage of issues in the project for more than two months.
 
-Just contributing does not make you a maintainer, it is about building trust 
+Just contributing does not make you a maintainer, it is about building trust
 with the current maintainers of the project and being a person that they can
 depend on and trust to make decisions in the best interest of the project.  The
 final vote to add a new maintainer should be approved by over 66% of the current
-maintainers with the chief maintainer having veto power.  In case of a veto, 
+maintainers with the chief maintainer having veto power.  In case of a veto,
 conflict resolution rules expressed above apply.  The voting period is
 five business days on the Pull Request to add the new maintainer.
 
@@ -116,6 +118,3 @@ a vote by 66% of the current maintainers with the chief maintainer having veto p
 The voting period is ten business days.  Issues related to a maintainer's performance should
 be discussed with them among the other maintainers so that they are not surprised by
 a pull request removing them.
-
-
-
