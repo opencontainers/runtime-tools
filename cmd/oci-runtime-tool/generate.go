@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
@@ -25,6 +29,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "cwd", Value: "/", Usage: "current working directory for the process"},
 	cli.BoolFlag{Name: "disable-oom-kill", Usage: "disable OOM Killer"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
+	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
 	cli.IntFlag{Name: "gid", Usage: "gid for the process"},
 	cli.StringSliceFlag{Name: "gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "groups", Usage: "supplementary groups for the process"},
@@ -193,8 +198,12 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetProcessArgs(context.StringSlice("args"))
 	}
 
-	if context.IsSet("env") {
-		envs := context.StringSlice("env")
+	{
+		envs, err := readKVStrings(context.StringSlice("env-file"), context.StringSlice("env"))
+		if err != nil {
+			return err
+		}
+
 		for _, env := range envs {
 			g.AddProcessEnv(env)
 		}
@@ -663,4 +672,95 @@ func seccompSet(context *cli.Context, seccompFlag string, g *generate.Generator)
 		}
 	}
 	return nil
+}
+
+// readKVStrings reads a file of line terminated key=value pairs, and overrides any keys
+// present in the file with additional pairs specified in the override parameter
+//
+// This function is copied from github.com/docker/docker/runconfig/opts/parse.go
+func readKVStrings(files []string, override []string) ([]string, error) {
+	envVariables := []string{}
+	for _, ef := range files {
+		parsedVars, err := parseEnvFile(ef)
+		if err != nil {
+			return nil, err
+		}
+		envVariables = append(envVariables, parsedVars...)
+	}
+	// parse the '-e' and '--env' after, to allow override
+	envVariables = append(envVariables, override...)
+
+	return envVariables, nil
+}
+
+// parseEnvFile reads a file with environment variables enumerated by lines
+//
+// ``Environment variable names used by the utilities in the Shell and
+// Utilities volume of IEEE Std 1003.1-2001 consist solely of uppercase
+// letters, digits, and the '_' (underscore) from the characters defined in
+// Portable Character Set and do not begin with a digit. *But*, other
+// characters may be permitted by an implementation; applications shall
+// tolerate the presence of such names.''
+// -- http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html
+//
+// As of #16585, it's up to application inside docker to validate or not
+// environment variables, that's why we just strip leading whitespace and
+// nothing more.
+//
+// This function is copied from github.com/docker/docker/runconfig/opts/envfile.go
+func parseEnvFile(filename string) ([]string, error) {
+	fh, err := os.Open(filename)
+	if err != nil {
+		return []string{}, err
+	}
+	defer fh.Close()
+
+	lines := []string{}
+	scanner := bufio.NewScanner(fh)
+	currentLine := 0
+	utf8bom := []byte{0xEF, 0xBB, 0xBF}
+	for scanner.Scan() {
+		scannedBytes := scanner.Bytes()
+		if !utf8.Valid(scannedBytes) {
+			return []string{}, fmt.Errorf("env file %s contains invalid utf8 bytes at line %d: %v", filename, currentLine+1, scannedBytes)
+		}
+		// We trim UTF8 BOM
+		if currentLine == 0 {
+			scannedBytes = bytes.TrimPrefix(scannedBytes, utf8bom)
+		}
+		// trim the line from all leading whitespace first
+		line := strings.TrimLeftFunc(string(scannedBytes), unicode.IsSpace)
+		currentLine++
+		// line is not empty, and not starting with '#'
+		if len(line) > 0 && !strings.HasPrefix(line, "#") {
+			data := strings.SplitN(line, "=", 2)
+
+			// trim the front of a variable, but nothing else
+			variable := strings.TrimLeft(data[0], whiteSpaces)
+			if strings.ContainsAny(variable, whiteSpaces) {
+				return []string{}, ErrBadEnvVariable{fmt.Sprintf("variable '%s' has white spaces", variable)}
+			}
+
+			if len(data) > 1 {
+
+				// pass the value through, no trimming
+				lines = append(lines, fmt.Sprintf("%s=%s", variable, data[1]))
+			} else {
+				// if only a pass-through variable is given, clean it up.
+				lines = append(lines, fmt.Sprintf("%s=%s", strings.TrimSpace(line), os.Getenv(line)))
+			}
+		}
+	}
+	return lines, scanner.Err()
+}
+
+var whiteSpaces = " \t"
+
+// ErrBadEnvVariable typed error for bad environment variable
+type ErrBadEnvVariable struct {
+	msg string
+}
+
+func (e ErrBadEnvVariable) Error() string {
+	return fmt.Sprintf("poorly formatted environment: %s", e.msg)
 }
