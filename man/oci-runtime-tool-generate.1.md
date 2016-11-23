@@ -237,6 +237,17 @@ read the configuration from `config.json`.
 
   By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--rootfs-readonly` flag the container will have its root filesystem mounted as read only prohibiting any writes.
 
+**--rlimits-add**=[]
+  Specifies resource limits, format is RLIMIT:HARD:SOFT. e.g. --rlimits-add=RLIMIT_NOFILE:1024:1024
+  This option can be specified multiple times. When same RLIMIT specified over once, the last one make sense.
+
+**--rlimits-remove**=[]
+  Remove the specified resource limits for process inside the container.
+  This option can be specified multiple times.
+
+**--rlimits-remove-all**=true|false
+  Remove all resource limits for process inside the container. The default is *false*.
+
 **--seccomp-allow**=SYSCALL
   Specifies syscalls to be added to the ALLOW list.
   See --seccomp-syscalls for setting limits on arguments.

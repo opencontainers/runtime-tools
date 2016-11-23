@@ -65,6 +65,9 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
 	cli.StringFlag{Name: "rootfs-propagation", Usage: "mount propagation for rootfs"},
 	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
+	cli.StringSliceFlag{Name: "rlimits-add", Usage: "specifies resource limits for processes inside the container. "},
+	cli.StringSliceFlag{Name: "rlimits-remove", Usage: "remove specified resource limits for processes inside the container. "},
+	cli.BoolFlag{Name: "rlimits-remove-all", Usage: "remove all resource limits for processes inside the container. "},
 	cli.StringFlag{Name: "seccomp-allow", Usage: "specifies syscalls to respond with allow"},
 	cli.StringFlag{Name: "seccomp-arch", Usage: "specifies additional architectures permitted to be used for system calls"},
 	cli.StringFlag{Name: "seccomp-default", Usage: "specifies default action to be used for system calls and removes existing rules with specified action"},
@@ -445,6 +448,31 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
+	if context.IsSet("rlimits-add") {
+		rlimits := context.StringSlice("rlimits-add")
+		for _, rlimit := range rlimits {
+			rType, rHard, rSoft, err := parseRlimit(rlimit)
+			if err != nil {
+				return err
+			}
+			g.AddProcessRlimits(rType, rHard, rSoft)
+		}
+	}
+
+	if context.IsSet("rlimits-remove") {
+		rlimits := context.StringSlice("rlimits-remove")
+		for _, rlimit := range rlimits {
+			err := g.RemoveProcessRlimits(rlimit)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("rlimits-remove-all") {
+		g.ClearProcessRlimits()
+	}
+
 	err := addSeccomp(context, g)
 	return err
 }
@@ -546,6 +574,25 @@ func parseBindMount(s string) (string, string, []string, error) {
 	}
 
 	return source, dest, options, nil
+}
+
+func parseRlimit(rlimit string) (string, uint64, uint64, error) {
+	parts := strings.Split(rlimit, ":")
+	if len(parts) != 3 {
+		return "", 0, 0, fmt.Errorf("invalid rlimits value: %s", rlimit)
+	}
+
+	hard, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return "", 0, 0, err
+	}
+
+	soft, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return "", 0, 0, err
+	}
+
+	return parts[0], uint64(hard), uint64(soft), nil
 }
 
 func addSeccomp(context *cli.Context, g *generate.Generator) error {
