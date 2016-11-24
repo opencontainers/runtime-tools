@@ -357,6 +357,12 @@ _oci-runtime-tool_generate() {
 		--mount-bind
 		--mount-cgroups
 		--output
+		--poststart
+		--poststart-timeout
+		--poststop
+		--poststop-timeout
+		--prestart
+		--prestart-timeout
 		--process-cap-add
 		--process-cap-drop
 		--process-consolesize
