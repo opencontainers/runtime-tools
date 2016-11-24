@@ -82,6 +82,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "linux-uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "mount-bind", Usage: "bind mount directories src:dest[:options...]"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
+	cli.StringSliceFlag{Name: "mounts-add", Usage: "configures additional mounts inside container"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
 	cli.StringSliceFlag{Name: "process-cap-add-ambient", Usage: "add Linux ambient capabilities"},
@@ -439,6 +440,17 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 				return err
 			}
 			g.AddBindMount(source, dest, options)
+		}
+	}
+
+	if context.IsSet("mounts-add") {
+		mounts := context.StringSlice("mounts-add")
+		for _, mount := range mounts {
+			source, dest, mType, options, err := parseMount(mount)
+			if err != nil {
+				return err
+			}
+			g.AddMounts(source, dest, mType, options)
 		}
 	}
 
@@ -894,6 +906,23 @@ func parseBindMount(s string) (string, string, []string, error) {
 		return source, dest, options, fmt.Errorf("--mount-bind should have format src:dest[:options...]")
 	}
 	return source, dest, options, nil
+}
+
+func parseMount(s string) (string, string, string, []string, error) {
+	var source, dest, mType string
+	options := []string{}
+
+	mparts := strings.SplitN(s, ":", 4)
+	switch len(mparts) {
+	case 3:
+		source, dest, mType = mparts[0], mparts[1], mparts[2]
+	case 4:
+		source, dest, mType, options = mparts[0], mparts[1], mparts[2], strings.Split(mparts[3], ":")
+	default:
+		return source, dest, mType, options, fmt.Errorf("--mounts-add should have format src:dest:type:[:options...]")
+	}
+
+	return source, dest, mType, options, nil
 }
 
 func parseRlimit(rlimit string) (string, uint64, uint64, error) {

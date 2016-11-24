@@ -887,6 +887,19 @@ func (g *Generator) AddTmpfsMount(dest string, options []string) {
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
 }
 
+// AddMounts adds a mount into g.spec.Mounts.
+func (g *Generator) AddMounts(source, dest, mType string, options []string) {
+	mnt := rspec.Mount{
+		Destination: dest,
+		Type:        mType,
+		Source:      source,
+		Options:     options,
+	}
+
+	g.initSpec()
+	g.spec.Mounts = append(g.spec.Mounts, mnt)
+}
+
 // AddCgroupsMount adds a cgroup mount into g.spec.Mounts.
 func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
 	switch mountCgroupOption {
