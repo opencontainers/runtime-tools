@@ -747,6 +747,17 @@ func (g *Generator) AddPreStartHook(path string, args []string) {
 	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, hook)
 }
 
+// AddPreStartHookTimeout adds timeout of a prestart hook into g.spec.Hooks.Prestart.
+func (g *Generator) AddPreStartHookTimeout(path string, timeout int) {
+	g.initSpec()
+	for i, hook := range g.spec.Hooks.Prestart {
+		if hook.Path == path {
+			g.spec.Hooks.Prestart[i].Timeout = &timeout
+			return
+		}
+	}
+}
+
 // ClearPostStopHooks clear g.spec.Hooks.Poststop.
 func (g *Generator) ClearPostStopHooks() {
 	if g.spec == nil {
@@ -765,6 +776,17 @@ func (g *Generator) AddPostStopHook(path string, args []string) {
 	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, hook)
 }
 
+// AddPostStopHookTimeout adds timeout of a poststop hook into g.spec.Hooks.Postsop.
+func (g *Generator) AddPostStopHookTimeout(path string, timeout int) {
+	g.initSpec()
+	for i, hook := range g.spec.Hooks.Poststop {
+		if hook.Path == path {
+			g.spec.Hooks.Poststop[i].Timeout = &timeout
+			return
+		}
+	}
+}
+
 // ClearPostStartHooks clear g.spec.Hooks.Poststart.
 func (g *Generator) ClearPostStartHooks() {
 	if g.spec == nil {
@@ -781,6 +803,17 @@ func (g *Generator) AddPostStartHook(path string, args []string) {
 	g.initSpecHooks()
 	hook := rspec.Hook{Path: path, Args: args}
 	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, hook)
+}
+
+// AddPostStartHookTimeout adds timeout of a poststart hook into g.spec.Hooks.Poststart.
+func (g *Generator) AddPostStartHookTimeout(path string, timeout int) {
+	g.initSpec()
+	for i, hook := range g.spec.Hooks.Poststart {
+		if hook.Path == path {
+			g.spec.Hooks.Poststart[i].Timeout = &timeout
+			return
+		}
+	}
 }
 
 // AddTmpfsMount adds a tmpfs mount into g.spec.Mounts.

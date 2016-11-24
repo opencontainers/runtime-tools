@@ -75,6 +75,12 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "mount-bind", Usage: "bind mount directories src:dest[:options...]"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
+	cli.StringSliceFlag{Name: "poststart", Usage: "set command to run in poststart hooks"},
+	cli.StringSliceFlag{Name: "poststart-timeout", Usage: "set timeout for commands to run in poststart hooks"},
+	cli.StringSliceFlag{Name: "poststop", Usage: "set command to run in poststop hooks"},
+	cli.StringSliceFlag{Name: "poststop-timeout", Usage: "set timeout for commands to run in poststop hooks"},
+	cli.StringSliceFlag{Name: "prestart", Usage: "set command to run in prestart hooks"},
+	cli.StringSliceFlag{Name: "prestart-timeout", Usage: "set timeout for commands to run in prestart hooks"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
 	cli.StringSliceFlag{Name: "process-cap-add", Usage: "add Linux capabilities"},
 	cli.StringSliceFlag{Name: "process-cap-drop", Usage: "drop Linux capabilities"},
@@ -332,14 +338,29 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
+<<<<<<< HEAD
 	if context.IsSet("hooks-prestart") {
 		preStartHooks := context.StringSlice("hooks-prestart")
 		for _, hook := range preStartHooks {
 			path, args, err := parseHook(hook)
+=======
+	if context.IsSet("poststart") {
+		postStartHooks := context.StringSlice("poststart")
+		for _, hook := range postStartHooks {
+			path, args := parseHook(hook)
+			g.AddPostStartHook(path, args)
+		}
+	}
+
+	if context.IsSet("poststart-timeout") {
+		postStartTimeouts := context.StringSlice("poststart-timeout")
+		for _, postStartTimeout := range postStartTimeouts {
+			path, timeout, err := parseHookTimeout(postStartTimeout)
+>>>>>>> generate: add timeout options for hooks
 			if err != nil {
-				return err
+				return nil
 			}
-			g.AddPreStartHook(path, args)
+			g.AddPostStartHookTimeout(path, timeout)
 		}
 	}
 
@@ -354,14 +375,40 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
+<<<<<<< HEAD
 	if context.IsSet("hooks-poststart") {
 		postStartHooks := context.StringSlice("hooks-poststart")
 		for _, hook := range postStartHooks {
 			path, args, err := parseHook(hook)
+=======
+	if context.IsSet("poststop-timeout") {
+		postStopTimeouts := context.StringSlice("poststop-timeout")
+		for _, postStopTimeout := range postStopTimeouts {
+			path, timeout, err := parseHookTimeout(postStopTimeout)
+>>>>>>> generate: add timeout options for hooks
 			if err != nil {
-				return err
+				return nil
 			}
-			g.AddPostStartHook(path, args)
+			g.AddPostStopHookTimeout(path, timeout)
+		}
+	}
+
+	if context.IsSet("prestart") {
+		preStartHooks := context.StringSlice("prestart")
+		for _, hook := range preStartHooks {
+			path, args := parseHook(hook)
+			g.AddPreStartHook(path, args)
+		}
+	}
+
+	if context.IsSet("prestart-timeout") {
+		preStartTimeouts := context.StringSlice("prestart-timeout")
+		for _, preStartTimeout := range preStartTimeouts {
+			path, timeout, err := parseHookTimeout(preStartTimeout)
+			if err != nil {
+				return nil
+			}
+			g.AddPreStartHookTimeout(path, timeout)
 		}
 	}
 
@@ -639,6 +686,20 @@ func parseHook(s string) (string, []string, error) {
 		args = parts[1:]
 	}
 	return path, args, nil
+}
+
+func parseHookTimeout(s string) (string, int, error) {
+	parts := strings.Split(s, ":")
+	if len(parts) != 2 {
+		return "", 0, fmt.Errorf("invalid format: %s", s)
+	}
+
+	timeout, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return "", 0, err
+	}
+
+	return parts[0], timeout, nil
 }
 
 func parseNetworkPriority(np string) (string, int32, error) {
