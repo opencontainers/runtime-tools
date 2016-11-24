@@ -80,9 +80,9 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "linux-selinux-label", Usage: "process selinux label"},
 	cli.StringSliceFlag{Name: "linux-sysctl", Usage: "add sysctl settings e.g net.ipv4.forward=1"},
 	cli.StringSliceFlag{Name: "linux-uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
-	cli.StringSliceFlag{Name: "mount-bind", Usage: "bind mount directories src:dest[:options...]"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringSliceFlag{Name: "mounts-add", Usage: "configures additional mounts inside container"},
+	cli.BoolFlag{Name: "mounts-remove-all", Usage: "remove all mounts inside container"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
 	cli.StringSliceFlag{Name: "process-cap-add-ambient", Usage: "add Linux ambient capabilities"},
@@ -109,7 +109,6 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
 	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
-	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs e.g. ContainerDIR[:OPTIONS...]"},
 }
 
 var generateCommand = cli.Command{
@@ -416,41 +415,22 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.AddOrReplaceLinuxNamespace("user", "")
 	}
 
-	if context.IsSet("tmpfs") {
-		tmpfsSlice := context.StringSlice("tmpfs")
-		for _, s := range tmpfsSlice {
-			dest, options, err := parseTmpfsMount(s)
-			if err != nil {
-				return err
-			}
-			g.AddTmpfsMount(dest, options)
-		}
-	}
-
 	mountCgroupOption := context.String("mount-cgroups")
 	if err := g.AddCgroupsMount(mountCgroupOption); err != nil {
 		return err
 	}
 
-	if context.IsSet("mount-bind") {
-		binds := context.StringSlice("mount-bind")
-		for _, bind := range binds {
-			source, dest, options, err := parseBindMount(bind)
-			if err != nil {
-				return err
-			}
-			g.AddBindMount(source, dest, options)
-		}
+	if context.IsSet("mounts-remove-all") {
+		g.ClearMounts()
 	}
 
 	if context.IsSet("mounts-add") {
 		mounts := context.StringSlice("mounts-add")
 		for _, mount := range mounts {
-			source, dest, mType, options, err := parseMount(mount)
+			err := g.AddMounts(mount)
 			if err != nil {
 				return err
 			}
-			g.AddMounts(source, dest, mType, options)
 		}
 	}
 
@@ -867,62 +847,6 @@ func parseNetworkPriority(np string) (string, int32, error) {
 	}
 
 	return parts[0], int32(priority), nil
-}
-
-func parseTmpfsMount(s string) (string, []string, error) {
-	var dest string
-	var options []string
-	var err error
-
-	parts := strings.Split(s, ":")
-	if len(parts) == 2 && parts[0] != "" {
-		dest = parts[0]
-		options = strings.Split(parts[1], ",")
-	} else if len(parts) == 1 {
-		dest = parts[0]
-		options = []string{"rw", "noexec", "nosuid", "nodev", "size=65536k"}
-	} else {
-		err = fmt.Errorf("invalid -- tmpfs value: %s", s)
-	}
-
-	return dest, options, err
-}
-
-func parseBindMount(s string) (string, string, []string, error) {
-	var source, dest string
-	options := []string{}
-
-	bparts := strings.SplitN(s, ":", 3)
-	switch len(bparts) {
-	case 2:
-		source, dest = bparts[0], bparts[1]
-	case 3:
-		source, dest, options = bparts[0], bparts[1], strings.Split(bparts[2], ":")
-	default:
-		return source, dest, options, fmt.Errorf("--mount-bind should have format src:dest[:options...]")
-	}
-
-	if source == "" || dest == "" {
-		return source, dest, options, fmt.Errorf("--mount-bind should have format src:dest[:options...]")
-	}
-	return source, dest, options, nil
-}
-
-func parseMount(s string) (string, string, string, []string, error) {
-	var source, dest, mType string
-	options := []string{}
-
-	mparts := strings.SplitN(s, ":", 4)
-	switch len(mparts) {
-	case 3:
-		source, dest, mType = mparts[0], mparts[1], mparts[2]
-	case 4:
-		source, dest, mType, options = mparts[0], mparts[1], mparts[2], strings.Split(mparts[3], ":")
-	default:
-		return source, dest, mType, options, fmt.Errorf("--mounts-add should have format src:dest:type:[:options...]")
-	}
-
-	return source, dest, mType, options, nil
 }
 
 func parseRlimit(rlimit string) (string, uint64, uint64, error) {

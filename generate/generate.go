@@ -874,30 +874,26 @@ func (g *Generator) AddPostStartHookTimeout(path string, timeout int) {
 	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, hook)
 }
 
-// AddTmpfsMount adds a tmpfs mount into g.spec.Mounts.
-func (g *Generator) AddTmpfsMount(dest string, options []string) {
-	mnt := rspec.Mount{
-		Destination: dest,
-		Type:        "tmpfs",
-		Source:      "tmpfs",
-		Options:     options,
-	}
-
+// AddMounts adds a mount into g.spec.Mounts.
+func (g *Generator) AddMounts(mountObject string) error {
 	g.initSpec()
+
+	mnt := rspec.Mount{}
+	err := json.Unmarshal([]byte(mountObject), &mnt)
+	if err != nil {
+		return err
+	}
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
+
+	return nil
 }
 
-// AddMounts adds a mount into g.spec.Mounts.
-func (g *Generator) AddMounts(source, dest, mType string, options []string) {
-	mnt := rspec.Mount{
-		Destination: dest,
-		Type:        mType,
-		Source:      source,
-		Options:     options,
+// ClearMounts clear g.spec.Mounts
+func (g *Generator) ClearMounts() {
+	if g.spec == nil {
+		return
 	}
-
-	g.initSpec()
-	g.spec.Mounts = append(g.spec.Mounts, mnt)
+	g.spec.Mounts = []rspec.Mount{}
 }
 
 // AddCgroupsMount adds a cgroup mount into g.spec.Mounts.
@@ -921,35 +917,6 @@ func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
 
 	return nil
-}
-
-// AddBindMount adds a bind mount into g.spec.Mounts.
-func (g *Generator) AddBindMount(source, dest string, options []string) {
-	if len(options) == 0 {
-		options = []string{"rw"}
-	}
-
-	// We have to make sure that there is a bind option set, otherwise it won't
-	// be an actual bindmount.
-	foundBindOption := false
-	for _, opt := range options {
-		if opt == "bind" || opt == "rbind" {
-			foundBindOption = true
-			break
-		}
-	}
-	if !foundBindOption {
-		options = append(options, "bind")
-	}
-
-	mnt := rspec.Mount{
-		Destination: dest,
-		Type:        "bind",
-		Source:      source,
-		Options:     options,
-	}
-	g.initSpec()
-	g.spec.Mounts = append(g.spec.Mounts, mnt)
 }
 
 // SetupPrivileged sets up the privilege-related fields inside g.spec.

@@ -360,8 +360,8 @@ _oci-runtime-tool_generate() {
 		--linux-selinux-label
 		--linux-sysctl
 		--linux-uidmappings
-		--mount-bind
 		--mount-cgroups
+		--mounts-add
 		--output
 		--process-cap-add-ambient
 		--process-cap-add-bounding
@@ -382,7 +382,6 @@ _oci-runtime-tool_generate() {
 		--process-uid
 		--rootfs-path
 		--template
-		--tmpfs
 	"
 
 	local boolean_options="
@@ -392,6 +391,7 @@ _oci-runtime-tool_generate() {
 		--linux-namespace-remove-all
 		--linux-seccomp-only
 		--linux-seccomp-remove-all
+		--mounts-remove-all
 		--privileged
 		--process-cap-drop-all
 		--process-no-new-privileges
@@ -462,7 +462,7 @@ _oci-runtime-tool_generate() {
 			return
 			;;
 
-		--rootfs-path|--tmpfs|--mount-bind|--process-cwd)
+		--rootfs-path|--process-cwd)
 			case "$cur" in
 				*:*)
 					# TODO somehow do _filedir for stuff inside the image, if it's already specified (which is also somewhat difficult to determine)
