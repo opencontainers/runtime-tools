@@ -358,10 +358,13 @@ _oci-runtime-tool_generate() {
 		--mount-cgroups
 		--output
 		--poststart
+		--poststart-env
 		--poststart-timeout
 		--poststop
+		--poststop-env
 		--poststop-timeout
 		--prestart
+		--prestart-env
 		--prestart-timeout
 		--process-cap-add
 		--process-cap-drop

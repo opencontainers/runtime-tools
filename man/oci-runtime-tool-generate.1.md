@@ -272,6 +272,10 @@ read the configuration from `config.json`.
   gets launched but after the container environment and main process has been
   created.
 
+**--poststart-env**=[]
+  Set environment variables for commands in poststart hooks, format is CMD:ENV. e.g. --poststart-env=/bin/test:key=value
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+
 **--poststart-timeout**=[]
   Set timeout for commands in poststart hooks, format is CMD:TIMEOUT. e.g. --poststart-timeout=/bin/test:5
   This option can be specified multiple times. When same CMD specified over once, the last one make sense.
@@ -281,6 +285,10 @@ read the configuration from `config.json`.
   The multiple commands will be run in order after the container process
   is stopped.
 
+**--poststop-env**=[]
+  Set environment variables for commands in poststop hooks, format is CMD:ENV. e.g. --poststop-env=/bin/test:key=value
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+
 **--poststop-timeout**=[]
   Set timeout for commands in poststop hooks, format is CMD:TIMEOUT. e.g. --poststop-timeout=/bin/test:5
   This option can be specified multiple times. When same CMD specified over once, the last one make sense.
@@ -289,6 +297,10 @@ read the configuration from `config.json`.
   Set command to run in prestart hooks. Can be specified multiple times.
   The multiple commands will be run in order after the container process
   has been created but before it executes the user-configured code.
+
+**--prestart-env**=[]
+  Set environment variables for commands in poststop hooks, format is CMD:ENV. e.g. --prestart-env=/bin/test:key=value
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
 
 **--prestart-timeout**=[]
   Set timeout for commands in prestart hooks, format is CMD:TIMEOUT. e.g. --prestart-timeout=/bin/test:5
