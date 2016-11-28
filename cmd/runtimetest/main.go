@@ -492,7 +492,7 @@ func validateGIDMappings(spec *rspec.Spec) error {
 }
 
 func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
-	if specMount.Destination != sysMount.Destination {
+	if filepath.Clean(specMount.Destination) != sysMount.Destination {
 		return fmt.Errorf("mount destination expected: %v, actual: %v", specMount.Destination, sysMount.Destination)
 	}
 
@@ -500,7 +500,7 @@ func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
 		return fmt.Errorf("mount %v type expected: %v, actual: %v", specMount.Destination, specMount.Type, sysMount.Type)
 	}
 
-	if specMount.Source != sysMount.Source {
+	if filepath.Clean(specMount.Source) != sysMount.Source {
 		return fmt.Errorf("mount %v source expected: %v, actual: %v", specMount.Destination, specMount.Source, sysMount.Source)
 	}
 
@@ -527,7 +527,7 @@ func validateMountsExist(spec *rspec.Spec) error {
 
 	for _, specMount := range spec.Mounts {
 		found := false
-		for _, sysMount := range mountsMap[specMount.Destination] {
+		for _, sysMount := range mountsMap[filepath.Clean(specMount.Destination)] {
 			if err := mountMatch(specMount, sysMount); err == nil {
 				found = true
 				break
