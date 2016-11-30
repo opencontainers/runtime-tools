@@ -144,7 +144,7 @@ func validateLinuxProcess(spec *rspec.Spec) error {
 		return fmt.Errorf("NoNewPrivileges expected: false, actual: true")
 	}
 
-	return nil
+	return validateSucceed("container process validation passed.")
 }
 
 func validateCapabilities(spec *rspec.Spec) error {
@@ -182,7 +182,7 @@ func validateCapabilities(spec *rspec.Spec) error {
 		}
 	}
 
-	return nil
+	return validateSucceed("capabilities validation passed.")
 }
 
 func validateHostname(spec *rspec.Spec) error {
@@ -194,7 +194,7 @@ func validateHostname(spec *rspec.Spec) error {
 	if spec.Hostname != "" && hostname != spec.Hostname {
 		return fmt.Errorf("Hostname expected: %v, actual: %v", spec.Hostname, hostname)
 	}
-	return nil
+	return validateSucceed("hostname validation passed.")
 }
 
 func validateRlimits(spec *rspec.Spec) error {
@@ -217,7 +217,7 @@ func validateRlimits(spec *rspec.Spec) error {
 			return fmt.Errorf("%v rlimit hard expected: %v, actual: %v", r.Type, r.Hard, rlimit.Max)
 		}
 	}
-	return nil
+	return validateSucceed("rlimits validation passed.")
 }
 
 func validateSysctls(spec *rspec.Spec) error {
@@ -233,7 +233,7 @@ func validateSysctls(spec *rspec.Spec) error {
 			return fmt.Errorf("Sysctl %v value expected: %v, actual: %v", k, v, value)
 		}
 	}
-	return nil
+	return validateSucceed("sysctls validation passed.")
 }
 
 func testWriteAccess(path string) error {
@@ -257,7 +257,7 @@ func validateRootFS(spec *rspec.Spec) error {
 		}
 	}
 
-	return nil
+	return validateSucceed("root filesystem validation passed.")
 }
 
 func validateDefaultFS(spec *rspec.Spec) error {
@@ -279,7 +279,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 		}
 	}
 
-	return nil
+	return validateSucceed("linkx default filesystem validation passed.")
 }
 
 func validateLinuxDevices(spec *rspec.Spec) error {
@@ -338,7 +338,7 @@ func validateLinuxDevices(spec *rspec.Spec) error {
 		}
 	}
 
-	return nil
+	return validateSucceed("linux devices validation passed.")
 }
 
 func validateDefaultDevices(spec *rspec.Spec) error {
@@ -357,7 +357,7 @@ func validateDefaultDevices(spec *rspec.Spec) error {
 		}
 	}
 
-	return nil
+	return validateSucceed("linux default devices validation passed.")
 }
 
 func validateMaskedPaths(spec *rspec.Spec) error {
@@ -374,7 +374,7 @@ func validateMaskedPaths(spec *rspec.Spec) error {
 			return fmt.Errorf("%v should not be readable", maskedPath)
 		}
 	}
-	return nil
+	return validateSucceed("maskedPaths validation passed.")
 }
 
 func validateROPaths(spec *rspec.Spec) error {
@@ -386,7 +386,7 @@ func validateROPaths(spec *rspec.Spec) error {
 		}
 	}
 
-	return nil
+	return validateSucceed("readonlyPaths validation passed.")
 }
 
 func validateOOMScoreAdj(spec *rspec.Spec) error {
@@ -415,7 +415,7 @@ func validateOOMScoreAdj(spec *rspec.Spec) error {
 		}
 	}
 
-	return nil
+	return validateSucceed("oomScoreAdj validation passed.")
 }
 
 func getIDMappings(path string) ([]rspec.IDMapping, error) {
@@ -482,13 +482,21 @@ func validateIDMappings(mappings []rspec.IDMapping, path string, property string
 func validateUIDMappings(spec *rspec.Spec) error {
 	logrus.Debugf("validating uidMappings")
 
-	return validateIDMappings(spec.Linux.UIDMappings, "/proc/self/uid_map", "linux.uidMappings")
+	err := validateIDMappings(spec.Linux.UIDMappings, "/proc/self/uid_map", "linux.uidMappings")
+	if err != nil {
+		return err
+	}
+	return validateSucceed("uidMappings validation passed.")
 }
 
 func validateGIDMappings(spec *rspec.Spec) error {
 	logrus.Debugf("validating gidMappings")
 
-	return validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
+	err := validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
+	if err != nil {
+		return err
+	}
+	return validateSucceed("gidMappings validation passed.")
 }
 
 func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
@@ -538,20 +546,22 @@ func validateMountsExist(spec *rspec.Spec) error {
 		}
 	}
 
+	return validateSucceed("mounts exist validation passed.")
+}
+
+func validateFailed(err error) error {
+	return fmt.Errorf("-----------------------------------------------------------------------------------\nRuntime validation failed:\nError: %s", err.Error())
+}
+
+func validateSucceed(msg string) error {
+	fmt.Println(msg)
 	return nil
 }
 
 func validate(context *cli.Context) error {
-	logLevelString := context.String("log-level")
-	logLevel, err := logrus.ParseLevel(logLevelString)
-	if err != nil {
-		return err
-	}
-	logrus.SetLevel(logLevel)
-
 	spec, err := loadSpecConfig()
 	if err != nil {
-		return err
+		return validateFailed(err)
 	}
 
 	defaultValidations := []validation{
@@ -577,19 +587,19 @@ func validate(context *cli.Context) error {
 
 	for _, v := range defaultValidations {
 		if err := v(spec); err != nil {
-			return err
+			return validateFailed(err)
 		}
 	}
 
 	if spec.Platform.OS == "linux" {
 		for _, v := range linuxValidations {
 			if err := v(spec); err != nil {
-				return err
+				return validateFailed(err)
 			}
 		}
 	}
 
-	return nil
+	return validateSucceed("Runtime validation succeeded.")
 }
 
 func main() {
@@ -599,6 +609,7 @@ func main() {
 	app.Usage = "Compare the environment with an OCI configuration"
 	app.Description = "runtimetest compares its current environment with an OCI runtime configuration read from config.json in its current working directory.  The tests are fairly generic and cover most configurations used by the runtime validation suite, but there are corner cases where a container launched by a valid runtime would not satisfy runtimetest."
 	app.UsageText = "runtimetest [options]"
+	app.Before = before
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "log-level",
@@ -611,4 +622,15 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		logrus.Fatal(err)
 	}
+}
+
+func before(context *cli.Context) error {
+	logLevelString := context.GlobalString("log-level")
+	logLevel, err := logrus.ParseLevel(logLevelString)
+	if err != nil {
+		logrus.Fatalf(err.Error())
+	}
+	logrus.SetLevel(logLevel)
+
+	return nil
 }
