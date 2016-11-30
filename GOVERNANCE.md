@@ -31,13 +31,6 @@ A quorum is established when at least two-thirds of maintainers have voted.
 
 For projects that are not specifications, a [motion to release](#release-approval) MAY be adopted if the tally is at least three LGTMs and no REJECTs, even if three votes does not meet the usual two-thirds quorum.
 
-## Security issues
-
-Motions with sensitive security implications MUST be proposed on the security@opencontainers.org mailing list instead of dev@opencontainers.org, but should otherwise follow the standard [proposal](#proposing-a-motion) process.
-The security@opencontainers.org mailing list includes all members of the TOB.
-The TOB will contact the project maintainers and provide a channel for discussing and voting on the motion, but voting will otherwise follow the standard [voting](#voting) and [quorum](#quorum) rules.
-The TOB and project maintainers will work together to notify affected parties before making an adopted motion public.
-
 ## Amendments
 
 The [project governance](#project-governance) rules and procedures MAY be amended or replaced using the procedures themselves.
