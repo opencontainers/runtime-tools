@@ -22,6 +22,7 @@ package tap // import "github.com/mndrix/tap-go"
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
 import "testing/quick"
@@ -30,6 +31,9 @@ import "testing/quick"
 // output.
 type T struct {
 	nextTestNumber int
+
+	// Writer indicates where TAP output should be sent.  The default is os.Stdout.
+	Writer io.Writer
 }
 
 // New creates a new Tap value
@@ -39,8 +43,15 @@ func New() *T {
 	}
 }
 
+func (t *T) w() io.Writer {
+	if t.Writer == nil {
+		return os.Stdout
+	}
+	return t.Writer
+}
+
 func (t *T) printf(format string, a ...interface{}) {
-	fmt.Printf(format, a...)
+	fmt.Fprintf(t.w(), format, a...)
 }
 
 // Header displays a TAP header including version number and expected
