@@ -3,7 +3,7 @@ GOPATH = $(CURDIR)/gopath
 
 .PHONY: $(TESTS)
 
-all: test/*/test
+all: $(foreach t,$(TESTS),test/$(t)/test)
 	prove -v -e '' test/*/test
 
 clean:
