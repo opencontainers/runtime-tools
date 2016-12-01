@@ -1,4 +1,4 @@
-TESTS = auto check known writer
+TESTS = auto check known failing writer
 GOPATH = $(CURDIR)/gopath
 
 .PHONY: $(TESTS)
