@@ -1,4 +1,5 @@
 TESTS = auto check known
+GOPATH = $(CURDIR)/gopath
 
 .PHONY: $(TESTS)
 
