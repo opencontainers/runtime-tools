@@ -57,5 +57,5 @@ func (t *T) Count() int {
 
 // AutoPlan generates a test plan based on the number of tests that were run.
 func (t *T) AutoPlan() {
-	fmt.Printf("1..%d\n", t.nextTestNumber-1)
+	fmt.Printf("1..%d\n", t.Count())
 }
