@@ -20,7 +20,10 @@
 // 		ok 2 - second test
 package tap // import "github.com/mndrix/tap-go"
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 import "testing/quick"
 
 // T is a type to encapsulate test state.  Methods on this type generate TAP
@@ -36,14 +39,18 @@ func New() *T {
 	}
 }
 
+func (t *T) printf(format string, a ...interface{}) {
+	fmt.Printf(format, a...)
+}
+
 // Header displays a TAP header including version number and expected
 // number of tests to run.  For an unknown number of tests, set
 // testCount to zero (in which case the plan is not written); this is
 // useful with AutoPlan.
 func (t *T) Header(testCount int) {
-	fmt.Printf("TAP version 13\n")
+	t.printf("TAP version 13\n")
 	if testCount > 0 {
-		fmt.Printf("1..%d\n", testCount)
+		t.printf("1..%d\n", testCount)
 	}
 }
 
@@ -55,7 +62,7 @@ func (t *T) Ok(test bool, description string) {
 		ok = "not ok"
 	}
 
-	fmt.Printf("%s %d - %s\n", ok, t.nextTestNumber, description)
+	t.printf("%s %d - %s\n", ok, t.nextTestNumber, description)
 	t.nextTestNumber++
 }
 
@@ -68,7 +75,7 @@ func (t *T) Check(function interface{}, description string) {
 		return
 	}
 
-	fmt.Printf("# %s\n", err)
+	t.printf("# %s\n", err)
 	t.Ok(false, description)
 }
 
@@ -79,5 +86,5 @@ func (t *T) Count() int {
 
 // AutoPlan generates a test plan based on the number of tests that were run.
 func (t *T) AutoPlan() {
-	fmt.Printf("1..%d\n", t.Count())
+	t.printf("1..%d\n", t.Count())
 }
