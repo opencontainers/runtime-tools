@@ -77,6 +77,18 @@ func (t *T) Ok(test bool, description string) {
 	t.nextTestNumber++
 }
 
+// Fail indicates that a test has failed.  This is typically only used when the
+// logic is too complex to fit naturally into an Ok() call.
+func (t *T) Fail(description string) {
+	t.Ok(false, description)
+}
+
+// Pass indicates that a test has passed.  This is typically only used when the
+// logic is too complex to fit naturally into an Ok() call.
+func (t *T) Pass(description string) {
+	t.Ok(true, description)
+}
+
 // Check runs randomized tests against a function just as "testing/quick.Check"
 // does.  Success or failure generate appropriate TAP output.
 func (t *T) Check(function interface{}, description string) {

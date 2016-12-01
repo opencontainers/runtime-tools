@@ -6,5 +6,5 @@ func main() {
 	t := tap.New()
 	t.Header(2)
 	t.Ok(true, "first test")
-	t.Ok(true, "second test")
+	t.Pass("second test")
 }
