@@ -82,7 +82,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "selinux-label", Usage: "process selinux label"},
 	cli.StringSliceFlag{Name: "sysctl", Usage: "add sysctl settings e.g net.ipv4.forward=1"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
-	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs"},
+	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs e.g. ContainerDIR[:OPTIONS...]"},
 	cli.BoolFlag{Name: "tty", Usage: "allocate a new tty for the container process"},
 	cli.IntFlag{Name: "uid", Usage: "uid for the process"},
 	cli.StringSliceFlag{Name: "uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
