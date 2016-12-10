@@ -65,6 +65,13 @@ read the configuration from `config.json`.
   This option allows you to specify arbitrary environment variables
   that are available for the process that will be launched inside of
   the container.
+  
+**--env-file**=[]
+  Set environment variables from a file.
+  This option sets environment variables in the container from the
+  contents of a file formatted with key=value pairs, one per line.
+  When specified multiple times, files are loaded in order with duplicate
+  keys overwriting previous ones.
 
 **--gid**=GID
   Gid for the process inside of container

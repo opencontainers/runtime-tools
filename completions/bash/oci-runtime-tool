@@ -279,6 +279,7 @@ _oci-runtime-tool_generate() {
 	      --cwd
 	      --disable-oom-kill
 	      --env
+	      --env-file
 	      --gid
 	      --gidmappings
 	      --groups
@@ -406,6 +407,11 @@ _oci-runtime-tool_generate() {
 			__oci-runtime-tool_nospace
 			return
 			;;
+		--env-file)
+		    _filedir
+			__oci-runtime-tool_nospace
+		    return
+		    ;;
 		$(__oci-runtime-tool_to_extglob "$options_with_args") )
 			return
 			;;
