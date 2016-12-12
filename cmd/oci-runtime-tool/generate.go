@@ -47,6 +47,9 @@ var generateFlags = []cli.Flag{
 	cli.Uint64Flag{Name: "linux-mem-swap", Usage: "total memory limit (memory + swap) (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-swappiness", Usage: "how aggressive the kernel will swap memory pages (Range from 0 to 100)"},
 	cli.StringFlag{Name: "linux-mems", Usage: "list of memory nodes in the cpuset (default is to use any available memory node)"},
+	cli.StringSliceFlag{Name: "linux-namespace-add", Usage: "adds a namespace to the set of namespaces to create or join of the form 'ns[:path]'"},
+	cli.StringSliceFlag{Name: "linux-namespace-remove", Usage: "removes a namespace from the set of namespaces to create or join of the form 'ns'"},
+	cli.BoolFlag{Name: "linux-namespace-remove-all", Usage: "removes all namespaces from the set of namespaces created or joined"},
 	cli.IntFlag{Name: "linux-network-classid", Usage: "specifies class identifier tagged by container's network packets"},
 	cli.StringSliceFlag{Name: "linux-network-priorities", Usage: "specifies priorities of network traffic"},
 	cli.Int64Flag{Name: "linux-pids-limit", Usage: "maximum number of PIDs"},
@@ -461,6 +464,32 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
+	if context.IsSet("linux-namespace-add") {
+		namespaces := context.StringSlice("linux-namespace-add")
+		for _, ns := range namespaces {
+			name, path, err := parseNamespace(ns)
+			if err != nil {
+				return err
+			}
+			if err := g.AddOrReplaceLinuxNamespace(name, path); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("linux-namespace-remove") {
+		namespaces := context.StringSlice("linux-namespace-remove")
+		for _, name := range namespaces {
+			if err := g.RemoveLinuxNamespace(name); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.Bool("linux-namespace-remove-all") {
+		g.ClearLinuxNamespaces()
+	}
+
 	if context.IsSet("rlimits-add") {
 		rlimits := context.StringSlice("rlimits-add")
 		for _, rlimit := range rlimits {
@@ -606,6 +635,22 @@ func parseRlimit(rlimit string) (string, uint64, uint64, error) {
 	}
 
 	return parts[0], uint64(hard), uint64(soft), nil
+}
+
+func parseNamespace(ns string) (string, string, error) {
+	parts := strings.SplitN(ns, ":", 2)
+	if len(parts) == 0 || parts[0] == "" {
+		return "", "", fmt.Errorf("invalid namespace value: %s", ns)
+	}
+
+	nsType := parts[0]
+	nsPath := ""
+
+	if len(parts) == 2 {
+		nsPath = parts[1]
+	}
+
+	return nsType, nsPath, nil
 }
 
 func addSeccomp(context *cli.Context, g *generate.Generator) error {
