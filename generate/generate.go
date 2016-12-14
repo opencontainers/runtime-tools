@@ -331,9 +331,18 @@ func (g *Generator) ClearProcessEnv() {
 	g.spec.Process.Env = []string{}
 }
 
-// AddProcessEnv adds env into g.spec.Process.Env.
-func (g *Generator) AddProcessEnv(env string) {
+// AddProcessEnv adds name=value into g.spec.Process.Env, or replaces an
+// existing entry with the given name.
+func (g *Generator) AddProcessEnv(name, value string) {
 	g.initSpec()
+
+	env := fmt.Sprintf("%s=%s", name, value)
+	for idx := range g.spec.Process.Env {
+		if strings.HasPrefix(g.spec.Process.Env[idx], name+"=") {
+			g.spec.Process.Env[idx] = env
+			return
+		}
+	}
 	g.spec.Process.Env = append(g.spec.Process.Env, env)
 }
 
