@@ -41,7 +41,6 @@ var (
 		"/dev/random",
 		"/dev/urandom",
 		"/dev/tty",
-		"/dev/console",
 		"/dev/ptmx",
 	}
 )
@@ -344,6 +343,9 @@ func validateLinuxDevices(spec *rspec.Spec) error {
 func validateDefaultDevices(spec *rspec.Spec) error {
 	logrus.Debugf("validating linux default devices")
 
+	if spec.Process.Terminal {
+		defaultDevices = append(defaultDevices, "/dev/console")
+	}
 	for _, device := range defaultDevices {
 		fi, err := os.Stat(device)
 		if err != nil {
