@@ -208,7 +208,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 
 		for _, env := range envs {
-			g.AddProcessEnv(env)
+			name, value, err := parseEnv(env)
+			if err != nil {
+				return err
+			}
+			g.AddProcessEnv(name, value)
 		}
 	}
 
@@ -738,6 +742,22 @@ func readKVStrings(files []string, override []string) ([]string, error) {
 	envVariables = append(envVariables, override...)
 
 	return envVariables, nil
+}
+
+// parseEnv splits a given environment variable (of the form name=value) into
+// (name, value). An error is returned if there is no "=" in the line or if the
+// name is empty.
+func parseEnv(env string) (string, string, error) {
+	parts := strings.SplitN(env, "=", 2)
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("environment variable must contain '=': %s", env)
+	}
+
+	name, value := parts[0], parts[1]
+	if name == "" {
+		return "", "", fmt.Errorf("environment variable must have non-empty name: %s", env)
+	}
+	return name, value, nil
 }
 
 // parseEnvFile reads a file with environment variables enumerated by lines
