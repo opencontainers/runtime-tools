@@ -108,6 +108,17 @@ __oci-runtime-tool_nospace() {
 	type compopt &>/dev/null && compopt -o nospace
 }
 
+__oci-runtime-tool_complete_log_level() {
+	COMPREPLY=( $( compgen -W "
+		debug
+		error
+		fatal
+		info
+		panic
+		warn
+	" -- "$cur" ) )
+}
+
 __oci-runtime-tool_complete_propagations() {
 	COMPREPLY=( $( compgen -W "
 		private
@@ -206,21 +217,34 @@ __oci-runtime-tool_complete_capabilities() {
 
 # global options that may appear after the oci-runtime-tool command
 _oci-runtime-tool_oci-runtime-tool() {
+	local options_with_args="
+		--log-level
+	"
+
 	local boolean_options="
 		$global_boolean_options
 		--help
+		--host-specific
 		--version -v
 	"
+
+	local all_options="$options_with_args $boolean_options"
 
 	case "$prev" in
 		$(__oci-runtime-tool_to_extglob "$global_options_with_args") )
 			return
 			;;
+
+		--log-level)
+			__oci-runtime-tool_complete_log_level
+			return
+			;;
+
 	esac
 
 	case "$cur" in
 		-*)
-			COMPREPLY=( $( compgen -W "$boolean_options $global_options_with_args" -- "$cur" ) )
+			COMPREPLY=( $( compgen -W "$all_options $global_options_with_args" -- "$cur" ) )
 			;;
 		*)
 			local counter=$( __oci-runtime-tool_pos_first_nonflag $(__oci-runtime-tool_to_extglob "$global_options_with_args") )
@@ -253,7 +277,7 @@ _oci-runtime-tool_validate() {
 
 	case "$cur" in
 		-*)
-			COMPREPLY=( $( compgen -W "--host-specific --path --help" -- "$cur" ) )
+			COMPREPLY=( $( compgen -W "--path --help" -- "$cur" ) )
 			;;
 	esac
 
