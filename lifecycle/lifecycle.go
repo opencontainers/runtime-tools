@@ -1,7 +1,6 @@
 package lifecycle
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os/exec"
