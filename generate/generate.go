@@ -906,12 +906,18 @@ func (g *Generator) RemoveLinuxNamespace(ns string) error {
 	if g.spec == nil || g.spec.Linux == nil {
 		return nil
 	}
+	index := 0
+	endIndex := len(g.spec.Linux.Namespaces) - 1
+	var result = make([]rspec.Namespace, 0)
 	for i, ns := range g.spec.Linux.Namespaces {
 		if ns.Type == namespace.Type {
-			g.spec.Linux.Namespaces = append(g.spec.Linux.Namespaces[:i], g.spec.Linux.Namespaces[i+1:]...)
-			return nil
+			result = append(result, g.spec.Linux.Namespaces[index:i]...)
+			index = i + 1
+		} else if i == endIndex {
+			result = append(result, g.spec.Linux.Namespaces[index:endIndex+1]...)
 		}
 	}
+	g.spec.Linux.Namespaces = result
 	return nil
 }
 
