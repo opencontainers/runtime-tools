@@ -157,8 +157,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("label") {
 		annotations := context.StringSlice("label")
 		for _, s := range annotations {
-			pair := strings.Split(s, "=")
-			if len(pair) != 2 {
+			pair := strings.SplitN(s, "=", 2)
+			if len(pair) != 2 || pair[0] == "" {
 				return fmt.Errorf("incorrectly specified annotation: %s", s)
 			}
 			g.AddAnnotation(pair[0], pair[1])
