@@ -260,11 +260,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	privileged := false
-	if context.IsSet("privileged") {
-		privileged = context.Bool("privileged")
-	}
-	g.SetupPrivileged(privileged)
+	g.SetupPrivileged(context.Bool("privileged"))
 
 	if context.IsSet("cap-add") {
 		addCaps := context.StringSlice("cap-add")
@@ -482,7 +478,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("rlimits-remove-all") {
+	if context.Bool("rlimits-remove-all") {
 		g.ClearProcessRlimits()
 	}
 
@@ -680,7 +676,7 @@ func addSeccomp(context *cli.Context, g *generate.Generator) error {
 		}
 	}
 
-	if context.IsSet("seccomp-remove-all") {
+	if context.Bool("seccomp-remove-all") {
 		err := g.RemoveAllSeccompRules()
 		if err != nil {
 			return err
