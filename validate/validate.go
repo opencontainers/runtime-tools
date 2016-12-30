@@ -386,9 +386,47 @@ func (v *Validator) CheckLinux() (msgs []string) {
 		msgs = append(msgs, fmt.Sprintf("On Linux, hostname requires a new UTS namespace to be specified as well"))
 	}
 
+	// Linux devices validation
+	devList := make(map[string]bool)
+	typeList := make(map[string]bool)
 	for index := 0; index < len(v.spec.Linux.Devices); index++ {
-		if !deviceValid(v.spec.Linux.Devices[index]) {
-			msgs = append(msgs, fmt.Sprintf("device %v is invalid.", v.spec.Linux.Devices[index]))
+		device := v.spec.Linux.Devices[index]
+		if !deviceValid(device) {
+			msgs = append(msgs, fmt.Sprintf("device %v is invalid.", device))
+		}
+
+		if _, exists := devList[device.Path]; exists {
+			msgs = append(msgs, fmt.Sprintf("device %s is duplicated", device.Path))
+		} else {
+			var rootfsPath string
+			if filepath.IsAbs(v.spec.Root.Path) {
+				rootfsPath = v.spec.Root.Path
+			} else {
+				rootfsPath = filepath.Join(v.bundlePath, v.spec.Root.Path)
+			}
+			absPath := filepath.Join(rootfsPath, device.Path)
+			_, err := os.Stat(absPath)
+			if os.IsNotExist(err) {
+				devList[device.Path] = true
+			} else if err != nil {
+				msgs = append(msgs, err.Error())
+			} else {
+				msgs = append(msgs, fmt.Sprintf("%s already exists in filesystem", device.Path))
+			}
+		}
+
+		// unify u->c when comparing, they are synonyms
+		var devID string
+		if device.Type == "u" {
+			devID = fmt.Sprintf("%s:%d:%d", "c", device.Major, device.Minor)
+		} else {
+			devID = fmt.Sprintf("%s:%d:%d", device.Type, device.Major, device.Minor)
+		}
+
+		if _, exists := typeList[devID]; exists {
+			logrus.Warnf("type:%s, major:%d and minor:%d for linux devices is duplicated", device.Type, device.Major, device.Minor)
+		} else {
+			typeList[devID] = true
 		}
 	}
 
