@@ -111,3 +111,13 @@ func (t *T) Count() int {
 func (t *T) AutoPlan() {
 	t.printf("1..%d\n", t.Count())
 }
+
+// Diagnostic generates a diagnostic from the message.
+func (t *T) Diagnostic(message string) {
+	t.printf("# %s\n", message)
+}
+
+// Diagnosticf generates a diagnostic from the format string and arguments.
+func (t *T) Diagnosticf(format string, a ...interface{}) {
+	t.printf("# "+format+"\n", a...)
+}
