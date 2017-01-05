@@ -99,7 +99,7 @@ func (t *T) Check(function interface{}, description string) {
 		return
 	}
 
-	t.printf("# %s\n", err)
+	t.Diagnostic(err.Error())
 	t.Ok(false, description)
 }
 
