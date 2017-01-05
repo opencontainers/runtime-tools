@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 import "testing/quick"
 
@@ -112,12 +113,18 @@ func (t *T) AutoPlan() {
 	t.printf("1..%d\n", t.Count())
 }
 
-// Diagnostic generates a diagnostic from the message.
-func (t *T) Diagnostic(message string) {
-	t.printf("# %s\n", message)
+func escapeNewlines(s string) string {
+	return strings.Replace(strings.TrimRight(s, "\n"), "\n", "\n# ", -1)
 }
 
-// Diagnosticf generates a diagnostic from the format string and arguments.
+// Diagnostic generates a diagnostic from the message,
+// which may span multiple lines.
+func (t *T) Diagnostic(message string) {
+	t.printf("# %s\n", escapeNewlines(message))
+}
+
+// Diagnosticf generates a diagnostic from the format string and arguments,
+// which may span multiple lines.
 func (t *T) Diagnosticf(format string, a ...interface{}) {
-	t.printf("# "+format+"\n", a...)
+	t.printf("# "+escapeNewlines(format)+"\n", a...)
 }
