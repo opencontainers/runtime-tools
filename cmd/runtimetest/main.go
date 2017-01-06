@@ -34,6 +34,13 @@ var (
 		"/dev/shm": "tmpfs",
 	}
 
+	defaultSymlinks = map[string]string{
+		"/dev/fd":     "/proc/self/fd",
+		"/dev/stdin":  "/proc/self/fd/0",
+		"/dev/stdout": "/proc/self/fd/1",
+		"/dev/stderr": "/proc/self/fd/2",
+	}
+
 	defaultDevices = []string{
 		"/dev/null",
 		"/dev/zero",
@@ -340,6 +347,29 @@ func validateLinuxDevices(spec *rspec.Spec) error {
 	return nil
 }
 
+func validateDefaultSymlinks(spec *rspec.Spec) error {
+	logrus.Debugf("validating linux default symbolic links")
+
+	for symlink, dest := range defaultSymlinks {
+		fi, err := os.Lstat(symlink)
+		if err != nil {
+			return err
+		}
+		if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+			return fmt.Errorf("%v is not a symbolic link as expected", symlink)
+		}
+		realDest, err := os.Readlink(symlink)
+		if err != nil {
+			return err
+		}
+		if realDest != dest {
+			return fmt.Errorf("link destation of %v expected is %v, actual is %v", symlink, dest, realDest)
+		}
+	}
+
+	return nil
+}
+
 func validateDefaultDevices(spec *rspec.Spec) error {
 	logrus.Debugf("validating linux default devices")
 
@@ -564,6 +594,7 @@ func validate(context *cli.Context) error {
 
 	linuxValidations := []validation{
 		validateCapabilities,
+		validateDefaultSymlinks,
 		validateDefaultFS,
 		validateDefaultDevices,
 		validateLinuxDevices,
