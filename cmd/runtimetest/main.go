@@ -14,6 +14,7 @@ import (
 	"syscall"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/hashicorp/go-multierror"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	"github.com/syndtr/gocapability/capability"
@@ -608,21 +609,22 @@ func validate(context *cli.Context) error {
 		validateGIDMappings,
 	}
 
+	var validationErrors error
 	for _, v := range defaultValidations {
 		if err := v(spec); err != nil {
-			return err
+			validationErrors = multierror.Append(validationErrors, err)
 		}
 	}
 
 	if spec.Platform.OS == "linux" {
 		for _, v := range linuxValidations {
 			if err := v(spec); err != nil {
-				return err
+				validationErrors = multierror.Append(validationErrors, err)
 			}
 		}
 	}
 
-	return nil
+	return validationErrors
 }
 
 func main() {
