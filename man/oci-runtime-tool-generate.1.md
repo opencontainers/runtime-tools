@@ -189,7 +189,13 @@ read the configuration from `config.json`.
   Specifies oom_score_adj for the container.
 
 **--os**=OS
-  Operating system used within the container
+  Operating system used within the container.  When no template is
+  set, the default is to use the `GOOS` ocitools was built with and to
+  default other settings based on this setting.  For example, if
+  `GOOS` is `linux`, `ocitools generate` will generate a default Linux
+  config, `ocitools generate --os=windows` will generate a default
+  Windows config, and `ocitools --host-specific generate --os=windows`
+  will exit with an error.
 
 **--output**=PATH
   Instead of writing the configuration JSON to stdout, write it to a

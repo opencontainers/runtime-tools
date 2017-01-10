@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -164,6 +165,16 @@ func (v *Validator) CheckPlatform() (msgs []string) {
 		}
 	}
 	msgs = append(msgs, fmt.Sprintf("Operation system %q of the bundle is not supported yet.", platform.OS))
+
+	if hostCheck {
+		if platform.OS != runtime.GOOS {
+			msgs = append(msgs, fmt.Sprintf("platform.os is %s, not %s", platform.OS, runtime.GOOS))
+		}
+		if platform.Arch != runtime.GOARCH {
+			// warning, not an error, since kernels can support multiple architectures
+			msgs = append(msgs, fmt.Sprintf("platform.arch is %s, not %s", platform.Arch, runtime.GOARCH))
+		}
+	}
 
 	return
 }
