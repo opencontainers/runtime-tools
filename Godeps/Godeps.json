@@ -2,6 +2,9 @@
 	"ImportPath": "github.com/opencontainers/runtime-tools",
 	"GoVersion": "go1.4",
 	"GodepVersion": "v75",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -12,6 +15,14 @@
 			"ImportPath": "github.com/blang/semver",
 			"Comment": "v3.1.0",
 			"Rev": "aea32c919a18e5ef4537bbd283ff29594b1b0165"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/errwrap",
+			"Rev": "7554cd9344cec97297fa6649b055a8c98c2a1e55"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-multierror",
+			"Rev": "ed905158d87462226a13fe39ddf685ea65f1c11f"
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
