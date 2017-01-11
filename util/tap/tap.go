@@ -31,7 +31,10 @@ import "testing/quick"
 // T is a type to encapsulate test state.  Methods on this type generate TAP
 // output.
 type T struct {
-	nextTestNumber int
+	nextTestNumber *int
+
+	// TODO toggles the TODO directive for Ok, Fail, Pass, and similar.
+	TODO bool
 
 	// Writer indicates where TAP output should be sent.  The default is os.Stdout.
 	Writer io.Writer
@@ -39,8 +42,9 @@ type T struct {
 
 // New creates a new Tap value
 func New() *T {
+	nextTestNumber := 1
 	return &T{
-		nextTestNumber: 1,
+		nextTestNumber: &nextTestNumber,
 	}
 }
 
@@ -74,8 +78,12 @@ func (t *T) Ok(test bool, description string) {
 		ok = "not ok"
 	}
 
-	t.printf("%s %d - %s\n", ok, t.nextTestNumber, description)
-	t.nextTestNumber++
+	if t.TODO {
+		t.printf("%s %d # TODO %s\n", ok, *t.nextTestNumber, description)
+	} else {
+		t.printf("%s %d - %s\n", ok, *t.nextTestNumber, description)
+	}
+	(*t.nextTestNumber)++
 }
 
 // Fail indicates that a test has failed.  This is typically only used when the
@@ -105,7 +113,7 @@ func (t *T) Check(function interface{}, description string) {
 
 // Count returns the number of tests completed so far.
 func (t *T) Count() int {
-	return t.nextTestNumber - 1
+	return *t.nextTestNumber - 1
 }
 
 // AutoPlan generates a test plan based on the number of tests that were run.
@@ -117,11 +125,18 @@ func escapeNewlines(s string) string {
 	return strings.Replace(strings.TrimRight(s, "\n"), "\n", "\n# ", -1)
 }
 
+// Todo returns copy of the test-state with TODO set.
+func (t *T) Todo() *T {
+	newT := *t
+	newT.TODO = true
+	return &newT
+}
+
 // Skip indicates that a test has been skipped.
 func (t *T) Skip(count int, description string) {
 	for i := 0; i < count; i++ {
-		t.printf("ok %d # SKIP %s\n", t.nextTestNumber, description)
-		t.nextTestNumber++
+		t.printf("ok %d # SKIP %s\n", *t.nextTestNumber, description)
+		(*t.nextTestNumber)++
 	}
 }
 

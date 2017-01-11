@@ -1,4 +1,4 @@
-TESTS = auto check diagnostic failing known skip writer
+TESTS = auto check diagnostic failing known skip todo writer
 GOPATH = $(CURDIR)/gopath
 
 .PHONY: $(TESTS)
