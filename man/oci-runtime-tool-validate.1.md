@@ -15,8 +15,8 @@ Validate an OCI bundle
 **--help**
   Print usage statement
 
-**--path=PATH
-  Path to bundle
+**--path**=PATH
+  Path to bundle. The default is current working directory.
 
 # SEE ALSO
 **oci-runtime-tool**(1)

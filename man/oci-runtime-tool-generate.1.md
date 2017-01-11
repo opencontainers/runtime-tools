@@ -55,7 +55,7 @@ read the configuration from `config.json`.
   Specifies the path to the cgroups relative to the cgroups mount point.
 
 **--cwd**=PATH
-  Current working directory for the process
+  Current working directory for the process. The deafult is */*.
 
 **--disable-oom-kill**=true|false
   Whether to disable OOM Killer for the container or not.
@@ -159,7 +159,7 @@ read the configuration from `config.json`.
   configuration.
 
 **--mount-cgroups**=[rw|ro|no]
-  Mount cgroups.  The default is `no`.
+  Mount cgroups. The default is *no*.
 
 **--mount-label**=MOUNTLABEL
   Mount Label
@@ -189,7 +189,7 @@ read the configuration from `config.json`.
   Specifies oom_score_adj for the container.
 
 **--os**=OS
-  Operating system used within the container
+  Operating system used within the container.
 
 **--output**=PATH
   Instead of writing the configuration JSON to stdout, write it to a
@@ -233,7 +233,7 @@ read the configuration from `config.json`.
 **--rootfs-path**=ROOTFSPATH
   Path to the rootfs, which can be an absolute path or relative to bundle path.
   e.g the absolute path of rootfs is /to/bundle/rootfs, bundle path is /to/bundle,
-  then the value set as ROOTFSPATH should be `/to/bundle/rootfs` or `rootfs`.
+  then the value set as ROOTFSPATH should be `/to/bundle/rootfs` or `rootfs`. The default is *rootfs*.
 
 **--rootfs-propagation**=PROPOGATIONMODE
   Mount propagation for root filesystem.
