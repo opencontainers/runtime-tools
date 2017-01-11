@@ -117,6 +117,14 @@ func escapeNewlines(s string) string {
 	return strings.Replace(strings.TrimRight(s, "\n"), "\n", "\n# ", -1)
 }
 
+// Skip indicates that a test has been skipped.
+func (t *T) Skip(count int, description string) {
+	for i := 0; i < count; i++ {
+		t.printf("ok %d # SKIP %s\n", t.nextTestNumber, description)
+		t.nextTestNumber++
+	}
+}
+
 // Diagnostic generates a diagnostic from the message,
 // which may span multiple lines.
 func (t *T) Diagnostic(message string) {
