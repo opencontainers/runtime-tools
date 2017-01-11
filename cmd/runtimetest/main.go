@@ -15,6 +15,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/hashicorp/go-multierror"
+	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	"github.com/syndtr/gocapability/capability"
@@ -53,7 +54,10 @@ var (
 	}
 )
 
-type validation func(*rspec.Spec) error
+type validation struct {
+	test        func(*rspec.Spec) error
+	description string
+}
 
 func loadSpecConfig() (spec *rspec.Spec, err error) {
 	cf, err := os.Open(specConfig)
@@ -588,41 +592,97 @@ func validate(context *cli.Context) error {
 	}
 
 	defaultValidations := []validation{
-		validateRootFS,
-		validateHostname,
-		validateMountsExist,
+		{
+			test:        validateRootFS,
+			description: "root filesystem",
+		},
+		{
+			test:        validateHostname,
+			description: "hostname",
+		},
+		{
+			test:        validateMountsExist,
+			description: "mounts",
+		},
 	}
 
 	linuxValidations := []validation{
-		validateCapabilities,
-		validateDefaultSymlinks,
-		validateDefaultFS,
-		validateDefaultDevices,
-		validateLinuxDevices,
-		validateLinuxProcess,
-		validateMaskedPaths,
-		validateOOMScoreAdj,
-		validateROPaths,
-		validateRlimits,
-		validateSysctls,
-		validateUIDMappings,
-		validateGIDMappings,
+		{
+			test:        validateCapabilities,
+			description: "capabilities",
+		},
+		{
+			test:        validateDefaultSymlinks,
+			description: "default symlinks",
+		},
+		{
+			test:        validateDefaultFS,
+			description: "default file system",
+		},
+		{
+			test:        validateDefaultDevices,
+			description: "default devices",
+		},
+		{
+			test:        validateLinuxDevices,
+			description: "linux devices",
+		},
+		{
+			test:        validateLinuxProcess,
+			description: "linux process",
+		},
+		{
+			test:        validateMaskedPaths,
+			description: "masked paths",
+		},
+		{
+			test:        validateOOMScoreAdj,
+			description: "oom score adj",
+		},
+		{
+			test:        validateROPaths,
+			description: "read only paths",
+		},
+		{
+			test:        validateRlimits,
+			description: "rlimits",
+		},
+		{
+			test:        validateSysctls,
+			description: "sysctls",
+		},
+		{
+			test:        validateUIDMappings,
+			description: "uid mappings",
+		},
+		{
+			test:        validateGIDMappings,
+			description: "gid mappings",
+		},
 	}
+
+	t := tap.New()
+	t.Header(0)
 
 	var validationErrors error
 	for _, v := range defaultValidations {
-		if err := v(spec); err != nil {
+		err := v.test(spec)
+		t.Ok(err == nil, v.description)
+		if err != nil {
 			validationErrors = multierror.Append(validationErrors, err)
 		}
 	}
 
 	if spec.Platform.OS == "linux" {
 		for _, v := range linuxValidations {
-			if err := v(spec); err != nil {
+			err := v.test(spec)
+			t.Ok(err == nil, v.description)
+			if err != nil {
 				validationErrors = multierror.Append(validationErrors, err)
 			}
 		}
 	}
+	t.AutoPlan()
 
 	return validationErrors
 }
