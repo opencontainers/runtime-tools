@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -574,6 +575,131 @@ func validateMountsExist(spec *rspec.Spec) error {
 	return nil
 }
 
+func isParent(parent, child string) bool {
+	if parent == child {
+		return false
+	}
+
+	parent = filepath.ToSlash(parent)
+	child = filepath.ToSlash(child)
+
+	cparts := strings.Split(child, "/")
+	for i, part := range strings.Split(parent, "/") {
+		if cparts[i] != part {
+			return false
+		}
+	}
+
+	return true
+}
+
+func isMountPoint(path string, mountinfos []*mount.Info) (bool, error) {
+	// Find the mountpoint for path.
+	var mounts []string
+	pathindex := -1
+	for idx, mi := range mountinfos {
+		if mi.Mountpoint == path {
+			pathindex = idx
+		}
+		mounts = append(mounts, mi.Mountpoint)
+	}
+
+	// It isn't in mountinfo.
+	if pathindex < 0 {
+		return false, nil
+	}
+
+	// Check that the mount isn't followed by a mount on a parent directory.
+	hasParent := false
+	for _, other := range mounts[pathindex+1:] {
+		// If we see our mountpoint again, we reset the assumption.
+		if other == path {
+			hasParent = false
+			continue
+		}
+
+		// If there's a case where something was mounted over then we
+		// invalidate the assumption.
+		if isParent(other, path) {
+			hasParent = true
+		}
+	}
+
+	return !hasParent, nil
+}
+
+// Finds and returns any two paths in the given slice where pathA is a parent of
+// pathB. Otherwise it returns "", "", false.
+func findNestedPaths(paths []string) (string, string, bool) {
+	for _, parent := range paths {
+		for _, child := range paths {
+			if isParent(parent, child) {
+				return parent, child, true
+			}
+		}
+	}
+
+	return "", "", false
+}
+
+func validateMountOrder(spec *rspec.Spec) error {
+	// Windows doesn't support the concept of nested mounts, so this test
+	// doesn't make any sense on that platform.
+	if runtime.GOOS == "windows" {
+		return nil
+	}
+
+	fmt.Println("validating mount order")
+
+	var mounts []string
+	for _, m := range spec.Mounts {
+		mounts = append(mounts, filepath.Clean(m.Destination))
+	}
+
+	// Get the mountinfo for us.
+	mountinfos, err := mount.GetMounts()
+	if err != nil {
+		return err
+	}
+
+	// If there are two mount options where A is a parent of B, then we can
+	// verify that the right order is maintained no matter which order they are
+	// in the mounts.
+	A, B, ok := findNestedPaths(mounts)
+	if !ok {
+		return nil
+	}
+
+	// Figure out the order of A and B.
+	var first string
+	for _, m := range mounts {
+		if A == m || B == m {
+			first = m
+			break
+		}
+	}
+
+	// A must *always* be a mountpoint.
+	if ok, err := isMountPoint(A, mountinfos); err != nil {
+		return fmt.Errorf("failed to get whether %q is a mountpoint: %q", A, err)
+	} else if !ok {
+		return fmt.Errorf("expected %q to be a mountpoint", A)
+	}
+
+	// B must be a mountpoint iff A was first.
+	if ok, err := isMountPoint(B, mountinfos); err != nil {
+		return fmt.Errorf("failed to get whether %q is a mountpoint: %q", A, err)
+	} else {
+		if first == A && !ok {
+			return fmt.Errorf("expected %q to be a mountpoint", B)
+		} else if first == B && ok {
+			return fmt.Errorf("expected %q to not be a mountpoint", B)
+		}
+	}
+
+	return nil
+}
+
 func validate(context *cli.Context) error {
 	logLevelString := context.String("log-level")
 	logLevel, err := logrus.ParseLevel(logLevelString)
@@ -591,6 +717,7 @@ func validate(context *cli.Context) error {
 		validateRootFS,
 		validateHostname,
 		validateMountsExist,
+		validateMountOrder,
 	}
 
 	linuxValidations := []validation{
