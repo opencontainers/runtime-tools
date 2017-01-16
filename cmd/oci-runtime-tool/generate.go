@@ -26,6 +26,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "cap-drop", Usage: "drop Linux capabilities"},
 	cli.StringFlag{Name: "cgroups-path", Usage: "specify the path to the cgroups"},
 	cli.StringFlag{Name: "cwd", Value: "/", Usage: "current working directory for the process"},
+	cli.StringSliceFlag{Name: "device", Usage: "specifies a device which must be made available in the container"},
 	cli.BoolFlag{Name: "disable-oom-kill", Usage: "disable OOM Killer"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
@@ -501,6 +502,15 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.ClearProcessRlimits()
 	}
 
+	if context.IsSet("device") {
+		devices := context.StringSlice("device")
+		for _, deviceArg := range devices {
+			err := addDevice(deviceArg, g)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	err := addSeccomp(context, g)
 	return err
 }
@@ -623,6 +633,87 @@ func parseNamespace(ns string) (string, string, error) {
 	}
 
 	return nsType, nsPath, nil
+}
+
+var deviceType = map[string]bool{
+	"b": true, // a block (buffered) special file
+	"c": true, // a character special file
+	"u": true, // a character (unbuffered) special file
+	"p": true, // a FIFO
+}
+
+// addDevice takes the raw string passed with the --device flag, parses it, and add it
+func addDevice(device string, g *generate.Generator) error {
+	dev := rspec.Device{}
+
+	// The required part and optional part are seperated by ":"
+	argsParts := strings.Split(device, ":")
+	if len(argsParts) < 4 {
+		return fmt.Errorf("Incomplete device arguments: %s", device)
+	}
+	requiredPart := argsParts[0:4]
+	optionalPart := argsParts[4:]
+
+	// The required part must contain type, major, minor, and path
+	dev.Type = requiredPart[0]
+	if !deviceType[dev.Type] {
+		return fmt.Errorf("Invalid device type: %s", dev.Type)
+	}
+
+	i, err := strconv.ParseInt(requiredPart[1], 10, 64)
+	if err != nil {
+		return err
+	}
+	dev.Major = i
+
+	i, err = strconv.ParseInt(requiredPart[2], 10, 64)
+	if err != nil {
+		return err
+	}
+	dev.Minor = i
+	dev.Path = requiredPart[3]
+
+	// The optional part include all optional property
+	for _, s := range optionalPart {
+		parts := strings.SplitN(s, "=", 2)
+
+		if len(parts) != 2 {
+			return fmt.Errorf("Incomplete device arguments: %s", s)
+		}
+
+		name, value := parts[0], parts[1]
+
+		switch name {
+		case "fileMode":
+			i, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return err
+			}
+			mode := os.FileMode(i)
+			dev.FileMode = &mode
+		case "uid":
+			i, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return err
+			}
+			uid := uint32(i)
+			dev.UID = &uid
+
+		case "gid":
+			i, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return err
+			}
+			gid := uint32(i)
+			dev.GID = &gid
+		default:
+			return fmt.Errorf("'%s' is not supported by device section", name)
+		}
+	}
+
+	g.AddDevice(dev.Path, dev.Type, dev.Major, dev.Minor, dev.FileMode, dev.UID, dev.GID)
+
+	return nil
 }
 
 func addSeccomp(context *cli.Context, g *generate.Generator) error {
