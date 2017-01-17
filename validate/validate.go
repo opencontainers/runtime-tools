@@ -300,6 +300,10 @@ func (v *Validator) CheckMounts() (msgs []string) {
 			if !supportedTypes[mount.Type] {
 				msgs = append(msgs, fmt.Sprintf("Unsupported mount type %q", mount.Type))
 			}
+
+			if !filepath.IsAbs(mount.Destination) {
+				msgs = append(msgs, fmt.Sprintf("destination %v is not an absolute path", mount.Destination))
+			}
 		}
 	}
 
