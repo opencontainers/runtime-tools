@@ -96,6 +96,7 @@ read the configuration from `config.json`.
 
 **--label**=[]
   Add annotations to the configuration e.g. key=value.
+  Currently, key containing equals sign is not supported.
 
 **--linux-cpu-shares**=CPUSHARES
   Specifies a relative share of CPU time available to the tasks in a cgroup.
