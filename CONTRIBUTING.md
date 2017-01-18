@@ -24,16 +24,9 @@ incorporating a new feature.
 
 ### Conventions
 
-Fork the repo and make changes on your fork in a feature branch:
-
-- If it's a bugfix branch, name it XXX-something where XXX is the number of the
-  issue
-- If it's a feature branch, create an enhancement issue to announce your
-  intentions, and name it XXX-something where XXX is the number of the issue.
-
-Small changes or changes that have been discussed on the project mailing list
-may be submitted without a leader issue, in which case you are free to name
-your branch however you like.
+Fork the repo and make changes on your fork in a feature branch.
+For larger bugs and enhancements, consider filing a leader issue or mailing-list thread for discussion that is independent of the implementation.
+Small changes or changes that have been discussed on the project mailing list may be submitted without a leader issue.
 
 If the project has a test suite, submit unit tests for your changes. Take a
 look at existing tests for inspiration. Run the full test suite on your branch
