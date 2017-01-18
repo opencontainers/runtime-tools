@@ -364,12 +364,12 @@ _oci-runtime-tool_generate() {
 
 	case "$prev" in
 		--seccomp-arch)
-			COMPREPLY=( $( compgen -W $( __oci-runtime-tool_complete_seccomp_arches ) -- "$cur" ) )
+		    __oci-runtime-tool_complete_seccomp_arches
 			return
 			;;
 
 		--arch)
-			COMPREPLY=( $( compgen -W $( __oci-runtime-tool_complete_arches ) -- "$cur" ) )
+		    __oci-runtime-tool_complete_arches
 			return
 			;;
 
