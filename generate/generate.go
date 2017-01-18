@@ -562,6 +562,18 @@ func (g *Generator) SetLinuxResourcesPidsLimit(limit int64) {
 	g.spec.Linux.Resources.Pids.Limit = &limit
 }
 
+// AddHugepageLimit adds hugepage limit into g.spec.Linux.MaskedPaths.
+func (g *Generator) AddLinuxResourcesHugepageLimit(pagesize string, limit uint64) {
+	g.initSpecLinuxResources()
+
+	hugepageLimit := rspec.HugepageLimit{
+		Pagesize: &pagesize,
+		Limit:    &limit,
+	}
+
+	g.spec.Linux.Resources.HugepageLimits = append(g.spec.Linux.Resources.HugepageLimits, hugepageLimit)
+}
+
 // ClearLinuxSysctl clears g.spec.Linux.Sysctl.
 func (g *Generator) ClearLinuxSysctl() {
 	if g.spec == nil || g.spec.Linux == nil {
