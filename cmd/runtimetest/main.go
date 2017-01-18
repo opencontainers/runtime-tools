@@ -410,6 +410,10 @@ func validateMaskedPaths(spec *rspec.Spec) error {
 		if err != io.EOF {
 			return fmt.Errorf("%v should not be readable", maskedPath)
 		}
+
+		if !filepath.IsAbs(maskedPath) {
+			return fmt.Errorf("maskdePath %v is not an absoulte path", maskedPath)
+		}
 	}
 	return nil
 }
@@ -420,6 +424,10 @@ func validateROPaths(spec *rspec.Spec) error {
 		err := testWriteAccess(v)
 		if err == nil {
 			return fmt.Errorf("%v should be readonly", v)
+		}
+
+		if !filepath.IsAbs(v) {
+			return fmt.Errorf("readonlyPath %v is not an absoulte path", v)
 		}
 	}
 
