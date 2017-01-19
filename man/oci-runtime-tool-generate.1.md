@@ -110,6 +110,11 @@ read the configuration from `config.json`.
 **--linux-cpus**=CPUS
   Sets the CPUs to use within the cpuset (default is to use any CPU available).
 
+**--linux-hugepage-limit**=*SIZE*:*LIMIT*
+  Add a hugepage limit to the configuration.
+  *SIZE* represents hugepage size.
+  *LIMIT* represents limit in bytes of hugepagesize HugeTLB usage.
+  
 **--linux-mem-kernel-limit**=MEMKERNELLIMIT
   Sets the hard limit of kernel memory in bytes.
 
