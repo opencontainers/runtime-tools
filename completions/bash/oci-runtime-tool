@@ -301,6 +301,8 @@ _oci-runtime-tool_generate() {
 	      --cgroup
 	      --cgroup-path
 	      --cwd
+	      --device-access-add
+	      --device-access-remove
 	      --disable-oom-kill
 	      --env
 	      --env-file
