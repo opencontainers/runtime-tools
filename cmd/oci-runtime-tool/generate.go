@@ -63,6 +63,8 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "linux-readonly-paths", Usage: "specifies paths readonly inside container"},
 	cli.Int64Flag{Name: "linux-realtime-period", Usage: "CPU period to be used for realtime scheduling (in usecs)"},
 	cli.Int64Flag{Name: "linux-realtime-runtime", Usage: "the time realtime scheduling may use (in usecs)"},
+	cli.StringSliceFlag{Name: "linux-resources-device-add", Usage: "add a device access rule"},
+	cli.StringSliceFlag{Name: "linux-resources-device-remove", Usage: "remove a device access rule"},
 	cli.StringFlag{Name: "linux-rootfs-propagation", Usage: "mount propagation for rootfs"},
 	cli.StringFlag{Name: "linux-seccomp-allow", Usage: "specifies syscalls to respond with allow"},
 	cli.StringFlag{Name: "linux-seccomp-arch", Usage: "specifies additional architectures permitted to be used for system calls"},
@@ -238,6 +240,28 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		paths := context.StringSlice("linux-masked-paths")
 		for _, path := range paths {
 			g.AddLinuxMaskedPaths(path)
+		}
+	}
+
+	if context.IsSet("linux-resources-device-add") {
+		devices := context.StringSlice("linux-resources-device-add")
+		for _, device := range devices {
+			dev, err := parseLinuxResourcesDeviceAccess(device, g)
+			if err != nil {
+				return err
+			}
+			g.AddLinuxResourcesDevice(dev.Allow, dev.Type, dev.Major, dev.Minor, dev.Access)
+		}
+	}
+
+	if context.IsSet("linux-resources-device-remove") {
+		devices := context.StringSlice("linux-resources-device-remove")
+		for _, device := range devices {
+			dev, err := parseLinuxResourcesDeviceAccess(device, g)
+			if err != nil {
+				return err
+			}
+			g.RemoveLinuxResourcesDevice(dev.Allow, dev.Type, dev.Major, dev.Minor, dev.Access)
 		}
 	}
 
@@ -811,6 +835,7 @@ func parseRlimit(rlimit string) (string, uint64, uint64, error) {
 	return parts[0], uint64(hard), uint64(soft), nil
 }
 
+<<<<<<< 9e0e42dbf918070406a2a4a2e1476e7350ba9129
 func parseNamespace(ns string) (string, string, error) {
 	parts := strings.SplitN(ns, ":", 2)
 	if len(parts) == 0 || parts[0] == "" {
@@ -904,6 +929,82 @@ func parseDevice(device string, g *generate.Generator) (rspec.LinuxDevice, error
 	}
 
 	return dev, nil
+}
+
+var cgroupDeviceType = map[string]bool{
+	"a": true, // all
+	"b": true, // block device
+	"c": true, // character device
+}
+var cgroupDeviceAccess = map[string]bool{
+	"r": true, //read
+	"w": true, //write
+	"m": true, //mknod
+}
+
+// parseLinuxResourcesDeviceAccess parses the raw string passed with the --device-access-add flag
+func parseLinuxResourcesDeviceAccess(device string, g *generate.Generator) (rspec.DeviceCgroup, error) {
+	var allow bool
+	var devType, access string
+	var major, minor *int64
+
+	argsParts := strings.Split(device, ",")
+
+	switch argsParts[0] {
+	case "allow":
+		allow = true
+	case "deny":
+		allow = false
+	default:
+		return rspec.DeviceCgroup{},
+			fmt.Errorf("Only 'allow' and 'deny' are allowed in the first field of device-access-add: %s", device)
+	}
+
+	for _, s := range argsParts[1:] {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			continue
+		}
+		parts := strings.SplitN(s, "=", 2)
+		if len(parts) != 2 {
+			return rspec.DeviceCgroup{}, fmt.Errorf("Incomplete device-access-add arguments: %s", s)
+		}
+		name, value := parts[0], parts[1]
+
+		switch name {
+		case "type":
+			if !cgroupDeviceType[value] {
+				return rspec.DeviceCgroup{}, fmt.Errorf("Invalid device type in device-access-add: %s", value)
+			}
+			devType = &value
+		case "major":
+			i, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return rspec.DeviceCgroup{}, err
+			}
+			major = &i
+		case "minor":
+			i, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return rspec.DeviceCgroup{}, err
+			}
+			minor = &i
+		case "access":
+			for _, c := range strings.Split(value, "") {
+				if !cgroupDeviceAccess[c] {
+					return rspec.DeviceCgroup{}, fmt.Errorf("Invalid device access in device-access-add: %s", c)
+				}
+			}
+			access = &value
+		}
+	}
+	return rspec.DeviceCgroup{
+		Allow:  allow,
+		Type:   devType,
+		Major:  major,
+		Minor:  minor,
+		Access: access,
+	}, nil
 }
 
 func addSeccomp(context *cli.Context, g *generate.Generator) error {
