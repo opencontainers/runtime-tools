@@ -1177,10 +1177,10 @@ func (g *Generator) ClearLinuxDevices() {
 }
 
 // AddLinuxResourcesDevice - add a device into g.spec.Linux.Resources.Devices
-func (g *Generator) AddLinuxResourcesDevice(allow bool, devType string, major, minor *int64, access *string) {
+func (g *Generator) AddLinuxResourcesDevice(allow bool, devType string, major, minor *int64, access string) {
 	g.initSpecLinuxResources()
 
-	device := rspec.DeviceCgroup{
+	device := rspec.LinuxDeviceCgroup{
 		Allow:  allow,
 		Type:   devType,
 		Access: access,
@@ -1191,7 +1191,7 @@ func (g *Generator) AddLinuxResourcesDevice(allow bool, devType string, major, m
 }
 
 // RemoveLinuxResourcesDevice - remove a device from g.spec.Linux.Resources.Devices
-func (g *Generator) RemoveLinuxResourcesDevice(allow bool, devType string, major, minor *int64, access *string) {
+func (g *Generator) RemoveLinuxResourcesDevice(allow bool, devType string, major, minor *int64, access string) {
 	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil {
 		return
 	}

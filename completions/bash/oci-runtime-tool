@@ -326,6 +326,8 @@ _oci-runtime-tool_generate() {
 		--linux-cpu-shares
 		--linux-device-add
 		--linux-device-remove
+		--linux-device-cgroup-add
+		--linux-device-cgroup-remove
 		--linux-gidmappings
 		--linux-hugepage-limits-add
 		--linux-hugepage-limits-drop
