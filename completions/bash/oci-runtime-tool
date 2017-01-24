@@ -144,17 +144,22 @@ __oci-runtime-tool_complete_arches() {
 # context of oci-runtime-tool containers.
 __oci-runtime-tool_complete_seccomp_arches() {
 	COMPREPLY=( $( compgen -W "
-		SCMP_ARCH_X86
-		SCMP_ARCH_X86_64
-		SCMP_ARCH_X32
-		SCMP_ARCH_ARM
-		SCMP_ARCH_AARCH64
-		SCMP_ARCH_MIPS
-		SCMP_ARCH_MIPS64
-		SCMP_ARCH_MIPS64N32
-		SCMP_ARCH_MIPSEL
-		SCMP_ARCH_MIPSEL64
-		SCMP_ARCH_MIPSEL64N32
+		x86
+		amd64
+		x32
+		arm
+		arm64
+		mips
+		mips64
+		mips64n32
+		mipsel
+		mipsel64
+		mipsel64n32
+		ppc
+		ppc64
+		ppc64le
+		s390
+		s390x
 	" -- "$cur" ) )
 }
 
