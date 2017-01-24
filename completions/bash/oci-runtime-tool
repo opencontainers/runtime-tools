@@ -316,6 +316,7 @@ _oci-runtime-tool_generate() {
 	      --help
 	      --ipc
 	      --label
+	      --linux-hugepage-limit
 	      --linux-network-classid
 	      --linux-network-priorities
 	      --linux-pids-limit

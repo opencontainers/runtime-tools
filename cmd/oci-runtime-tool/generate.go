@@ -40,6 +40,7 @@ var generateFlags = []cli.Flag{
 	cli.Uint64Flag{Name: "linux-cpu-period", Usage: "the CPU period to be used for hardcapping (in usecs)"},
 	cli.Uint64Flag{Name: "linux-cpu-quota", Usage: "the allowed CPU time in a given period (in usecs)"},
 	cli.StringFlag{Name: "linux-cpus", Usage: "CPUs to use within the cpuset (default is to use any CPU available)"},
+	cli.StringSliceFlag{Name: "linux-hugepage-limit", Usage: "specifies how many huge pages are allowed to use in the container. e.g 2MB:209715200"},
 	cli.Uint64Flag{Name: "linux-mem-kernel-limit", Usage: "kernel memory limit (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-kernel-tcp", Usage: "kernel memory limit for tcp (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-limit", Usage: "memory limit (in bytes)"},
@@ -408,6 +409,17 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("linux-cpus") {
 		g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
+	}
+
+	if context.IsSet("linux-hugepage-limit") {
+		limits := context.StringSlice("linux-hugepage-limit")
+		for _, limit := range limits {
+			size, count, err := parseLinuxResourcesHugepageLimit(limit)
+			if err != nil {
+				return err
+			}
+			g.AddLinuxResourcesHugepageLimit(size, count)
+		}
 	}
 
 	if context.IsSet("linux-mems") {
@@ -815,6 +827,25 @@ func parseEnvFile(filename string) ([]string, error) {
 		}
 	}
 	return lines, scanner.Err()
+}
+
+// parseLinuxHugepageLimit splits the argument of --linux-hugepage-limit
+//  (e.g. size:count) into (size, count). An error is returned if
+// there is no ":" in the line or if the count is not a number.
+func parseLinuxResourcesHugepageLimit(limitFlag string) (string, uint64, error) {
+	parts := strings.SplitN(limitFlag, ":", 2)
+	if len(parts) != 2 {
+		return "", 0, fmt.Errorf("hugepage-limit must contain ':': %s", limitFlag)
+	}
+
+	size, text_count := parts[0], parts[1]
+	if size == "" {
+		return "", 0, fmt.Errorf("hugepage-limit must have size: %s", limitFlag)
+	}
+
+	count, err := strconv.ParseUint(text_count, 10, 64)
+
+	return size, count, err
 }
 
 var whiteSpaces = " \t"
