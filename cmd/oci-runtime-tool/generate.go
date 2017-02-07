@@ -128,6 +128,7 @@ var generateCommand = cli.Command{
 		if err != nil {
 			return err
 		}
+		fmt.Println("File generate succeeded.")
 		return nil
 	},
 }
