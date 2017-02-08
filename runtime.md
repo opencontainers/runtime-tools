@@ -21,7 +21,7 @@ $ funC [global-options] <COMMAND> [command-specific-options] <command-specific-a
 
 None are required, but the runtime MAY support options that start with at least one hyphen.
 Global options MAY take positional arguments (e.g. `--log-level debug`).
-Command names MUST not start with hyphens.
+Command names MUST NOT start with hyphens.
 The option parsing MUST be such that `funC <COMMAND>` is unambiguously an invocation of `<COMMAND>` (even for commands not specified in this document).
 If the runtime is invoked with an unrecognized command, it MUST exit with a nonzero exit code and MAY log a warning to stderr.
 
