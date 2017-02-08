@@ -218,6 +218,31 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		}
 	}
 
+	if len(process.Args) == 0 {
+		msgs = append(msgs, fmt.Sprintf("args must not be empty"))
+	} else {
+		if filepath.IsAbs(process.Args[0]) {
+			var rootfsPath string
+			if filepath.IsAbs(v.spec.Root.Path) {
+				rootfsPath = v.spec.Root.Path
+			} else {
+				rootfsPath = filepath.Join(v.bundlePath, v.spec.Root.Path)
+			}
+			absPath := filepath.Join(rootfsPath, process.Args[0])
+			fileinfo, err := os.Stat(absPath)
+			if os.IsNotExist(err) {
+				logrus.Warnf("executable %q is not available in rootfs currently", process.Args[0])
+			} else if err != nil {
+				msgs = append(msgs, err.Error())
+			} else {
+				m := fileinfo.Mode()
+				if m.IsDir() || m&0111 == 0 {
+					msgs = append(msgs, fmt.Sprintf("arg %q is not executable", process.Args[0]))
+				}
+			}
+		}
+	}
+
 	for index := 0; index < len(process.Capabilities); index++ {
 		capability := process.Capabilities[index]
 		if !capValid(capability) {
