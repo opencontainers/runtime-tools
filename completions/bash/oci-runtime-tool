@@ -407,6 +407,16 @@ _oci-runtime-tool_generate() {
 			return
 			;;
 
+		--uid)
+			_uids
+			return
+			;;
+            
+		--gid)
+			_gids
+			return
+			;;
+
 		--groups)
 			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_groups )" -- "$cur" ) )
 			__oci-runtime-tool_nospace
