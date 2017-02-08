@@ -1,4 +1,4 @@
-# OCI command-line API
+# OCI Runtime Command Line Interface
 
 The [OCI Runtime Specification][runtime-spec] currently focuses on the bundle-author ↔ runtime interface, but there is renewed interest in specifying a command-line API for the runtime-caller ↔ runtime interface.
 A common command-line API would make it easier to build higher-level tools that are runtime-agnostic (e.g. compliance testers like [runtime-tools][runtime-tools-compliance]).

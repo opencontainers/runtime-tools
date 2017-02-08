@@ -1,4 +1,4 @@
-# Operations
+# OCI Runtime Command Line Interface
 
 A conformant runtime MUST provide an executable (called `funC` in the following examples).
 That executable MUST support commands with the following template:
