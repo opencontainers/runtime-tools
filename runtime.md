@@ -24,6 +24,7 @@ Global options MAY take positional arguments (e.g. `--log-level debug`).
 Command names MUST NOT start with hyphens.
 The option parsing MUST be such that `funC <COMMAND>` is unambiguously an invocation of `<COMMAND>` (even for commands not specified in this document).
 If the runtime is invoked with an unrecognized command, it MUST exit with a nonzero exit code and MAY log a warning to stderr.
+Beyond the above rules, the behavior of the runtime in the presence of commands and options not specified in this document is unspecified.
 
 ## Character encodings
 
