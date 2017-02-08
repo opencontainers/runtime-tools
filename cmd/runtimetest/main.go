@@ -309,13 +309,10 @@ func validateLinuxDevices(spec *rspec.Spec) error {
 		switch fStat.Mode & syscall.S_IFMT {
 		case syscall.S_IFCHR:
 			devType = "c"
-			break
 		case syscall.S_IFBLK:
 			devType = "b"
-			break
 		case syscall.S_IFIFO:
 			devType = "p"
-			break
 		default:
 			devType = "unmatched"
 		}
