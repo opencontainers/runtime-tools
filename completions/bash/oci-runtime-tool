@@ -94,7 +94,7 @@ __oci-runtime-tool_subcommands() {
 
 # List groups
 __oci-runtime-tool_groups() {
-	cat /etc/group | cut -d: -f 1
+	cut -d: -f 1 /etc/group
 }
 
 # List installed hooks
