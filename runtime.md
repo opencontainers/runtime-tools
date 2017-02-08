@@ -29,32 +29,9 @@ Beyond the above rules, the behavior of the runtime in the presence of commands 
 ## Character encodings
 
 This API specification does not cover character encodings, but runtimes SHOULD conform to their native operating system.
-For example, POSIX systems define [`LANG` and related environment variables][posix-lang] for [declaring][posix-locale-encoding] [locale-specific character encodings][posix-encoding], so a runtime in an `en_US.UTF-8` locale SHOULD write its [version](#version) to stdout in [UTF-8][].
+For example, POSIX systems define [`LANG` and related environment variables][posix-lang] for [declaring][posix-locale-encoding] [locale-specific character encodings][posix-encoding], so a runtime in an `en_US.UTF-8` locale SHOULD write its [state](#state) to stdout in [UTF-8][].
 
 ## Commands
-
-### version
-
-Print the runtime version and exit.
-
-* *Options* None are required, but the runtime MAY support options.
-* *Standard streams*
-  * *stdin:* The runtime MUST NOT attempt to read from its stdin.
-  * *stdout:* The runtime MUST print its name, a space, and its version as the first line to its stdout.
-    The name MAY contain any Unicode characters, but MUST NOT contain control codes or newlines.
-    The runtime MAY print additional lines to its stdout, and the format for those lines is not specified in this document.
-  * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
-* *Exit code:* The runtime MUST exit with zero.
-
-#### Example
-
-```
-$ funC version
-funC 1.0.0
-Built for x86_64-pc-linux-gnu
-$ echo $?
-0
-```
 
 ### start
 
