@@ -372,28 +372,36 @@ _oci-runtime-tool_generate() {
 	local all_options="$options_with_args $boolean_options"
 
 	case "$prev" in
-		--seccomp-arch)
-			__oci-runtime-tool_complete_seccomp_arches
-			return
-			;;
-
 		--arch)
 			__oci-runtime-tool_complete_arches
 			return
 			;;
 
-		--seccomp-default)
-			__oci-runtime-tool_complete_seccomp_actions
-			return
-			;;
-
-		--root-propagation)
-			__oci-runtime-tool_complete_propagations
-			return
-			;;
-
 		--cap-add|--cap-drop)
 			__oci-runtime-tool_complete_capabilities
+			return
+			;;
+
+		--env|-e)
+			COMPREPLY=( $( compgen -e -- "$cur" ) )
+			__oci-runtime-tool_nospace
+			return
+			;;
+
+		--env-file)
+			_filedir
+			__oci-runtime-tool_nospace
+			return
+			;;
+
+		--gid)
+			_gids
+			return
+			;;
+
+		--groups)
+			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_groups )" -- "$cur" ) )
+			__oci-runtime-tool_nospace
 			return
 			;;
 
@@ -407,25 +415,14 @@ _oci-runtime-tool_generate() {
 			return
 			;;
 
-		--uid)
-			_uids
-			return
-			;;
-            
-		--gid)
-			_gids
-			return
-			;;
-
-		--groups)
-			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_groups )" -- "$cur" ) )
-			__oci-runtime-tool_nospace
-			return
-			;;
-
 		--poststart|--poststop|--prestart)
 			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_hooks )" -- "$cur" ) )
 			__oci-runtime-tool_nospace
+			return
+			;;
+
+		--root-propagation)
+			__oci-runtime-tool_complete_propagations
 			return
 			;;
 
@@ -445,14 +442,19 @@ _oci-runtime-tool_generate() {
 			esac
 			return
 			;;
-		--env|-e)
-			COMPREPLY=( $( compgen -e -- "$cur" ) )
-			__oci-runtime-tool_nospace
+
+		--seccomp-arch)
+			__oci-runtime-tool_complete_seccomp_arches
 			return
 			;;
-		--env-file)
-			_filedir
-			__oci-runtime-tool_nospace
+
+		--seccomp-default)
+			__oci-runtime-tool_complete_seccomp_actions
+			return
+			;;
+
+		--uid)
+			_uids
 			return
 			;;
 	esac
