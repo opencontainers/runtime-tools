@@ -13,7 +13,7 @@ For example, if a caller is compliant with version 1.1 of the command line inter
 The runtime MUST provide an executable (called `funC` in the following examples).
 That executable MUST support commands with the following template:
 
-```sh
+```
 $ funC [global-options] <COMMAND> [command-specific-options] <command-specific-arguments>
 ```
 
