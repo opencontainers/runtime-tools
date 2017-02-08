@@ -1,6 +1,16 @@
 # OCI Runtime Command Line Interface
 
-A conformant runtime MUST provide an executable (called `funC` in the following examples).
+This section defines the OCI Runtime Command Line Interface version 1.0.0.
+
+## Versioning
+
+The command line interface is versioned with [SemVer v2.0.0][semver].
+The command line interface version is independent of the OCI Runtime Specification as a whole (which is tied to the [configuration format][runtime-spec-version].
+For example, if a caller is compliant with version 1.1 of the command line interface, they are compatible with all runtimes that support any 1.1 or later release of the command line interface, but are not compatible with a runtime that supports 1.0 and not 1.1.
+
+## Global usage
+
+The runtime MUST provide an executable (called `funC` in the following examples).
 That executable MUST support commands with the following template:
 
 ```sh
@@ -105,6 +115,8 @@ $ echo $?
 [posix-encoding]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap06.html#tag_06_02
 [posix-lang]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
 [posix-locale-encoding]: http://www.unicode.org/reports/tr35/#Bundle_vs_Item_Lookup
+[semver]: http://semver.org/spec/v2.0.0.html
 [standard-streams]: https://github.com/opencontainers/specs/blob/v0.1.1/runtime-linux.md#file-descriptors
 [systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
+[runtime-spec-version]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/config.md#specification-version
 [UTF-8]: http://www.unicode.org/versions/Unicode8.0.0/ch03.pdf
