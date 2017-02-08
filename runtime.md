@@ -38,13 +38,13 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 Start a container from a bundle directory.
 
 * *Options*
-  * *`--id <ID>`* Set the container ID when creating or joining a container.
-    If not set, the runtime is free to pick any ID that is not already in use.
-  * *`--bundle <PATH>`* Override the path to the bundle directory (defaults to the current working directory).
+    * *`--id <ID>`* Set the container ID when creating or joining a container.
+      If not set, the runtime is free to pick any ID that is not already in use.
+    * *`--bundle <PATH>`* Override the path to the bundle directory (defaults to the current working directory).
 * *Standard streams:* The runtime MUST attach its standard streams directly to the application process without inspection.
 * *Environment variables*
-  * *`LISTEN_FDS`:* The number of file descriptors passed.
-    For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the application process (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
+    * *`LISTEN_FDS`:* The number of file descriptors passed.
+      For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the application process (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
 * *Exit code:* The runtime MUST exit with the application process's exit code.
 
 #### Example
@@ -63,11 +63,11 @@ $ echo $?
 Request the container state.
 
 * *Arguments*
-  * *`<ID>`* The container whose state is being requested.
+    * *`<ID>`* The container whose state is being requested.
 * *Standard streams:*
-  * *stdin:* The runtime MUST NOT attempt to read from its stdin.
-  * *stdout:* The runtime MUST print the state JSON to its stdout.
-  * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+    * *stdin:* The runtime MUST NOT attempt to read from its stdin.
+    * *stdout:* The runtime MUST print the state JSON to its stdout.
+    * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
 * *Exit code:* Zero if the state was successfully written to stdout and non-zero on errors.
 
 #### Example
