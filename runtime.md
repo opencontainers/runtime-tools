@@ -42,16 +42,61 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 * *Options*
     * *`--bundle <PATH>`* Override the path to the [bundle directory][bundle] (defaults to the current working directory).
     * *`--pid-file <PATH>`* The runtime MUST write the container PID to this path.
+    * *`--console-socket <PATH>`* The runtime MUST pass the [pseudoterminal master][posix_openpt.3] through the socket at `<PATH>`; the protocol is [described below](#console-socket).
 * *Standard streams:*
-    * *stdin:* The runtime MUST NOT attempt to read from its stdin.
-    * *stdout:* The handling of stdout is unspecified.
-    * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+    * If [`process.terminal`][process] is true:
+        * *stdin:* The runtime MUST NOT attempt to read from its stdin.
+        * *stdout:* The handling of stdout is unspecified.
+        * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+    * If [`process.terminal`][process] is not true:
+        * *stdin:* The runtime MUST pass its stdin file descriptor through to the container process without manipulation or modification.
+          "Without manipulation or modification" means that the runtime MUST not seek on the file descriptor, or close it, or read or write to it, or [`ioctl`][ioctl.3] it, or perform any other action on it besides passing it through to the container process.
+        * *stdout:* The runtime MUST pass its stdout file descriptor through to the container process without manipulation or modification.
+        * *stderr:* When `create` exists with a zero code, the runtime MUST pass its stderr file descriptor through to the container process without manipulation or modification.
+          When `create` exits with a non-zero code, the runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
 * *Environment variables*
     * *`LISTEN_FDS`:* The number of file descriptors passed.
-      For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the container process (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
+      For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the container process (in addition to the standard streams) to support [socket activation][systemd-listen-fds].
 * *Exit code:* Zero if the container was successfully created and non-zero on errors.
 
 Callers MAY block on this command's successful exit to trigger post-create activity.
+
+#### Console socket
+
+The [`AF_UNIX`][unix-socket] used by [`--console-socket`](#create) handles request and response messages between a runtime and server.
+The socket type MUST be [`SOCK_SEQPACKET`][socket-types].
+The server MUST send a single response for each runtime request.
+The [normal data][socket-queue] ([`msghdr.msg_iov*`][socket.h]) of all messages MUST be [UTF-8][] [JSON](glossary.md#json).
+
+There are [JSON Schemas](schema/README.md) and [Go bindings](specs-go/socket/socket.go) for the messages specified in this section.
+
+##### Requests
+
+All requests MUST contain a **`type`** property whose value MUST one of the following strings:
+
+* `terminal`, if the request is passing a [pseudoterminal master][posix_openpt.3].
+    When `type` is `terminal`, the request MUST also contain the following properties:
+
+    * **`container`** (string, REQUIRED) The container ID, as set by [create](#create).
+
+    The message's [ancillary data][socket-queue] (`msg_control*`) MUST contain at least one [`cmsghdr`][socket.h]).
+    The first `cmsghdr` MUST have:
+
+    * `cmsg_type` set to [`SOL_SOCKET`][socket.h],
+    * `cmsg_level` set to [`SCM_RIGHTS`][socket.h],
+    * `cmsg_len` greater than or equal to `CMSG_LEN(sizeof(int))`, and
+    * `((int*)CMSG_DATA(cmsg))[0]` set to the pseudoterminal master file descriptor.
+
+##### Responses
+
+All responses MUST contain a **`type`** property whose value MUST be one of the following strings:
+
+* `success`, if the request was successfully processed.
+* `error`, if the request was not successfully processed.
+
+In addition, responses MAY contain any of the following properties:
+
+* **`message`** (string, OPTIONAL) A phrase describing the response.
 
 #### Example
 
@@ -181,20 +226,26 @@ See [create](#example) for an example.
 [create]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#create
 [delete]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#delete
 [exit_group.2]: http://man7.org/linux/man-pages/man2/exit_group.2.html
+[ioctl.3]: http://pubs.opengroup.org/onlinepubs/9699919799/
 [kill]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#kill
 [kill.2]: http://man7.org/linux/man-pages/man2/kill.2.html
 [process]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/config.md#process
 [posix-encoding]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap06.html#tag_06_02
 [posix-lang]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
 [posix-locale-encoding]: http://www.unicode.org/reports/tr35/#Bundle_vs_Item_Lookup
+[posix_openpt.3]: http://pubs.opengroup.org/onlinepubs/9699919799/functions/posix_openpt.html
 [posix-signals]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/signal.h.html#tag_13_42_03
 [prctl.2]: http://man7.org/linux/man-pages/man2/prctl.2.html
 [ptrace.2]: http://man7.org/linux/man-pages/man2/ptrace.2.html
 [semver]: http://semver.org/spec/v2.0.0.html
+[socket-queue]: http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_10_11
+[socket-types]: http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_10_06
+[socket.h]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_socket.h.html
 [standard-streams]: https://github.com/opencontainers/specs/blob/v0.1.1/runtime-linux.md#file-descriptors
 [start]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#start
 [state]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#state
 [state-request]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#query-state
 [systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
 [runtime-spec-version]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/config.md#specification-version
+[unix-socket]: http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_10_17
 [UTF-8]: http://www.unicode.org/versions/Unicode8.0.0/ch03.pdf
