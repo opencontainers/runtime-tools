@@ -35,12 +35,12 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 
 ### start
 
-Start a container from a bundle directory.
+Start a container from a [bundle directory][bundle].
 
 * *Options*
     * *`--id <ID>`* Set the container ID when creating or joining a container.
       If not set, the runtime is free to pick any ID that is not already in use.
-    * *`--bundle <PATH>`* Override the path to the bundle directory (defaults to the current working directory).
+    * *`--bundle <PATH>`* Override the path to the [bundle directory][bundle] (defaults to the current working directory).
 * *Standard streams:* The runtime MUST attach its standard streams directly to the application process without inspection.
 * *Environment variables*
     * *`LISTEN_FDS`:* The number of file descriptors passed.
@@ -123,6 +123,7 @@ $ echo $?
 0
 ```
 
+[bundle]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/bundle.md
 [kill]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#kill
 [kill.2]: http://man7.org/linux/man-pages/man2/kill.2.html
 [posix-encoding]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap06.html#tag_06_02
