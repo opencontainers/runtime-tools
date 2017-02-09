@@ -42,7 +42,6 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 * *Options*
     * *`--bundle <PATH>`* Override the path to the [bundle directory][bundle] (defaults to the current working directory).
     * *`--pid-file <PATH>`* The runtime MUST write the container PID to this path.
-    * *`--console-socket <PATH>`* The runtime MUST pass the [pseudoterminal master][posix_openpt.3] through the socket at `<PATH>`; the protocol is [described below](#console-socket).
 * *Standard streams:*
     * If [`process.terminal`][process] is true:
         * *stdin:* The runtime MUST NOT attempt to read from its stdin.
@@ -60,14 +59,17 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 * *Environment variables*
     * *`LISTEN_FDS`:* The number of file descriptors passed.
       For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the container process (in addition to the standard streams) to support [socket activation][systemd-listen-fds].
+* *Additional file descriptors*
+    * If [`process.terminal`][process] is true, the caller MUST provide an open [`AF_UNIX` socket][unix-socket] on file descriptor `$LISTEN_FDS + 3`.
+      The runtime MUST pass the [pseudoterminal master][posix_openpt.3] through the socket; the protocol is [described below](#console-socket).
 * *Exit code:* Zero if the container was successfully created and non-zero on errors.
 
 Callers MAY block on this command's successful exit to trigger post-create activity.
 
 #### Console socket
 
-The [`AF_UNIX`][unix-socket] used by [`--console-socket`](#create) handles request and response messages between a runtime and server.
-The socket type MUST be [`SOCK_SEQPACKET`][socket-types].
+The [`AF_UNIX`][unix-socket] used by the [`$LISTEN_FDS + 3` socket](#create) handles request and response messages between a runtime and server.
+The socket type MUST be [`SOCK_SEQPACKET`][socket-types] or [`SOCK_STREAM`][socket-types].
 The server MUST send a single response for each runtime request.
 The [normal data][socket-queue] ([`msghdr.msg_iov*`][socket.h]) of all messages MUST be [UTF-8][] [JSON](glossary.md#json).
 
