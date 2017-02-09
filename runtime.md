@@ -37,9 +37,9 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 
 Start a container from a [bundle directory][bundle].
 
+* *Arguments*
+    * *`<ID>`* Set the container ID to create.
 * *Options*
-    * *`--id <ID>`* Set the container ID when creating or joining a container.
-      If not set, the runtime is free to pick any ID that is not already in use.
     * *`--bundle <PATH>`* Override the path to the [bundle directory][bundle] (defaults to the current working directory).
 * *Standard streams:* The runtime MUST attach its standard streams directly to the application process without inspection.
 * *Environment variables*
@@ -51,7 +51,7 @@ Start a container from a [bundle directory][bundle].
 
 ```
 # in a bundle directory with a process that echos "hello" and exits 42
-$ funC start --id hello-1
+$ funC start hello-1
 hello
 
 $ echo $?
@@ -74,7 +74,7 @@ Request the container state.
 
 ```
 # in a bundle directory with a process that sleeps for several seconds
-$ funC start --id sleeper-1 &
+$ funC start sleeper-1 &
 $ funC state sleeper-1
 {
   "ociVersion": "1.0.0-rc1",
@@ -114,7 +114,7 @@ $ echo $?
 
 ```
 # in a bundle directory with a process ignores TERM
-$ funC start --id sleeper-1 &
+$ funC start sleeper-1 &
 $ funC kill sleeper-1
 $ echo $?
 0
