@@ -51,6 +51,9 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
     * If [`process.terminal`][process] is not true:
         * *stdin:* The runtime MUST pass its stdin file descriptor through to the container process without manipulation or modification.
           "Without manipulation or modification" means that the runtime MUST not seek on the file descriptor, or close it, or read or write to it, or [`ioctl`][ioctl.3] it, or perform any other action on it besides passing it through to the container process.
+
+          When using a container to drop privileges, note that providing a privileged terminal's file descriptor may allow the container to [execute privileged operations via `TIOCSTI`][TIOCSTI-security] or other [TTY ioctls][tty_ioctl.4].
+          On Linux, [`TIOCSTI` requires `CAP_SYS_ADMIN`][capabilities.7] unless the target terminal is the caller's [controlling terminal][controlling-terminal].
         * *stdout:* The runtime MUST pass its stdout file descriptor through to the container process without manipulation or modification.
         * *stderr:* When `create` exists with a zero code, the runtime MUST pass its stderr file descriptor through to the container process without manipulation or modification.
           When `create` exits with a non-zero code, the runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
@@ -223,6 +226,8 @@ $ echo $?
 See [create](#example) for an example.
 
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/bundle.md
+[capabilities.7]: http://man7.org/linux/man-pages/man7/capabilities.7.html
+[controlling-terminal]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap11.html#tag_11_01_03
 [create]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#create
 [delete]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#delete
 [exit_group.2]: http://man7.org/linux/man-pages/man2/exit_group.2.html
@@ -247,5 +252,7 @@ See [create](#example) for an example.
 [state-request]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#query-state
 [systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
 [runtime-spec-version]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/config.md#specification-version
+[TIOCSTI-security]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=628843
+[tty_ioctl.4]: http://man7.org/linux/man-pages/man4/tty_ioctl.4.html
 [unix-socket]: http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_10_17
 [UTF-8]: http://www.unicode.org/versions/Unicode8.0.0/ch03.pdf
