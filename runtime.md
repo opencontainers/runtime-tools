@@ -33,53 +33,91 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
 
 ## Commands
 
-### start
+### create
 
-Start a container from a [bundle directory][bundle].
+[Create][create] a container from a [bundle directory][bundle].
 
 * *Arguments*
     * *`<ID>`* Set the container ID to create.
 * *Options*
     * *`--bundle <PATH>`* Override the path to the [bundle directory][bundle] (defaults to the current working directory).
-* *Standard streams:* The runtime MUST attach its standard streams directly to the container process without inspection.
+* *Standard streams:*
+    * *stdin:* The runtime MUST NOT attempt to read from its stdin.
+    * *stdout:* The handling of stdout is unspecified.
+    * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
 * *Environment variables*
     * *`LISTEN_FDS`:* The number of file descriptors passed.
       For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the container process (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
-* *Exit code:* The runtime MUST exit with the container process's exit code.
+* *Exit code:* Zero if the container was successfully created and non-zero on errors.
+
+Callers MAY block on this command's successful exit to trigger post-create activity.
 
 #### Example
 
 ```
 # in a bundle directory with a process that echos "hello" and exits 42
+$ test -t 1 && echo 'stdout is a terminal'
+stdout is a terminal
+$ funC create hello-1 <&- >stdout 2>stderr
+$ echo $?
+0
+$ wc stdout
+0 0 0 stdout
 $ funC start hello-1
+$ echo $?
+0
+$ cat stdout
 hello
-
+$ block-on-exit-and-collect-exit-code hello-1
 $ echo $?
 42
+$ funC delete hello-1
+$ echo $?
+0
 ```
+
+#### Container process exit
+
+The [example's](#example) `block-on-exit-and-collect-exit-code` is platform-specific and is not specified in this document.
+On Linux, it might involve an ancestor process which had set [`PR_SET_CHILD_SUBREAPER`][prctl.2] and collected the container PID [from the state][state], or a process that was [ptracing][ptrace.2] the container process for [`exit_group`][exit_group.2], although both of those race against the container process exiting before the watcher is monitoring.
+
+### start
+
+[Start][start] the user-specified code from [`process`][process].
+
+* *Arguments*
+    * *`<ID>`* The container to start.
+* *Standard streams:*
+    * *stdin:* The runtime MUST NOT attempt to read from its stdin.
+    * *stdout:* The handling of stdout is unspecified.
+    * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+* *Exit code:* Zero if the container was successfully started and non-zero on errors.
+
+Callers MAY block on this command's successful exit to trigger post-start activity.
+
+See [create](#example) for an example.
 
 ### state
 
-Request the container state.
+[Request][state-request] the container [state][state].
 
 * *Arguments*
     * *`<ID>`* The container whose state is being requested.
 * *Standard streams:*
     * *stdin:* The runtime MUST NOT attempt to read from its stdin.
-    * *stdout:* The runtime MUST print the state JSON to its stdout.
+    * *stdout:* The runtime MUST print the [state JSON][state] to its stdout.
     * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
 * *Exit code:* Zero if the state was successfully written to stdout and non-zero on errors.
 
 #### Example
 
 ```
-# in a bundle directory with a process that sleeps for several seconds
-$ funC start sleeper-1 &
+$ funC create sleeper-1
 $ funC state sleeper-1
 {
   "ociVersion": "1.0.0-rc1",
   "id": "sleeper-1",
-  "status": "running",
+  "status": "created",
   "pid": 4422,
   "bundlePath": "/containers/sleeper",
   "annotations" {
@@ -113,8 +151,9 @@ $ echo $?
 #### Example
 
 ```
-# in a bundle directory with a process ignores TERM
-$ funC start sleeper-1 &
+# in a bundle directory where the container process ignores TERM
+$ funC create sleeper-1
+$ funC start sleeper-1
 $ funC kill sleeper-1
 $ echo $?
 0
@@ -123,15 +162,38 @@ $ echo $?
 0
 ```
 
+### delete
+
+[Release](#delete) container resources after the container process has exited.
+
+* *Arguments*
+    * *`<ID>`* The container to delete.
+* *Standard streams:*
+    * *stdin:* The runtime MUST NOT attempt to read from its stdin.
+    * *stdout:* The handling of stdout is unspecified.
+    * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+* *Exit code:* Zero if the container was successfully deleted and non-zero on errors.
+
+See [create](#example) for an example.
+
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/bundle.md
+[create]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#create
+[delete]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#delete
+[exit_group.2]: http://man7.org/linux/man-pages/man2/exit_group.2.html
 [kill]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#kill
 [kill.2]: http://man7.org/linux/man-pages/man2/kill.2.html
+[process]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/config.md#process
 [posix-encoding]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap06.html#tag_06_02
 [posix-lang]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
 [posix-locale-encoding]: http://www.unicode.org/reports/tr35/#Bundle_vs_Item_Lookup
 [posix-signals]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/signal.h.html#tag_13_42_03
+[prctl.2]: http://man7.org/linux/man-pages/man2/prctl.2.html
+[ptrace.2]: http://man7.org/linux/man-pages/man2/ptrace.2.html
 [semver]: http://semver.org/spec/v2.0.0.html
 [standard-streams]: https://github.com/opencontainers/specs/blob/v0.1.1/runtime-linux.md#file-descriptors
+[start]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#start
+[state]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#state
+[state-request]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#query-state
 [systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
 [runtime-spec-version]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/config.md#specification-version
 [UTF-8]: http://www.unicode.org/versions/Unicode8.0.0/ch03.pdf
