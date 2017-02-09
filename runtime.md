@@ -41,11 +41,11 @@ Start a container from a [bundle directory][bundle].
     * *`<ID>`* Set the container ID to create.
 * *Options*
     * *`--bundle <PATH>`* Override the path to the [bundle directory][bundle] (defaults to the current working directory).
-* *Standard streams:* The runtime MUST attach its standard streams directly to the application process without inspection.
+* *Standard streams:* The runtime MUST attach its standard streams directly to the container process without inspection.
 * *Environment variables*
     * *`LISTEN_FDS`:* The number of file descriptors passed.
-      For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the application process (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
-* *Exit code:* The runtime MUST exit with the application process's exit code.
+      For example, `LISTEN_FDS=2` would mean that the runtime MUST pass file descriptors 3 and 4 to the container process (in addition to the [standard streams][standard-streams]) to support [socket activation][systemd-listen-fds].
+* *Exit code:* The runtime MUST exit with the container process's exit code.
 
 #### Example
 
