@@ -90,9 +90,45 @@ $ echo $?
 0
 ```
 
+### kill
+
+[Send a signal][kill] to the container process.
+
+* *Arguments*
+    * *`<ID>`* The container being signaled.
+* *Options*
+    * *`--signal <SIGNAL>`* The signal to send (defaults to `TERM`).
+      The runtime MUST support `TERM` and `KILL` signals with [the POSIX semantics][posix-signals].
+      The runtime MAY support additional signal names.
+      On platforms that support [POSIX signals][posix-signals], the runtime MUST implement this command using POSIX signals.
+      On platforms that do not support POSIX signals, the runtime MAY implement this command with alternative technology as long as `TERM` and `KILL` retain their POSIX semantics.
+      Runtime authors on non-POSIX platforms SHOULD submit documentation for their TERM implementation to this specificiation, so runtime callers can configure the container process to gracefully handle the signals.
+* *Standard streams:*
+    * *stdin:* The runtime MUST NOT attempt to read from its stdin.
+    * *stdout:* The handling of stdout is unspecified.
+    * *stderr:* The runtime MAY print diagnostic messages to stderr, and the format for those lines is not specified in this document.
+* *Exit code:* Zero if the signal was successfully sent to the container process and non-zero on errors.
+  Successfully sent does not mean that the signal was successfully received or handled by the container process.
+
+#### Example
+
+```
+# in a bundle directory with a process ignores TERM
+$ funC start --id sleeper-1 &
+$ funC kill sleeper-1
+$ echo $?
+0
+$ funC kill --signal KILL sleeper-1
+$ echo $?
+0
+```
+
+[kill]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#kill
+[kill.2]: http://man7.org/linux/man-pages/man2/kill.2.html
 [posix-encoding]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap06.html#tag_06_02
 [posix-lang]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
 [posix-locale-encoding]: http://www.unicode.org/reports/tr35/#Bundle_vs_Item_Lookup
+[posix-signals]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/signal.h.html#tag_13_42_03
 [semver]: http://semver.org/spec/v2.0.0.html
 [standard-streams]: https://github.com/opencontainers/specs/blob/v0.1.1/runtime-linux.md#file-descriptors
 [systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
