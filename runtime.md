@@ -41,6 +41,7 @@ For example, POSIX systems define [`LANG` and related environment variables][pos
     * *`<ID>`* Set the container ID to create.
 * *Options*
     * *`--bundle <PATH>`* Override the path to the [bundle directory][bundle] (defaults to the current working directory).
+    * *`--pid-file <PATH>`* The runtime MUST write the container PID to this path.
 * *Standard streams:*
     * *stdin:* The runtime MUST NOT attempt to read from its stdin.
     * *stdout:* The handling of stdout is unspecified.
