@@ -85,7 +85,7 @@ The socket type MUST be [`SOCK_SEQPACKET`][socket-types] or [`SOCK_STREAM`][sock
 The server MUST send a single response for each runtime request.
 The [normal data][socket-queue] ([`msghdr.msg_iov*`][socket.h]) of all messages MUST be [UTF-8][] [JSON](glossary.md#json).
 
-There are [JSON Schemas](schema/README.md) and [Go bindings](specs-go/socket/socket.go) for the messages specified in this section.
+There are [JSON Schemas](../schema/README.md#oci-runtime-command-line-interface) and [Go bindings](../api/socket/socket.go) for the messages specified in this section.
 
 ##### Requests
 
