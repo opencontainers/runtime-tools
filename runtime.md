@@ -1,6 +1,10 @@
 # OCI Runtime Command Line Interface
 
-This section defines the OCI Runtime Command Line Interface version 1.0.0.
+This file defines the OCI Runtime Command Line Interface version 1.0.0.
+
+## Notation
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119][rfc2119].
 
 ## Versioning
 
@@ -251,6 +255,7 @@ See [create](#example) for an example.
 [state]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#state
 [state-request]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#query-state
 [systemd-listen-fds]: http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
+[rfc2119]: https://tools.ietf.org/html/rfc2119
 [runtime-spec-version]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/config.md#specification-version
 [TIOCSTI-security]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=628843
 [tty_ioctl.4]: http://man7.org/linux/man-pages/man4/tty_ioctl.4.html
