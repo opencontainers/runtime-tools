@@ -6,6 +6,8 @@ This file defines the OCI Runtime Command Line Interface version 1.0.0.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119][rfc2119].
 
+The key words "unspecified", "undefined", and "implementation-defined" are to be interpreted as described in the [rationale for the C99 standard][c99-unspecified].
+
 ## Versioning
 
 The command line interface is versioned with [SemVer v2.0.0][semver].
@@ -230,6 +232,7 @@ $ echo $?
 See [create](#example) for an example.
 
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/bundle.md
+[c99-unspecified]: http://www.open-std.org/jtc1/sc22/wg14/www/C99RationaleV5.10.pdf#page=18
 [capabilities.7]: http://man7.org/linux/man-pages/man7/capabilities.7.html
 [controlling-terminal]: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap11.html#tag_11_01_03
 [create]: https://github.com/opencontainers/runtime-spec/blob/v1.0.0-rc4/runtime.md#create
