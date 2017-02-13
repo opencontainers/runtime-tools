@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"syscall"
 	"unicode"
 	"unicode/utf8"
 
@@ -405,13 +406,61 @@ func (v *Validator) CheckLinux() (msgs []string) {
 				rootfsPath = filepath.Join(v.bundlePath, v.spec.Root.Path)
 			}
 			absPath := filepath.Join(rootfsPath, device.Path)
-			_, err := os.Stat(absPath)
+			fi, err := os.Stat(absPath)
 			if os.IsNotExist(err) {
 				devList[device.Path] = true
 			} else if err != nil {
 				msgs = append(msgs, err.Error())
 			} else {
-				msgs = append(msgs, fmt.Sprintf("%s already exists in filesystem", device.Path))
+				fStat, ok := fi.Sys().(*syscall.Stat_t)
+				if !ok {
+					msgs = append(msgs, fmt.Sprintf("cannot determine state for device %s", device.Path))
+					continue
+				}
+				var devType string
+				switch fStat.Mode & syscall.S_IFMT {
+				case syscall.S_IFCHR:
+					devType = "c"
+				case syscall.S_IFBLK:
+					devType = "b"
+				case syscall.S_IFIFO:
+					devType = "p"
+				default:
+					devType = "unmatched"
+				}
+				if devType != device.Type || (devType == "c" && device.Type == "u") {
+					msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+					continue
+				}
+				if devType != "p" {
+					dev := fStat.Rdev
+					major := (dev >> 8) & 0xfff
+					minor := (dev & 0xff) | ((dev >> 12) & 0xfff00)
+					if int64(major) != device.Major || int64(minor) != device.Minor {
+						msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+						continue
+					}
+				}
+				if device.FileMode != nil {
+					expectedPerm := *device.FileMode & os.ModePerm
+					actualPerm := fi.Mode() & os.ModePerm
+					if expectedPerm != actualPerm {
+						msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+						continue
+					}
+				}
+				if device.UID != nil {
+					if *device.UID != fStat.Uid {
+						msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+						continue
+					}
+				}
+				if device.GID != nil {
+					if *device.GID != fStat.Gid {
+						msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+						continue
+					}
+				}
 			}
 		}
 
