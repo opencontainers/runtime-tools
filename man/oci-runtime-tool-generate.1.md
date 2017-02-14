@@ -51,7 +51,7 @@ read the configuration from `config.json`.
 **--cwd**=PATH
   Current working directory for the process. The deafult is */*.
 
-**--device**=*TYPE:MAJOR:MINOR:PATH[:OPTIONS...]*
+**--device-add**=*TYPE:MAJOR:MINOR:PATH[:OPTIONS...]*
   Add a device file in container. e.g. --device=c:10:229:/dev/fuse:fileMode=438:uid=0:gid=0
   The *TYPE*, *MAJOR*, *MINOR*, *PATH* are required.
     *TYPE* is the device type. The acceptable values are b (block), c (character), u (unbuffered), p (FIFO).
@@ -60,6 +60,7 @@ read the configuration from `config.json`.
   The *fileMode*, *uid*, *gid* are optional.
     *fileMode* is the file mode of the device file.
     *uid*/*gid* is the user/group id of the device file.
+  This option can be specified multiple times.
 
 **--disable-oom-kill**=true|false
   Whether to disable OOM Killer for the container or not.

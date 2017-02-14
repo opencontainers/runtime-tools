@@ -26,7 +26,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "cap-drop", Usage: "drop Linux capabilities"},
 	cli.StringFlag{Name: "cgroups-path", Usage: "specify the path to the cgroups"},
 	cli.StringFlag{Name: "cwd", Value: "/", Usage: "current working directory for the process"},
-	cli.StringSliceFlag{Name: "device", Usage: "specifies a device which must be made available in the container"},
+	cli.StringSliceFlag{Name: "device-add", Usage: "add a device which must be made available in the container"},
 	cli.BoolFlag{Name: "disable-oom-kill", Usage: "disable OOM Killer"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
@@ -502,15 +502,17 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.ClearProcessRlimits()
 	}
 
-	if context.IsSet("device") {
-		devices := context.StringSlice("device")
+	if context.IsSet("device-add") {
+		devices := context.StringSlice("device-add")
 		for _, deviceArg := range devices {
-			err := addDevice(deviceArg, g)
+			dev, err := parseDevice(deviceArg, g)
 			if err != nil {
 				return err
 			}
+			g.AddDevice(dev)
 		}
 	}
+
 	err := addSeccomp(context, g)
 	return err
 }
@@ -642,14 +644,14 @@ var deviceType = map[string]bool{
 	"p": true, // a FIFO
 }
 
-// addDevice takes the raw string passed with the --device flag, parses it, and add it
-func addDevice(device string, g *generate.Generator) error {
+// parseDevice takes the raw string passed with the --device flag
+func parseDevice(device string, g *generate.Generator) (rspec.Device, error) {
 	dev := rspec.LinuxDevice{}
 
 	// The required part and optional part are separated by ":"
 	argsParts := strings.Split(device, ":")
 	if len(argsParts) < 4 {
-		return fmt.Errorf("Incomplete device arguments: %s", device)
+		return dev, fmt.Errorf("Incomplete device arguments: %s", device)
 	}
 	requiredPart := argsParts[0:4]
 	optionalPart := argsParts[4:]
@@ -657,18 +659,18 @@ func addDevice(device string, g *generate.Generator) error {
 	// The required part must contain type, major, minor, and path
 	dev.Type = requiredPart[0]
 	if !deviceType[dev.Type] {
-		return fmt.Errorf("Invalid device type: %s", dev.Type)
+		return dev, fmt.Errorf("Invalid device type: %s", dev.Type)
 	}
 
 	i, err := strconv.ParseInt(requiredPart[1], 10, 64)
 	if err != nil {
-		return err
+		return dev, err
 	}
 	dev.Major = i
 
 	i, err = strconv.ParseInt(requiredPart[2], 10, 64)
 	if err != nil {
-		return err
+		return dev, err
 	}
 	dev.Minor = i
 	dev.Path = requiredPart[3]
@@ -678,7 +680,7 @@ func addDevice(device string, g *generate.Generator) error {
 		parts := strings.SplitN(s, "=", 2)
 
 		if len(parts) != 2 {
-			return fmt.Errorf("Incomplete device arguments: %s", s)
+			return dev, fmt.Errorf("Incomplete device arguments: %s", s)
 		}
 
 		name, value := parts[0], parts[1]
@@ -687,14 +689,14 @@ func addDevice(device string, g *generate.Generator) error {
 		case "fileMode":
 			i, err := strconv.ParseInt(value, 10, 32)
 			if err != nil {
-				return err
+				return dev, err
 			}
 			mode := os.FileMode(i)
 			dev.FileMode = &mode
 		case "uid":
 			i, err := strconv.ParseInt(value, 10, 32)
 			if err != nil {
-				return err
+				return dev, err
 			}
 			uid := uint32(i)
 			dev.UID = &uid
@@ -702,18 +704,16 @@ func addDevice(device string, g *generate.Generator) error {
 		case "gid":
 			i, err := strconv.ParseInt(value, 10, 32)
 			if err != nil {
-				return err
+				return dev, err
 			}
 			gid := uint32(i)
 			dev.GID = &gid
 		default:
-			return fmt.Errorf("'%s' is not supported by device section", name)
+			return dev, fmt.Errorf("'%s' is not supported by device section", name)
 		}
 	}
 
-	g.AddDevice(dev.Path, dev.Type, dev.Major, dev.Minor, dev.FileMode, dev.UID, dev.GID)
-
-	return nil
+	return dev, nil
 }
 
 func addSeccomp(context *cli.Context, g *generate.Generator) error {

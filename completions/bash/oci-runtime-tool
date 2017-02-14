@@ -309,7 +309,7 @@ _oci-runtime-tool_generate() {
 		--cap-drop
 		--cgroups-path
 		--cwd
-		--device
+		--device-add
 		--env
 		--env-file
 		--gid
