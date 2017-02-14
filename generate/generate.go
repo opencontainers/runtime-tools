@@ -914,6 +914,22 @@ func (g *Generator) RemoveLinuxNamespace(ns string) error {
 	return nil
 }
 
+// AddDevice - add a device into g.spec.Linux.Devices
+func (g *Generator) AddDevice(path, devType string, major, minor int64, fileMode *os.FileMode, uid, gid *uint32) {
+	g.initSpecLinux()
+
+	device := rspec.Device{
+		Path:     path,
+		Type:     devType,
+		Major:    major,
+		Minor:    minor,
+		FileMode: fileMode,
+		UID:      uid,
+		GID:      gid,
+	}
+	g.spec.Linux.Devices = append(g.spec.Linux.Devices, device)
+}
+
 // strPtr returns the pointer pointing to the string s.
 func strPtr(s string) *string { return &s }
 
