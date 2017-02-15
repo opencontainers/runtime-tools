@@ -8,6 +8,13 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 The key words "unspecified", "undefined", and "implementation-defined" are to be interpreted as described in the [rationale for the C99 standard][c99-unspecified].
 
+## Compliance
+
+This specification targets compliance criteria according to the role of a participant in runtime invocation.
+Requirements are placed on both runtimes and runtime callers, depending on what behavior is being constrained by the requirement.
+An implementation is compliant if it satisfies all the applicable MUST, REQUIRED, and SHALL requirements.
+An implementation is not compliant if it fails to satisfy one or more of the applicable MUST, REQUIRED, and SHALL requirements.
+
 ## Versioning
 
 The command line interface is versioned with [SemVer v2.0.0][semver].
