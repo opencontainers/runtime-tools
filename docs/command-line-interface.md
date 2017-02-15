@@ -1,6 +1,7 @@
 # OCI Runtime Command Line Interface
 
 This file defines the OCI Runtime Command Line Interface version 1.0.0.
+It is one of potentially several [runtime APIs supported by the runtime compliance test suite](runtime-compliance-testing.md#supported-apis).
 
 ## Notation
 
