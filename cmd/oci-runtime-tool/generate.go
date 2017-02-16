@@ -28,6 +28,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "cwd", Value: "/", Usage: "current working directory for the process"},
 	cli.StringSliceFlag{Name: "device-add", Usage: "add a device which must be made available in the container"},
 	cli.StringSliceFlag{Name: "device-remove", Usage: "remove a device which must be made available in the container"},
+	cli.BoolFlag{Name: "device-remove-all", Usage: "remove all devices which must be made available in the container"},
 	cli.BoolFlag{Name: "disable-oom-kill", Usage: "disable OOM Killer"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
@@ -524,6 +525,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
+	if context.Bool("device-remove-all") {
+		g.ClearLinuxDevices()
+	}
+
 	err := addSeccomp(context, g)
 	return err
 }
@@ -655,8 +660,8 @@ var deviceType = map[string]bool{
 	"p": true, // a FIFO
 }
 
-// parseDevice takes the raw string passed with the --device flag
-func parseDevice(device string, g *generate.Generator) (rspec.Device, error) {
+// parseDevice takes the raw string passed with the --device-add flag
+func parseDevice(device string, g *generate.Generator) (rspec.LinuxDevice, error) {
 	dev := rspec.LinuxDevice{}
 
 	// The required part and optional part are separated by ":"

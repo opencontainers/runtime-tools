@@ -66,6 +66,9 @@ read the configuration from `config.json`.
   Remove a device file in container.
   This option can be specified multiple times.
 
+**--device-remove-all**=true|false
+  Remove all devices for linux inside the container. The default is *false*.
+
 **--disable-oom-kill**=true|false
   Whether to disable OOM Killer for the container or not.
 

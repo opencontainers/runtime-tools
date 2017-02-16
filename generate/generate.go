@@ -1015,16 +1015,16 @@ func (g *Generator) RemoveLinuxNamespace(ns string) error {
 }
 
 // AddDevice - add a device into g.spec.Linux.Devices
-func (g *Generator) AddDevice(device rspec.Device) {
+func (g *Generator) AddDevice(device rspec.LinuxDevice) {
 	g.initSpecLinux()
 
-	for i, dev := range g.spec.Linux.LinuxDevices {
+	for i, dev := range g.spec.Linux.Devices {
 		if dev.Path == device.Path {
-			g.spec.Linux.LinuxDevices[i] = device
+			g.spec.Linux.Devices[i] = device
 			return
 		}
 		if dev.Type == device.Type && dev.Major == device.Major && dev.Minor == device.Minor {
-			fmt.Println("WARNING: The same type, major and minor should not be used for multiple devices.")
+			fmt.Fprintln(os.Stderr, "WARNING: The same type, major and minor should not be used for multiple devices.")
 		}
 	}
 
@@ -1032,7 +1032,7 @@ func (g *Generator) AddDevice(device rspec.Device) {
 }
 
 //RemoveDevice remove a device from g.spec.Linux.Devices
-func(g *Generator) RemoveDevice(path string) error {
+func (g *Generator) RemoveDevice(path string) error {
 	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Devices == nil {
 		return nil
 	}
@@ -1046,6 +1046,13 @@ func(g *Generator) RemoveDevice(path string) error {
 	return nil
 }
 
+func (g *Generator) ClearLinuxDevices() {
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Devices == nil {
+		return
+	}
+
+	g.spec.Linux.Devices = []rspec.LinuxDevice{}
+}
 
 // strPtr returns the pointer pointing to the string s.
 func strPtr(s string) *string { return &s }

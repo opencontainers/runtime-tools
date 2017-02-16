@@ -368,6 +368,7 @@ _oci-runtime-tool_generate() {
 	"
 
 	local boolean_options="
+		--device-remove-all
 		--disable-oom-kill
 		--help -h
 		--linux-namespace-remove-all
