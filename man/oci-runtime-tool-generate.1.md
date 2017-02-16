@@ -62,6 +62,10 @@ read the configuration from `config.json`.
     *uid*/*gid* is the user/group id of the device file.
   This option can be specified multiple times.
 
+**--device-remove**=*PATH*
+  Remove a device file in container.
+  This option can be specified multiple times.
+
 **--disable-oom-kill**=true|false
   Whether to disable OOM Killer for the container or not.
 

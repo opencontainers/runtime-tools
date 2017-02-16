@@ -310,6 +310,7 @@ _oci-runtime-tool_generate() {
 		--cgroups-path
 		--cwd
 		--device-add
+		--device-remove
 		--env
 		--env-file
 		--gid

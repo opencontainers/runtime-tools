@@ -1031,6 +1031,22 @@ func (g *Generator) AddDevice(device rspec.Device) {
 	g.spec.Linux.Devices = append(g.spec.Linux.Devices, device)
 }
 
+//RemoveDevice remove a device from g.spec.Linux.Devices
+func(g *Generator) RemoveDevice(path string) error {
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Devices == nil {
+		return nil
+	}
+
+	for i, device := range g.spec.Linux.Devices {
+		if device.Path == path {
+			g.spec.Linux.Devices = append(g.spec.Linux.Devices[:i], g.spec.Linux.Devices[i+1:]...)
+			return nil
+		}
+	}
+	return nil
+}
+
+
 // strPtr returns the pointer pointing to the string s.
 func strPtr(s string) *string { return &s }
 

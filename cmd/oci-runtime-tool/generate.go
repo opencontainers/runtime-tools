@@ -27,6 +27,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "cgroups-path", Usage: "specify the path to the cgroups"},
 	cli.StringFlag{Name: "cwd", Value: "/", Usage: "current working directory for the process"},
 	cli.StringSliceFlag{Name: "device-add", Usage: "add a device which must be made available in the container"},
+	cli.StringSliceFlag{Name: "device-remove", Usage: "remove a device which must be made available in the container"},
 	cli.BoolFlag{Name: "disable-oom-kill", Usage: "disable OOM Killer"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
@@ -510,6 +511,16 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 				return err
 			}
 			g.AddDevice(dev)
+		}
+	}
+
+	if context.IsSet("device-remove") {
+		devices := context.StringSlice("device-remove")
+		for _, device := range devices {
+			err := g.RemoveDevice(device)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
