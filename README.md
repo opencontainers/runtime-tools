@@ -32,16 +32,25 @@ INFO[0000] Bundle validation succeeded.
 ```sh
 $ make
 $ sudo make install
-$ sudo ./test_runtime.sh -r runc
------------------------------------------------------------------------------------
-VALIDATING RUNTIME: runc
------------------------------------------------------------------------------------
-validating container process
-validating capabilities
-validating hostname
-validating rlimits
-validating sysctls
-Runtime runc passed validation
+$ sudo oci-runtime-tool runtime-validate --runtime runc
+TAP version 13
+ok 1 - root filesystem
+ok 2 - hostname
+ok 3 - mounts
+ok 4 - capabilities
+ok 5 - default symlinks
+ok 6 - default file system
+ok 7 - default devices
+ok 8 - linux devices
+ok 9 - linux process
+ok 10 - masked paths
+ok 11 - oom score adj
+ok 12 - read only paths
+ok 13 - rlimits
+ok 14 - sysctls
+ok 15 - uid mappings
+ok 16 - gid mappings
+1..16
 ```
 
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/master/bundle.md
