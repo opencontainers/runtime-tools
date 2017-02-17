@@ -29,9 +29,18 @@
 			"Rev": "67c9553625499b7e7ed4ac4f2d8bf1cb8f5ecf52"
 		},
 		{
+			"ImportPath": "github.com/mrunalp/fileutils",
+			"Rev": "4ee1cc9a80582a0c75febdd5cfa779ee4361cbca"
+		},
+		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
 			"Comment": "v1.0.0-rc1-31-gbb6925e",
 			"Rev": "bb6925ea99f0e366a3f7d1c975f6577475ca25f0"
+		},
+		{
+			"ImportPath": "github.com/satori/go.uuid",
+			"Comment": "v1.1.0-6-gb061729",
+			"Rev": "b061729afc07e77a8aa4fad0a2fd840958f1942a"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
