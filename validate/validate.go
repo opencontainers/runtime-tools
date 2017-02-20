@@ -257,6 +257,11 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		if process.Rlimits[index].Hard < process.Rlimits[index].Soft {
 			msgs = append(msgs, fmt.Sprintf("hard limit of rlimit %s should not be less than soft limit.", process.Rlimits[index].Type))
 		}
+		for i := index + 1; i < len(process.Rlimits); i++ {
+			if process.Rlimits[index].Type == process.Rlimits[i].Type {
+				msgs = append(msgs, fmt.Sprintf("rlimit can not contain the same type %q.", process.Rlimits[index].Type))
+			}
+		}
 	}
 
 	if len(process.ApparmorProfile) > 0 {
