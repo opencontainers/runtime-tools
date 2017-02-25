@@ -129,7 +129,7 @@ func validateLinuxProcess(spec *rspec.Spec) error {
 		}
 	}
 
-	cmdlineBytes, err := ioutil.ReadFile("/proc/1/cmdline")
+	cmdlineBytes, err := ioutil.ReadFile("/proc/self/cmdline")
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func validateCapabilities(spec *rspec.Spec) error {
 		last = capability.CAP_BLOCK_SUSPEND
 	}
 
-	processCaps, err := capability.NewPid(1)
+	processCaps, err := capability.NewPid(0)
 	if err != nil {
 		return err
 	}
