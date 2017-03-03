@@ -79,7 +79,7 @@ cp runtimetest ${TESTDIR}
 
 oci-runtime-tool generate --output "${TESTDIR}/config.json" "${TEST_ARGS[@]}" --rootfs-path '.'
 
-TESTCMD="${RUNTIME} start $(uuidgen)"
+TESTCMD="${RUNTIME} run $(uuidgen)"
 pushd $TESTDIR > /dev/null
 if ! ${TESTCMD}; then
 	error "Runtime ${RUNTIME} failed validation"
