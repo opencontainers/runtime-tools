@@ -15,28 +15,29 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/blang/semver"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/syndtr/gocapability/capability"
 )
 
 const specConfig = "config.json"
 
 var (
 	defaultRlimits = []string{
-		"RLIMIT_CPU",
-		"RLIMIT_FSIZE",
-		"RLIMIT_DATA",
-		"RLIMIT_STACK",
-		"RLIMIT_CORE",
-		"RLIMIT_RSS",
-		"RLIMIT_NPROC",
-		"RLIMIT_NOFILE",
-		"RLIMIT_MEMLOCK",
 		"RLIMIT_AS",
+		"RLIMIT_CORE",
+		"RLIMIT_CPU",
+		"RLIMIT_DATA",
+		"RLIMIT_FSIZE",
 		"RLIMIT_LOCKS",
-		"RLIMIT_SIGPENDING",
+		"RLIMIT_MEMLOCK",
 		"RLIMIT_MSGQUEUE",
 		"RLIMIT_NICE",
+		"RLIMIT_NOFILE",
+		"RLIMIT_NPROC",
+		"RLIMIT_RSS",
 		"RLIMIT_RTPRIO",
 		"RLIMIT_RTTIME",
+		"RLIMIT_SIGPENDING",
+		"RLIMIT_STACK",
 	}
 	defaultCaps = []string{
 		"CAP_CHOWN",
@@ -56,16 +57,19 @@ var (
 	}
 )
 
+// Validator represents a validator for runtime bundle
 type Validator struct {
 	spec         *rspec.Spec
 	bundlePath   string
 	HostSpecific bool
 }
 
+// NewValidator creates a Validator
 func NewValidator(spec *rspec.Spec, bundlePath string, hostSpecific bool) Validator {
 	return Validator{spec: spec, bundlePath: bundlePath, HostSpecific: hostSpecific}
 }
 
+// NewValidatorFromPath creates a Validator with specified bundle path
 func NewValidatorFromPath(bundlePath string, hostSpecific bool) (Validator, error) {
 	if bundlePath == "" {
 		return Validator{}, fmt.Errorf("Bundle path shouldn't be empty")
@@ -91,6 +95,7 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool) (Validator, erro
 	return NewValidator(&spec, bundlePath, hostSpecific), nil
 }
 
+// CheckAll checks all parts of runtime bundle
 func (v *Validator) CheckAll() (msgs []string) {
 	msgs = append(msgs, v.CheckRootfsPath()...)
 	msgs = append(msgs, v.CheckMandatoryFields()...)
@@ -104,6 +109,7 @@ func (v *Validator) CheckAll() (msgs []string) {
 	return
 }
 
+// CheckRootfsPath checks status of v.spec.Root.Path
 func (v *Validator) CheckRootfsPath() (msgs []string) {
 	logrus.Debugf("check rootfs path")
 
@@ -123,6 +129,8 @@ func (v *Validator) CheckRootfsPath() (msgs []string) {
 	return
 
 }
+
+// CheckSemVer checks v.spec.Version
 func (v *Validator) CheckSemVer() (msgs []string) {
 	logrus.Debugf("check semver")
 
@@ -138,6 +146,7 @@ func (v *Validator) CheckSemVer() (msgs []string) {
 	return
 }
 
+// CheckPlatform checks v.spec.Platform
 func (v *Validator) CheckPlatform() (msgs []string) {
 	logrus.Debugf("check platform")
 
@@ -168,6 +177,7 @@ func (v *Validator) CheckPlatform() (msgs []string) {
 	return
 }
 
+// CheckHooks check v.spec.Hooks
 func (v *Validator) CheckHooks() (msgs []string) {
 	logrus.Debugf("check hooks")
 
@@ -204,6 +214,7 @@ func checkEventHooks(hookType string, hooks []rspec.Hook, hostSpecific bool) (ms
 	return
 }
 
+// CheckProcess checks v.spec.Process
 func (v *Validator) CheckProcess() (msgs []string) {
 	logrus.Debugf("check process")
 
@@ -243,19 +254,15 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		}
 	}
 
-	for index := 0; index < len(process.Capabilities); index++ {
-		capability := process.Capabilities[index]
-		if !capValid(capability) {
-			msgs = append(msgs, fmt.Sprintf("capability %q is not valid, man capabilities(7)", process.Capabilities[index]))
+	for _, capability := range process.Capabilities {
+		if err := CapValid(capability, v.HostSpecific); err != nil {
+			msgs = append(msgs, fmt.Sprintf("capability %q is not valid, man capabilities(7)", capability))
 		}
 	}
 
-	for index := 0; index < len(process.Rlimits); index++ {
-		if !rlimitValid(process.Rlimits[index].Type) {
-			msgs = append(msgs, fmt.Sprintf("rlimit type %q is invalid.", process.Rlimits[index].Type))
-		}
-		if process.Rlimits[index].Hard < process.Rlimits[index].Soft {
-			msgs = append(msgs, fmt.Sprintf("hard limit of rlimit %s should not be less than soft limit.", process.Rlimits[index].Type))
+	for _, rlimit := range process.Rlimits {
+		if err := rlimitValid(rlimit); err != nil {
+			msgs = append(msgs, err.Error())
 		}
 	}
 
@@ -311,6 +318,7 @@ func supportedMountTypes(OS string, hostSpecific bool) (map[string]bool, error) 
 	return nil, nil
 }
 
+// CheckMounts checks v.spec.Mounts
 func (v *Validator) CheckMounts() (msgs []string) {
 	logrus.Debugf("check mounts")
 
@@ -335,7 +343,7 @@ func (v *Validator) CheckMounts() (msgs []string) {
 	return
 }
 
-//Linux only
+// CheckLinux checks v.spec.Linux
 func (v *Validator) CheckLinux() (msgs []string) {
 	logrus.Debugf("check linux")
 
@@ -429,6 +437,7 @@ func (v *Validator) CheckLinux() (msgs []string) {
 	return
 }
 
+// CheckLinuxResources checks v.spec.Linux.Resources
 func (v *Validator) CheckLinuxResources() (msgs []string) {
 	logrus.Debugf("check linux resources")
 
@@ -445,6 +454,7 @@ func (v *Validator) CheckLinuxResources() (msgs []string) {
 	return
 }
 
+// CheckSeccomp checkc v.spec.Linux.Seccomp
 func (v *Validator) CheckSeccomp() (msgs []string) {
 	logrus.Debugf("check linux seccomp")
 
@@ -483,6 +493,40 @@ func (v *Validator) CheckSeccomp() (msgs []string) {
 	return
 }
 
+// CapValid checks whether a capability is valid
+func CapValid(c string, hostSpecific bool) error {
+	isValid := false
+
+	if !strings.HasPrefix(c, "CAP_") {
+		return fmt.Errorf("capability %s must start with CAP_", c)
+	}
+	for _, cap := range capability.List() {
+		if c == fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())) {
+			if hostSpecific && cap > LastCap() {
+				return fmt.Errorf("CAP_%s is not supported on the current host", c)
+			}
+			isValid = true
+			break
+		}
+	}
+
+	if !isValid {
+		return fmt.Errorf("Invalid capability: %s", c)
+	}
+	return nil
+}
+
+// LastCap return last cap of system
+func LastCap() capability.Cap {
+	last := capability.CAP_LAST_CAP
+	// hack for RHEL6 which has no /proc/sys/kernel/cap_last_cap
+	if last == capability.Cap(63) {
+		last = capability.CAP_BLOCK_SUSPEND
+	}
+
+	return last
+}
+
 func envValid(env string) bool {
 	items := strings.Split(env, "=")
 	if len(items) < 2 {
@@ -499,22 +543,16 @@ func envValid(env string) bool {
 	return true
 }
 
-func capValid(capability string) bool {
-	for _, val := range defaultCaps {
-		if val == capability {
-			return true
-		}
+func rlimitValid(rlimit rspec.Rlimit) error {
+	if rlimit.Hard < rlimit.Soft {
+		return fmt.Errorf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type)
 	}
-	return false
-}
-
-func rlimitValid(rlimit string) bool {
 	for _, val := range defaultRlimits {
-		if val == rlimit {
-			return true
+		if val == rlimit.Type {
+			return nil
 		}
 	}
-	return false
+	return fmt.Errorf("rlimit type %q is invalid", rlimit.Type)
 }
 
 func namespaceValid(ns rspec.Namespace) bool {
@@ -662,6 +700,7 @@ func checkMandatory(obj interface{}) (msgs []string) {
 	return
 }
 
+// CheckMandatoryFields checks mandatory field of container's config file
 func (v *Validator) CheckMandatoryFields() []string {
 	logrus.Debugf("check mandatory fields")
 
