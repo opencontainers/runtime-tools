@@ -332,19 +332,19 @@ During container image development, containers often need to write to the image
 content.  Installing packages into /usr, for example.  In production,
 applications seldom need to write to the image.  Container applications write
 to volumes if they need to write to file systems at all.  Applications can be
-made more secure by generating them in read-only mode using the --read-only switch.
+made more secure by generating them in read-only mode using the --rootfs-readonly switch.
 This protects the containers image from modification. Read only containers may
 still need to write temporary data.  The best way to handle this is to mount
 tmpfs directories on /generate and /tmp.
 
-    # oci-runtime-tool generate --read-only --tmpfs /generate --tmpfs /tmp --tmpfs /run  --rootfs /var/lib/containers/fedora /bin/bash
+    $ oci-runtime-tool generate --rootfs-readonly --tmpfs /generate --tmpfs /tmp --tmpfs /run  --rootfs-path /var/lib/containers/fedora --args bash
 
 ## Exposing log messages from the container to the host's log
 
 If you want messages that are logged in your container to show up in the host's
 syslog/journal then you should bind mount the /dev/log directory as follows.
 
-    # oci-runtime-tool generate --bind /dev/log:/dev/log  --rootfs /var/lib/containers/fedora /bin/bash
+    $ oci-runtime-tool generate --bind /dev/log:/dev/log  --rootfs-path /var/lib/containers/fedora --args bash
 
 From inside the container you can test this by sending a message to the log.
 
@@ -364,13 +364,13 @@ To mount a host directory as a container volume, specify the absolute path to
 the directory and the absolute path for the container directory separated by a
 colon:
 
-    # oci-runtime-tool generate --bind /var/db:/data1  --rootfs /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --bind /var/db:/data1  --rootfs-path /var/lib/containers/fedora --args bash
 
 ## Using SELinux
 
 You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --selinux-label.
 
-    # oci-runtime-tool generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbox_file_t:s0:c1,c2 --rootfs /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbox_file_t:s0:c1,c2 --rootfs-path /var/lib/containers/fedora --args bash
 
 Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
 
