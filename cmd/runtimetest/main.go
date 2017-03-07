@@ -29,13 +29,6 @@ const PR_GET_NO_NEW_PRIVS = 39
 const specConfig = "config.json"
 
 var (
-	defaultFS = map[string]string{
-		"/proc":    "proc",
-		"/sys":     "sysfs",
-		"/dev/pts": "devpts",
-		"/dev/shm": "tmpfs",
-	}
-
 	defaultSymlinks = map[string]string{
 		"/dev/fd":     "/proc/self/fd",
 		"/dev/stdin":  "/proc/self/fd/0",
@@ -265,28 +258,6 @@ func validateRootFS(spec *rspec.Spec) error {
 		err := testWriteAccess("/")
 		if err == nil {
 			return fmt.Errorf("Rootfs should be readonly")
-		}
-	}
-
-	return nil
-}
-
-func validateDefaultFS(spec *rspec.Spec) error {
-	logrus.Debugf("validating linux default filesystem")
-
-	mountInfos, err := mount.GetMounts()
-	if err != nil {
-		return err
-	}
-
-	mountsMap := make(map[string]string)
-	for _, mountInfo := range mountInfos {
-		mountsMap[mountInfo.Mountpoint] = mountInfo.Fstype
-	}
-
-	for fs, fstype := range defaultFS {
-		if !(mountsMap[fs] == fstype) {
-			return fmt.Errorf("%v must exist and expected type is %v", fs, fstype)
 		}
 	}
 
@@ -611,10 +582,6 @@ func validate(context *cli.Context) error {
 		{
 			test:        validateDefaultSymlinks,
 			description: "default symlinks",
-		},
-		{
-			test:        validateDefaultFS,
-			description: "default file system",
 		},
 		{
 			test:        validateDefaultDevices,
