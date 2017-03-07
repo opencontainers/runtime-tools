@@ -103,6 +103,7 @@ func (v *Validator) CheckAll() (msgs []string) {
 	msgs = append(msgs, v.CheckMounts()...)
 	msgs = append(msgs, v.CheckPlatform()...)
 	msgs = append(msgs, v.CheckProcess()...)
+	msgs = append(msgs, v.CheckOS()...)
 	msgs = append(msgs, v.CheckLinux()...)
 	msgs = append(msgs, v.CheckHooks()...)
 
@@ -337,6 +338,24 @@ func (v *Validator) CheckMounts() (msgs []string) {
 			if !filepath.IsAbs(mount.Destination) {
 				msgs = append(msgs, fmt.Sprintf("destination %v is not an absolute path", mount.Destination))
 			}
+		}
+	}
+
+	return
+}
+
+func (v *Validator) CheckOS() (msgs []string) {
+	logrus.Debugf("check os")
+
+	if v.spec.Platform.OS != "linux" {
+		if v.spec.Linux != nil {
+			msgs = append(msgs, fmt.Sprintf("'linux' MUST NOT be set when platform.os is %q", v.spec.Platform.OS))
+		}
+	}
+
+	if v.spec.Platform.OS != "solaris" {
+		if v.spec.Solaris != nil {
+			msgs = append(msgs, fmt.Sprintf("'solaris' MUST NOT be set when platform.os is %q", v.spec.Platform.OS))
 		}
 	}
 
