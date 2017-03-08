@@ -265,6 +265,11 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		if err := rlimitValid(rlimit); err != nil {
 			msgs = append(msgs, err.Error())
 		}
+		for i := index + 1; i < len(process.Rlimits); i++ {
+			if process.Rlimits[index].Type == process.Rlimits[i].Type {
+				msgs = append(msgs, fmt.Sprintf("rlimit can not contain the same type %q.", process.Rlimits[index].Type))
+			}
+		}
 	}
 
 	if len(process.ApparmorProfile) > 0 {
