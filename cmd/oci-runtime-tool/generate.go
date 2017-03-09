@@ -646,7 +646,7 @@ var deviceType = map[string]bool{
 func addDevice(device string, g *generate.Generator) error {
 	dev := rspec.Device{}
 
-	// The required part and optional part are seperated by ":"
+	// The required part and optional part are separated by ":"
 	argsParts := strings.Split(device, ":")
 	if len(argsParts) < 4 {
 		return fmt.Errorf("Incomplete device arguments: %s", device)
