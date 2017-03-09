@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -472,6 +473,26 @@ func (v *Validator) CheckLinuxResources() (msgs []string) {
 		}
 		if r.Memory.Limit != nil && r.Memory.Reservation != nil && uint64(*r.Memory.Reservation) > uint64(*r.Memory.Limit) {
 			msgs = append(msgs, fmt.Sprintf("Minimum memory limit should be larger than memory reservation"))
+		}
+	}
+	if r.Network != nil && v.HostSpecific {
+		var exist bool
+		interfaces, err := net.Interfaces()
+		if err != nil {
+			msgs = append(msgs, err.Error())
+			return
+		}
+		for _, prio := range r.Network.Priorities {
+			exist = false
+			for _, ni := range interfaces {
+				if prio.Name == ni.Name {
+					exist = true
+					break
+				}
+			}
+			if !exist {
+				msgs = append(msgs, fmt.Sprintf("Interface %s does not exist currently", prio.Name))
+			}
 		}
 	}
 
