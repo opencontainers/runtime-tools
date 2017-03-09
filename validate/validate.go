@@ -261,7 +261,7 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		}
 	}
 
-	for _, rlimit := range process.Rlimits {
+	for index, rlimit := range process.Rlimits {
 		if err := rlimitValid(rlimit); err != nil {
 			msgs = append(msgs, err.Error())
 		}
