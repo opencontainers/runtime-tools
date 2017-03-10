@@ -495,7 +495,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-cpus") {
-		g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
+		if err := uintListValid(context.String("linux-cpus")); err != nil {
+			return err
+		} else {
+			g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
+		}
 	}
 
 	if context.IsSet("linux-hugepage-limits-add") {
@@ -517,7 +521,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-mems") {
-		g.SetLinuxResourcesCPUMems(context.String("linux-mems"))
+		if err := uintListValid(context.String("linux-mems")); err != nil {
+			return err
+		} else {
+			g.SetLinuxResourcesCPUMems(context.String("linux-mems"))
+		}
 	}
 
 	if context.IsSet("linux-mem-limit") {
@@ -660,6 +668,38 @@ func parseConsoleSize(consoleSize string) (uint, uint, error) {
 	}
 
 	return uint(width), uint(height), nil
+}
+
+func uintListValid(val string) error {
+	if val == "" {
+		return nil
+	}
+
+	split := strings.Split(val, ",")
+	errInvalidFormat := fmt.Errorf("invalid format: %s", val)
+
+	for _, r := range split {
+		if !strings.Contains(r, "-") {
+			_, err := strconv.Atoi(r)
+			if err != nil {
+				return errInvalidFormat
+			}
+		} else {
+			split := strings.SplitN(r, "-", 2)
+			min, err := strconv.Atoi(split[0])
+			if err != nil {
+				return errInvalidFormat
+			}
+			max, err := strconv.Atoi(split[1])
+			if err != nil {
+				return errInvalidFormat
+			}
+			if max < min {
+				return errInvalidFormat
+			}
+		}
+	}
+	return nil
 }
 
 func parseIDMapping(idms string) (uint32, uint32, uint32, error) {
