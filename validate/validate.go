@@ -17,6 +17,7 @@ import (
 
 	"github.com/blang/semver"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-tools/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/syndtr/gocapability/capability"
 )
@@ -633,6 +634,20 @@ func (v *Validator) CheckLinuxResources() (msgs []string) {
 	logrus.Debugf("check linux resources")
 
 	r := v.spec.Linux.Resources
+
+	if r.CPU != nil {
+		if r.CPU.Cpus != "" {
+			if err := utils.UnitListValid(r.CPU.Cpus); err != nil {
+				msgs = append(msgs, err.Error())
+			}
+		}
+		if r.CPU.Mems != "" {
+			if err := utils.UnitListValid(r.CPU.Mems); err != nil {
+				msgs = append(msgs, err.Error())
+			}
+		}
+	}
+
 	if r.Memory != nil {
 		if r.Memory.Limit != nil && r.Memory.Swap != nil && uint64(*r.Memory.Limit) > uint64(*r.Memory.Swap) {
 			msgs = append(msgs, fmt.Sprintf("Minimum memoryswap should be larger than memory limit"))
@@ -641,6 +656,7 @@ func (v *Validator) CheckLinuxResources() (msgs []string) {
 			msgs = append(msgs, fmt.Sprintf("Minimum memory limit should be larger than memory reservation"))
 		}
 	}
+
 	if r.Network != nil && v.HostSpecific {
 		var exist bool
 		interfaces, err := net.Interfaces()
@@ -715,7 +731,7 @@ func CapValid(c string, hostSpecific bool) error {
 	}
 	for _, cap := range capability.List() {
 		if c == fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())) {
-			if hostSpecific && cap > LastCap() {
+			if hostSpecific && cap > utils.LastCap() {
 				return fmt.Errorf("CAP_%s is not supported on the current host", c)
 			}
 			isValid = true
@@ -727,17 +743,6 @@ func CapValid(c string, hostSpecific bool) error {
 		return fmt.Errorf("Invalid capability: %s", c)
 	}
 	return nil
-}
-
-// LastCap return last cap of system
-func LastCap() capability.Cap {
-	last := capability.CAP_LAST_CAP
-	// hack for RHEL6 which has no /proc/sys/kernel/cap_last_cap
-	if last == capability.Cap(63) {
-		last = capability.CAP_BLOCK_SUSPEND
-	}
-
-	return last
 }
 
 func envValid(env string) bool {

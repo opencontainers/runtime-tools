@@ -23,6 +23,7 @@ import (
 
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
+	"github.com/opencontainers/runtime-tools/utils"
 	"github.com/opencontainers/runtime-tools/validate"
 )
 
@@ -162,11 +163,7 @@ func validateLinuxProcess(spec *rspec.Spec) error {
 }
 
 func validateCapabilities(spec *rspec.Spec) error {
-	last := capability.CAP_LAST_CAP
-	// workaround for RHEL6 which has no /proc/sys/kernel/cap_last_cap
-	if last == capability.Cap(63) {
-		last = capability.CAP_BLOCK_SUSPEND
-	}
+	last := utils.LastCap()
 
 	processCaps, err := capability.NewPid(0)
 	if err != nil {

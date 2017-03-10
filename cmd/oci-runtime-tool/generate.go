@@ -13,6 +13,7 @@ import (
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/generate/seccomp"
+	"github.com/opencontainers/runtime-tools/utils"
 	"github.com/urfave/cli"
 )
 
@@ -495,11 +496,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-cpus") {
-		if err := uintListValid(context.String("linux-cpus")); err != nil {
+		if err := utils.UnitListValid(context.String("linux-cpus")); err != nil {
 			return err
-		} else {
-			g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
 		}
+		g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
 	}
 
 	if context.IsSet("linux-hugepage-limits-add") {
@@ -521,11 +521,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-mems") {
-		if err := uintListValid(context.String("linux-mems")); err != nil {
+		if err := utils.UnitListValid(context.String("linux-mems")); err != nil {
 			return err
-		} else {
-			g.SetLinuxResourcesCPUMems(context.String("linux-mems"))
 		}
+		g.SetLinuxResourcesCPUMems(context.String("linux-mems"))
 	}
 
 	if context.IsSet("linux-mem-limit") {
