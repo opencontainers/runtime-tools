@@ -336,6 +336,7 @@ _oci-runtime-tool_generate() {
 		--masked-paths
 		--mount-cgroups
 		--mount-label
+		--oom-score-adj
 		--os
 		--output
 		--poststart
@@ -368,7 +369,6 @@ _oci-runtime-tool_generate() {
 		--help -h
 		--linux-namespace-remove-all
 		--no-new-privileges
-		--oom-score-adj
 		--privileged
 		--rlimits-remove-all
 		--rootfs-readonly
