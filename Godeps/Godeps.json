@@ -1,7 +1,6 @@
 {
 	"ImportPath": "github.com/opencontainers/runtime-tools",
 	"GoVersion": "go1.4",
-	"GodepVersion": "v75",
 	"Packages": [
 		"./..."
 	],
@@ -34,8 +33,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
-			"Comment": "v1.0.0-rc1-31-gbb6925e",
-			"Rev": "bb6925ea99f0e366a3f7d1c975f6577475ca25f0"
+			"Comment": "v1.0.0-rc5",
+			"Rev": "035da1dca3dfbb00d752eb58b0b158d6129f3776"
 		},
 		{
 			"ImportPath": "github.com/satori/go.uuid",
@@ -44,7 +43,7 @@
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
-			"Rev": "2c00daeb6c3b45114c80ac44119e7b8801fdd852"
+			"Rev": "e7cb7fa329f456b3855136a2642b197bad7366ba"
 		},
 		{
 			"ImportPath": "github.com/urfave/cli",

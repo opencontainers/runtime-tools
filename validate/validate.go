@@ -256,7 +256,25 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		}
 	}
 
-	for _, capability := range process.Capabilities {
+	var caps []string
+
+	for _, cap := range process.Capabilities.Bounding {
+		caps = append(caps, cap)
+	}
+	for _, cap := range process.Capabilities.Effective {
+		caps = append(caps, cap)
+	}
+	for _, cap := range process.Capabilities.Inheritable {
+		caps = append(caps, cap)
+	}
+	for _, cap := range process.Capabilities.Permitted {
+		caps = append(caps, cap)
+	}
+	for _, cap := range process.Capabilities.Ambient {
+		caps = append(caps, cap)
+	}
+
+	for _, capability := range caps {
 		if err := CapValid(capability, v.HostSpecific); err != nil {
 			msgs = append(msgs, fmt.Sprintf("capability %q is not valid, man capabilities(7)", capability))
 		}
@@ -372,7 +390,7 @@ func (v *Validator) CheckOS() (msgs []string) {
 func (v *Validator) CheckLinux() (msgs []string) {
 	logrus.Debugf("check linux")
 
-	var typeList = map[rspec.NamespaceType]struct {
+	var typeList = map[rspec.LinuxNamespaceType]struct {
 		num      int
 		newExist bool
 	}{
@@ -595,7 +613,7 @@ func envValid(env string) bool {
 	return true
 }
 
-func rlimitValid(rlimit rspec.Rlimit) error {
+func rlimitValid(rlimit rspec.LinuxRlimit) error {
 	if rlimit.Hard < rlimit.Soft {
 		return fmt.Errorf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type)
 	}
@@ -607,7 +625,7 @@ func rlimitValid(rlimit rspec.Rlimit) error {
 	return fmt.Errorf("rlimit type %q is invalid", rlimit.Type)
 }
 
-func namespaceValid(ns rspec.Namespace) bool {
+func namespaceValid(ns rspec.LinuxNamespace) bool {
 	switch ns.Type {
 	case rspec.PIDNamespace:
 	case rspec.NetworkNamespace:
@@ -627,7 +645,7 @@ func namespaceValid(ns rspec.Namespace) bool {
 	return true
 }
 
-func deviceValid(d rspec.Device) bool {
+func deviceValid(d rspec.LinuxDevice) bool {
 	switch d.Type {
 	case "b":
 	case "c":
@@ -648,7 +666,7 @@ func deviceValid(d rspec.Device) bool {
 	return true
 }
 
-func seccompActionValid(secc rspec.Action) bool {
+func seccompActionValid(secc rspec.LinuxSeccompAction) bool {
 	switch secc {
 	case "":
 	case rspec.ActKill:
@@ -662,7 +680,7 @@ func seccompActionValid(secc rspec.Action) bool {
 	return true
 }
 
-func syscallValid(s rspec.Syscall) bool {
+func syscallValid(s rspec.LinuxSyscall) bool {
 	if !seccompActionValid(s.Action) {
 		return false
 	}
