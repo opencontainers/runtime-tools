@@ -35,7 +35,7 @@ clean:
 $(RUNTIME_TOOLS_LINK):
 	ln -sf $(CURDIR) $(RUNTIME_TOOLS_LINK)
 
-.PHONY: test .gofmt .govet .golint
+.PHONY: test
 
 test: .gofmt .govet .golint
 
