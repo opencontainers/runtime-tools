@@ -273,46 +273,71 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		}
 	}
 
-	var caps []string
+	msgs = append(msgs, v.CheckCapablities()...)
+	msgs = append(msgs, v.CheckRlimits()...)
 
-	for _, cap := range process.Capabilities.Bounding {
-		caps = append(caps, cap)
-	}
-	for _, cap := range process.Capabilities.Effective {
-		caps = append(caps, cap)
-	}
-	for _, cap := range process.Capabilities.Inheritable {
-		caps = append(caps, cap)
-	}
-	for _, cap := range process.Capabilities.Permitted {
-		caps = append(caps, cap)
-	}
-	for _, cap := range process.Capabilities.Ambient {
-		caps = append(caps, cap)
-	}
+	if v.spec.Platform.OS == "linux" {
 
-	for _, capability := range caps {
-		if err := CapValid(capability, v.HostSpecific); err != nil {
-			msgs = append(msgs, fmt.Sprintf("capability %q is not valid, man capabilities(7)", capability))
+		if len(process.ApparmorProfile) > 0 {
+			profilePath := filepath.Join(v.bundlePath, v.spec.Root.Path, "/etc/apparmor.d", process.ApparmorProfile)
+			_, err := os.Stat(profilePath)
+			if err != nil {
+				msgs = append(msgs, err.Error())
+			}
 		}
 	}
 
+	return
+}
+
+func (v *Validator) CheckCapablities() (msgs []string) {
+	process := v.spec.Process
+	if v.spec.Platform.OS == "linux" {
+		var caps []string
+
+		for _, cap := range process.Capabilities.Bounding {
+			caps = append(caps, cap)
+		}
+		for _, cap := range process.Capabilities.Effective {
+			caps = append(caps, cap)
+		}
+		for _, cap := range process.Capabilities.Inheritable {
+			caps = append(caps, cap)
+		}
+		for _, cap := range process.Capabilities.Permitted {
+			caps = append(caps, cap)
+		}
+		for _, cap := range process.Capabilities.Ambient {
+			caps = append(caps, cap)
+		}
+
+		for _, capability := range caps {
+			if err := CapValid(capability, v.HostSpecific); err != nil {
+				msgs = append(msgs, fmt.Sprintf("capability %q is not valid, man capabilities(7)", capability))
+			}
+		}
+	} else {
+		logrus.Warnf("process.capabilities validation not yet implemented for OS %q", v.spec.Platform.OS)
+	}
+
+	return
+}
+
+func (v *Validator) CheckRlimits() (msgs []string) {
+	process := v.spec.Process
 	for index, rlimit := range process.Rlimits {
-		if err := rlimitValid(rlimit); err != nil {
-			msgs = append(msgs, err.Error())
-		}
 		for i := index + 1; i < len(process.Rlimits); i++ {
 			if process.Rlimits[index].Type == process.Rlimits[i].Type {
 				msgs = append(msgs, fmt.Sprintf("rlimit can not contain the same type %q.", process.Rlimits[index].Type))
 			}
 		}
-	}
 
-	if len(process.ApparmorProfile) > 0 {
-		profilePath := filepath.Join(v.bundlePath, v.spec.Root.Path, "/etc/apparmor.d", process.ApparmorProfile)
-		_, err := os.Stat(profilePath)
-		if err != nil {
-			msgs = append(msgs, err.Error())
+		if v.spec.Platform.OS == "linux" {
+			if err := rlimitValid(rlimit); err != nil {
+				msgs = append(msgs, err.Error())
+			}
+		} else {
+			logrus.Warnf("process.rlimits validation not yet implemented for OS %q", v.spec.Platform.OS)
 		}
 	}
 
