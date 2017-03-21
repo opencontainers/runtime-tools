@@ -612,6 +612,11 @@ func namespaceValid(ns rspec.Namespace) bool {
 	default:
 		return false
 	}
+
+	if ns.Path != "" && !filepath.IsAbs(ns.Path) {
+		return false
+	}
+
 	return true
 }
 
