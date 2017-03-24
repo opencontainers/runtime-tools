@@ -372,31 +372,38 @@ func (v *Validator) CheckOS() (msgs []string) {
 func (v *Validator) CheckLinux() (msgs []string) {
 	logrus.Debugf("check linux")
 
-	utsExists := false
-	ipcExists := false
-	mountExists := false
-	netExists := false
-	userExists := false
-
-	for index := 0; index < len(v.spec.Linux.Namespaces); index++ {
-		if !namespaceValid(v.spec.Linux.Namespaces[index]) {
-			msgs = append(msgs, fmt.Sprintf("namespace %v is invalid.", v.spec.Linux.Namespaces[index]))
-		} else if len(v.spec.Linux.Namespaces[index].Path) == 0 {
-			if v.spec.Linux.Namespaces[index].Type == rspec.UTSNamespace {
-				utsExists = true
-			} else if v.spec.Linux.Namespaces[index].Type == rspec.IPCNamespace {
-				ipcExists = true
-			} else if v.spec.Linux.Namespaces[index].Type == rspec.NetworkNamespace {
-				netExists = true
-			} else if v.spec.Linux.Namespaces[index].Type == rspec.MountNamespace {
-				mountExists = true
-			} else if v.spec.Linux.Namespaces[index].Type == rspec.UserNamespace {
-				userExists = true
-			}
-		}
+	var typeList = map[rspec.NamespaceType]struct {
+		num      int
+		newExist bool
+	}{
+		rspec.PIDNamespace:     {0, false},
+		rspec.NetworkNamespace: {0, false},
+		rspec.MountNamespace:   {0, false},
+		rspec.IPCNamespace:     {0, false},
+		rspec.UTSNamespace:     {0, false},
+		rspec.UserNamespace:    {0, false},
+		rspec.CgroupNamespace:  {0, false},
 	}
 
-	if (len(v.spec.Linux.UIDMappings) > 0 || len(v.spec.Linux.GIDMappings) > 0) && !userExists {
+	for index := 0; index < len(v.spec.Linux.Namespaces); index++ {
+		ns := v.spec.Linux.Namespaces[index]
+		if !namespaceValid(ns) {
+			msgs = append(msgs, fmt.Sprintf("namespace %v is invalid.", ns))
+		}
+
+		tmpItem := typeList[ns.Type]
+		tmpItem.num = tmpItem.num + 1
+		if tmpItem.num > 1 {
+			msgs = append(msgs, fmt.Sprintf("duplicated namespace %q", ns.Type))
+		}
+
+		if len(ns.Path) == 0 {
+			tmpItem.newExist = true
+		}
+		typeList[ns.Type] = tmpItem
+	}
+
+	if (len(v.spec.Linux.UIDMappings) > 0 || len(v.spec.Linux.GIDMappings) > 0) && !typeList[rspec.UserNamespace].newExist {
 		msgs = append(msgs, "UID/GID mappings requires a new User namespace to be specified as well")
 	} else if len(v.spec.Linux.UIDMappings) > 5 {
 		msgs = append(msgs, "Only 5 UID mappings are allowed (linux kernel restriction).")
@@ -405,17 +412,17 @@ func (v *Validator) CheckLinux() (msgs []string) {
 	}
 
 	for k := range v.spec.Linux.Sysctl {
-		if strings.HasPrefix(k, "net.") && !netExists {
+		if strings.HasPrefix(k, "net.") && !typeList[rspec.NetworkNamespace].newExist {
 			msgs = append(msgs, fmt.Sprintf("Sysctl %v requires a new Network namespace to be specified as well", k))
 		}
 		if strings.HasPrefix(k, "fs.mqueue.") {
-			if !mountExists || !ipcExists {
+			if !typeList[rspec.MountNamespace].newExist || !typeList[rspec.IPCNamespace].newExist {
 				msgs = append(msgs, fmt.Sprintf("Sysctl %v requires a new IPC namespace and Mount namespace to be specified as well", k))
 			}
 		}
 	}
 
-	if v.spec.Platform.OS == "linux" && !utsExists && v.spec.Hostname != "" {
+	if v.spec.Platform.OS == "linux" && !typeList[rspec.UTSNamespace].newExist && v.spec.Hostname != "" {
 		msgs = append(msgs, fmt.Sprintf("On Linux, hostname requires a new UTS namespace to be specified as well"))
 	}
 
