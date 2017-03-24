@@ -1,10 +1,12 @@
+GO15VENDOREXPERIMENT=1
+export GO15VENDOREXPERIMENT
 
+PREFIX ?= $(DESTDIR)/usr
 BINDIR ?= $(DESTDIR)/usr/bin
 
 BUILDTAGS=
 RUNTIME ?= runc
 RUNTIME_TOOLS_LINK := $(CURDIR)/Godeps/_workspace/src/github.com/opencontainers/runtime-tools
-export GOPATH:=$(CURDIR)/Godeps/_workspace:$(GOPATH)
 
 all: $(RUNTIME_TOOLS_LINK)
 	go build -tags "$(BUILDTAGS)" -o oci-runtime-tool ./cmd/oci-runtime-tool

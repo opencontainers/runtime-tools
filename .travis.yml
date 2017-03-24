@@ -1,6 +1,7 @@
 language: go
 go:
-  - 1.6
+  - 1.7
+  - 1.8
 
 sudo: false
 
@@ -11,6 +12,6 @@ before_install:
 install: true
 
 script:
-  - $HOME/gopath/bin/git-validation -run DCO,short-subject -v -range ${TRAVIS_COMMIT_RANGE}
+  - git-validation -run DCO,short-subject -v -range ${TRAVIS_COMMIT_RANGE}
   - make
   - make test
