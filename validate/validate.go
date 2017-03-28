@@ -115,17 +115,34 @@ func (v *Validator) CheckAll() (msgs []string) {
 func (v *Validator) CheckRootfsPath() (msgs []string) {
 	logrus.Debugf("check rootfs path")
 
+	absBundlePath, err := filepath.Abs(v.bundlePath)
+	if err != nil {
+		msgs = append(msgs, fmt.Sprintf("unable to convert %q to an absolute path", v.bundlePath))
+	}
+
 	var rootfsPath string
+	var absRootPath string
 	if filepath.IsAbs(v.spec.Root.Path) {
 		rootfsPath = v.spec.Root.Path
+		absRootPath = filepath.Clean(rootfsPath)
 	} else {
+		var err error
 		rootfsPath = filepath.Join(v.bundlePath, v.spec.Root.Path)
+		absRootPath, err = filepath.Abs(rootfsPath)
+		if err != nil {
+			msgs = append(msgs, fmt.Sprintf("unable to convert %q to an absolute path", rootfsPath))
+		}
 	}
 
 	if fi, err := os.Stat(rootfsPath); err != nil {
 		msgs = append(msgs, fmt.Sprintf("Cannot find the root path %q", rootfsPath))
 	} else if !fi.IsDir() {
 		msgs = append(msgs, fmt.Sprintf("The root path %q is not a directory.", rootfsPath))
+	}
+
+	rootParent := filepath.Dir(absRootPath)
+	if absRootPath == string(filepath.Separator) || rootParent != absBundlePath {
+		msgs = append(msgs, fmt.Sprintf("root.path is %q, but it MUST be a child of %q", v.spec.Root.Path, absBundlePath))
 	}
 
 	return
