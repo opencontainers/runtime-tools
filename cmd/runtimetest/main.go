@@ -18,9 +18,11 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
-	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	"github.com/syndtr/gocapability/capability"
 	"github.com/urfave/cli"
+
+	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
+	ociErr "github.com/opencontainers/runtime-tools/validate"
 )
 
 // PrGetNoNewPrivs isn't exposed in Golang so we define it ourselves copying the value from
@@ -660,11 +662,16 @@ func validate(context *cli.Context) error {
 	t := tap.New()
 	t.Header(0)
 
+	complianceLevelString := context.String("compliance-level")
+	complianceLevel := ociErr.ParseLevel(complianceLevelString)
 	var validationErrors error
 	for _, v := range defaultValidations {
 		err := v.test(spec)
 		t.Ok(err == nil, v.description)
 		if err != nil {
+			if e, ok := err.(*ociErr.OCIError); ok && e.Level < complianceLevel {
+				continue
+			}
 			validationErrors = multierror.Append(validationErrors, err)
 		}
 	}
@@ -674,6 +681,9 @@ func validate(context *cli.Context) error {
 			err := v.test(spec)
 			t.Ok(err == nil, v.description)
 			if err != nil {
+				if e, ok := err.(*ociErr.OCIError); ok && e.Level < complianceLevel {
+					continue
+				}
 				validationErrors = multierror.Append(validationErrors, err)
 			}
 		}
@@ -699,6 +709,11 @@ func main() {
 			Name:  "path",
 			Value: ".",
 			Usage: "Path to the configuration",
+		},
+		cli.StringFlag{
+			Name:  "compliance-level",
+			Value: "must",
+			Usage: "Compliance level (must or should)",
 		},
 	}
 

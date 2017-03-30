@@ -32,6 +32,9 @@ oci-runtime-tool is a collection of tools for working with the [OCI runtime spec
 **--log-level**=LEVEL
   Log level (panic, fatal, error, warn, info, or debug) (default: "error").
 
+**--compliance-level**=LEVEL
+  Compliance level (must or should) (default: "must").
+
 **-v**, **--version**
   Print version information.
 
