@@ -30,27 +30,48 @@ INFO[0000] Bundle validation succeeded.
 ## Testing OCI runtimes
 
 ```sh
-$ make
-$ sudo make install
-$ sudo oci-runtime-tool runtime-validate --runtime runc
+$ sudo make RUNTIME=runc localvalidation
+RUNTIME=runc go test -tags ""  -v github.com/opencontainers/runtime-tools/validation
+=== RUN   TestValidateBasic
 TAP version 13
 ok 1 - root filesystem
 ok 2 - hostname
 ok 3 - mounts
 ok 4 - capabilities
 ok 5 - default symlinks
-ok 6 - default file system
-ok 7 - default devices
-ok 8 - linux devices
-ok 9 - linux process
-ok 10 - masked paths
-ok 11 - oom score adj
-ok 12 - read only paths
-ok 13 - rlimits
-ok 14 - sysctls
-ok 15 - uid mappings
-ok 16 - gid mappings
-1..16
+ok 6 - default devices
+ok 7 - linux devices
+ok 8 - linux process
+ok 9 - masked paths
+ok 10 - oom score adj
+ok 11 - read only paths
+ok 12 - rlimits
+ok 13 - sysctls
+ok 14 - uid mappings
+ok 15 - gid mappings
+1..15
+--- PASS: TestValidateBasic (0.08s)
+=== RUN   TestValidateSysctls
+TAP version 13
+ok 1 - root filesystem
+ok 2 - hostname
+ok 3 - mounts
+ok 4 - capabilities
+ok 5 - default symlinks
+ok 6 - default devices
+ok 7 - linux devices
+ok 8 - linux process
+ok 9 - masked paths
+ok 10 - oom score adj
+ok 11 - read only paths
+ok 12 - rlimits
+ok 13 - sysctls
+ok 14 - uid mappings
+ok 15 - gid mappings
+1..15
+--- PASS: TestValidateSysctls (0.20s)
+PASS
+ok      github.com/opencontainers/runtime-tools/validation      0.281s
 ```
 
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/master/bundle.md
