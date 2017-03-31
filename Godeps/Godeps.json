@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/opencontainers/runtime-tools",
-	"GoVersion": "go1.4",
-	"GodepVersion": "v75",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
 	"Packages": [
 		"./..."
 	],

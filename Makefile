@@ -3,10 +3,8 @@ BINDIR ?= $(DESTDIR)/usr/bin
 
 BUILDTAGS=
 RUNTIME ?= runc
-RUNTIME_TOOLS_LINK := $(CURDIR)/Godeps/_workspace/src/github.com/opencontainers/runtime-tools
-export GOPATH:=$(CURDIR)/Godeps/_workspace:$(GOPATH)
 
-all: $(RUNTIME_TOOLS_LINK)
+all:
 	go build -tags "$(BUILDTAGS)" -o oci-runtime-tool ./cmd/oci-runtime-tool
 	go build -tags "$(BUILDTAGS)" -o runtimetest ./cmd/runtimetest
 
@@ -32,9 +30,6 @@ uninstall:
 clean:
 	rm -f oci-runtime-tool runtimetest *.1
 	rm -f $(RUNTIME_TOOLS_LINK)
-
-$(RUNTIME_TOOLS_LINK):
-	ln -sf $(CURDIR) $(RUNTIME_TOOLS_LINK)
 
 localvalidation:
 	RUNTIME=$(RUNTIME) go test -tags "$(BUILDTAGS)" ${TESTFLAGS} -v github.com/opencontainers/runtime-tools/validation
