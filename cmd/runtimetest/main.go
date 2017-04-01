@@ -322,7 +322,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
-		return ociErr.NewOCIError(ociErr.DefaultFilesystems, err.Error())
+		return ociErr.NewError(ociErr.DefaultFilesystems, err.Error())
 	}
 
 	mountsMap := make(map[string]string)
@@ -332,7 +332,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 
 	for fs, fstype := range defaultFS {
 		if !(mountsMap[fs] == fstype) {
-			return ociErr.NewOCIError(ociErr.DefaultFilesystems, fmt.Sprintf("%v must exist and expected type is %v", fs, fstype))
+			return ociErr.NewError(ociErr.DefaultFilesystems, fmt.Sprintf("%v must exist and expected type is %v", fs, fstype))
 		}
 	}
 
@@ -702,7 +702,7 @@ func validate(context *cli.Context) error {
 		err := v.test(spec)
 		t.Ok(err == nil, v.description)
 		if err != nil {
-			if e, ok := err.(*ociErr.OCIError); ok && e.Level < complianceLevel {
+			if e, ok := err.(*ociErr.Error); ok && e.Level < complianceLevel {
 				continue
 			}
 			validationErrors = multierror.Append(validationErrors, err)
@@ -714,7 +714,7 @@ func validate(context *cli.Context) error {
 			err := v.test(spec)
 			t.Ok(err == nil, v.description)
 			if err != nil {
-				if e, ok := err.(*ociErr.OCIError); ok && e.Level < complianceLevel {
+				if e, ok := err.(*ociErr.Error); ok && e.Level < complianceLevel {
 					continue
 				}
 				validationErrors = multierror.Append(validationErrors, err)
@@ -746,7 +746,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "compliance-level",
 			Value: "must",
-			Usage: "Compliance level (must or should)",
+			Usage: "Compliance level (may, should or must)",
 		},
 	}
 

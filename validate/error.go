@@ -10,27 +10,31 @@ import (
 type ComplianceLevel int
 
 const (
-	ComplianceOptional ComplianceLevel = iota
-	ComplianceMay
-	ComplianceRecommended
+	// MAY-level
+	ComplianceMay ComplianceLevel = iota
+	ComplianceOptional
+	// SHOULD-level
 	ComplianceShould
 	ComplianceShouldNot
+	ComplianceRecommended
+	ComplianceNotRecommended
+	// MUST-level
+	ComplianceMust
+	ComplianceMustNot
 	ComplianceShall
 	ComplianceShallNot
 	ComplianceRequired
-	ComplianceMustNot
-	ComplianceMust
 )
 
-// OCIErrorCode represents the compliance content
-type OCIErrorCode int
+// ErrorCode represents the compliance content
+type ErrorCode int
 
 const (
-	DefaultFilesystems OCIErrorCode = iota
+	DefaultFilesystems ErrorCode = iota
 )
 
-// OCIError represents an error with compliance level and OCI reference
-type OCIError struct {
+// Error represents an error with compliance level and OCI reference
+type Error struct {
 	Level     ComplianceLevel
 	Reference string
 	Err       error
@@ -39,24 +43,42 @@ type OCIError struct {
 //FIXME: change to tagged spec releases
 const referencePrefix = "https://github.com/opencontainers/runtime-spec/blob/master/"
 
-var ociErrors = map[OCIErrorCode]OCIError{
-	DefaultFilesystems: OCIError{Level: ComplianceShould, Reference: "config-linux.md#default-filesystems"},
+var ociErrors = map[ErrorCode]Error{
+	DefaultFilesystems: Error{Level: ComplianceShould, Reference: "config-linux.md#default-filesystems"},
 }
 
 // ParseLevel takes a string level and returns the OCI compliance level constant
 func ParseLevel(level string) ComplianceLevel {
 	switch strings.ToUpper(level) {
+	case "MAY":
+		fallthrough
+	case "OPTIONAL":
+		return ComplianceMay
 	case "SHOULD":
+		fallthrough
+	case "SHOULDNOT":
+		fallthrough
+	case "RECOMMENDED":
+		fallthrough
+	case "NOTRECOMMENDED":
 		return ComplianceShould
 	case "MUST":
+		fallthrough
+	case "MUSTNOT":
+		fallthrough
+	case "SHALL":
+		fallthrough
+	case "SHALLNOT":
+		fallthrough
+	case "REQUIRED":
 		return ComplianceMust
 	default:
 		return ComplianceMust
 	}
 }
 
-// NewOCIError creates an OCIError by OCIErrorCode and message
-func NewOCIError(code OCIErrorCode, msg string) error {
+// NewError creates an Error by ErrorCode and message
+func NewError(code ErrorCode, msg string) error {
 	err := ociErrors[code]
 	err.Err = errors.New(msg)
 
@@ -64,6 +86,6 @@ func NewOCIError(code OCIErrorCode, msg string) error {
 }
 
 // Error returns the error message with OCI reference
-func (oci *OCIError) Error() string {
+func (oci *Error) Error() string {
 	return fmt.Sprintf("%s\nRefer to: %s%s", oci.Err.Error(), referencePrefix, oci.Reference)
 }
