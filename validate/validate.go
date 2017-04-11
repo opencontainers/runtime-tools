@@ -385,6 +385,7 @@ func (v *Validator) CheckMounts() (msgs []string) {
 	return
 }
 
+// CheckOS checks v.spec.Platform.OS
 func (v *Validator) CheckOS() (msgs []string) {
 	logrus.Debugf("check os")
 
@@ -397,6 +398,12 @@ func (v *Validator) CheckOS() (msgs []string) {
 	if v.spec.Platform.OS != "solaris" {
 		if v.spec.Solaris != nil {
 			msgs = append(msgs, fmt.Sprintf("'solaris' MUST NOT be set when platform.os is %q", v.spec.Platform.OS))
+		}
+	}
+
+	if v.spec.Platform.OS != "windows" {
+		if v.spec.Windows != nil {
+			msgs = append(msgs, fmt.Sprintf("'windows' MUST NOT be set when platform.os is %q", v.spec.Platform.OS))
 		}
 	}
 
