@@ -400,6 +400,12 @@ func (v *Validator) CheckOS() (msgs []string) {
 		}
 	}
 
+	if v.spec.Platform.OS != "windows" {
+		if v.spec.Windows != nil {
+			msgs = append(msgs, fmt.Sprintf("'windows' MUST NOT be set when platform.os is %q", v.spec.Platform.OS))
+		}
+	}
+
 	return
 }
 
