@@ -200,9 +200,11 @@ func (v *Validator) CheckPlatform() (msgs []string) {
 func (v *Validator) CheckHooks() (msgs []string) {
 	logrus.Debugf("check hooks")
 
-	msgs = append(msgs, checkEventHooks("pre-start", v.spec.Hooks.Prestart, v.HostSpecific)...)
-	msgs = append(msgs, checkEventHooks("post-start", v.spec.Hooks.Poststart, v.HostSpecific)...)
-	msgs = append(msgs, checkEventHooks("post-stop", v.spec.Hooks.Poststop, v.HostSpecific)...)
+	if v.spec.Hooks != nil {
+		msgs = append(msgs, checkEventHooks("pre-start", v.spec.Hooks.Prestart, v.HostSpecific)...)
+		msgs = append(msgs, checkEventHooks("post-start", v.spec.Hooks.Poststart, v.HostSpecific)...)
+		msgs = append(msgs, checkEventHooks("post-stop", v.spec.Hooks.Poststop, v.HostSpecific)...)
+	}
 
 	return
 }
