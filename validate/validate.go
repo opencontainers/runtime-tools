@@ -385,6 +385,7 @@ func (v *Validator) CheckMounts() (msgs []string) {
 	return
 }
 
+// CheckOS checks v.spec.Platform.OS
 func (v *Validator) CheckOS() (msgs []string) {
 	logrus.Debugf("check os")
 
