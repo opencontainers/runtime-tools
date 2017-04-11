@@ -168,6 +168,8 @@ __oci-runtime-tool_complete_seccomp_arches() {
 		ppc64le
 		s390
 		s390x
+		parisc
+		parisc64
 	" -- "$cur" ) )
 }
 

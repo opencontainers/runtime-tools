@@ -572,6 +572,8 @@ func (v *Validator) CheckSeccomp() (msgs []string) {
 		case rspec.ArchPPC64LE:
 		case rspec.ArchS390:
 		case rspec.ArchS390X:
+		case rspec.ArchPARISC:
+		case rspec.ArchPARISC64:
 		default:
 			msgs = append(msgs, fmt.Sprintf("seccomp architecture %q is invalid", s.Architectures[index]))
 		}
