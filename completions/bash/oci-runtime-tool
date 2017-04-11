@@ -363,8 +363,11 @@ _oci-runtime-tool_generate() {
 		--mount-bind
 		--mount-cgroups
 		--output
-		--process-cap-add
-		--process-cap-drop
+		--process-cap-add-ambient
+		--process-cap-add-bounding
+		--process-cap-add-effective
+		--process-cap-add-inheritable
+		--process-cap-add-permitted
 		--process-consolesize
 		--process-cwd
 		--process-gid

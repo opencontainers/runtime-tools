@@ -1047,6 +1047,101 @@ func (g *Generator) AddProcessCapability(c string) error {
 	return nil
 }
 
+// AddProcessAmbientCapability adds a process capability into g.spec.Process.Capabilities.Ambient.
+func (g *Generator) AddProcessAmbientCapability(c string) error {
+	cp := strings.ToUpper(c)
+	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
+		return err
+	}
+
+	g.initSpec()
+
+        for _, cap := range g.spec.Process.Capabilities.Ambient {
+                if strings.ToUpper(cap) == cp {
+                        return nil
+                }
+        }
+	g.spec.Process.Capabilities.Ambient = append(g.spec.Process.Capabilities.Ambient, cp)
+
+	return nil
+}
+
+// AddProcessBoundingCapability adds a process capability into g.spec.Process.Capabilities.Bounding.
+func (g *Generator) AddProcessBoundingCapability(c string) error {
+	cp := strings.ToUpper(c)
+	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
+		return err
+	}
+
+	g.initSpec()
+
+        for _, cap := range g.spec.Process.Capabilities.Bounding {
+                if strings.ToUpper(cap) == cp {
+                        return nil
+                }
+        }
+	g.spec.Process.Capabilities.Bounding = append(g.spec.Process.Capabilities.Bounding, cp)
+
+	return nil
+}
+
+// AddProcessEffectiveCapability adds a process capability into g.spec.Process.Capabilities.Effective.
+func (g *Generator) AddProcessEffectiveCapability(c string) error {
+	cp := strings.ToUpper(c)
+	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
+		return err
+	}
+
+	g.initSpec()
+
+        for _, cap := range g.spec.Process.Capabilities.Effective {
+                if strings.ToUpper(cap) == cp {
+                        return nil
+                }
+        }
+	g.spec.Process.Capabilities.Effective = append(g.spec.Process.Capabilities.Effective, cp)
+
+	return nil
+}
+
+// AddProcessInheritableCapability adds a process capability into g.spec.Process.Capabilities.Inheritable.
+func (g *Generator) AddProcessInheritableCapability(c string) error {
+	cp := strings.ToUpper(c)
+	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
+		return err
+	}
+
+	g.initSpec()
+
+        for _, cap := range g.spec.Process.Capabilities.Inheritable {
+                if strings.ToUpper(cap) == cp {
+                        return nil
+                }
+        }
+	g.spec.Process.Capabilities.Inheritable = append(g.spec.Process.Capabilities.Inheritable, cp)
+
+	return nil
+}
+
+// AddProcessPermittedCapability adds a process capability into g.spec.Process.Capabilities.Permitted.
+func (g *Generator) AddProcessPermittedCapability(c string) error {
+	cp := strings.ToUpper(c)
+	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
+		return err
+	}
+
+	g.initSpec()
+
+        for _, cap := range g.spec.Process.Capabilities.Permitted {
+                if strings.ToUpper(cap) == cp {
+                        return nil
+                }
+        }
+	g.spec.Process.Capabilities.Permitted = append(g.spec.Process.Capabilities.Permitted, cp)
+
+	return nil
+}
+
 // DropProcessCapability drops a process capability from g.spec.Process.Capabilities.
 func (g *Generator) DropProcessCapability(c string) error {
 	cp := strings.ToUpper(c)

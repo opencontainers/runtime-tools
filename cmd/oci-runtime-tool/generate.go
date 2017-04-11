@@ -83,6 +83,11 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
 	cli.StringSliceFlag{Name: "process-cap-add", Usage: "add Linux capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-ambient", Usage: "add Linux ambient capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-bounding", Usage: "add Linux bounding capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-effective", Usage: "add Linux effective capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-inheritable", Usage: "add Linux inheritable capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-permitted", Usage: "add Linux permitted capabilities"},
 	cli.StringSliceFlag{Name: "process-cap-drop", Usage: "drop Linux capabilities"},
 	cli.BoolFlag{Name: "process-cap-drop-all", Usage: "drop all Linux capabilities"},
 	cli.StringFlag{Name: "process-consolesize", Usage: "specifies the console size in characters (width:height)"},
@@ -269,6 +274,51 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		addCaps := context.StringSlice("process-cap-add")
 		for _, cap := range addCaps {
 			if err := g.AddProcessCapability(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-add-ambient") {
+		addCaps := context.StringSlice("process-cap-add-ambient")
+		for _, cap := range addCaps {
+			if err := g.AddProcessAmbientCapability(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-add-bounding") {
+		addCaps := context.StringSlice("process-cap-add-bounding")
+		for _, cap := range addCaps {
+			if err := g.AddProcessBoundingCapability(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-add-effective") {
+		addCaps := context.StringSlice("process-cap-add-effective")
+		for _, cap := range addCaps {
+			if err := g.AddProcessEffectiveCapability(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-add-inheritable") {
+		addCaps := context.StringSlice("process-cap-add-inheritable")
+		for _, cap := range addCaps {
+			if err := g.AddProcessInheritableCapability(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-add-permitted") {
+		addCaps := context.StringSlice("process-cap-add-permitted")
+		for _, cap := range addCaps {
+			if err := g.AddProcessPermittedCapability(cap); err != nil {
 				return err
 			}
 		}
