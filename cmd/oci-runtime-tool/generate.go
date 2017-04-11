@@ -52,8 +52,8 @@ var generateFlags = []cli.Flag{
 	cli.IntFlag{Name: "linux-network-classid", Usage: "specifies class identifier tagged by container's network packets"},
 	cli.StringSliceFlag{Name: "linux-network-priorities", Usage: "specifies priorities of network traffic"},
 	cli.Int64Flag{Name: "linux-pids-limit", Usage: "maximum number of PIDs"},
-	cli.Uint64Flag{Name: "linux-realtime-period", Usage: "CPU period to be used for realtime scheduling (in usecs)"},
-	cli.Uint64Flag{Name: "linux-realtime-runtime", Usage: "the time realtime scheduling may use (in usecs)"},
+	cli.Int64Flag{Name: "linux-realtime-period", Usage: "CPU period to be used for realtime scheduling (in usecs)"},
+	cli.Int64Flag{Name: "linux-realtime-runtime", Usage: "the time realtime scheduling may use (in usecs)"},
 	cli.StringSliceFlag{Name: "masked-paths", Usage: "specifies paths can not be read inside container"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringFlag{Name: "mount-label", Usage: "selinux mount context label"},
@@ -385,11 +385,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-cpu-quota") {
-		g.SetLinuxResourcesCPUQuota(context.Uint64("linux-cpu-quota"))
+		g.SetLinuxResourcesCPUQuota(context.Int64("linux-cpu-quota"))
 	}
 
 	if context.IsSet("linux-realtime-runtime") {
-		g.SetLinuxResourcesCPURealtimeRuntime(context.Uint64("linux-realtime-runtime"))
+		g.SetLinuxResourcesCPURealtimeRuntime(context.Int64("linux-realtime-runtime"))
 	}
 
 	if context.IsSet("linux-pids-limit") {
@@ -644,7 +644,7 @@ var deviceType = map[string]bool{
 
 // addDevice takes the raw string passed with the --device flag, parses it, and add it
 func addDevice(device string, g *generate.Generator) error {
-	dev := rspec.Device{}
+	dev := rspec.LinuxDevice{}
 
 	// The required part and optional part are separated by ":"
 	argsParts := strings.Split(device, ":")
