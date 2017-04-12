@@ -332,7 +332,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 
 	for fs, fstype := range defaultFS {
 		if !(mountsMap[fs] == fstype) {
-			return ociErr.NewError(ociErr.DefaultFilesystems, fmt.Sprintf("%v must exist and expected type is %v", fs, fstype))
+			return ociErr.NewError(ociErr.DefaultFilesystems, fmt.Sprintf("%v SHOULD exist and expected type is %v", fs, fstype))
 		}
 	}
 
@@ -696,7 +696,11 @@ func validate(context *cli.Context) error {
 	t.Header(0)
 
 	complianceLevelString := context.String("compliance-level")
-	complianceLevel := ociErr.ParseLevel(complianceLevelString)
+	complianceLevel, err := ociErr.ParseLevel(complianceLevelString)
+	if err != nil {
+		complianceLevel = ociErr.ComplianceMust
+		logrus.Warningf("%s, using 'MUST' by default.", err.Error())
+	}
 	var validationErrors error
 	for _, v := range defaultValidations {
 		err := v.test(spec)

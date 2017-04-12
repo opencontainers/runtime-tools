@@ -121,8 +121,9 @@ __oci-runtime-tool_complete_log_level() {
 
 __oci-runtime-tool_complete_compliance_level() {
 	COMPREPLY=( $( compgen -W "
-		must
+		may
 		should
+		must
 	" -- "$cur" ) )
 }
 
