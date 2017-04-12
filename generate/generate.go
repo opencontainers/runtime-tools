@@ -1015,19 +1015,43 @@ func (g *Generator) RemoveLinuxNamespace(ns string) error {
 }
 
 // AddDevice - add a device into g.spec.Linux.Devices
-func (g *Generator) AddDevice(path, devType string, major, minor int64, fileMode *os.FileMode, uid, gid *uint32) {
+func (g *Generator) AddDevice(device rspec.LinuxDevice) {
 	g.initSpecLinux()
 
-	device := rspec.LinuxDevice{
-		Path:     path,
-		Type:     devType,
-		Major:    major,
-		Minor:    minor,
-		FileMode: fileMode,
-		UID:      uid,
-		GID:      gid,
+	for i, dev := range g.spec.Linux.Devices {
+		if dev.Path == device.Path {
+			g.spec.Linux.Devices[i] = device
+			return
+		}
+		if dev.Type == device.Type && dev.Major == device.Major && dev.Minor == device.Minor {
+			fmt.Fprintln(os.Stderr, "WARNING: The same type, major and minor should not be used for multiple devices.")
+		}
 	}
+
 	g.spec.Linux.Devices = append(g.spec.Linux.Devices, device)
+}
+
+//RemoveDevice remove a device from g.spec.Linux.Devices
+func (g *Generator) RemoveDevice(path string) error {
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Devices == nil {
+		return nil
+	}
+
+	for i, device := range g.spec.Linux.Devices {
+		if device.Path == path {
+			g.spec.Linux.Devices = append(g.spec.Linux.Devices[:i], g.spec.Linux.Devices[i+1:]...)
+			return nil
+		}
+	}
+	return nil
+}
+
+func (g *Generator) ClearLinuxDevices() {
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Devices == nil {
+		return
+	}
+
+	g.spec.Linux.Devices = []rspec.LinuxDevice{}
 }
 
 // strPtr returns the pointer pointing to the string s.
