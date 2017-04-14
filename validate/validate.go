@@ -406,6 +406,18 @@ func (v *Validator) CheckMounts() (msgs []string) {
 			if !filepath.IsAbs(mount.Destination) {
 				msgs = append(msgs, fmt.Sprintf("destination %v is not an absolute path", mount.Destination))
 			}
+
+		}
+	}
+
+	if v.spec.Platform.OS == "windows" {
+		mounts := v.spec.Mounts
+		for index := 0; index < len(mounts); index++ {
+			for i := index + 1; i < len(mounts); i++ {
+				if strings.HasPrefix(mounts[index].Destination, mounts[i].Destination) || strings.HasPrefix(mounts[i].Destination, mounts[index].Destination) {
+					msgs = append(msgs, fmt.Sprint("one mount destination MUST NOT be nested within another mount when platform.os is `windows`"))
+				}
+			}
 		}
 	}
 
