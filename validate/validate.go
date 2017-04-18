@@ -684,13 +684,8 @@ func namespaceValid(ns rspec.LinuxNamespace) bool {
 
 func deviceValid(d rspec.LinuxDevice) bool {
 	switch d.Type {
-	case "b":
-	case "c":
-	case "u":
-		if d.Major <= 0 {
-			return false
-		}
-		if d.Minor <= 0 {
+	case "b", "c", "u":
+		if d.Major <= 0 || d.Minor <= 0 {
 			return false
 		}
 	case "p":
