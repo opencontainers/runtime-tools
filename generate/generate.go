@@ -283,11 +283,7 @@ func (g *Generator) Save(w io.Writer, exportOpts ExportOptions) (err error) {
 	}
 
 	_, err = w.Write(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // SaveToFile writes the spec into a file.
