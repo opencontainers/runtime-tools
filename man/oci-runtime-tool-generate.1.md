@@ -15,61 +15,12 @@ to direct it to a file.  OCI-compatible runtimes like runC expect to
 read the configuration from `config.json`.
 
 # OPTIONS
-**--apparmor**=PROFILE
-  Specifies the apparmor profile for the container
-
 **--args**=OPTION
   Arguments to run within the container.  Can be specified multiple times.
   If you were going to run a command with multiple options, you would need
   to specify the command and each argument in order.
 
   --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
-
-**--bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS...]]*
-  Bind mount directories src:dest:(rw,ro) If you specify, ` --bind
-  /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
-  to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a colon
-  delimited list and can be any mount option support by the runtime such
-  as [rw|ro|rbind|bind|...]. The `HOST_DIR` and `CONTAINER-DIR` must be
-  absolute paths such as `/src/docs`.  You can set the `ro` or `rw`
-  options to a bind-mount to mount it read-only or read-write mode,
-  respectively. By default, bind-mounts are mounted read-write.
-
-**--cap-add**=[]
-  Add Linux capabilities
-
-**--cap-drop**=[]
-  Drop Linux capabilities
-
-**--cap-drop-all**true|false
-  Drop all Linux capabilities
-
-**--cgroups-path**=""
-  Specifies the path to the cgroups relative to the cgroups mount point.
-
-**--cwd**=PATH
-  Current working directory for the process. The default is */*.
-
-**--device-add**=*TYPE:MAJOR:MINOR:PATH[:OPTIONS...]*
-  Add a device file in container. e.g. --device=c:10:229:/dev/fuse:fileMode=438:uid=0:gid=0
-  The *TYPE*, *MAJOR*, *MINOR*, *PATH* are required.
-    *TYPE* is the device type. The acceptable values are b (block), c (character), u (unbuffered), p (FIFO).
-    *MAJOR*/*MINOR* is the major/minor device id.
-    *PATH* is the device path.
-  The *fileMode*, *uid*, *gid* are optional.
-    *fileMode* is the file mode of the device file.
-    *uid*/*gid* is the user/group id of the device file.
-  This option can be specified multiple times.
-
-**--device-remove**=*PATH*
-  Remove a device file in container.
-  This option can be specified multiple times.
-
-**--device-remove-all**=true|false
-  Remove all devices for linux inside the container. The default is *false*.
-
-**--disable-oom-kill**=true|false
-  Whether to disable OOM Killer for the container or not.
 
 **--env**=[]
   Set environment variables e.g. key=value.
@@ -84,24 +35,37 @@ read the configuration from `config.json`.
   When specified multiple times, files are loaded in order with duplicate
   keys overwriting previous ones.
 
-**--gid**=GID
-  Gid for the process inside of container
-
-**--gidmappings**=GIDMAPPINGS
-  Add GIDMappings e.g HostID:ContainerID:Size.  Implies **-user=**.
-
-**--groups**=GROUP
-  Supplementary groups for the processes inside of container
-
 **--help**
   Print usage statement
 
 **--hostname**=""
   Set the container host name that is available inside the container.
 
+**--hooks-poststart**=CMD[:ARGS...]
+  Set command to run in poststart hooks. Can be specified multiple times.
+  The multiple commands will be run in order before the container process
+  gets launched but after the container environment and main process has been
+  created.
+
+**--hooks-poststop**=CMD[:ARGS...]
+  Set command to run in poststop hooks. Can be specified multiple times.
+  The multiple commands will be run in order after the container process
+  is stopped.
+
+**--hooks-prestart**=CMD[:ARGS...]
+  Set command to run in prestart hooks. Can be specified multiple times.
+  The multiple commands will be run in order after the container process
+  has been created but before it executes the user-configured code.
+
 **--label**=[]
   Add annotations to the configuration e.g. key=value.
   Currently, key containing equals sign is not supported.
+
+**--linux-apparmor**=PROFILE
+  Specifies the apparmor profile for the container
+
+**--linux-cgroups-path**=""
+  Specifies the path to the cgroups relative to the cgroups mount point.
 
 **--linux-cpu-shares**=CPUSHARES
   Specifies a relative share of CPU time available to the tasks in a cgroup.
@@ -114,6 +78,34 @@ read the configuration from `config.json`.
 
 **--linux-cpus**=CPUS
   Sets the CPUs to use within the cpuset (default is to use any CPU available).
+
+**--linux-device-add**=*TYPE:MAJOR:MINOR:PATH[:OPTIONS...]*
+  Add a device file in container. e.g. --device=c:10:229:/dev/fuse:fileMode=438:uid=0:gid=0
+  The *TYPE*, *MAJOR*, *MINOR*, *PATH* are required.
+    *TYPE* is the device type. The acceptable values are b (block), c (character), u (unbuffered), p (FIFO).
+    *MAJOR*/*MINOR* is the major/minor device id.
+    *PATH* is the device path.
+  The *fileMode*, *uid*, *gid* are optional.
+    *fileMode* is the file mode of the device file.
+    *uid*/*gid* is the user/group id of the device file.
+  This option can be specified multiple times.
+
+**--linux-device-remove**=*PATH*
+  Remove a device file in container.
+  This option can be specified multiple times.
+
+**--linux-device-remove-all**=true|false
+  Remove all devices for linux inside the container. The default is *false*.
+
+**--linux-disable-oom-kill**=true|false
+  Whether to disable OOM Killer for the container or not.
+
+**--linux-gidmappings**=GIDMAPPINGS
+  Add GIDMappings e.g HostID:ContainerID:Size.  Implies **-user=**.
+
+**--linux-masked-paths**=[]
+  Specifies paths can not be read inside container. e.g. --linux-masked-paths=/proc/kcore
+  This option can be specified multiple times.
 
 **--linux-mem-kernel-limit**=MEMKERNELLIMIT
   Sets the hard limit of kernel memory in bytes.
@@ -135,6 +127,18 @@ read the configuration from `config.json`.
 
 **--linux-mems**=MEMS
   Sets the list of memory nodes in the cpuset (default is to use any available memory node).
+
+**--linux-mount-label**=MOUNTLABEL
+  Mount Label
+  Depending on your SELinux policy, you would specify a label that looks like
+  this:
+  "system_u:object_r:svirt_sandbox_file_t:s0:c1,c2"
+
+    Note you would want your ROOTFS directory to be labeled with a context that
+    this process type can use.
+
+      "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
+      "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
 
 **--linux-namespace-add**=NSNAME[:PATH]
   Adds or replaces the given linux namespace NSNAME with a namespace entry that
@@ -159,8 +163,15 @@ read the configuration from `config.json`.
   This option can be specified multiple times. If a interface name was specified more than once, the last PRIORITY makes sense.
   The special *PRIORITY*  -1  removes existing setting for interface NAME.
 
+**--linux-oom-score-adj**=adj
+  Specifies oom_score_adj for the container.
+
 **--linux-pids-limit**=PIDSLIMIT
   Set maximum number of PIDs.
+
+**--linux-readonly-paths**=[]
+  Specifies paths readonly inside container. e.g. --readonly-paths=/proc/sys
+  This option can be specified multiple times.
 
 **--linux-realtime-period**=REALTIMEPERIOD
   Sets the CPU period to be used for realtime scheduling (in usecs). Same as **--linux-cpu-period** but applies to realtime scheduler only.
@@ -168,130 +179,48 @@ read the configuration from `config.json`.
 **--linux-realtime-runtime**=REALTIMERUNTIME
   Specifies a period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources.
 
-**--masked-paths**=[]
-  Specifies paths can not be read inside container. e.g. --masked-paths=/proc/kcore
-  This option can be specified multiple times.
-
-**--mount-cgroups**=[rw|ro|no]
-  Mount cgroups. The default is *no*.
-
-**--mount-label**=MOUNTLABEL
-  Mount Label
-  Depending on your SELinux policy, you would specify a label that looks like
-  this:
-  "system_u:object_r:svirt_sandbox_file_t:s0:c1,c2"
-
-    Note you would want your ROOTFS directory to be labeled with a context that
-    this process type can use.
-
-      "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
-      "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
-
-**--no-new-privileges**=true|false
-  Set no new privileges bit for the container process.  Setting this flag
-  will block the container processes from gaining any additional privileges
-  using tools like setuid apps.  It is a good idea to run unprivileged
-  containers with this flag.
-
-**--oom-score-adj**=adj
-  Specifies oom_score_adj for the container.
-
-**--output**=PATH
-  Instead of writing the configuration JSON to stdout, write it to a
-  file at *PATH* (overwriting the existing content if a file already
-  exists at *PATH*).
-
-**--poststart**=CMD[:ARGS...]
-  Set command to run in poststart hooks. Can be specified multiple times.
-  The multiple commands will be run in order before the container process
-  gets launched but after the container environment and main process has been
-  created.
-
-**--poststop**=CMD[:ARGS...]
-  Set command to run in poststop hooks. Can be specified multiple times.
-  The multiple commands will be run in order after the container process
-  is stopped.
-
-**--prestart**=CMD[:ARGS...]
-  Set command to run in prestart hooks. Can be specified multiple times.
-  The multiple commands will be run in order after the container process
-  has been created but before it executes the user-configured code.
-
-**--privileged**=true|false
-  Give extended privileges to this container. The default is *false*.
-
-  By default, OCI containers are
-“unprivileged” (=false) and cannot do some of the things a normal root process can do.
-
-  When the operator executes **oci-runtime-tool generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
-
-**--readonly-paths**=[]
-  Specifies paths readonly inside container. e.g. --readonly-paths=/proc/sys
-  This option can be specified multiple times.
-
-**--rootfs-path**=ROOTFSPATH
-  Path to the rootfs, which can be an absolute path or relative to bundle path.
-  e.g the absolute path of rootfs is /to/bundle/rootfs, bundle path is /to/bundle,
-  then the value set as ROOTFSPATH should be `/to/bundle/rootfs` or `rootfs`. The default is *rootfs*.
-
-**--rootfs-propagation**=PROPOGATIONMODE
+**--linux-rootfs-propagation**=PROPOGATIONMODE
   Mount propagation for root filesystem.
   Values are "shared, rshared, private, rprivate, slave, rslave"
 
-**--rootfs-readonly**=true|false
-  Mount the container's root filesystem as read only.
-
-  By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--rootfs-readonly` flag the container will have its root filesystem mounted as read only prohibiting any writes.
-
-**--rlimits-add**=[]
-  Specifies resource limits, format is RLIMIT:HARD:SOFT. e.g. --rlimits-add=RLIMIT_NOFILE:1024:1024
-  This option can be specified multiple times. When same RLIMIT specified over once, the last one make sense.
-
-**--rlimits-remove**=[]
-  Remove the specified resource limits for process inside the container.
-  This option can be specified multiple times.
-
-**--rlimits-remove-all**=true|false
-  Remove all resource limits for process inside the container. The default is *false*.
-
-**--seccomp-allow**=SYSCALL
+**--linux-eccomp-allow**=SYSCALL
   Specifies syscalls to be added to the ALLOW list.
-  See --seccomp-syscalls for setting limits on arguments.
+  See --linux-seccomp-syscalls for setting limits on arguments.
 
-**--seccomp-arch**=ARCH
+**--linux-seccomp-arch**=ARCH
   Specifies Additional architectures permitted to be used for system calls.
   By default if you turn on seccomp, only the host architecture will be allowed.
 
-**--seccomp-default**=ACTION
+**--linux-seccomp-default**=ACTION
   Specifies the the default action of Seccomp syscall restrictions and removes existing restrictions with the specified action
   Values: KILL,ERRNO,TRACE,ALLOW
 
-**--seccomp-default-force**=ACTION
+**--linux-seccomp-default-force**=ACTION
   Specifies the the default action of Seccomp syscall restrictions
   Values: KILL,ERRNO,TRACE,ALLOW
 
-**--seccomp-errno**=SYSCALL
+**--linux-seccomp-errno**=SYSCALL
   Specifies syscalls to create seccomp rule to respond with ERRNO.
 
-**--seccomp-kill**=SYSCALL
+**--linux-seccomp-kill**=SYSCALL
   Specifies syscalls to create seccomp rule to respond with KILL.
 
-**--seccomp-only**
+**--linux-seccomp-only**
   Option to only export the seccomp section of output
 
-**--seccomp-remove**
+**--linux-seccomp-remove**
   Specifies syscall restrictions to remove from the configuration.
 
-**--seccomp-remove-all**
+**--linux-seccomp-remove-all**
   Option to remove all syscall restrictions.
 
-**--seccomp-trace**=SYSCALL
+**--linux-seccomp-trace**=SYSCALL
   Specifies syscalls to create seccomp rule to respond with TRACE.
 
-**--seccomp-trap**=SYSCALL
+**--linux-seccomp-trap**=SYSCALL
   Specifies syscalls to create seccomp rule to respond with TRAP.
 
-**--selinux-label**=PROCESSLABEL
+**--linux-selinux-label**=PROCESSLABEL
   SELinux Label
   Depending on your SELinux policy, you would specify a label that looks like
   this:
@@ -303,9 +232,90 @@ read the configuration from `config.json`.
       "system_u:object_r:usr_t:s0" might be a good label for a readonly container,
       "system_u:object_r:svirt_sandbox_file_t:s0:c1,c2" for a read/write container.
 
-**--sysctl**=SYSCTLSETTING
+**--linux-sysctl**=SYSCTLSETTING
   Add sysctl settings e.g net.ipv4.forward=1, only allowed if the syctl is
   namespaced.
+
+**--linux-uidmappings**
+
+  Add UIDMappings e.g HostUID:ContainerID:Size.  Implies **--user=**.
+
+**--mount-bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS...]]*
+  Bind mount directories src:dest:(rw,ro) If you specify, ` --mount-bind
+  /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
+  to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a colon
+  delimited list and can be any mount option support by the runtime such
+  as [rw|ro|rbind|bind|...]. The `HOST_DIR` and `CONTAINER-DIR` must be
+  absolute paths such as `/src/docs`.  You can set the `ro` or `rw`
+  options to a bind-mount to mount it read-only or read-write mode,
+  respectively. By default, bind-mounts are mounted read-write.
+
+**--mount-cgroups**=[rw|ro|no]
+  Mount cgroups. The default is *no*.
+
+**--output**=PATH
+  Instead of writing the configuration JSON to stdout, write it to a
+  file at *PATH* (overwriting the existing content if a file already
+  exists at *PATH*).
+
+**--privileged**=true|false
+  Give extended privileges to this container. The default is *false*.
+
+  By default, OCI containers are
+“unprivileged” (=false) and cannot do some of the things a normal root process can do.
+
+  When the operator executes **oci-runtime-tool generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
+
+**--process-cap-add**=[]
+  Add Linux capabilities
+
+**--process-cap-drop**=[]
+  Drop Linux capabilities
+
+**--process-cap-drop-all**true|false
+  Drop all Linux capabilities
+
+**--process-cwd**=PATH
+  Current working directory for the process. The default is */*.
+
+**--process-gid**=GID
+  Gid for the process inside of container
+
+**--process-groups**=GROUP
+  Supplementary groups for the processes inside of container
+
+**--process-no-new-privileges**=true|false
+  Set no new privileges bit for the container process.  Setting this flag
+  will block the container processes from gaining any additional privileges
+  using tools like setuid apps.  It is a good idea to run unprivileged
+  containers with this flag.
+
+**--process-rlimits-add**=[]
+  Specifies resource limits, format is RLIMIT:HARD:SOFT. e.g. --rlimits-add=RLIMIT_NOFILE:1024:1024
+  This option can be specified multiple times. When same RLIMIT specified over once, the last one make sense.
+
+**--process-rlimits-remove**=[]
+  Remove the specified resource limits for process inside the container.
+  This option can be specified multiple times.
+
+**--process-rlimits-remove-all**=true|false
+  Remove all resource limits for process inside the container. The default is *false*.
+
+**--process-tty**=true|false
+  Allocate a new tty for the container process. The default is *false*.
+
+**--process-uid**=UID
+  Sets the UID used within the container.
+
+**--rootfs-path**=ROOTFSPATH
+  Path to the rootfs, which can be an absolute path or relative to bundle path.
+  e.g the absolute path of rootfs is /to/bundle/rootfs, bundle path is /to/bundle,
+  then the value set as ROOTFSPATH should be `/to/bundle/rootfs` or `rootfs`. The default is *rootfs*.
+
+**--rootfs-readonly**=true|false
+  Mount the container's root filesystem as read only.
+
+  By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--rootfs-readonly` flag the container will have its root filesystem mounted as read only prohibiting any writes.
 
 **--template**=PATH
   Override the default template with your own.
@@ -319,15 +329,6 @@ read the configuration from `config.json`.
 
     This command mounts a `tmpfs` at `/tmp` within the container.  The supported mount options are the same as the Linux default `mount` flags. If you do not specify any options, the systems uses the following options:
     `rw,noexec,nosuid,nodev,size=65536k`.
-
-**--tty**=true|false
-  Allocate a new tty for the container process. The default is *false*.
-
-**--uid**=UID
-  Sets the UID used within the container.
-
-**--uidmappings**
-  Add UIDMappings e.g HostUID:ContainerID:Size.  Implies **--user=**.
 
 # EXAMPLES
 
@@ -369,13 +370,13 @@ To mount a host directory as a container volume, specify the absolute path to
 the directory and the absolute path for the container directory separated by a
 colon:
 
-    $ oci-runtime-tool generate --bind /var/db:/data1  --rootfs-path /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --mount-bind /var/db:/data1  --rootfs-path /var/lib/containers/fedora --args bash
 
 ## Using SELinux
 
-You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --selinux-label.
+You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --process-selinux-label.
 
-    $ oci-runtime-tool generate --bind /var/db:/data1  --selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbox_file_t:s0:c1,c2 --rootfs-path /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --mount-bind /var/db:/data1  --process-selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbo x_file_t:s0:c1,c2 --rootfs-path /var/lib/containers/fedora --args bash
 
 Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
 

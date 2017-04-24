@@ -17,29 +17,26 @@ import (
 )
 
 var generateFlags = []cli.Flag{
-	cli.StringFlag{Name: "apparmor", Usage: "specifies the the apparmor profile for the container"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
-	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest[:options...]"},
-	cli.StringSliceFlag{Name: "cap-add", Usage: "add Linux capabilities"},
-	cli.StringSliceFlag{Name: "cap-drop", Usage: "drop Linux capabilities"},
-	cli.BoolFlag{Name: "cap-drop-all", Usage: "drop all Linux capabilities"},
-	cli.StringFlag{Name: "cgroups-path", Usage: "specify the path to the cgroups"},
-	cli.StringFlag{Name: "cwd", Value: "/", Usage: "current working directory for the process"},
-	cli.StringSliceFlag{Name: "device-add", Usage: "add a device which must be made available in the container"},
-	cli.StringSliceFlag{Name: "device-remove", Usage: "remove a device which must be made available in the container"},
-	cli.BoolFlag{Name: "device-remove-all", Usage: "remove all devices which must be made available in the container"},
-	cli.BoolFlag{Name: "disable-oom-kill", Usage: "disable OOM Killer"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
-	cli.IntFlag{Name: "gid", Usage: "gid for the process"},
-	cli.StringSliceFlag{Name: "gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
-	cli.StringSliceFlag{Name: "groups", Usage: "supplementary groups for the process"},
 	cli.StringFlag{Name: "hostname", Usage: "hostname value for the container"},
+	cli.StringSliceFlag{Name: "hooks-poststart", Usage: "set command to run in poststart hooks"},
+	cli.StringSliceFlag{Name: "hooks-poststop", Usage: "set command to run in poststop hooks"},
+	cli.StringSliceFlag{Name: "hooks-prestart", Usage: "set command to run in prestart hooks"},
 	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
+	cli.StringFlag{Name: "linux-apparmor", Usage: "specifies the the apparmor profile for the container"},
+	cli.StringFlag{Name: "linux-cgroups-path", Usage: "specify the path to the cgroups"},
 	cli.Uint64Flag{Name: "linux-cpu-shares", Usage: "the relative share of CPU time available to the tasks in a cgroup"},
 	cli.Uint64Flag{Name: "linux-cpu-period", Usage: "the CPU period to be used for hardcapping (in usecs)"},
 	cli.Uint64Flag{Name: "linux-cpu-quota", Usage: "the allowed CPU time in a given period (in usecs)"},
 	cli.StringFlag{Name: "linux-cpus", Usage: "CPUs to use within the cpuset (default is to use any CPU available)"},
+	cli.StringSliceFlag{Name: "linux-device-add", Usage: "add a device which must be made available in the container"},
+	cli.StringSliceFlag{Name: "linux-device-remove", Usage: "remove a device which must be made available in the container"},
+	cli.BoolFlag{Name: "linux-device-remove-all", Usage: "remove all devices which must be made available in the container"},
+	cli.BoolFlag{Name: "linux-disable-oom-kill", Usage: "disable OOM Killer"},
+	cli.StringSliceFlag{Name: "linux-gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
+	cli.StringSliceFlag{Name: "linux-masked-paths", Usage: "specifies paths can not be read inside container"},
 	cli.Uint64Flag{Name: "linux-mem-kernel-limit", Usage: "kernel memory limit (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-kernel-tcp", Usage: "kernel memory limit for tcp (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-limit", Usage: "memory limit (in bytes)"},
@@ -47,49 +44,52 @@ var generateFlags = []cli.Flag{
 	cli.Uint64Flag{Name: "linux-mem-swap", Usage: "total memory limit (memory + swap) (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-swappiness", Usage: "how aggressive the kernel will swap memory pages (Range from 0 to 100)"},
 	cli.StringFlag{Name: "linux-mems", Usage: "list of memory nodes in the cpuset (default is to use any available memory node)"},
+	cli.StringFlag{Name: "linux-mount-label", Usage: "selinux mount context label"},
 	cli.StringSliceFlag{Name: "linux-namespace-add", Usage: "adds a namespace to the set of namespaces to create or join of the form 'ns[:path]'"},
 	cli.StringSliceFlag{Name: "linux-namespace-remove", Usage: "removes a namespace from the set of namespaces to create or join of the form 'ns'"},
 	cli.BoolFlag{Name: "linux-namespace-remove-all", Usage: "removes all namespaces from the set of namespaces created or joined"},
 	cli.IntFlag{Name: "linux-network-classid", Usage: "specifies class identifier tagged by container's network packets"},
 	cli.StringSliceFlag{Name: "linux-network-priorities", Usage: "specifies priorities of network traffic"},
+	cli.IntFlag{Name: "linux-oom-score-adj", Usage: "oom_score_adj for the container"},
 	cli.Int64Flag{Name: "linux-pids-limit", Usage: "maximum number of PIDs"},
+	cli.StringSliceFlag{Name: "linux-readonly-paths", Usage: "specifies paths readonly inside container"},
 	cli.Int64Flag{Name: "linux-realtime-period", Usage: "CPU period to be used for realtime scheduling (in usecs)"},
 	cli.Int64Flag{Name: "linux-realtime-runtime", Usage: "the time realtime scheduling may use (in usecs)"},
-	cli.StringSliceFlag{Name: "masked-paths", Usage: "specifies paths can not be read inside container"},
+	cli.StringFlag{Name: "linux-rootfs-propagation", Usage: "mount propagation for rootfs"},
+	cli.StringFlag{Name: "linux-seccomp-allow", Usage: "specifies syscalls to respond with allow"},
+	cli.StringFlag{Name: "linux-seccomp-arch", Usage: "specifies additional architectures permitted to be used for system calls"},
+	cli.StringFlag{Name: "linux-seccomp-default", Usage: "specifies default action to be used for system calls and removes existing rules with specified action"},
+	cli.StringFlag{Name: "linux-seccomp-default-force", Usage: "same as seccomp-default but does not remove existing rules with specified action"},
+	cli.StringFlag{Name: "linux-seccomp-errno", Usage: "specifies syscalls to respond with errno"},
+	cli.StringFlag{Name: "linux-seccomp-kill", Usage: "specifies syscalls to respond with kill"},
+	cli.BoolFlag{Name: "linux-seccomp-only", Usage: "specifies to export just a seccomp configuration file"},
+	cli.StringFlag{Name: "linux-seccomp-remove", Usage: "specifies syscalls to remove seccomp rules for"},
+	cli.BoolFlag{Name: "linux-seccomp-remove-all", Usage: "removes all syscall rules from seccomp configuration"},
+	cli.StringFlag{Name: "linux-seccomp-trace", Usage: "specifies syscalls to respond with trace"},
+	cli.StringFlag{Name: "linux-seccomp-trap", Usage: "specifies syscalls to respond with trap"},
+	cli.StringFlag{Name: "linux-selinux-label", Usage: "process selinux label"},
+	cli.StringSliceFlag{Name: "linux-sysctl", Usage: "add sysctl settings e.g net.ipv4.forward=1"},
+	cli.StringSliceFlag{Name: "linux-uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
+	cli.StringSliceFlag{Name: "mount-bind", Usage: "bind mount directories src:dest[:options...]"},
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
-	cli.StringFlag{Name: "mount-label", Usage: "selinux mount context label"},
-	cli.BoolFlag{Name: "no-new-privileges", Usage: "set no new privileges bit for the container process"},
-	cli.IntFlag{Name: "oom-score-adj", Usage: "oom_score_adj for the container"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
-	cli.StringSliceFlag{Name: "poststart", Usage: "set command to run in poststart hooks"},
-	cli.StringSliceFlag{Name: "poststop", Usage: "set command to run in poststop hooks"},
-	cli.StringSliceFlag{Name: "prestart", Usage: "set command to run in prestart hooks"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
-	cli.StringSliceFlag{Name: "readonly-paths", Usage: "specifies paths readonly inside container"},
+	cli.StringSliceFlag{Name: "process-cap-add", Usage: "add Linux capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-drop", Usage: "drop Linux capabilities"},
+	cli.BoolFlag{Name: "process-cap-drop-all", Usage: "drop all Linux capabilities"},
+	cli.StringFlag{Name: "process-cwd", Value: "/", Usage: "current working directory for the process"},
+	cli.IntFlag{Name: "process-gid", Usage: "gid for the process"},
+	cli.StringSliceFlag{Name: "process-groups", Usage: "supplementary groups for the process"},
+	cli.BoolFlag{Name: "process-no-new-privileges", Usage: "set no new privileges bit for the container process"},
+	cli.StringSliceFlag{Name: "process-rlimits-add", Usage: "specifies resource limits for processes inside the container. "},
+	cli.StringSliceFlag{Name: "process-rlimits-remove", Usage: "remove specified resource limits for processes inside the container. "},
+	cli.BoolFlag{Name: "process-rlimits-remove-all", Usage: "remove all resource limits for processes inside the container. "},
+	cli.BoolFlag{Name: "process-tty", Usage: "allocate a new tty for the container process"},
+	cli.IntFlag{Name: "process-uid", Usage: "uid for the process"},
 	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
-	cli.StringFlag{Name: "rootfs-propagation", Usage: "mount propagation for rootfs"},
 	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
-	cli.StringSliceFlag{Name: "rlimits-add", Usage: "specifies resource limits for processes inside the container. "},
-	cli.StringSliceFlag{Name: "rlimits-remove", Usage: "remove specified resource limits for processes inside the container. "},
-	cli.BoolFlag{Name: "rlimits-remove-all", Usage: "remove all resource limits for processes inside the container. "},
-	cli.StringFlag{Name: "seccomp-allow", Usage: "specifies syscalls to respond with allow"},
-	cli.StringFlag{Name: "seccomp-arch", Usage: "specifies additional architectures permitted to be used for system calls"},
-	cli.StringFlag{Name: "seccomp-default", Usage: "specifies default action to be used for system calls and removes existing rules with specified action"},
-	cli.StringFlag{Name: "seccomp-default-force", Usage: "same as seccomp-default but does not remove existing rules with specified action"},
-	cli.StringFlag{Name: "seccomp-errno", Usage: "specifies syscalls to respond with errno"},
-	cli.StringFlag{Name: "seccomp-kill", Usage: "specifies syscalls to respond with kill"},
-	cli.BoolFlag{Name: "seccomp-only", Usage: "specifies to export just a seccomp configuration file"},
-	cli.StringFlag{Name: "seccomp-remove", Usage: "specifies syscalls to remove seccomp rules for"},
-	cli.BoolFlag{Name: "seccomp-remove-all", Usage: "removes all syscall rules from seccomp configuration"},
-	cli.StringFlag{Name: "seccomp-trace", Usage: "specifies syscalls to respond with trace"},
-	cli.StringFlag{Name: "seccomp-trap", Usage: "specifies syscalls to respond with trap"},
-	cli.StringFlag{Name: "selinux-label", Usage: "process selinux label"},
-	cli.StringSliceFlag{Name: "sysctl", Usage: "add sysctl settings e.g net.ipv4.forward=1"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringSliceFlag{Name: "tmpfs", Usage: "mount tmpfs e.g. ContainerDIR[:OPTIONS...]"},
-	cli.BoolFlag{Name: "tty", Usage: "allocate a new tty for the container process"},
-	cli.IntFlag{Name: "uid", Usage: "uid for the process"},
-	cli.StringSliceFlag{Name: "uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
 }
 
 var generateCommand = cli.Command{
@@ -119,7 +119,7 @@ var generateCommand = cli.Command{
 		}
 
 		var exportOpts generate.ExportOptions
-		exportOpts.Seccomp = context.Bool("seccomp-only")
+		exportOpts.Seccomp = context.Bool("linux-seccomp-only")
 
 		if context.IsSet("output") {
 			err = specgen.SaveToFile(context.String("output"), exportOpts)
@@ -165,30 +165,30 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetRootReadonly(context.Bool("rootfs-readonly"))
 	}
 
-	if context.IsSet("uid") {
-		g.SetProcessUID(uint32(context.Int("uid")))
+	if context.IsSet("process-uid") {
+		g.SetProcessUID(uint32(context.Int("process-uid")))
 	}
 
-	if context.IsSet("gid") {
-		g.SetProcessGID(uint32(context.Int("gid")))
+	if context.IsSet("process-gid") {
+		g.SetProcessGID(uint32(context.Int("process-gid")))
 	}
 
-	if context.IsSet("selinux-label") {
-		g.SetProcessSelinuxLabel(context.String("selinux-label"))
+	if context.IsSet("linux-selinux-label") {
+		g.SetProcessSelinuxLabel(context.String("linux-selinux-label"))
 	}
 
-	g.SetProcessCwd(context.String("cwd"))
+	g.SetProcessCwd(context.String("process-cwd"))
 
-	if context.IsSet("apparmor") {
-		g.SetProcessApparmorProfile(context.String("apparmor"))
+	if context.IsSet("linux-apparmor") {
+		g.SetProcessApparmorProfile(context.String("linux-apparmor"))
 	}
 
-	if context.IsSet("no-new-privileges") {
-		g.SetProcessNoNewPrivileges(context.Bool("no-new-privileges"))
+	if context.IsSet("process-no-new-privileges") {
+		g.SetProcessNoNewPrivileges(context.Bool("process-no-new-privileges"))
 	}
 
-	if context.IsSet("tty") {
-		g.SetProcessTerminal(context.Bool("tty"))
+	if context.IsSet("process-tty") {
+		g.SetProcessTerminal(context.Bool("process-tty"))
 	}
 
 	if context.IsSet("args") {
@@ -210,8 +210,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("groups") {
-		groups := context.StringSlice("groups")
+	if context.IsSet("process-groups") {
+		groups := context.StringSlice("process-groups")
 		for _, group := range groups {
 			groupID, err := strconv.Atoi(group)
 			if err != nil {
@@ -221,30 +221,30 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("cgroups-path") {
-		g.SetLinuxCgroupsPath(context.String("cgroups-path"))
+	if context.IsSet("linux-cgroups-path") {
+		g.SetLinuxCgroupsPath(context.String("linux-cgroups-path"))
 	}
 
-	if context.IsSet("masked-paths") {
-		paths := context.StringSlice("masked-paths")
+	if context.IsSet("linux-masked-paths") {
+		paths := context.StringSlice("linux-masked-paths")
 		for _, path := range paths {
 			g.AddLinuxMaskedPaths(path)
 		}
 	}
 
-	if context.IsSet("readonly-paths") {
-		paths := context.StringSlice("readonly-paths")
+	if context.IsSet("linux-readonly-paths") {
+		paths := context.StringSlice("linux-readonly-paths")
 		for _, path := range paths {
 			g.AddLinuxReadonlyPaths(path)
 		}
 	}
 
-	if context.IsSet("mount-label") {
-		g.SetLinuxMountLabel(context.String("mount-label"))
+	if context.IsSet("linux-mount-label") {
+		g.SetLinuxMountLabel(context.String("linux-mount-label"))
 	}
 
-	if context.IsSet("sysctl") {
-		sysctls := context.StringSlice("sysctl")
+	if context.IsSet("linux-sysctl") {
+		sysctls := context.StringSlice("linux-sysctl")
 		for _, s := range sysctls {
 			pair := strings.Split(s, "=")
 			if len(pair) != 2 {
@@ -256,8 +256,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	g.SetupPrivileged(context.Bool("privileged"))
 
-	if context.IsSet("cap-add") {
-		addCaps := context.StringSlice("cap-add")
+	if context.IsSet("process-cap-add") {
+		addCaps := context.StringSlice("process-cap-add")
 		for _, cap := range addCaps {
 			if err := g.AddProcessCapability(cap); err != nil {
 				return err
@@ -265,8 +265,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("cap-drop") {
-		dropCaps := context.StringSlice("cap-drop")
+	if context.IsSet("process-cap-drop") {
+		dropCaps := context.StringSlice("process-cap-drop")
 		for _, cap := range dropCaps {
 			if err := g.DropProcessCapability(cap); err != nil {
 				return err
@@ -274,18 +274,18 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.Bool("cap-drop-all") {
+	if context.Bool("process-cap-drop-all") {
 		g.ClearProcessCapabilities()
 	}
 
 	var uidMaps, gidMaps []string
 
-	if context.IsSet("uidmappings") {
-		uidMaps = context.StringSlice("uidmappings")
+	if context.IsSet("linux-uidmappings") {
+		uidMaps = context.StringSlice("linux-uidmappings")
 	}
 
-	if context.IsSet("gidmappings") {
-		gidMaps = context.StringSlice("gidmappings")
+	if context.IsSet("linux-gidmappings") {
+		gidMaps = context.StringSlice("linux-gidmappings")
 	}
 
 	// Add default user namespace.
@@ -309,8 +309,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		return err
 	}
 
-	if context.IsSet("bind") {
-		binds := context.StringSlice("bind")
+	if context.IsSet("mount-bind") {
+		binds := context.StringSlice("mount-bind")
 		for _, bind := range binds {
 			source, dest, options, err := parseBindMount(bind)
 			if err != nil {
@@ -320,8 +320,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("prestart") {
-		preStartHooks := context.StringSlice("prestart")
+	if context.IsSet("hooks-prestart") {
+		preStartHooks := context.StringSlice("hooks-prestart")
 		for _, hook := range preStartHooks {
 			path, args, err := parseHook(hook)
 			if err != nil {
@@ -331,8 +331,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("poststop") {
-		postStopHooks := context.StringSlice("poststop")
+	if context.IsSet("hooks-poststop") {
+		postStopHooks := context.StringSlice("hooks-poststop")
 		for _, hook := range postStopHooks {
 			path, args, err := parseHook(hook)
 			if err != nil {
@@ -342,8 +342,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("poststart") {
-		postStartHooks := context.StringSlice("poststart")
+	if context.IsSet("hooks-poststart") {
+		postStartHooks := context.StringSlice("hooks-poststart")
 		for _, hook := range postStartHooks {
 			path, args, err := parseHook(hook)
 			if err != nil {
@@ -353,8 +353,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("rootfs-propagation") {
-		rp := context.String("rootfs-propagation")
+	if context.IsSet("linux-rootfs-propagation") {
+		rp := context.String("linux-rootfs-propagation")
 		if err := g.SetLinuxRootPropagation(rp); err != nil {
 			return err
 		}
@@ -378,12 +378,12 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.AddLinuxGIDMapping(hid, cid, size)
 	}
 
-	if context.IsSet("disable-oom-kill") {
-		g.SetLinuxResourcesDisableOOMKiller(context.Bool("disable-oom-kill"))
+	if context.IsSet("linux-disable-oom-kill") {
+		g.SetLinuxResourcesDisableOOMKiller(context.Bool("linux-disable-oom-kill"))
 	}
 
-	if context.IsSet("oom-score-adj") {
-		g.SetLinuxResourcesOOMScoreAdj(context.Int("oom-score-adj"))
+	if context.IsSet("linux-oom-score-adj") {
+		g.SetLinuxResourcesOOMScoreAdj(context.Int("linux-oom-score-adj"))
 	}
 
 	if context.IsSet("linux-cpu-shares") {
@@ -487,8 +487,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.ClearLinuxNamespaces()
 	}
 
-	if context.IsSet("rlimits-add") {
-		rlimits := context.StringSlice("rlimits-add")
+	if context.IsSet("process-rlimits-add") {
+		rlimits := context.StringSlice("process-rlimits-add")
 		for _, rlimit := range rlimits {
 			rType, rHard, rSoft, err := parseRlimit(rlimit)
 			if err != nil {
@@ -498,8 +498,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("rlimits-remove") {
-		rlimits := context.StringSlice("rlimits-remove")
+	if context.IsSet("process-rlimits-remove") {
+		rlimits := context.StringSlice("process-rlimits-remove")
 		for _, rlimit := range rlimits {
 			err := g.RemoveProcessRlimits(rlimit)
 			if err != nil {
@@ -508,12 +508,12 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.Bool("rlimits-remove-all") {
+	if context.Bool("process-rlimits-remove-all") {
 		g.ClearProcessRlimits()
 	}
 
-	if context.IsSet("device-add") {
-		devices := context.StringSlice("device-add")
+	if context.IsSet("linux-device-add") {
+		devices := context.StringSlice("linux-device-add")
 		for _, deviceArg := range devices {
 			dev, err := parseDevice(deviceArg, g)
 			if err != nil {
@@ -523,8 +523,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.IsSet("device-remove") {
-		devices := context.StringSlice("device-remove")
+	if context.IsSet("linux-device-remove") {
+		devices := context.StringSlice("linux-device-remove")
 		for _, device := range devices {
 			err := g.RemoveDevice(device)
 			if err != nil {
@@ -533,7 +533,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.Bool("device-remove-all") {
+	if context.Bool("linux-device-remove-all") {
 		g.ClearLinuxDevices()
 	}
 
@@ -749,14 +749,14 @@ func parseDevice(device string, g *generate.Generator) (rspec.LinuxDevice, error
 func addSeccomp(context *cli.Context, g *generate.Generator) error {
 
 	// Set the DefaultAction of seccomp
-	if context.IsSet("seccomp-default") {
-		seccompDefault := context.String("seccomp-default")
+	if context.IsSet("linux-seccomp-default") {
+		seccompDefault := context.String("linux-seccomp-default")
 		err := g.SetDefaultSeccompAction(seccompDefault)
 		if err != nil {
 			return err
 		}
-	} else if context.IsSet("seccomp-default-force") {
-		seccompDefaultForced := context.String("seccomp-default-force")
+	} else if context.IsSet("linux-seccomp-default-force") {
+		seccompDefaultForced := context.String("linux-seccomp-default-force")
 		err := g.SetDefaultSeccompActionForce(seccompDefaultForced)
 		if err != nil {
 			return err
@@ -764,8 +764,8 @@ func addSeccomp(context *cli.Context, g *generate.Generator) error {
 	}
 
 	// Add the additional architectures permitted to be used for system calls
-	if context.IsSet("seccomp-arch") {
-		seccompArch := context.String("seccomp-arch")
+	if context.IsSet("linux-seccomp-arch") {
+		seccompArch := context.String("linux-seccomp-arch")
 		architectureArgs := strings.Split(seccompArch, ",")
 		for _, arg := range architectureArgs {
 			err := g.SetSeccompArchitecture(arg)
@@ -775,50 +775,50 @@ func addSeccomp(context *cli.Context, g *generate.Generator) error {
 		}
 	}
 
-	if context.IsSet("seccomp-errno") {
+	if context.IsSet("linux-seccomp-errno") {
 		err := seccompSet(context, "errno", g)
 		if err != nil {
 			return err
 		}
 	}
 
-	if context.IsSet("seccomp-kill") {
+	if context.IsSet("linux-seccomp-kill") {
 		err := seccompSet(context, "kill", g)
 		if err != nil {
 			return err
 		}
 	}
 
-	if context.IsSet("seccomp-trace") {
+	if context.IsSet("linux-seccomp-trace") {
 		err := seccompSet(context, "trace", g)
 		if err != nil {
 			return err
 		}
 	}
 
-	if context.IsSet("seccomp-trap") {
+	if context.IsSet("linux-seccomp-trap") {
 		err := seccompSet(context, "trap", g)
 		if err != nil {
 			return err
 		}
 	}
 
-	if context.IsSet("seccomp-allow") {
+	if context.IsSet("linux-seccomp-allow") {
 		err := seccompSet(context, "allow", g)
 		if err != nil {
 			return err
 		}
 	}
 
-	if context.IsSet("seccomp-remove") {
-		seccompRemove := context.String("seccomp-remove")
+	if context.IsSet("linux-seccomp-remove") {
+		seccompRemove := context.String("linux-seccomp-remove")
 		err := g.RemoveSeccompRule(seccompRemove)
 		if err != nil {
 			return err
 		}
 	}
 
-	if context.Bool("seccomp-remove-all") {
+	if context.Bool("linux-seccomp-remove-all") {
 		err := g.RemoveAllSeccompRules()
 		if err != nil {
 			return err

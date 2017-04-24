@@ -283,26 +283,24 @@ _oci-runtime-tool_help() {
 
 _oci-runtime-tool_generate() {
 	local options_with_args="
-		--apparmor
 		--args
-		--bind
-		--cap-add
-		--cap-drop
-		--cgroups-path
-		--cwd
-		--device-add
-		--device-remove
 		--env
 		--env-file
-		--gid
-		--gidmappings
-		--groups
 		--hostname
+		--hooks-poststart
+		--hooks-poststop
+		--hooks-prestart
 		--label
+		--linux-apparmor
+		--linux-cgroups-path
 		--linux-cpu-shares
 		--linux-cpu-period
 		--linux-cpu-quota
 		--linux-cpus
+		--linux-device-add
+		--linux-device-remove
+		--linux-gidmappings
+		--linux-masked-paths
 		--linux-mem-kernel-limit
 		--linux-mem-kernel-tcp
 		--linux-mem-limit
@@ -310,56 +308,62 @@ _oci-runtime-tool_generate() {
 		--linux-mem-swap
 		--linux-mem-swappiness
 		--linux-mems
+		--linux-mount-label
 		--linux-namespace-add
 		--linux-namespace-remove
 		--linux-network-classid
 		--linux-network-priorities
+		--linux-oom-score-adj
 		--linux-pids-limit
+		--linux-readonly-paths
 		--linux-realtime-period
 		--linux-realtime-runtime
-		--masked-paths
+		--linux-rootfs-propagation
+		--linux-seccomp-allow
+		--linux-seccomp-arch
+		--linux-seccomp-default
+		--linux-seccomp-default-force
+		--linux-seccomp-errno
+		--linux-seccomp-kill
+		--linux-seccomp-remove
+		--linux-seccomp-trace
+		--linux-seccomp-trap
+		--linux-selinux-label
+		--linux-sysctl
+		--linux-uidmappings
+		--mount-bind
 		--mount-cgroups
+<<<<<<< c1b5a024416a8eeae3984360e6eb61bec47f115f
 		--mount-label
 		--oom-score-adj
+=======
+		--os
+>>>>>>> generate: rectify the arguments
 		--output
-		--poststart
-		--poststop
-		--prestart
-		--readonly-paths
+		--process-cwd
+		--process-gid
+		--process-groups
+		--process-rlimits-add
+		--process-rlimits-remove
+		--process-uid
 		--rootfs-path
-		--rootfs-propagation
-		--rlimits-add
-		--rlimits-remove
-		--seccomp-allow
-		--seccomp-arch
-		--seccomp-default
-		--seccomp-default-force
-		--seccomp-errno
-		--seccomp-kill
-		--seccomp-remove
-		--seccomp-trace
-		--seccomp-trap
-		--selinux-label
-		--sysctl
 		--template
 		--tmpfs
-		--uid
-		--uidmappings
 	"
 
 	local boolean_options="
-		--cap-drop-all
-		--device-remove-all
-		--disable-oom-kill
 		--help -h
+		--linux-device-remove-all
+		--linux-disable-oom-kill
 		--linux-namespace-remove-all
-		--no-new-privileges
+		--linux-seccomp-only
+		--linux-seccomp-remove-all
 		--privileged
-		--rlimits-remove-all
+		--process-cap-drop-all
+		--process-no-new-privileges
+		--process-rlimits-remove-all
+		--process-tty
 		--rootfs-readonly
-		--seccomp-only
-		--seccomp-remove-all
-		--tty
 	"
 
 	local all_options="$options_with_args $boolean_options"
