@@ -279,27 +279,50 @@ func (v *Validator) CheckProcess() (msgs []string) {
 func (v *Validator) CheckCapablities() (msgs []string) {
 	process := v.spec.Process
 	if v.spec.Platform.OS == "linux" {
-		var caps []string
+		var effective, permitted, inheritable, ambient bool
+		caps := make(map[string][]string)
 
 		for _, cap := range process.Capabilities.Bounding {
-			caps = append(caps, cap)
+			caps[cap] = append(caps[cap], "bounding")
 		}
 		for _, cap := range process.Capabilities.Effective {
-			caps = append(caps, cap)
+			caps[cap] = append(caps[cap], "effective")
 		}
 		for _, cap := range process.Capabilities.Inheritable {
-			caps = append(caps, cap)
+			caps[cap] = append(caps[cap], "inheritable")
 		}
 		for _, cap := range process.Capabilities.Permitted {
-			caps = append(caps, cap)
+			caps[cap] = append(caps[cap], "permitted")
 		}
 		for _, cap := range process.Capabilities.Ambient {
-			caps = append(caps, cap)
+			caps[cap] = append(caps[cap], "ambient")
 		}
 
-		for _, capability := range caps {
+		for capability, owns := range caps {
 			if err := CapValid(capability, v.HostSpecific); err != nil {
 				msgs = append(msgs, fmt.Sprintf("capability %q is not valid, man capabilities(7)", capability))
+			}
+
+			effective, permitted, ambient, inheritable = false, false, false, false
+			for _, set := range owns {
+				if set == "effective" {
+					effective = true
+				}
+				if set == "inheritable" {
+					inheritable = true
+				}
+				if set == "permitted" {
+					permitted = true
+				}
+				if set == "ambient" {
+					ambient = true
+				}
+			}
+			if effective && !permitted {
+				msgs = append(msgs, fmt.Sprintf("effective capability %q is not allowed, as it's not permitted", capability))
+			}
+			if ambient && !(effective && inheritable) {
+				msgs = append(msgs, fmt.Sprintf("ambient capability %q is not allowed, as it's not permitted and inheribate", capability))
 			}
 		}
 	} else {
