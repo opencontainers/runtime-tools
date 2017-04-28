@@ -141,6 +141,12 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	spec := g.Spec()
+	devices := spec.Linux.Resources.Devices
+	for index := 0; index < len(devices); index++ {
+		if devices[index].Type == "" {
+			devices[index].Type = "a"
+		}
+	}
 
 	if len(spec.Version) == 0 {
 		g.SetVersion(rspec.Version)
