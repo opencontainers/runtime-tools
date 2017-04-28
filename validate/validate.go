@@ -562,6 +562,15 @@ func (v *Validator) CheckLinuxResources() (msgs []string) {
 			msgs = append(msgs, fmt.Sprintf("type of devices %s is invalid", r.Devices[index].Type))
 		}
 
+		access := []byte(r.Devices[index].Access)
+		for i := 0; i < len(access); i++ {
+			switch access[i] {
+			case 'r', 'w', 'm':
+			default:
+				msgs = append(msgs, fmt.Sprintf("access %s is invalid", r.Devices[index].Access))
+				return
+			}
+		}
 	}
 
 	return
