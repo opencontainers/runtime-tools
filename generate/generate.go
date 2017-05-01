@@ -1031,7 +1031,7 @@ func (g *Generator) AddDevice(device rspec.LinuxDevice) {
 	g.spec.Linux.Devices = append(g.spec.Linux.Devices, device)
 }
 
-//RemoveDevice remove a device from g.spec.Linux.Devices
+// RemoveDevice remove a device from g.spec.Linux.Devices
 func (g *Generator) RemoveDevice(path string) error {
 	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Devices == nil {
 		return nil
@@ -1046,6 +1046,7 @@ func (g *Generator) RemoveDevice(path string) error {
 	return nil
 }
 
+// ClearLinuxDevices clears g.spec.Linux.Devices
 func (g *Generator) ClearLinuxDevices() {
 	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Devices == nil {
 		return
