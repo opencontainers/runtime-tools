@@ -511,13 +511,13 @@ func (v *Validator) CheckLinux() (msgs []string) {
 
 	for _, maskedPath := range v.spec.Linux.MaskedPaths {
 		if !strings.HasPrefix(maskedPath, "/") {
-			msgs = append(msgs, "maskedPath %v is not an absolute path", maskedPath)
+			msgs = append(msgs, fmt.Sprintf("maskedPath %v is not an absolute path", maskedPath))
 		}
 	}
 
 	for _, readonlyPath := range v.spec.Linux.ReadonlyPaths {
 		if !strings.HasPrefix(readonlyPath, "/") {
-			msgs = append(msgs, "readonlyPath %v is not an absolute path", readonlyPath)
+			msgs = append(msgs, fmt.Sprintf("readonlyPath %v is not an absolute path", readonlyPath))
 		}
 	}
 
