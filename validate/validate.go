@@ -376,15 +376,15 @@ func (v *Validator) CheckMounts() (msgs []string) {
 		return
 	}
 
-	if supportedTypes != nil {
-		for _, mount := range v.spec.Mounts {
+	for _, mount := range v.spec.Mounts {
+		if supportedTypes != nil {
 			if !supportedTypes[mount.Type] {
 				msgs = append(msgs, fmt.Sprintf("Unsupported mount type %q", mount.Type))
 			}
+		}
 
-			if !filepath.IsAbs(mount.Destination) {
-				msgs = append(msgs, fmt.Sprintf("destination %v is not an absolute path", mount.Destination))
-			}
+		if !filepath.IsAbs(mount.Destination) {
+			msgs = append(msgs, fmt.Sprintf("destination %v is not an absolute path", mount.Destination))
 		}
 	}
 
