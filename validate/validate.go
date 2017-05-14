@@ -319,14 +319,7 @@ func (v *Validator) CheckRlimits() (msgs []string) {
 				msgs = append(msgs, fmt.Sprintf("rlimit can not contain the same type %q.", process.Rlimits[index].Type))
 			}
 		}
-
-		if v.spec.Platform.OS == "linux" {
-			if err := rlimitValid(rlimit); err != nil {
-				msgs = append(msgs, err.Error())
-			}
-		} else {
-			logrus.Warnf("process.rlimits validation not yet implemented for OS %q", v.spec.Platform.OS)
-		}
+		msgs = append(msgs, v.rlimitValid(rlimit)...)
 	}
 
 	return
@@ -652,16 +645,23 @@ func envValid(env string) bool {
 	return true
 }
 
-func rlimitValid(rlimit rspec.LinuxRlimit) error {
+func (v *Validator) rlimitValid(rlimit rspec.LinuxRlimit) (msgs []string) {
 	if rlimit.Hard < rlimit.Soft {
-		return fmt.Errorf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type)
+		msgs = append(msgs, fmt.Sprintf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type))
 	}
-	for _, val := range defaultRlimits {
-		if val == rlimit.Type {
-			return nil
+
+	if v.spec.Platform.OS == "linux" {
+		for _, val := range defaultRlimits {
+			if val == rlimit.Type {
+				return
+			}
 		}
+		msgs = append(msgs, fmt.Sprintf("rlimit type %q is invalid", rlimit.Type))
+	} else {
+		logrus.Warnf("process.rlimits validation not yet implemented for OS %q", v.spec.Platform.OS)
 	}
-	return fmt.Errorf("rlimit type %q is invalid", rlimit.Type)
+
+	return
 }
 
 func namespaceValid(ns rspec.LinuxNamespace) bool {
