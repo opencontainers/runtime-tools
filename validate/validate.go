@@ -89,8 +89,10 @@ func (v *Validator) CheckAll() (msgs []string) {
 	msgs = append(msgs, v.CheckPlatform()...)
 	msgs = append(msgs, v.CheckProcess()...)
 	msgs = append(msgs, v.CheckOS()...)
-	msgs = append(msgs, v.CheckLinux()...)
 	msgs = append(msgs, v.CheckHooks()...)
+	if v.spec.Linux != nil {
+		msgs = append(msgs, v.CheckLinux()...)
+	}
 
 	return
 }
