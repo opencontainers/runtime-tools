@@ -6,11 +6,12 @@ BINDIR ?= $(DESTDIR)/usr/bin
 
 BUILDTAGS=
 RUNTIME ?= runc
+COMMIT=$(shell git rev-parse HEAD 2> /dev/null || true)
 
 all: tool runtimetest
 
 tool:
-	go build -tags "$(BUILDTAGS)" -o oci-runtime-tool ./cmd/oci-runtime-tool
+	go build -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT}" -o oci-runtime-tool ./cmd/oci-runtime-tool
 
 .PHONY: runtimetest
 runtimetest:
