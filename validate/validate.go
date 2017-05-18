@@ -261,7 +261,9 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		}
 	}
 
-	msgs = append(msgs, v.CheckCapabilities()...)
+	if v.spec.Process.Capabilities != nil {
+		msgs = append(msgs, v.CheckCapabilities()...)
+	}
 	msgs = append(msgs, v.CheckRlimits()...)
 
 	if v.spec.Platform.OS == "linux" {
