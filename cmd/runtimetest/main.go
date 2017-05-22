@@ -93,8 +93,6 @@ func validateGeneralProcess(spec *rspec.Spec) error {
 }
 
 func validateLinuxProcess(spec *rspec.Spec) error {
-	logrus.Debugf("validating container process")
-
 	validateGeneralProcess(spec)
 
 	uid := os.Getuid()
@@ -152,8 +150,6 @@ func validateLinuxProcess(spec *rspec.Spec) error {
 }
 
 func validateCapabilities(spec *rspec.Spec) error {
-	logrus.Debugf("validating capabilities")
-
 	last := capability.CAP_LAST_CAP
 	// workaround for RHEL6 which has no /proc/sys/kernel/cap_last_cap
 	if last == capability.Cap(63) {
@@ -238,7 +234,6 @@ func validateCapabilities(spec *rspec.Spec) error {
 }
 
 func validateHostname(spec *rspec.Spec) error {
-	logrus.Debugf("validating hostname")
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
@@ -250,7 +245,6 @@ func validateHostname(spec *rspec.Spec) error {
 }
 
 func validateRlimits(spec *rspec.Spec) error {
-	logrus.Debugf("validating rlimits")
 	for _, r := range spec.Process.Rlimits {
 		rl, err := strToRlimit(r.Type)
 		if err != nil {
@@ -273,7 +267,6 @@ func validateRlimits(spec *rspec.Spec) error {
 }
 
 func validateSysctls(spec *rspec.Spec) error {
-	logrus.Debugf("validating sysctls")
 	for k, v := range spec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
 		vBytes, err := ioutil.ReadFile(keyPath)
@@ -301,7 +294,6 @@ func testWriteAccess(path string) error {
 }
 
 func validateRootFS(spec *rspec.Spec) error {
-	logrus.Debugf("validating root filesystem")
 	if spec.Root.Readonly {
 		err := testWriteAccess("/")
 		if err == nil {
@@ -313,8 +305,6 @@ func validateRootFS(spec *rspec.Spec) error {
 }
 
 func validateLinuxDevices(spec *rspec.Spec) error {
-	logrus.Debugf("validating linux devices")
-
 	for _, device := range spec.Linux.Devices {
 		fi, err := os.Stat(device.Path)
 		if err != nil {
@@ -369,8 +359,6 @@ func validateLinuxDevices(spec *rspec.Spec) error {
 }
 
 func validateDefaultSymlinks(spec *rspec.Spec) error {
-	logrus.Debugf("validating linux default symbolic links")
-
 	for symlink, dest := range defaultSymlinks {
 		fi, err := os.Lstat(symlink)
 		if err != nil {
@@ -392,8 +380,6 @@ func validateDefaultSymlinks(spec *rspec.Spec) error {
 }
 
 func validateDefaultDevices(spec *rspec.Spec) error {
-	logrus.Debugf("validating linux default devices")
-
 	if spec.Process.Terminal {
 		defaultDevices = append(defaultDevices, "/dev/console")
 	}
@@ -414,7 +400,6 @@ func validateDefaultDevices(spec *rspec.Spec) error {
 }
 
 func validateMaskedPaths(spec *rspec.Spec) error {
-	logrus.Debugf("validating maskedPaths")
 	for _, maskedPath := range spec.Linux.MaskedPaths {
 		f, err := os.Open(maskedPath)
 		if err != nil {
@@ -431,7 +416,6 @@ func validateMaskedPaths(spec *rspec.Spec) error {
 }
 
 func validateROPaths(spec *rspec.Spec) error {
-	logrus.Debugf("validating readonlyPaths")
 	for _, v := range spec.Linux.ReadonlyPaths {
 		err := testWriteAccess(v)
 		if err == nil {
@@ -443,7 +427,6 @@ func validateROPaths(spec *rspec.Spec) error {
 }
 
 func validateOOMScoreAdj(spec *rspec.Spec) error {
-	logrus.Debugf("validating oomScoreAdj")
 	if spec.Linux.Resources != nil && spec.Linux.Resources.OOMScoreAdj != nil {
 		expected := *spec.Linux.Resources.OOMScoreAdj
 		f, err := os.Open("/proc/1/oom_score_adj")
@@ -533,14 +516,10 @@ func validateIDMappings(mappings []rspec.LinuxIDMapping, path string, property s
 }
 
 func validateUIDMappings(spec *rspec.Spec) error {
-	logrus.Debugf("validating uidMappings")
-
 	return validateIDMappings(spec.Linux.UIDMappings, "/proc/self/uid_map", "linux.uidMappings")
 }
 
 func validateGIDMappings(spec *rspec.Spec) error {
-	logrus.Debugf("validating gidMappings")
-
 	return validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
 }
 
@@ -561,8 +540,6 @@ func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
 }
 
 func validateMountsExist(spec *rspec.Spec) error {
-	logrus.Debugf("validating mounts exist")
-
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
 		return err
