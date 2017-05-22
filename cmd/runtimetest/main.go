@@ -24,6 +24,7 @@ import (
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
+	"github.com/opencontainers/selinux/go-selinux/label"
 
 	"golang.org/x/sys/unix"
 )
@@ -1196,6 +1197,20 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 	return mountErrs
 }
 
+func validateMountLabel(spec *rspec.Spec) error {
+	for _, mount := range spec.Mounts {
+		fileLabel, err := label.GetFileLabel(mount.Destination)
+		if err != nil {
+			return fmt.Errorf("Failed to get mountLabel of %v", mount.Destination)
+		}
+		if fileLabel != spec.Linux.MountLabel {
+			return fmt.Errorf("Expected mountLabel %v, actual %v", spec.Linux.MountLabel, fileLabel)
+		}
+	}
+
+	return nil
+}
+
 func run(context *cli.Context) error {
 	logLevelString := context.String("log-level")
 	logLevel, err := logrus.ParseLevel(logLevelString)
@@ -1214,6 +1229,98 @@ func run(context *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	defaultValidations := []validation{
+		{
+			test:        validateRootFS,
+			description: "root filesystem",
+		},
+		{
+			test:        validateHostname,
+			description: "hostname",
+		},
+		{
+			test:        validateProcess,
+			description: "process",
+		},
+	}
+
+	posixValidations := []validation{
+		{
+			test:        validatePosixMounts,
+			description: "mounts",
+		},
+		{
+			test:        validatePosixUser,
+			description: "user",
+		},
+		{
+			test:        validateRlimits,
+			description: "rlimits",
+		},
+	}
+
+	linuxValidations := []validation{
+		{
+			test:        validateCapabilities,
+			description: "capabilities",
+		},
+		{
+			test:        validateDefaultSymlinks,
+			description: "default symlinks",
+		},
+		{
+			test:        validateDefaultFS,
+			description: "default file system",
+		},
+		{
+			test:        validateDefaultDevices,
+			description: "default devices",
+		},
+		{
+			test:        validateLinuxDevices,
+			description: "linux devices",
+		},
+		{
+			test:        validateLinuxProcess,
+			description: "linux process",
+		},
+		{
+			test:        validateMaskedPaths,
+			description: "masked paths",
+		},
+		{
+			test:        validateOOMScoreAdj,
+			description: "oom score adj",
+		},
+		{
+			test:        validateROPaths,
+			description: "read only paths",
+		},
+		{
+			test:        validateRootfsPropagation,
+			description: "rootfs propagation",
+		},
+		{
+			test:        validateSysctls,
+			description: "sysctls",
+		},
+		{
+			test:        validateUIDMappings,
+			description: "uid mappings",
+		},
+		{
+			test:        validateGIDMappings,
+			description: "gid mappings",
+		},
+		{
+			test:        validateMountLabel,
+			description: "mountLabel",
+		},
+	}
+
+	t := tap.New()
+	t.Header(0)
 
 	complianceLevelString := context.String("compliance-level")
 	complianceLevel, err := rfc2119.ParseLevel(complianceLevelString)
