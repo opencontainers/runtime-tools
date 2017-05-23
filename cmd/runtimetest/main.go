@@ -446,7 +446,7 @@ func validateOOMScoreAdj(spec *rspec.Spec) error {
 	logrus.Debugf("validating oomScoreAdj")
 	if spec.Linux.Resources != nil && spec.Linux.Resources.OOMScoreAdj != nil {
 		expected := *spec.Linux.Resources.OOMScoreAdj
-		f, err := os.Open("/proc/1/oom_score_adj")
+		f, err := os.Open("/proc/self/oom_score_adj")
 		if err != nil {
 			return err
 		}
