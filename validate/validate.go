@@ -551,6 +551,9 @@ func (v *Validator) CheckLinuxResources() (msgs []string) {
 		}
 	}
 
+	if r.OOMScoreAdj != nil && (*r.OOMScoreAdj < -1000 || *r.OOMScoreAdj > 1000) {
+		msgs = append(msgs, fmt.Sprintf("OOMScoreAdj is invalid. Acceptable values range from -1000 to +1000."))
+	}
 	return
 }
 
