@@ -502,8 +502,10 @@ func (v *Validator) CheckLinux() (msgs []string) {
 	case "rslave":
 	case "shared":
 	case "rshared":
+	case "unbindable":
+	case "runbindable":
 	default:
-		msgs = append(msgs, "rootfsPropagation must be empty or one of \"private|rprivate|slave|rslave|shared|rshared\"")
+		msgs = append(msgs, "rootfsPropagation must be empty or one of \"private|rprivate|slave|rslave|shared|rshared|unbindable|runbindable\"")
 	}
 
 	for _, maskedPath := range v.spec.Linux.MaskedPaths {
