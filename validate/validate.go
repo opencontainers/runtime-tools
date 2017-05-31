@@ -160,7 +160,7 @@ func (v *Validator) CheckPlatform() (msgs []string) {
 		"darwin":    {"386", "amd64", "arm", "arm64"},
 		"dragonfly": {"amd64"},
 		"freebsd":   {"386", "amd64", "arm"},
-		"linux":     {"386", "amd64", "arm", "arm64", "mips", "mipsle", "mips64", "mips64le", "ppc64", "ppc64le", "s390x"},
+		"linux":     {"386", "amd64", "arm", "arm64", "mips", "mips64", "mips64le", "mipsle", "ppc64", "ppc64le", "s390x"},
 		"netbsd":    {"386", "amd64", "arm"},
 		"openbsd":   {"386", "amd64", "arm"},
 		"plan9":     {"386", "amd64"},
