@@ -89,8 +89,10 @@ func (v *Validator) CheckAll() (msgs []string) {
 	msgs = append(msgs, v.CheckPlatform()...)
 	msgs = append(msgs, v.CheckProcess()...)
 	msgs = append(msgs, v.CheckOS()...)
-	msgs = append(msgs, v.CheckLinux()...)
 	msgs = append(msgs, v.CheckHooks()...)
+	if v.spec.Linux != nil {
+		msgs = append(msgs, v.CheckLinux()...)
+	}
 
 	return
 }
@@ -259,7 +261,9 @@ func (v *Validator) CheckProcess() (msgs []string) {
 		}
 	}
 
-	msgs = append(msgs, v.CheckCapabilities()...)
+	if v.spec.Process.Capabilities != nil {
+		msgs = append(msgs, v.CheckCapabilities()...)
+	}
 	msgs = append(msgs, v.CheckRlimits()...)
 
 	if v.spec.Platform.OS == "linux" {
