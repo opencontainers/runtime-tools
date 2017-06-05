@@ -15,6 +15,7 @@ man:
 	go-md2man -in "man/oci-runtime-tool.1.md" -out "oci-runtime-tool.1"
 	go-md2man -in "man/oci-runtime-tool-generate.1.md" -out "oci-runtime-tool-generate.1"
 	go-md2man -in "man/oci-runtime-tool-validate.1.md" -out "oci-runtime-tool-validate.1"
+	go-md2man -in "man/oci-runtime-tool-runtime-validate.1.md" -out "oci-runtime-tool-runtime-validate.1"
 
 install: man
 	install -d -m 755 $(BINDIR)
