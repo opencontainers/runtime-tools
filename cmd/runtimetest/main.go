@@ -303,7 +303,7 @@ func testWriteAccess(path string) error {
 func validateRootFS(spec *rspec.Spec) error {
 	logrus.Debugf("validating root filesystem")
 	if spec.Root.Readonly {
-		err := testWriteAccess("/")
+		err := testWriteAccess(spec.Root.Path)
 		if err == nil {
 			return fmt.Errorf("Rootfs should be readonly")
 		}
