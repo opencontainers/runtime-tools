@@ -52,7 +52,7 @@ read the configuration from `config.json`.
   Specifies the path to the cgroups relative to the cgroups mount point.
 
 **--cwd**=PATH
-  Current working directory for the process. The deafult is */*.
+  Current working directory for the process. The default is */*.
 
 **--device-add**=*TYPE:MAJOR:MINOR:PATH[:OPTIONS...]*
   Add a device file in container. e.g. --device=c:10:229:/dev/fuse:fileMode=438:uid=0:gid=0
