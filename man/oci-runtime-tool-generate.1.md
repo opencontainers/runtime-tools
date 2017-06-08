@@ -317,6 +317,7 @@ read the configuration from `config.json`.
 **--template**=PATH
   Override the default template with your own.
   Additional options will only adjust the relevant portions of your template.
+  Templates are not validated for correctness, so the user should ensure that they are correct.
 
 **--tmpfs**=[] Create a tmpfs mount
   Mount a temporary filesystem (`tmpfs`) mount into a container, for example:
