@@ -51,6 +51,9 @@ func runtimeValidate(runtime string, g *generate.Generator) error {
 
 	// Copy the runtimetest binary to the rootfs
 	err = fileutils.CopyFile("../runtimetest", filepath.Join(bundleDir, "runtimetest"))
+	if err != nil {
+		return err
+	}
 
 	// Generate test configuration
 	err = g.SaveToFile(filepath.Join(bundleDir, "config.json"), generate.ExportOptions{})
