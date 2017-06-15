@@ -52,8 +52,9 @@ type validation struct {
 	description string
 }
 
-func loadSpecConfig() (spec *rspec.Spec, err error) {
-	cf, err := os.Open(specConfig)
+func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
+	configPath := filepath.Join(path, specConfig)
+	cf, err := os.Open(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("%s not found", specConfig)
@@ -602,7 +603,8 @@ func validate(context *cli.Context) error {
 	}
 	logrus.SetLevel(logLevel)
 
-	spec, err := loadSpecConfig()
+	inputPath := context.String("path")
+	spec, err := loadSpecConfig(inputPath)
 	if err != nil {
 		return err
 	}
@@ -705,12 +707,16 @@ func main() {
 	app.Version = "0.0.1"
 	app.Usage = "Compare the environment with an OCI configuration"
 	app.Description = "runtimetest compares its current environment with an OCI runtime configuration read from config.json in its current working directory.  The tests are fairly generic and cover most configurations used by the runtime validation suite, but there are corner cases where a container launched by a valid runtime would not satisfy runtimetest."
-	app.UsageText = "runtimetest [options]"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "log-level",
 			Value: "error",
 			Usage: "Log level (panic, fatal, error, warn, info, or debug)",
+		},
+		cli.StringFlag{
+			Name:  "path",
+			Value: ".",
+			Usage: "path to the configuration",
 		},
 	}
 
