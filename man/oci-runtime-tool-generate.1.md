@@ -193,11 +193,11 @@ read the configuration from `config.json`.
 
 **--linux-seccomp-default**=ACTION
   Specifies the the default action of Seccomp syscall restrictions and removes existing restrictions with the specified action
-  Values: KILL,ERRNO,TRACE,ALLOW
+  Values: kill, trap, errno, trace, allow
 
 **--linux-seccomp-default-force**=ACTION
   Specifies the the default action of Seccomp syscall restrictions
-  Values: KILL,ERRNO,TRACE,ALLOW
+  Values: kill, trap, errno, trace, allow
 
 **--linux-seccomp-errno**=SYSCALL
   Specifies syscalls to create seccomp rule to respond with ERRNO.
