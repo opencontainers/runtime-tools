@@ -45,7 +45,7 @@ localvalidation:
 test: .gofmt .govet .golint
 
 .gofmt:
-	go fmt ./...
+	OUT=$$(go fmt ./...); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
 
 .govet:
 	go vet -x ./...
