@@ -22,9 +22,9 @@ import (
 	"github.com/urfave/cli"
 )
 
-// PR_GET_NO_NEW_PRIVS isn't exposed in Golang so we define it ourselves copying the value from
+// PrGetNoNewPrivs isn't exposed in Golang so we define it ourselves copying the value from
 // the kernel
-const PR_GET_NO_NEW_PRIVS = 39
+const PrGetNoNewPrivs = 39
 
 const specConfig = "config.json"
 
@@ -138,7 +138,7 @@ func validateLinuxProcess(spec *rspec.Spec) error {
 		}
 	}
 
-	ret, _, errno := syscall.Syscall6(syscall.SYS_PRCTL, PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0, 0)
+	ret, _, errno := syscall.Syscall6(syscall.SYS_PRCTL, PrGetNoNewPrivs, 0, 0, 0, 0, 0)
 	if errno != 0 {
 		return errno
 	}

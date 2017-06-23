@@ -968,7 +968,7 @@ func mapStrToNamespace(ns string, path string) (rspec.LinuxNamespace, error) {
 	case "cgroup":
 		return rspec.LinuxNamespace{Type: rspec.CgroupNamespace, Path: path}, nil
 	default:
-		return rspec.LinuxNamespace{}, fmt.Errorf("Should not reach here!")
+		return rspec.LinuxNamespace{}, fmt.Errorf("unrecognized namespace %q", ns)
 	}
 }
 
