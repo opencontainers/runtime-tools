@@ -50,7 +50,7 @@ All decisions affecting this project, big and small, follow the same 3 steps:
 
 * Step 2: Discuss the pull request. Anyone can do this.
 
-* Step 3: Accept (`LGTM`) or refuse a pull request. The relevant maintainers do 
+* Step 3: Accept (`LGTM`) or refuse a pull request. The relevant maintainers do
 this (see below "Who decides what?")
 
 ### I'm a maintainer, should I make pull requests too?
@@ -64,7 +64,9 @@ All decisions are pull requests, and the relevant maintainers make
 decisions by accepting or refusing the pull request. Review and acceptance
 by anyone is denoted by adding a comment in the pull request: `LGTM`.
 However, only currently listed `MAINTAINERS` are counted towards the required
-two LGTMs.
+two LGTMs. In addition, if a maintainer has created a pull request, they cannot
+count toward the two LGTM rule (to ensure equal amounts of review for every pull
+request, no matter who wrote it).
 
 Overall the maintainer system works because of mutual respect across the
 maintainers of the project.  The maintainers trust one another to make decisions
@@ -116,6 +118,3 @@ a vote by 66% of the current maintainers with the chief maintainer having veto p
 The voting period is ten business days.  Issues related to a maintainer's performance should
 be discussed with them among the other maintainers so that they are not surprised by
 a pull request removing them.
-
-
-
