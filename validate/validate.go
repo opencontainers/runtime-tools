@@ -483,9 +483,19 @@ func (v *Validator) CheckLinux() (msgs []string) {
 		msgs = append(msgs, fmt.Sprintf("On Linux, hostname requires a new UTS namespace to be specified as well"))
 	}
 
+	deviceInfos := make(map[string]bool)
 	for index := 0; index < len(v.spec.Linux.Devices); index++ {
-		if !deviceValid(v.spec.Linux.Devices[index]) {
-			msgs = append(msgs, fmt.Sprintf("device %v is invalid.", v.spec.Linux.Devices[index]))
+		device := v.spec.Linux.Devices[index]
+		if !deviceValid(device) {
+			msgs = append(msgs, fmt.Sprintf("device %v is invalid.", device))
+			continue
+		}
+
+		deviceSummary := fmt.Sprintf("%s-%d-%d", device.Type, device.Major, device.Minor)
+		if _, ok := deviceInfos[deviceSummary]; ok {
+			msgs = append(msgs, fmt.Sprintf("device %v is duplicated.", device))
+		} else {
+			deviceInfos[deviceSummary] = true
 		}
 	}
 
