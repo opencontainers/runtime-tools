@@ -1,12 +1,13 @@
+GO15VENDOREXPERIMENT=1
+export GO15VENDOREXPERIMENT
 
+PREFIX ?= $(DESTDIR)/usr
 BINDIR ?= $(DESTDIR)/usr/bin
 
 BUILDTAGS=
 RUNTIME ?= runc
-RUNTIME_TOOLS_LINK := $(CURDIR)/Godeps/_workspace/src/github.com/opencontainers/runtime-tools
-export GOPATH:=$(CURDIR)/Godeps/_workspace:$(GOPATH)
 
-all: $(RUNTIME_TOOLS_LINK)
+all:
 	go build -tags "$(BUILDTAGS)" -o oci-runtime-tool ./cmd/oci-runtime-tool
 	go build -tags "$(BUILDTAGS)" -o runtimetest ./cmd/runtimetest
 
@@ -31,27 +32,22 @@ uninstall:
 
 clean:
 	rm -f oci-runtime-tool runtimetest *.1
-	rm -f $(RUNTIME_TOOLS_LINK)
-
-$(RUNTIME_TOOLS_LINK):
-	ln -sf $(CURDIR) $(RUNTIME_TOOLS_LINK)
 
 localvalidation:
 	RUNTIME=$(RUNTIME) go test -tags "$(BUILDTAGS)" ${TESTFLAGS} -v github.com/opencontainers/runtime-tools/validation
-
 
 .PHONY: test .gofmt .govet .golint
 
 test: .gofmt .govet .golint .gotest
 
 .gofmt:
-	OUT=$$(go fmt ./...); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
+	OUT=$$(go fmt ./... | grep -v vendor); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
 
 .govet:
-	go vet -x ./...
+	go vet -x $$(go list ./... | grep -v vendor)
 
 .golint:
-	golint -set_exit_status ./...
+	golint ./...
 
 UTDIRS = ./validate/...
 .gotest:

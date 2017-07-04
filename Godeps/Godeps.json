@@ -1,19 +1,20 @@
 {
 	"ImportPath": "github.com/opencontainers/runtime-tools",
-	"GoVersion": "go1.4",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.8.3-3-g07d998d",
-			"Rev": "07d998d174c4e2dc90e2f1989a20724220bca1ff"
+			"Comment": "v1.0.0",
+			"Rev": "202f25545ea4cf9b191ff7f846df5d87c9382c2b"
 		},
 		{
 			"ImportPath": "github.com/blang/semver",
-			"Comment": "v3.1.0",
-			"Rev": "aea32c919a18e5ef4537bbd283ff29594b1b0165"
+			"Comment": "v3.5.0",
+			"Rev": "b38d23b8782a487059e8fc8773e9a5b228a77cb6"
 		},
 		{
 			"ImportPath": "github.com/hashicorp/errwrap",
@@ -25,7 +26,7 @@
 		},
 		{
 			"ImportPath": "github.com/mndrix/tap-go",
-			"Rev": "67c9553625499b7e7ed4ac4f2d8bf1cb8f5ecf52"
+			"Rev": "56cca451570bb0366b29f30e1aeb5cf9736a1e18"
 		},
 		{
 			"ImportPath": "github.com/mrunalp/fileutils",
@@ -38,8 +39,8 @@
 		},
 		{
 			"ImportPath": "github.com/satori/go.uuid",
-			"Comment": "v1.1.0-6-gb061729",
-			"Rev": "b061729afc07e77a8aa4fad0a2fd840958f1942a"
+			"Comment": "v1.1.0",
+			"Rev": "879c5887cd475cd7864858769793b2ceb0d44feb"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
@@ -49,6 +50,10 @@
 			"ImportPath": "github.com/urfave/cli",
 			"Comment": "v1.19.1",
 			"Rev": "0bdeddeeb0f650497d603c4ad7b20cfe685682f6"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "f3918c30c5c2cb527c0b071a27c35120a6c0719a"
 		}
 	]
 }
