@@ -14,4 +14,3 @@ script:
   - $HOME/gopath/bin/git-validation -run DCO,short-subject -v -range ${TRAVIS_COMMIT_RANGE}
   - make
   - make test
-  
