@@ -36,7 +36,6 @@ clean:
 localvalidation:
 	RUNTIME=$(RUNTIME) go test -tags "$(BUILDTAGS)" ${TESTFLAGS} -v github.com/opencontainers/runtime-tools/validation
 
-
 .PHONY: test .gofmt .govet .golint
 
 test: .gofmt .govet .golint .gotest
