@@ -41,10 +41,10 @@ localvalidation:
 test: .gofmt .govet .golint .gotest
 
 .gofmt:
-	OUT=$$(go fmt ./...); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
+	OUT=$$(go fmt ./... | grep -v vendor); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
 
 .govet:
-	go vet -x ./...
+	go vet -x $$(go list ./... | grep -v vendor)
 
 .golint:
 	golint ./...
