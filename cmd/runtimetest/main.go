@@ -167,20 +167,22 @@ func validateCapabilities(spec *rspec.Spec) error {
 	expectedCaps3 := make(map[string]bool)
 	expectedCaps4 := make(map[string]bool)
 	expectedCaps5 := make(map[string]bool)
-	for _, ec := range spec.Process.Capabilities.Bounding {
-		expectedCaps1[ec] = true
-	}
-	for _, ec := range spec.Process.Capabilities.Effective {
-		expectedCaps2[ec] = true
-	}
-	for _, ec := range spec.Process.Capabilities.Inheritable {
-		expectedCaps3[ec] = true
-	}
-	for _, ec := range spec.Process.Capabilities.Permitted {
-		expectedCaps4[ec] = true
-	}
-	for _, ec := range spec.Process.Capabilities.Ambient {
-		expectedCaps5[ec] = true
+	if spec.Process.Capabilities != nil {
+		for _, ec := range spec.Process.Capabilities.Bounding {
+			expectedCaps1[ec] = true
+		}
+		for _, ec := range spec.Process.Capabilities.Effective {
+			expectedCaps2[ec] = true
+		}
+		for _, ec := range spec.Process.Capabilities.Inheritable {
+			expectedCaps3[ec] = true
+		}
+		for _, ec := range spec.Process.Capabilities.Permitted {
+			expectedCaps4[ec] = true
+		}
+		for _, ec := range spec.Process.Capabilities.Ambient {
+			expectedCaps5[ec] = true
+		}
 	}
 
 	for _, cap := range capability.List() {
