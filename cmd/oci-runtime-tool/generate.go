@@ -329,7 +329,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("prestart") {
 		preStartHooks := context.StringSlice("prestart")
 		for _, hook := range preStartHooks {
-			path, args := parseHook(hook)
+			path, args, err := parseHook(hook)
+			if err != nil {
+				return err
+			}
 			g.AddPreStartHook(path, args)
 		}
 	}
@@ -337,7 +340,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("poststop") {
 		postStopHooks := context.StringSlice("poststop")
 		for _, hook := range postStopHooks {
-			path, args := parseHook(hook)
+			path, args, err := parseHook(hook)
+			if err != nil {
+				return err
+			}
 			g.AddPostStopHook(path, args)
 		}
 	}
@@ -345,7 +351,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("poststart") {
 		postStartHooks := context.StringSlice("poststart")
 		for _, hook := range postStartHooks {
-			path, args := parseHook(hook)
+			path, args, err := parseHook(hook)
+			if err != nil {
+				return err
+			}
 			g.AddPostStartHook(path, args)
 		}
 	}
@@ -562,21 +571,24 @@ func parseIDMapping(idms string) (uint32, uint32, uint32, error) {
 	return uint32(hid), uint32(cid), uint32(size), nil
 }
 
-func parseHook(s string) (string, []string) {
-	parts := strings.Split(s, ":")
+func parseHook(s string) (string, []string, error) {
 	args := []string{}
+	parts := strings.Split(s, ":")
+	if len(parts) > 1 && parts[0] == "" {
+		return "", args, fmt.Errorf("invalid hook value: %s", s)
+	}
 	path := parts[0]
 	if len(parts) > 1 {
 		args = parts[1:]
 	}
-	return path, args
+	return path, args, nil
 }
 
 func parseNetworkPriority(np string) (string, int32, error) {
 	var err error
 
 	parts := strings.Split(np, ":")
-	if len(parts) != 2 {
+	if len(parts) != 2 || parts[0] == "" {
 		return "", 0, fmt.Errorf("invalid value %v for --linux-network-priorities", np)
 	}
 	priority, err := strconv.Atoi(parts[1])
@@ -593,14 +605,14 @@ func parseTmpfsMount(s string) (string, []string, error) {
 	var err error
 
 	parts := strings.Split(s, ":")
-	if len(parts) == 2 {
+	if len(parts) == 2 && parts[0] != "" {
 		dest = parts[0]
 		options = strings.Split(parts[1], ",")
 	} else if len(parts) == 1 {
 		dest = parts[0]
 		options = []string{"rw", "noexec", "nosuid", "nodev", "size=65536k"}
 	} else {
-		err = fmt.Errorf("invalid value for --tmpfs")
+		err = fmt.Errorf("invalid -- tmpfs value: %s", s)
 	}
 
 	return dest, options, err
@@ -620,12 +632,15 @@ func parseBindMount(s string) (string, string, []string, error) {
 		return source, dest, options, fmt.Errorf("--bind should have format src:dest[:options...]")
 	}
 
+	if source == "" || dest == "" {
+		return source, dest, options, fmt.Errorf("--bind should have format src:dest[:options...]")
+	}
 	return source, dest, options, nil
 }
 
 func parseRlimit(rlimit string) (string, uint64, uint64, error) {
 	parts := strings.Split(rlimit, ":")
-	if len(parts) != 3 {
+	if len(parts) != 3 || parts[0] == "" {
 		return "", 0, 0, fmt.Errorf("invalid rlimits value: %s", rlimit)
 	}
 
