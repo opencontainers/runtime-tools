@@ -765,7 +765,7 @@ func (v *Validator) CheckLinux() (errs error) {
 
 	if v.spec.Linux.MountLabel != "" {
 		if err := label.Validate(v.spec.Linux.MountLabel); err != nil {
-			msgs = append(msgs, "mountLabel %v is invalid", v.spec.Linux.MountLabel)
+			errs = multierror.Append(errs, fmt.Errorf("mountLabel %v is invalid", v.spec.Linux.MountLabel))
 		}
 	}
 

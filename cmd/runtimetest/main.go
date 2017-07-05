@@ -785,7 +785,7 @@ func validateMountLabel(spec *rspec.Spec) error {
 		if err != nil {
 			return fmt.Errorf("Failed to get mountLabel of %v", mount.Destination)
 		}
-		if fileLabel != spec.Linux.MountLabel {
+		if spec.Linux != nil && fileLabel != spec.Linux.MountLabel {
 			return fmt.Errorf("Expected mountLabel %v, actual %v", spec.Linux.MountLabel, fileLabel)
 		}
 	}
