@@ -1197,15 +1197,22 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 	return mountErrs
 }
 
-func validateMountLabel(spec *rspec.Spec) error {
+func (c *complianceTester) validateMountLabel(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.MountLabel == "" {
+		c.harness.Skip(1, "linux.mountlabel not set")
+		return nil
+	}
+
 	for _, mount := range spec.Mounts {
-		fileLabel, err := label.GetFileLabel(mount.Destination)
+		fileLabel, err := label.FileLabel(mount.Destination)
 		if err != nil {
 			return fmt.Errorf("Failed to get mountLabel of %v", mount.Destination)
 		}
-		if fileLabel != spec.Linux.MountLabel {
-			return fmt.Errorf("Expected mountLabel %v, actual %v", spec.Linux.MountLabel, fileLabel)
-		}
+		c.harness.Ok(spec.Linux.MountLabel == fileLabel, "has expected mountlabel")
+		c.harness.YAML(map[string]string{
+			"expected": spec.Linux.MountLabel,
+			"actual":   fileLabel,
+		})
 	}
 
 	return nil
@@ -1229,98 +1236,6 @@ func run(context *cli.Context) error {
 	if err != nil {
 		return err
 	}
-
-	defaultValidations := []validation{
-		{
-			test:        validateRootFS,
-			description: "root filesystem",
-		},
-		{
-			test:        validateHostname,
-			description: "hostname",
-		},
-		{
-			test:        validateProcess,
-			description: "process",
-		},
-	}
-
-	posixValidations := []validation{
-		{
-			test:        validatePosixMounts,
-			description: "mounts",
-		},
-		{
-			test:        validatePosixUser,
-			description: "user",
-		},
-		{
-			test:        validateRlimits,
-			description: "rlimits",
-		},
-	}
-
-	linuxValidations := []validation{
-		{
-			test:        validateCapabilities,
-			description: "capabilities",
-		},
-		{
-			test:        validateDefaultSymlinks,
-			description: "default symlinks",
-		},
-		{
-			test:        validateDefaultFS,
-			description: "default file system",
-		},
-		{
-			test:        validateDefaultDevices,
-			description: "default devices",
-		},
-		{
-			test:        validateLinuxDevices,
-			description: "linux devices",
-		},
-		{
-			test:        validateLinuxProcess,
-			description: "linux process",
-		},
-		{
-			test:        validateMaskedPaths,
-			description: "masked paths",
-		},
-		{
-			test:        validateOOMScoreAdj,
-			description: "oom score adj",
-		},
-		{
-			test:        validateROPaths,
-			description: "read only paths",
-		},
-		{
-			test:        validateRootfsPropagation,
-			description: "rootfs propagation",
-		},
-		{
-			test:        validateSysctls,
-			description: "sysctls",
-		},
-		{
-			test:        validateUIDMappings,
-			description: "uid mappings",
-		},
-		{
-			test:        validateGIDMappings,
-			description: "gid mappings",
-		},
-		{
-			test:        validateMountLabel,
-			description: "mountLabel",
-		},
-	}
-
-	t := tap.New()
-	t.Header(0)
 
 	complianceLevelString := context.String("compliance-level")
 	complianceLevel, err := rfc2119.ParseLevel(complianceLevelString)
@@ -1363,6 +1278,7 @@ func run(context *cli.Context) error {
 		c.validateSysctls,
 		c.validateUIDMappings,
 		c.validateGIDMappings,
+		c.validateMountLabel,
 	}
 
 	validations := defaultValidations

@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	osFilepath "github.com/opencontainers/runtime-tools/filepath"
-	"github.com/opencontainers/selinux/go-selinux/label"
 	"github.com/sirupsen/logrus"
 	"github.com/syndtr/gocapability/capability"
 
@@ -682,12 +681,6 @@ func (v *Validator) CheckAnnotations() (errs error) {
 					specerror.AnnotationsKeyReversedDomain,
 					fmt.Errorf("key %q SHOULD be named using a reverse domain notation", key),
 					rspec.Version))
-		}
-	}
-
-	if v.spec.Linux.MountLabel != "" {
-		if err := label.Validate(v.spec.Linux.MountLabel); err != nil {
-			msgs = append(msgs, "mountLabel %v is invalid", v.spec.Linux.MountLabel)
 		}
 	}
 
