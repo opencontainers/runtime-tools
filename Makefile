@@ -54,7 +54,7 @@ test: .gofmt .govet .golint .gotest
 	go vet -x $(PACKAGES)
 
 .golint:
-	OUT=$$(golint $(PACKAGES)); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
+	golint -set_exit_status $(PACKAGES)
 
 UTDIRS = ./validate/...
 .gotest:
