@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"unicode"
@@ -19,7 +18,6 @@ import (
 
 var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "apparmor", Usage: "specifies the the apparmor profile for the container"},
-	cli.StringFlag{Name: "arch", Value: runtime.GOARCH, Usage: "architecture the container is created for"},
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
 	cli.StringSliceFlag{Name: "bind", Usage: "bind mount directories src:dest[:options...]"},
 	cli.StringSliceFlag{Name: "cap-add", Usage: "add Linux capabilities"},
@@ -62,7 +60,6 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "mount-label", Usage: "selinux mount context label"},
 	cli.BoolFlag{Name: "no-new-privileges", Usage: "set no new privileges bit for the container process"},
 	cli.IntFlag{Name: "oom-score-adj", Usage: "oom_score_adj for the container"},
-	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.StringSliceFlag{Name: "poststart", Usage: "set command to run in poststart hooks"},
 	cli.StringSliceFlag{Name: "poststop", Usage: "set command to run in poststop hooks"},
@@ -150,9 +147,6 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("hostname") {
 		g.SetHostname(context.String("hostname"))
 	}
-
-	g.SetPlatformOS(context.String("os"))
-	g.SetPlatformArch(context.String("arch"))
 
 	if context.IsSet("label") {
 		annotations := context.StringSlice("label")

@@ -20,7 +20,8 @@ var bundleValidateCommand = cli.Command{
 	Action: func(context *cli.Context) error {
 		inputPath := context.String("path")
 		hostSpecific := context.GlobalBool("host-specific")
-		v, err := validate.NewValidatorFromPath(inputPath, hostSpecific)
+		platform := context.GlobalString("platform")
+		v, err := validate.NewValidatorFromPath(inputPath, hostSpecific, platform)
 		if err != nil {
 			return err
 		}

@@ -18,10 +18,6 @@ read the configuration from `config.json`.
 **--apparmor**=PROFILE
   Specifies the apparmor profile for the container
 
-**--arch**=ARCH
-  Architecture used within the container.
-  "amd64"
-
 **--args**=OPTION
   Arguments to run within the container.  Can be specified multiple times.
   If you were going to run a command with multiple options, you would need
@@ -199,9 +195,6 @@ read the configuration from `config.json`.
 
 **--oom-score-adj**=adj
   Specifies oom_score_adj for the container.
-
-**--os**=OS
-  Operating system used within the container.
 
 **--output**=PATH
   Instead of writing the configuration JSON to stdout, write it to a

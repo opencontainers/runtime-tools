@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"runtime"
 	"strings"
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
@@ -35,10 +34,6 @@ type ExportOptions struct {
 func New() Generator {
 	spec := rspec.Spec{
 		Version: rspec.Version,
-		Platform: rspec.Platform{
-			OS:   runtime.GOOS,
-			Arch: runtime.GOARCH,
-		},
 		Root: rspec.Root{
 			Path:     "",
 			Readonly: false,
@@ -344,18 +339,6 @@ func (g *Generator) RemoveAnnotation(key string) {
 		return
 	}
 	delete(g.spec.Annotations, key)
-}
-
-// SetPlatformOS sets g.spec.Process.OS.
-func (g *Generator) SetPlatformOS(os string) {
-	g.initSpec()
-	g.spec.Platform.OS = os
-}
-
-// SetPlatformArch sets g.spec.Platform.Arch.
-func (g *Generator) SetPlatformArch(arch string) {
-	g.initSpec()
-	g.spec.Platform.Arch = arch
 }
 
 // SetProcessUID sets g.spec.Process.User.UID.

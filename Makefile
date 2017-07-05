@@ -6,6 +6,7 @@ BINDIR ?= $(DESTDIR)/usr/bin
 
 BUILDTAGS=
 RUNTIME ?= runc
+PLATFORM ?= linux
 
 all: tool runtimetest
 
@@ -39,7 +40,7 @@ clean:
 	rm -f oci-runtime-tool runtimetest *.1
 
 localvalidation: runtimetest
-	RUNTIME=$(RUNTIME) go test -tags "$(BUILDTAGS)" ${TESTFLAGS} -v github.com/opencontainers/runtime-tools/validation
+	RUNTIME=$(RUNTIME) PLATFORM=$(PLATFORM) go test -tags "$(BUILDTAGS)" ${TESTFLAGS} -v github.com/opencontainers/runtime-tools/validation
 
 .PHONY: test .gofmt .govet .golint
 
