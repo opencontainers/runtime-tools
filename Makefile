@@ -43,16 +43,17 @@ localvalidation: runtimetest
 
 .PHONY: test .gofmt .govet .golint
 
+PACKAGES = $(shell go list ./... | grep -v vendor)
 test: .gofmt .govet .golint .gotest
 
 .gofmt:
-	OUT=$$(go fmt ./... | grep -v vendor); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
+	OUT=$$(go fmt $(PACKAGES)); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
 
 .govet:
-	go vet -x $$(go list ./... | grep -v vendor)
+	go vet -x $(PACKAGES)
 
 .golint:
-	golint ./...
+	OUT=$$(golint $(PACKAGES)); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
 
 UTDIRS = ./validate/...
 .gotest:
