@@ -88,12 +88,12 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string)
 
 // CheckAll checks all parts of runtime bundle
 func (v *Validator) CheckAll() (msgs []string) {
+	msgs = append(msgs, v.CheckPlatform()...)
 	msgs = append(msgs, v.CheckRootfsPath()...)
 	msgs = append(msgs, v.CheckMandatoryFields()...)
 	msgs = append(msgs, v.CheckSemVer()...)
 	msgs = append(msgs, v.CheckMounts()...)
 	msgs = append(msgs, v.CheckProcess()...)
-	msgs = append(msgs, v.CheckOS()...)
 	msgs = append(msgs, v.CheckHooks()...)
 	if v.spec.Linux != nil {
 		msgs = append(msgs, v.CheckLinux()...)
@@ -396,9 +396,14 @@ func (v *Validator) CheckMounts() (msgs []string) {
 	return
 }
 
-// CheckOS checks v.platform
-func (v *Validator) CheckOS() (msgs []string) {
-	logrus.Debugf("check os")
+// CheckPlatform checks v.platform
+func (v *Validator) CheckPlatform() (msgs []string) {
+	logrus.Debugf("check platform")
+
+	if v.platform != "linux" && v.platform != "solaris" && v.platform != "windows" {
+		msgs = append(msgs, fmt.Sprintf("platform %q is not supported", v.platform))
+		return
+	}
 
 	if v.platform != "linux" {
 		if v.spec.Linux != nil {
