@@ -7,8 +7,13 @@ BINDIR ?= $(DESTDIR)/usr/bin
 BUILDTAGS=
 RUNTIME ?= runc
 
-all:
+all: tool runtimetest
+
+tool:
 	go build -tags "$(BUILDTAGS)" -o oci-runtime-tool ./cmd/oci-runtime-tool
+
+.PHONY: runtimetest
+runtimetest:
 	go build -tags "$(BUILDTAGS)" -o runtimetest ./cmd/runtimetest
 
 .PHONY: man
@@ -33,7 +38,7 @@ uninstall:
 clean:
 	rm -f oci-runtime-tool runtimetest *.1
 
-localvalidation:
+localvalidation: runtimetest
 	RUNTIME=$(RUNTIME) go test -tags "$(BUILDTAGS)" ${TESTFLAGS} -v github.com/opencontainers/runtime-tools/validation
 
 .PHONY: test .gofmt .govet .golint
