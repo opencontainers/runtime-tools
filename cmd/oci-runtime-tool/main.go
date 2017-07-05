@@ -22,6 +22,11 @@ func main() {
 			Value: "error",
 			Usage: "Log level (panic, fatal, error, warn, info, or debug)",
 		},
+		cli.StringFlag{
+			Name:  "platform",
+			Value: "linux",
+			Usage: "Platform the tool targets",
+		},
 	}
 
 	app.Commands = []cli.Command{

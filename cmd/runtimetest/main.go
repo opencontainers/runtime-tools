@@ -588,6 +588,8 @@ func validate(context *cli.Context) error {
 		return err
 	}
 
+	platform := context.String("platform")
+
 	defaultValidations := []validation{
 		{
 			test:        validateRootFS,
@@ -666,7 +668,7 @@ func validate(context *cli.Context) error {
 		}
 	}
 
-	if spec.Platform.OS == "linux" {
+	if platform == "linux" {
 		for _, v := range linuxValidations {
 			err := v.test(spec)
 			t.Ok(err == nil, v.description)
@@ -695,7 +697,12 @@ func main() {
 		cli.StringFlag{
 			Name:  "path",
 			Value: ".",
-			Usage: "path to the configuration",
+			Usage: "Path to the configuration",
+		},
+		cli.StringFlag{
+			Name:  "platform",
+			Value: "linux",
+			Usage: "Platform the runtime runs on",
 		},
 	}
 
