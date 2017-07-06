@@ -12,13 +12,17 @@ import (
 // and will be populated by the Makefile
 var gitCommit = ""
 
+// version will be populated by the Makefile, read from
+// VERSION file of the source code.
+var version = ""
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "oci-runtime-tool"
 	if gitCommit != "" {
-		app.Version = fmt.Sprintf("0.3.0, commit: %s", gitCommit)
+		app.Version = fmt.Sprintf("%s, commit: %s", version, gitCommit)
 	} else {
-		app.Version = "0.3.0"
+		app.Version = version
 	}
 	app.Usage = "OCI (Open Container Initiative) runtime tools"
 	app.Flags = []cli.Flag{
