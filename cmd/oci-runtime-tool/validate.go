@@ -10,6 +10,7 @@ import (
 
 var bundleValidateFlags = []cli.Flag{
 	cli.StringFlag{Name: "path", Value: ".", Usage: "path to a bundle"},
+	cli.StringFlag{Name: "platform", Value: "linux", Usage: "platform of the target bundle (linux, windows, solaris)"},
 }
 
 var bundleValidateCommand = cli.Command{
@@ -18,9 +19,9 @@ var bundleValidateCommand = cli.Command{
 	Flags:  bundleValidateFlags,
 	Before: before,
 	Action: func(context *cli.Context) error {
-		inputPath := context.String("path")
 		hostSpecific := context.GlobalBool("host-specific")
-		platform := context.GlobalString("platform")
+		inputPath := context.String("path")
+		platform := context.String("platform")
 		v, err := validate.NewValidatorFromPath(inputPath, hostSpecific, platform)
 		if err != nil {
 			return err

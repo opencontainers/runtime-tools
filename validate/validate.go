@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -52,6 +53,9 @@ type Validator struct {
 
 // NewValidator creates a Validator
 func NewValidator(spec *rspec.Spec, bundlePath string, hostSpecific bool, platform string) Validator {
+	if hostSpecific && platform != runtime.GOOS {
+		platform = runtime.GOOS
+	}
 	return Validator{
 		spec:         spec,
 		bundlePath:   bundlePath,
@@ -62,6 +66,9 @@ func NewValidator(spec *rspec.Spec, bundlePath string, hostSpecific bool, platfo
 
 // NewValidatorFromPath creates a Validator with specified bundle path
 func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string) (Validator, error) {
+	if hostSpecific && platform != runtime.GOOS {
+		platform = runtime.GOOS
+	}
 	if bundlePath == "" {
 		return Validator{}, fmt.Errorf("Bundle path shouldn't be empty")
 	}
