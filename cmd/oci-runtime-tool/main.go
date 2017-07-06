@@ -1,16 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
+// gitCommit will be the hash that the binary was built from
+// and will be populated by the Makefile
+var gitCommit = ""
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "oci-runtime-tool"
-	app.Version = "0.0.1"
+	if gitCommit != "" {
+		app.Version = fmt.Sprintf("0.0.1, commit: %s", gitCommit)
+	} else {
+		app.Version = "0.0.1"
+	}
 	app.Usage = "OCI (Open Container Initiative) runtime tools"
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
