@@ -14,13 +14,11 @@ import (
 )
 
 var (
-	runtime  = "runc"
-	platform = "linux"
+	runtime = "runc"
 )
 
 func init() {
 	runtime = os.Getenv("RUNTIME")
-	platform = os.Getenv("PLATFORM")
 }
 
 func runtimeValidate(runtime string, g *generate.Generator) error {
@@ -81,7 +79,7 @@ func runtimeValidate(runtime string, g *generate.Generator) error {
 func getDefaultGenerator() *generate.Generator {
 	g := generate.New()
 	g.SetRootPath(".")
-	g.SetProcessArgs([]string{"/runtimetest", "--platform", platform})
+	g.SetProcessArgs([]string{"/runtimetest"})
 	return &g
 }
 

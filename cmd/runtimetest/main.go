@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -588,7 +589,7 @@ func validate(context *cli.Context) error {
 		return err
 	}
 
-	platform := context.String("platform")
+	platform := runtime.GOOS
 
 	defaultValidations := []validation{
 		{
@@ -698,11 +699,6 @@ func main() {
 			Name:  "path",
 			Value: ".",
 			Usage: "Path to the configuration",
-		},
-		cli.StringFlag{
-			Name:  "platform",
-			Value: "linux",
-			Usage: "Platform the runtime runs on",
 		},
 	}
 
