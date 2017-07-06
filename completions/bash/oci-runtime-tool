@@ -132,24 +132,6 @@ __oci-runtime-tool_complete_propagations() {
 
 # a selection of the available arches that is most likely of interest in the
 # context of oci-runtime-tool containers.
-__oci-runtime-tool_complete_arches() {
-	COMPREPLY=( $( compgen -W "
-		386
-		amd64
-		arm
-		arm64
-		mips
-		mips64
-		mips64le
-		mipsle
-		ppc64
-		ppc64le
-		s390x
-	" -- "$cur" ) )
-}
-
-# a selection of the available arches that is most likely of interest in the
-# context of oci-runtime-tool containers.
 __oci-runtime-tool_complete_seccomp_arches() {
 	COMPREPLY=( $( compgen -W "
 		x86
@@ -302,7 +284,6 @@ _oci-runtime-tool_help() {
 _oci-runtime-tool_generate() {
 	local options_with_args="
 		--apparmor
-		--arch
 		--args
 		--bind
 		--cap-add
@@ -340,7 +321,6 @@ _oci-runtime-tool_generate() {
 		--mount-cgroups
 		--mount-label
 		--oom-score-adj
-		--os
 		--output
 		--poststart
 		--poststop
@@ -385,11 +365,6 @@ _oci-runtime-tool_generate() {
 	local all_options="$options_with_args $boolean_options"
 
 	case "$prev" in
-		--arch)
-			__oci-runtime-tool_complete_arches
-			return
-			;;
-
 		--cap-add|--cap-drop)
 			__oci-runtime-tool_complete_capabilities
 			return
@@ -420,11 +395,6 @@ _oci-runtime-tool_generate() {
 
 		--mount-cgroups)
 			COMPREPLY=( $( compgen -W "no ro rw" -- "$cur" ) )
-			return
-			;;
-
-		--os)
-			COMPREPLY=( $( compgen -W "linux windows" -- "$cur" ) )
 			return
 			;;
 
