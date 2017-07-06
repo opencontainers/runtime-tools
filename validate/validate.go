@@ -424,7 +424,11 @@ func (v *Validator) CheckPlatform() (msgs []string) {
 		}
 	}
 
-	if v.platform != "windows" {
+	if v.platform == "windows" {
+		if v.spec.Windows == nil {
+			msgs = append(msgs, "'windows' MUST be set when platform is `windows`")
+		}
+	} else {
 		if v.spec.Windows != nil {
 			msgs = append(msgs, fmt.Sprintf("'windows' MUST NOT be set when target platform is %q", v.platform))
 		}
