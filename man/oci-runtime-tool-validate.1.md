@@ -18,6 +18,10 @@ Validate an OCI bundle
 **--path**=PATH
   Path to bundle. The default is current working directory.
 
+**--platform**=PLATFORM
+  Platform of the target bundle. (linux, windows, solaris) (default: "linux")
+  It will be overwritten by the host platform if the global option '--host-specific' was set.
+
 # SEE ALSO
 **oci-runtime-tool**(1)
 
