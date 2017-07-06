@@ -264,11 +264,16 @@ _oci-runtime-tool_validate() {
 			esac
 			return
 			;;
+
+		--platform)
+ 			COMPREPLY=( $( compgen -W "linux solaris windows" -- "$cur" ) ) 
+ 			return
+ 			;;
 	esac
 
 	case "$cur" in
 		-*)
-			COMPREPLY=( $( compgen -W "--path --help -h" -- "$cur" ) )
+			COMPREPLY=( $( compgen -W "--path --platform --help -h" -- "$cur" ) )
 			;;
 	esac
 
