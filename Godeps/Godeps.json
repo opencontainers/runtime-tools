@@ -44,7 +44,7 @@
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
-			"Rev": "e7cb7fa329f456b3855136a2642b197bad7366ba"
+			"Rev": "db04d3cc01c8b54962a58ec7e491717d06cfcc16"
 		},
 		{
 			"ImportPath": "github.com/urfave/cli",
