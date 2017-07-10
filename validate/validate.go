@@ -441,6 +441,11 @@ func (v *Validator) CheckPlatform() (msgs []string) {
 func (v *Validator) CheckLinux() (msgs []string) {
 	logrus.Debugf("check linux")
 
+	if v.spec.Platform.OS != "linux" {
+		logrus.Warnf("%q is not supported to check linux", v.spec.Platform.OS)
+		return
+	}
+
 	var typeList = map[rspec.LinuxNamespaceType]struct {
 		num      int
 		newExist bool
