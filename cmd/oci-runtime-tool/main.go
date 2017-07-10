@@ -15,10 +15,9 @@ var gitCommit = ""
 func main() {
 	app := cli.NewApp()
 	app.Name = "oci-runtime-tool"
+	app.Version = "0.0.1"
 	if gitCommit != "" {
-		app.Version = fmt.Sprintf("0.0.1, commit: %s", gitCommit)
-	} else {
-		app.Version = "0.0.1"
+		app.Version += fmt.Sprintf(", commit: %s", gitCommit)
 	}
 	app.Usage = "OCI (Open Container Initiative) runtime tools"
 	app.Flags = []cli.Flag{
