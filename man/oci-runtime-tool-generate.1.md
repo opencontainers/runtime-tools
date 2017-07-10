@@ -374,9 +374,9 @@ colon:
 
 ## Using SELinux
 
-You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using the --process-selinux-label.
+You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using `--linux-selinux-label`.
 
-    $ oci-runtime-tool generate --mount-bind /var/db:/data1  --process-selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --mount-label system_u:object_r:svirt_sandbo x_file_t:s0:c1,c2 --rootfs-path /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --mount-bind /var/db:/data1  --linux-selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --linux-mount-label system_u:object_r:svirt_sandbo x_file_t:s0:c1,c2 --rootfs-path /var/lib/containers/fedora --args bash
 
 Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
 
