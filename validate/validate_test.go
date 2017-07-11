@@ -47,7 +47,7 @@ func TestCheckRootfsPath(t *testing.T) {
 		{filepath.Join(tmpBundle, rootfsNonExists), false},
 	}
 	for _, c := range cases {
-		v := NewValidator(&rspec.Spec{Root: rspec.Root{Path: c.val}}, tmpBundle, false, "linux")
+		v := NewValidator(&rspec.Spec{Root: &rspec.Root{Path: c.val}}, tmpBundle, false, "linux")
 		checkErrors(t, "CheckRootfsPath "+c.val, v.CheckRootfsPath(), c.expected)
 	}
 }

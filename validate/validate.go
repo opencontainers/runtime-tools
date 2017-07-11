@@ -668,7 +668,7 @@ func envValid(env string) bool {
 	return true
 }
 
-func (v *Validator) rlimitValid(rlimit rspec.LinuxRlimit) (msgs []string) {
+func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (msgs []string) {
 	if rlimit.Hard < rlimit.Soft {
 		msgs = append(msgs, fmt.Sprintf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type))
 	}
