@@ -34,8 +34,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
-			"Comment": "v1.0.0-rc5",
-			"Rev": "035da1dca3dfbb00d752eb58b0b158d6129f3776"
+			"Comment": "v1.0.0-rc6",
+			"Rev": "64d8e8e17eeba231695e625b4e2a9a409a3ad3d9"
 		},
 		{
 			"ImportPath": "github.com/satori/go.uuid",
