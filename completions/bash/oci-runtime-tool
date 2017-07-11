@@ -413,7 +413,7 @@ _oci-runtime-tool_generate() {
 			return
 			;;
 
-		--rootfs|--tmpfs|--bind|--cwd)
+		--rootfs|--tmpfs|--mount-bind|--cwd)
 			case "$cur" in
 				*:*)
 					# TODO somehow do _filedir for stuff inside the image, if it's already specified (which is also somewhat difficult to determine)

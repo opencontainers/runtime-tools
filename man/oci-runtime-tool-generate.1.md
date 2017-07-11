@@ -350,7 +350,7 @@ tmpfs directories on /generate and /tmp.
 If you want messages that are logged in your container to show up in the host's
 syslog/journal then you should bind mount the /dev/log directory as follows.
 
-    $ oci-runtime-tool generate --bind /dev/log:/dev/log  --rootfs-path /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --mount-bind /dev/log:/dev/log  --rootfs-path /var/lib/containers/fedora --args bash
 
 From inside the container you can test this by sending a message to the log.
 
