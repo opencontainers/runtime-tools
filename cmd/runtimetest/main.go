@@ -560,6 +560,11 @@ func validateMountsExist(spec *rspec.Spec) error {
 	}
 
 	for _, specMount := range spec.Mounts {
+		if specMount.Type == "bind" || specMount.Type == "rbind" {
+			// TODO: add bind or rbind check.
+			continue
+		}
+
 		found := false
 		for _, sysMount := range mountsMap[filepath.Clean(specMount.Destination)] {
 			if err := mountMatch(specMount, sysMount); err == nil {
