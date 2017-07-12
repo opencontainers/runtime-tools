@@ -623,11 +623,11 @@ func parseBindMount(s string) (string, string, []string, error) {
 	case 3:
 		source, dest, options = bparts[0], bparts[1], strings.Split(bparts[2], ":")
 	default:
-		return source, dest, options, fmt.Errorf("--bind should have format src:dest[:options...]")
+		return source, dest, options, fmt.Errorf("--mount-bind should have format src:dest[:options...]")
 	}
 
 	if source == "" || dest == "" {
-		return source, dest, options, fmt.Errorf("--bind should have format src:dest[:options...]")
+		return source, dest, options, fmt.Errorf("--mount-bind should have format src:dest[:options...]")
 	}
 	return source, dest, options, nil
 }
