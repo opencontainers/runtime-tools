@@ -103,6 +103,14 @@ read the configuration from `config.json`.
 **--linux-gidmappings**=GIDMAPPINGS
   Add GIDMappings e.g HostID:ContainerID:Size.  Implies **-user=**.
 
+**--linux-hugepape-limits-add**=[]
+  Add hugepage resource limits, format is PAGESIZE:LIMIT. e.g. --linux-hugepage-limits-add=4MB:102400
+  This option can be specified multiple times. When same PAGESIZE specified over once, the last one make sense.
+
+**--linux-hugepape-limits-drop**=[]
+  Drop hugepage rsource limits. Just need to specify PAGESIZE. e.g. --linux-hugepage-limits-drop=4MB
+  This option can be specified multiple times.
+
 **--linux-masked-paths**=[]
   Specifies paths can not be read inside container. e.g. --linux-masked-paths=/proc/kcore
   This option can be specified multiple times.

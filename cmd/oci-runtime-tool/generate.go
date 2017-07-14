@@ -35,6 +35,8 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "linux-device-remove", Usage: "remove a device which must be made available in the container"},
 	cli.BoolFlag{Name: "linux-device-remove-all", Usage: "remove all devices which must be made available in the container"},
 	cli.BoolFlag{Name: "linux-disable-oom-kill", Usage: "disable OOM Killer"},
+	cli.StringSliceFlag{Name: "linux-hugepage-limits-add", Usage: "add hugepage resource limits"},
+	cli.StringSliceFlag{Name: "linux-hugepage-limits-drop", Usage: "drop hugepage resource limits"},
 	cli.StringSliceFlag{Name: "linux-gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "linux-masked-paths", Usage: "specifies paths can not be read inside container"},
 	cli.Uint64Flag{Name: "linux-mem-kernel-limit", Usage: "kernel memory limit (in bytes)"},
@@ -414,6 +416,24 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
 	}
 
+	if context.IsSet("linux-hugepage-limits-add") {
+		pageList := context.StringSlice("linux-hugepage-limits-add")
+		for _, v := range pageList {
+			pagesize, limit, err := parseHugepageLimit(v)
+			if err != nil {
+				return err
+			}
+			g.AddLinuxResourcesHugepageLimit(pagesize, limit)
+		}
+	}
+
+	if context.IsSet("linux-hugepage-limits-drop") {
+		pageList := context.StringSlice("linux-hugepage-limits-drop")
+		for _, v := range pageList {
+			g.DropLinuxResourcesHugepageLimit(v)
+		}
+	}
+
 	if context.IsSet("linux-mems") {
 		g.SetLinuxResourcesCPUMems(context.String("linux-mems"))
 	}
@@ -563,6 +583,20 @@ func parseIDMapping(idms string) (uint32, uint32, uint32, error) {
 	}
 
 	return uint32(hid), uint32(cid), uint32(size), nil
+}
+
+func parseHugepageLimit(pageLimit string) (string, uint64, error) {
+	pl := strings.Split(pageLimit, ":")
+	if len(pl) != 2 {
+		return "", 0, fmt.Errorf("invalid format: %s", pageLimit)
+	}
+
+	limit, err := strconv.Atoi(pl[1])
+	if err != nil {
+		return "", 0, err
+	}
+
+	return pl[0], uint64(limit), nil
 }
 
 func parseHook(s string) (string, []string, error) {

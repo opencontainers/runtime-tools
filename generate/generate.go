@@ -538,6 +538,36 @@ func (g *Generator) SetLinuxResourcesCPUMems(mems string) {
 	g.spec.Linux.Resources.CPU.Mems = mems
 }
 
+// AddLinuxResourcesHugepageLimit adds or sets g.spec.Linux.Resources.HugepageLimits.
+func (g *Generator) AddLinuxResourcesHugepageLimit(pageSize string, limit uint64) {
+	hugepageLimit := rspec.LinuxHugepageLimit{
+		Pagesize: pageSize,
+		Limit:    limit,
+	}
+
+	g.initSpecLinuxResources()
+	for i, pageLimit := range g.spec.Linux.Resources.HugepageLimits {
+		if pageLimit.Pagesize == pageSize {
+			g.spec.Linux.Resources.HugepageLimits[i].Limit = limit
+			return
+		}
+	}
+	g.spec.Linux.Resources.HugepageLimits = append(g.spec.Linux.Resources.HugepageLimits, hugepageLimit)
+}
+
+// DropLinuxResourcesHugepageLimit drops a hugepage limit from g.spec.Linux.Resources.HugepageLimits.
+func (g *Generator) DropLinuxResourcesHugepageLimit(pageSize string) error {
+	g.initSpecLinuxResources()
+	for i, pageLimit := range g.spec.Linux.Resources.HugepageLimits {
+		if pageLimit.Pagesize == pageSize {
+			g.spec.Linux.Resources.HugepageLimits = append(g.spec.Linux.Resources.HugepageLimits[:i], g.spec.Linux.Resources.HugepageLimits[i+1:]...)
+			return nil
+		}
+	}
+
+	return nil
+}
+
 // SetLinuxResourcesMemoryLimit sets g.spec.Linux.Resources.Memory.Limit.
 func (g *Generator) SetLinuxResourcesMemoryLimit(limit uint64) {
 	g.initSpecLinuxResourcesMemory()
