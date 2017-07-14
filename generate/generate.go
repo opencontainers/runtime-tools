@@ -34,112 +34,13 @@ type ExportOptions struct {
 func New() Generator {
 	spec := rspec.Spec{
 		Version: rspec.Version,
-		Root: rspec.Root{
-			Path:     "",
-			Readonly: false,
-		},
 		Process: rspec.Process{
-			Terminal: false,
-			User:     rspec.User{},
+			User: rspec.User{},
 			Args: []string{
 				"sh",
 			},
-			Env: []string{
-				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-				"TERM=xterm",
-			},
 			Cwd: "/",
-			Capabilities: &rspec.LinuxCapabilities{
-				Bounding: []string{
-					"CAP_CHOWN",
-					"CAP_DAC_OVERRIDE",
-					"CAP_FSETID",
-					"CAP_FOWNER",
-					"CAP_MKNOD",
-					"CAP_NET_RAW",
-					"CAP_SETGID",
-					"CAP_SETUID",
-					"CAP_SETFCAP",
-					"CAP_SETPCAP",
-					"CAP_NET_BIND_SERVICE",
-					"CAP_SYS_CHROOT",
-					"CAP_KILL",
-					"CAP_AUDIT_WRITE",
-				},
-				Permitted: []string{
-					"CAP_CHOWN",
-					"CAP_DAC_OVERRIDE",
-					"CAP_FSETID",
-					"CAP_FOWNER",
-					"CAP_MKNOD",
-					"CAP_NET_RAW",
-					"CAP_SETGID",
-					"CAP_SETUID",
-					"CAP_SETFCAP",
-					"CAP_SETPCAP",
-					"CAP_NET_BIND_SERVICE",
-					"CAP_SYS_CHROOT",
-					"CAP_KILL",
-					"CAP_AUDIT_WRITE",
-				},
-				Inheritable: []string{
-					"CAP_CHOWN",
-					"CAP_DAC_OVERRIDE",
-					"CAP_FSETID",
-					"CAP_FOWNER",
-					"CAP_MKNOD",
-					"CAP_NET_RAW",
-					"CAP_SETGID",
-					"CAP_SETUID",
-					"CAP_SETFCAP",
-					"CAP_SETPCAP",
-					"CAP_NET_BIND_SERVICE",
-					"CAP_SYS_CHROOT",
-					"CAP_KILL",
-					"CAP_AUDIT_WRITE",
-				},
-				Effective: []string{
-					"CAP_CHOWN",
-					"CAP_DAC_OVERRIDE",
-					"CAP_FSETID",
-					"CAP_FOWNER",
-					"CAP_MKNOD",
-					"CAP_NET_RAW",
-					"CAP_SETGID",
-					"CAP_SETUID",
-					"CAP_SETFCAP",
-					"CAP_SETPCAP",
-					"CAP_NET_BIND_SERVICE",
-					"CAP_SYS_CHROOT",
-					"CAP_KILL",
-					"CAP_AUDIT_WRITE",
-				},
-				Ambient: []string{
-					"CAP_CHOWN",
-					"CAP_DAC_OVERRIDE",
-					"CAP_FSETID",
-					"CAP_FOWNER",
-					"CAP_MKNOD",
-					"CAP_NET_RAW",
-					"CAP_SETGID",
-					"CAP_SETUID",
-					"CAP_SETFCAP",
-					"CAP_SETPCAP",
-					"CAP_NET_BIND_SERVICE",
-					"CAP_SYS_CHROOT",
-					"CAP_KILL",
-					"CAP_AUDIT_WRITE",
-				},
-			},
-			Rlimits: []rspec.LinuxRlimit{
-				{
-					Type: "RLIMIT_NOFILE",
-					Hard: uint64(1024),
-					Soft: uint64(1024),
-				},
-			},
 		},
-		Hostname: "mrsdalloway",
 		Mounts: []rspec.Mount{
 			{
 				Destination: "/proc",
@@ -157,7 +58,7 @@ func New() Generator {
 				Destination: "/dev/pts",
 				Type:        "devpts",
 				Source:      "devpts",
-				Options:     []string{"nosuid", "noexec", "newinstance", "ptmxmode=0666", "mode=0620", "gid=5"},
+				Options:     []string{"nosuid", "noexec", "newinstance", "ptmxmode=0666", "mode=0620"},
 			},
 			{
 				Destination: "/dev/shm",
@@ -166,48 +67,13 @@ func New() Generator {
 				Options:     []string{"nosuid", "noexec", "nodev", "mode=1777", "size=65536k"},
 			},
 			{
-				Destination: "/dev/mqueue",
-				Type:        "mqueue",
-				Source:      "mqueue",
-				Options:     []string{"nosuid", "noexec", "nodev"},
-			},
-			{
 				Destination: "/sys",
 				Type:        "sysfs",
 				Source:      "sysfs",
 				Options:     []string{"nosuid", "noexec", "nodev", "ro"},
 			},
 		},
-		Linux: &rspec.Linux{
-			Resources: &rspec.LinuxResources{
-				Devices: []rspec.LinuxDeviceCgroup{
-					{
-						Allow:  false,
-						Access: "rwm",
-					},
-				},
-			},
-			Namespaces: []rspec.LinuxNamespace{
-				{
-					Type: "pid",
-				},
-				{
-					Type: "network",
-				},
-				{
-					Type: "ipc",
-				},
-				{
-					Type: "uts",
-				},
-				{
-					Type: "mount",
-				},
-			},
-			Devices: []rspec.LinuxDevice{},
-		},
 	}
-	spec.Linux.Seccomp = seccomp.DefaultProfile(&spec)
 	return Generator{
 		spec: &spec,
 	}
