@@ -385,7 +385,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-oom-score-adj") {
-		g.SetLinuxResourcesOOMScoreAdj(context.Int("linux-oom-score-adj"))
+		g.SetProcessOOMScoreAdj(context.Int("linux-oom-score-adj"))
 	}
 
 	if context.IsSet("linux-cpu-shares") {
@@ -439,23 +439,23 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-mem-limit") {
-		g.SetLinuxResourcesMemoryLimit(context.Uint64("linux-mem-limit"))
+		g.SetLinuxResourcesMemoryLimit(context.Int64("linux-mem-limit"))
 	}
 
 	if context.IsSet("linux-mem-reservation") {
-		g.SetLinuxResourcesMemoryReservation(context.Uint64("linux-mem-reservation"))
+		g.SetLinuxResourcesMemoryReservation(context.Int64("linux-mem-reservation"))
 	}
 
 	if context.IsSet("linux-mem-swap") {
-		g.SetLinuxResourcesMemorySwap(context.Uint64("linux-mem-swap"))
+		g.SetLinuxResourcesMemorySwap(context.Int64("linux-mem-swap"))
 	}
 
 	if context.IsSet("linux-mem-kernel-limit") {
-		g.SetLinuxResourcesMemoryKernel(context.Uint64("linux-mem-kernel-limit"))
+		g.SetLinuxResourcesMemoryKernel(context.Int64("linux-mem-kernel-limit"))
 	}
 
 	if context.IsSet("linux-mem-kernel-tcp") {
-		g.SetLinuxResourcesMemoryKernelTCP(context.Uint64("linux-mem-kernel-tcp"))
+		g.SetLinuxResourcesMemoryKernelTCP(context.Int64("linux-mem-kernel-tcp"))
 	}
 
 	if context.IsSet("linux-mem-swappiness") {

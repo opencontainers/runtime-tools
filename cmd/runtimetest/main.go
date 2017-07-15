@@ -431,8 +431,8 @@ func validateROPaths(spec *rspec.Spec) error {
 }
 
 func validateOOMScoreAdj(spec *rspec.Spec) error {
-	if spec.Linux.Resources != nil && spec.Linux.Resources.OOMScoreAdj != nil {
-		expected := *spec.Linux.Resources.OOMScoreAdj
+	if spec.Process != nil && spec.Process.OOMScoreAdj != nil {
+		expected := *spec.Process.OOMScoreAdj
 		f, err := os.Open("/proc/self/oom_score_adj")
 		if err != nil {
 			return err
