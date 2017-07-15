@@ -97,7 +97,7 @@ func ParseDefaultAction(action string, config *rspec.LinuxSeccomp) error {
 		return err
 	}
 	config.DefaultAction = defaultAction
-	err = RemoveAllMatchingRules(config, action)
+	err = RemoveAllMatchingRules(config, defaultAction)
 	if err != nil {
 		return err
 	}

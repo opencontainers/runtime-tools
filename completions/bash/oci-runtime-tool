@@ -159,11 +159,11 @@ __oci-runtime-tool_complete_seccomp_arches() {
 # context of oci-runtime-tool containers.
 __oci-runtime-tool_complete_seccomp_actions() {
 	COMPREPLY=( $( compgen -W "
-		SCMP_ACT_ALLOW
-		SCMP_ACT_ERRNO
-		SCMP_ACT_KILL
-		SCMP_ACT_TRACE
-		SCMP_ACT_TRAP
+		allow
+		errno
+		kill
+		trace
+		trap
 	" -- "$cur" ) )
 }
 __oci-runtime-tool_complete_capabilities() {
