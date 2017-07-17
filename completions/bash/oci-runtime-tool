@@ -343,6 +343,7 @@ _oci-runtime-tool_generate() {
 		--output
 		--process-cap-add
 		--process-cap-drop
+		--process-consolesize
 		--process-cwd
 		--process-gid
 		--process-groups
