@@ -96,7 +96,7 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string)
 // CheckAll checks all parts of runtime bundle
 func (v *Validator) CheckAll() (msgs []string) {
 	msgs = append(msgs, v.CheckPlatform()...)
-	msgs = append(msgs, v.CheckRootfs()...)
+	msgs = append(msgs, v.CheckRoot()...)
 	msgs = append(msgs, v.CheckMandatoryFields()...)
 	msgs = append(msgs, v.CheckSemVer()...)
 	msgs = append(msgs, v.CheckMounts()...)
@@ -109,9 +109,20 @@ func (v *Validator) CheckAll() (msgs []string) {
 	return
 }
 
-// CheckRootfs checks status of v.spec.Root
-func (v *Validator) CheckRootfs() (msgs []string) {
-	logrus.Debugf("check rootfs")
+// CheckRoot checks status of v.spec.Root
+func (v *Validator) CheckRoot() (msgs []string) {
+	logrus.Debugf("check root")
+
+	if v.platform == "windows" && v.spec.Windows.HyperV != nil {
+		if v.spec.Root != nil {
+			msgs = append(msgs, fmt.Sprintf("for Hyper-V containers, Root must not be set"))
+			return
+		}
+		return
+	} else if v.spec.Root == nil {
+		msgs = append(msgs, fmt.Sprintf("for non-Hyper-V containers, Root must be set"))
+		return
+	}
 
 	absBundlePath, err := filepath.Abs(v.bundlePath)
 	if err != nil {
