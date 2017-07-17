@@ -96,7 +96,7 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string)
 // CheckAll checks all parts of runtime bundle
 func (v *Validator) CheckAll() (msgs []string) {
 	msgs = append(msgs, v.CheckPlatform()...)
-	msgs = append(msgs, v.CheckRootfsPath()...)
+	msgs = append(msgs, v.CheckRootfs()...)
 	msgs = append(msgs, v.CheckMandatoryFields()...)
 	msgs = append(msgs, v.CheckSemVer()...)
 	msgs = append(msgs, v.CheckMounts()...)
@@ -109,9 +109,9 @@ func (v *Validator) CheckAll() (msgs []string) {
 	return
 }
 
-// CheckRootfsPath checks status of v.spec.Root.Path
-func (v *Validator) CheckRootfsPath() (msgs []string) {
-	logrus.Debugf("check rootfs path")
+// CheckRootfs checks status of v.spec.Root
+func (v *Validator) CheckRootfs() (msgs []string) {
+	logrus.Debugf("check rootfs")
 
 	absBundlePath, err := filepath.Abs(v.bundlePath)
 	if err != nil {

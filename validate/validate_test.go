@@ -18,10 +18,10 @@ func checkErrors(t *testing.T, title string, msgs []string, valid bool) {
 	}
 }
 
-func TestCheckRootfsPath(t *testing.T) {
+func TestCheckRootfs(t *testing.T) {
 	tmpBundle, err := ioutil.TempDir("", "oci-check-rootfspath")
 	if err != nil {
-		t.Fatalf("Failed to create a TempDir in 'CheckRootfsPath'")
+		t.Fatalf("Failed to create a TempDir in 'CheckRootfs'")
 	}
 	defer os.RemoveAll(tmpBundle)
 
@@ -29,10 +29,10 @@ func TestCheckRootfsPath(t *testing.T) {
 	rootfsNonDir := "rootfsfile"
 	rootfsNonExists := "rootfsnil"
 	if err := os.MkdirAll(filepath.Join(tmpBundle, rootfsDir), 0700); err != nil {
-		t.Fatalf("Failed to create a rootfs directory in 'CheckRootfsPath'")
+		t.Fatalf("Failed to create a rootfs directory in 'CheckRootfs'")
 	}
 	if _, err := os.Create(filepath.Join(tmpBundle, rootfsNonDir)); err != nil {
-		t.Fatalf("Failed to create a non-directory rootfs in 'CheckRootfsPath'")
+		t.Fatalf("Failed to create a non-directory rootfs in 'CheckRootfs'")
 	}
 
 	cases := []struct {
@@ -48,7 +48,7 @@ func TestCheckRootfsPath(t *testing.T) {
 	}
 	for _, c := range cases {
 		v := NewValidator(&rspec.Spec{Root: &rspec.Root{Path: c.val}}, tmpBundle, false, "linux")
-		checkErrors(t, "CheckRootfsPath "+c.val, v.CheckRootfsPath(), c.expected)
+		checkErrors(t, "CheckRootfs "+c.val, v.CheckRootfs(), c.expected)
 	}
 }
 
