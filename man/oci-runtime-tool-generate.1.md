@@ -131,7 +131,7 @@ read the configuration from `config.json`.
   Sets the total memory limit (memory + swap) in bytes.
 
 **--linux-mem-swappiness**=MEMSWAPPINESS
-  Sets the swappiness of how the kernel will swap memory pages (Range from 0 to 100).
+  Sets the swappiness of how the kernel will swap memory pages.
 
 **--linux-mems**=MEMS
   Sets the list of memory nodes in the cpuset (default is to use any available memory node).
