@@ -381,7 +381,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-disable-oom-kill") {
-		g.SetLinuxResourcesDisableOOMKiller(context.Bool("linux-disable-oom-kill"))
+		g.SetLinuxResourcesMemoryDisableOOMKiller(context.Bool("linux-disable-oom-kill"))
 	}
 
 	if context.IsSet("linux-oom-score-adj") {

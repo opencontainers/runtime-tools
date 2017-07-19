@@ -484,12 +484,6 @@ func (g *Generator) SetLinuxMountLabel(label string) {
 	g.spec.Linux.MountLabel = label
 }
 
-// SetLinuxResourcesDisableOOMKiller sets g.spec.Linux.Resources.DisableOOMKiller.
-func (g *Generator) SetLinuxResourcesDisableOOMKiller(disable bool) {
-	g.initSpecLinuxResources()
-	g.spec.Linux.Resources.DisableOOMKiller = &disable
-}
-
 // SetProcessOOMScoreAdj sets g.spec.Process.OOMScoreAdj.
 func (g *Generator) SetProcessOOMScoreAdj(adj int) {
 	g.initSpecProcess()
@@ -602,6 +596,12 @@ func (g *Generator) SetLinuxResourcesMemoryKernelTCP(kernelTCP int64) {
 func (g *Generator) SetLinuxResourcesMemorySwappiness(swappiness uint64) {
 	g.initSpecLinuxResourcesMemory()
 	g.spec.Linux.Resources.Memory.Swappiness = &swappiness
+}
+
+// SetLinuxResourcesMemoryDisableOOMKiller sets g.spec.Linux.Resources.Memory.DisableOOMKiller.
+func (g *Generator) SetLinuxResourcesMemoryDisableOOMKiller(disable bool) {
+	g.initSpecLinuxResourcesMemory()
+	g.spec.Linux.Resources.Memory.DisableOOMKiller = &disable
 }
 
 // SetLinuxResourcesNetworkClassID sets g.spec.Linux.Resources.Network.ClassID.
