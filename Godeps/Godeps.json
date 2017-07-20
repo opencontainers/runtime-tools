@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/opencontainers/runtime-tools",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v74",
+	"GodepVersion": "v79",
 	"Packages": [
 		"./..."
 	],
@@ -34,8 +34,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
-			"Comment": "v1.0.0-rc6",
-			"Rev": "64d8e8e17eeba231695e625b4e2a9a409a3ad3d9"
+			"Comment": "v1.0.0",
+			"Rev": "02137cd4e50b37a01665e1731fcd4ac2d2178230"
 		},
 		{
 			"ImportPath": "github.com/satori/go.uuid",
