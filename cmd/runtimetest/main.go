@@ -18,9 +18,11 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
-	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	"github.com/syndtr/gocapability/capability"
 	"github.com/urfave/cli"
+
+	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
+	ociErr "github.com/opencontainers/runtime-tools/validate"
 )
 
 // PrGetNoNewPrivs isn't exposed in Golang so we define it ourselves copying the value from
@@ -30,6 +32,13 @@ const PrGetNoNewPrivs = 39
 const specConfig = "config.json"
 
 var (
+	defaultFS = map[string]string{
+		"/proc":    "proc",
+		"/sys":     "sysfs",
+		"/dev/pts": "devpts",
+		"/dev/shm": "tmpfs",
+	}
+
 	defaultSymlinks = map[string]string{
 		"/dev/fd":     "/proc/self/fd",
 		"/dev/stdin":  "/proc/self/fd/0",
@@ -302,6 +311,28 @@ func validateRootFS(spec *rspec.Spec) error {
 		err := testWriteAccess("/")
 		if err == nil {
 			return fmt.Errorf("Rootfs should be readonly")
+		}
+	}
+
+	return nil
+}
+
+func validateDefaultFS(spec *rspec.Spec) error {
+	logrus.Debugf("validating linux default filesystem")
+
+	mountInfos, err := mount.GetMounts()
+	if err != nil {
+		return ociErr.NewError(ociErr.DefaultFilesystems, err.Error())
+	}
+
+	mountsMap := make(map[string]string)
+	for _, mountInfo := range mountInfos {
+		mountsMap[mountInfo.Mountpoint] = mountInfo.Fstype
+	}
+
+	for fs, fstype := range defaultFS {
+		if !(mountsMap[fs] == fstype) {
+			return ociErr.NewError(ociErr.DefaultFilesystems, fmt.Sprintf("%v SHOULD exist and expected type is %v", fs, fstype))
 		}
 	}
 
@@ -621,6 +652,10 @@ func validate(context *cli.Context) error {
 			description: "default symlinks",
 		},
 		{
+			test:        validateDefaultFS,
+			description: "default file system",
+		},
+		{
 			test:        validateDefaultDevices,
 			description: "default devices",
 		},
@@ -665,11 +700,20 @@ func validate(context *cli.Context) error {
 	t := tap.New()
 	t.Header(0)
 
+	complianceLevelString := context.String("compliance-level")
+	complianceLevel, err := ociErr.ParseLevel(complianceLevelString)
+	if err != nil {
+		complianceLevel = ociErr.ComplianceMust
+		logrus.Warningf("%s, using 'MUST' by default.", err.Error())
+	}
 	var validationErrors error
 	for _, v := range defaultValidations {
 		err := v.test(spec)
 		t.Ok(err == nil, v.description)
 		if err != nil {
+			if e, ok := err.(*ociErr.Error); ok && e.Level < complianceLevel {
+				continue
+			}
 			validationErrors = multierror.Append(validationErrors, err)
 		}
 	}
@@ -679,6 +723,9 @@ func validate(context *cli.Context) error {
 			err := v.test(spec)
 			t.Ok(err == nil, v.description)
 			if err != nil {
+				if e, ok := err.(*ociErr.Error); ok && e.Level < complianceLevel {
+					continue
+				}
 				validationErrors = multierror.Append(validationErrors, err)
 			}
 		}
@@ -704,6 +751,11 @@ func main() {
 			Name:  "path",
 			Value: ".",
 			Usage: "Path to the configuration",
+		},
+		cli.StringFlag{
+			Name:  "compliance-level",
+			Value: "must",
+			Usage: "Compliance level (may, should or must)",
 		},
 	}
 

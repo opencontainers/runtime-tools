@@ -119,6 +119,14 @@ __oci-runtime-tool_complete_log_level() {
 	" -- "$cur" ) )
 }
 
+__oci-runtime-tool_complete_compliance_level() {
+	COMPREPLY=( $( compgen -W "
+		may
+		should
+		must
+	" -- "$cur" ) )
+}
+
 __oci-runtime-tool_complete_propagations() {
 	COMPREPLY=( $( compgen -W "
 		private
@@ -218,6 +226,10 @@ _oci-runtime-tool_oci-runtime-tool() {
 		--log-level
 	"
 
+	local options_with_args="
+		--compliance-level
+	"
+
 	local boolean_options="
 		--help -h
 		--host-specific
@@ -229,6 +241,10 @@ _oci-runtime-tool_oci-runtime-tool() {
 	case "$prev" in
 		--log-level)
 			__oci-runtime-tool_complete_log_level
+			return
+			;;
+		--compliance-level)
+			__oci-runtime-tool_complete_compliance_level
 			return
 			;;
 	esac
