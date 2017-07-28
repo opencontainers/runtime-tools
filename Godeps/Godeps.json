@@ -7,9 +7,9 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v1.0.0",
-			"Rev": "202f25545ea4cf9b191ff7f846df5d87c9382c2b"
+			"ImportPath": "github.com/sirupsen/logrus",
+			"Comment": "1.0.2",
+			"Rev": "a3f95b5c423586578a4e099b11a46c2479628cac"
 		},
 		{
 			"ImportPath": "github.com/blang/semver",
