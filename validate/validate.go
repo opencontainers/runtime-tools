@@ -102,9 +102,7 @@ func (v *Validator) CheckAll() (msgs []string) {
 	msgs = append(msgs, v.CheckMounts()...)
 	msgs = append(msgs, v.CheckProcess()...)
 	msgs = append(msgs, v.CheckHooks()...)
-	if v.spec.Linux != nil {
-		msgs = append(msgs, v.CheckLinux()...)
-	}
+	msgs = append(msgs, v.CheckLinux()...)
 
 	return
 }
@@ -221,6 +219,10 @@ func checkEventHooks(hookType string, hooks []rspec.Hook, hostSpecific bool) (ms
 // CheckProcess checks v.spec.Process
 func (v *Validator) CheckProcess() (msgs []string) {
 	logrus.Debugf("check process")
+
+	if v.spec.Process == nil {
+		return
+	}
 
 	process := v.spec.Process
 	if !filepath.IsAbs(process.Cwd) {
@@ -435,6 +437,10 @@ func (v *Validator) CheckPlatform() (msgs []string) {
 // CheckLinux checks v.spec.Linux
 func (v *Validator) CheckLinux() (msgs []string) {
 	logrus.Debugf("check linux")
+
+	if v.spec.Linux == nil {
+		return
+	}
 
 	var typeList = map[rspec.LinuxNamespaceType]struct {
 		num      int
