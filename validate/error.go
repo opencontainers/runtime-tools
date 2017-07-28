@@ -3,108 +3,50 @@ package validate
 import (
 	"errors"
 	"fmt"
-	"strings"
 
-	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	rfc2119 "github.com/opencontainers/runtime-tools/error"
 )
 
-// ComplianceLevel represents the OCI compliance levels
-type ComplianceLevel int
+const referenceTemplate = "https://github.com/opencontainers/runtime-spec/blob/v%s/%s"
 
-const (
-	// MAY-level
-
-	// ComplianceMay represents 'MAY' in RFC2119
-	ComplianceMay ComplianceLevel = iota
-	// ComplianceOptional represents 'OPTIONAL' in RFC2119
-	ComplianceOptional
-
-	// SHOULD-level
-
-	// ComplianceShould represents 'SHOULD' in RFC2119
-	ComplianceShould
-	// ComplianceShouldNot represents 'SHOULD NOT' in RFC2119
-	ComplianceShouldNot
-	// ComplianceRecommended represents 'RECOMMENDED' in RFC2119
-	ComplianceRecommended
-	// ComplianceNotRecommended represents 'NOT RECOMMENDED' in RFC2119
-	ComplianceNotRecommended
-
-	// MUST-level
-
-	// ComplianceMust represents 'MUST' in RFC2119
-	ComplianceMust
-	// ComplianceMustNot represents 'MUST NOT' in RFC2119
-	ComplianceMustNot
-	// ComplianceShall represents 'SHALL' in RFC2119
-	ComplianceShall
-	// ComplianceShallNot represents 'SHALL NOT' in RFC2119
-	ComplianceShallNot
-	// ComplianceRequired represents 'REQUIRED' in RFC2119
-	ComplianceRequired
-)
-
-// ErrorCode represents the compliance content
+// ErrorCode represents the compliance content.
 type ErrorCode int
 
 const (
-	// DefaultFilesystems represents the error code of default filesystems test
+	// DefaultFilesystems represents the error code of default filesystems test.
 	DefaultFilesystems ErrorCode = iota
 )
 
-// Error represents an error with compliance level and OCI reference
-type Error struct {
-	Level     ComplianceLevel
-	Reference string
-	Err       error
+type errorTemplate struct {
+	Level     rfc2119.Level
+	Reference func(version string) (reference string, err error)
 }
 
-const referencePrefix = "https://github.com/opencontainers/runtime-spec/blob"
-
-var ociErrors = map[ErrorCode]Error{
-	DefaultFilesystems: Error{Level: ComplianceShould, Reference: "config-linux.md#default-filesystems"},
+var ociErrors = map[ErrorCode]errorTemplate{
+	DefaultFilesystems: errorTemplate{
+		Level: rfc2119.Should,
+		Reference: func(version string) (reference string, err error) {
+			return fmt.Sprintf(referenceTemplate, version, "config-linux.md#default-filesystems"), nil
+		},
+	},
 }
 
-// ParseLevel takes a string level and returns the OCI compliance level constant
-func ParseLevel(level string) (ComplianceLevel, error) {
-	switch strings.ToUpper(level) {
-	case "MAY":
-		fallthrough
-	case "OPTIONAL":
-		return ComplianceMay, nil
-	case "SHOULD":
-		fallthrough
-	case "SHOULDNOT":
-		fallthrough
-	case "RECOMMENDED":
-		fallthrough
-	case "NOTRECOMMENDED":
-		return ComplianceShould, nil
-	case "MUST":
-		fallthrough
-	case "MUSTNOT":
-		fallthrough
-	case "SHALL":
-		fallthrough
-	case "SHALLNOT":
-		fallthrough
-	case "REQUIRED":
-		return ComplianceMust, nil
+// NewError creates an Error referencing a spec violation.  The error
+// can be cast to a *runtime-tools.error.Error for extracting
+// structured information about the level of the violation and a
+// reference to the violated spec condition.
+//
+// A version string (for the version of the spec that was violated)
+// must be set to get a working URL.
+func NewError(code ErrorCode, msg string, version string) (err error) {
+	template := ociErrors[code]
+	reference, err := template.Reference(version)
+	if err != nil {
+		return err
 	}
-
-	var l ComplianceLevel
-	return l, fmt.Errorf("%q is not a valid compliance level", level)
-}
-
-// NewError creates an Error by ErrorCode and message
-func NewError(code ErrorCode, msg string) error {
-	err := ociErrors[code]
-	err.Err = errors.New(msg)
-
-	return &err
-}
-
-// Error returns the error message with OCI reference
-func (oci *Error) Error() string {
-	return fmt.Sprintf("%s\nRefer to: %s/v%s/%s", oci.Err.Error(), referencePrefix, rspec.Version, oci.Reference)
+	return &rfc2119.Error{
+		Level:     template.Level,
+		Reference: reference,
+		Err:       errors.New(msg),
+	}
 }

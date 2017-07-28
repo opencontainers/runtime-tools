@@ -22,7 +22,8 @@ import (
 	"github.com/urfave/cli"
 
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
-	ociErr "github.com/opencontainers/runtime-tools/validate"
+	rfc2119 "github.com/opencontainers/runtime-tools/error"
+	"github.com/opencontainers/runtime-tools/validate"
 )
 
 // PrGetNoNewPrivs isn't exposed in Golang so we define it ourselves copying the value from
@@ -322,7 +323,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
-		return ociErr.NewError(ociErr.DefaultFilesystems, err.Error())
+		validate.NewError(validate.DefaultFilesystems, err.Error(), spec.Version)
 	}
 
 	mountsMap := make(map[string]string)
@@ -332,7 +333,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 
 	for fs, fstype := range defaultFS {
 		if !(mountsMap[fs] == fstype) {
-			return ociErr.NewError(ociErr.DefaultFilesystems, fmt.Sprintf("%v SHOULD exist and expected type is %v", fs, fstype))
+			return validate.NewError(validate.DefaultFilesystems, fmt.Sprintf("%v SHOULD exist and expected type is %v", fs, fstype), spec.Version)
 		}
 	}
 
@@ -611,7 +612,7 @@ func validateMountsExist(spec *rspec.Spec) error {
 	return nil
 }
 
-func validate(context *cli.Context) error {
+func run(context *cli.Context) error {
 	logLevelString := context.String("log-level")
 	logLevel, err := logrus.ParseLevel(logLevelString)
 	if err != nil {
@@ -701,9 +702,9 @@ func validate(context *cli.Context) error {
 	t.Header(0)
 
 	complianceLevelString := context.String("compliance-level")
-	complianceLevel, err := ociErr.ParseLevel(complianceLevelString)
+	complianceLevel, err := rfc2119.ParseLevel(complianceLevelString)
 	if err != nil {
-		complianceLevel = ociErr.ComplianceMust
+		complianceLevel = rfc2119.Must
 		logrus.Warningf("%s, using 'MUST' by default.", err.Error())
 	}
 	var validationErrors error
@@ -711,7 +712,7 @@ func validate(context *cli.Context) error {
 		err := v.test(spec)
 		t.Ok(err == nil, v.description)
 		if err != nil {
-			if e, ok := err.(*ociErr.Error); ok && e.Level < complianceLevel {
+			if e, ok := err.(*rfc2119.Error); ok && e.Level < complianceLevel {
 				continue
 			}
 			validationErrors = multierror.Append(validationErrors, err)
@@ -723,7 +724,7 @@ func validate(context *cli.Context) error {
 			err := v.test(spec)
 			t.Ok(err == nil, v.description)
 			if err != nil {
-				if e, ok := err.(*ociErr.Error); ok && e.Level < complianceLevel {
+				if e, ok := err.(*rfc2119.Error); ok && e.Level < complianceLevel {
 					continue
 				}
 				validationErrors = multierror.Append(validationErrors, err)
@@ -759,7 +760,7 @@ func main() {
 		},
 	}
 
-	app.Action = validate
+	app.Action = run
 	if err := app.Run(os.Args); err != nil {
 		logrus.Fatal(err)
 	}
