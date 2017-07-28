@@ -79,6 +79,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "process-cap-add", Usage: "add Linux capabilities"},
 	cli.StringSliceFlag{Name: "process-cap-drop", Usage: "drop Linux capabilities"},
 	cli.BoolFlag{Name: "process-cap-drop-all", Usage: "drop all Linux capabilities"},
+	cli.StringFlag{Name: "process-consolesize", Usage: "specifies the console size in characters (width:height)"},
 	cli.StringFlag{Name: "process-cwd", Value: "/", Usage: "current working directory for the process"},
 	cli.IntFlag{Name: "process-gid", Usage: "gid for the process"},
 	cli.StringSliceFlag{Name: "process-groups", Usage: "supplementary groups for the process"},
@@ -274,6 +275,15 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 				return err
 			}
 		}
+	}
+
+	if context.IsSet("process-consolesize") {
+		consoleSize := context.String("process-consolesize")
+		width, height, err := parseConsoleSize(consoleSize)
+		if err != nil {
+			return err
+		}
+		g.SetProcessConsoleSize(width, height)
 	}
 
 	if context.Bool("process-cap-drop-all") {
@@ -559,6 +569,25 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	err := addSeccomp(context, g)
 	return err
+}
+
+func parseConsoleSize(consoleSize string) (uint, uint, error) {
+	size := strings.Split(consoleSize, ":")
+	if len(size) != 2 {
+		return 0, 0, fmt.Errorf("invalid consolesize value: %s", consoleSize)
+	}
+
+	width, err := strconv.Atoi(size[0])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	height, err := strconv.Atoi(size[1])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return uint(width), uint(height), nil
 }
 
 func parseIDMapping(idms string) (uint32, uint32, uint32, error) {

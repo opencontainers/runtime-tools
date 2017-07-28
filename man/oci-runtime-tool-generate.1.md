@@ -283,6 +283,9 @@ read the configuration from `config.json`.
 **--process-cap-drop-all**true|false
   Drop all Linux capabilities
 
+**--process-consolesize**=WIDTH:HEIGHT
+  Specifies the console size in characters of the terminal. e.g. --process-consolesize=80:40
+
 **--process-cwd**=PATH
   Current working directory for the process. The default is */*.
 
