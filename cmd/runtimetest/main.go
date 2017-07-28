@@ -280,6 +280,9 @@ func validateRlimits(spec *rspec.Spec) error {
 }
 
 func validateSysctls(spec *rspec.Spec) error {
+	if spec.Linux == nil {
+		return nil
+	}
 	for k, v := range spec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
 		vBytes, err := ioutil.ReadFile(keyPath)
@@ -340,6 +343,9 @@ func validateDefaultFS(spec *rspec.Spec) error {
 }
 
 func validateLinuxDevices(spec *rspec.Spec) error {
+	if spec.Linux == nil {
+		return nil
+	}
 	for _, device := range spec.Linux.Devices {
 		fi, err := os.Stat(device.Path)
 		if err != nil {
@@ -435,6 +441,9 @@ func validateDefaultDevices(spec *rspec.Spec) error {
 }
 
 func validateMaskedPaths(spec *rspec.Spec) error {
+	if spec.Linux == nil {
+		return nil
+	}
 	for _, maskedPath := range spec.Linux.MaskedPaths {
 		f, err := os.Open(maskedPath)
 		if err != nil {
@@ -451,6 +460,9 @@ func validateMaskedPaths(spec *rspec.Spec) error {
 }
 
 func validateROPaths(spec *rspec.Spec) error {
+	if spec.Linux == nil {
+		return nil
+	}
 	for _, v := range spec.Linux.ReadonlyPaths {
 		err := testWriteAccess(v)
 		if err == nil {
@@ -551,10 +563,16 @@ func validateIDMappings(mappings []rspec.LinuxIDMapping, path string, property s
 }
 
 func validateUIDMappings(spec *rspec.Spec) error {
+	if spec.Linux == nil {
+		return nil
+	}
 	return validateIDMappings(spec.Linux.UIDMappings, "/proc/self/uid_map", "linux.uidMappings")
 }
 
 func validateGIDMappings(spec *rspec.Spec) error {
+	if spec.Linux == nil {
+		return nil
+	}
 	return validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
 }
 
