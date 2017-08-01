@@ -354,7 +354,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		for _, postStartEnv := range postStartEnvs {
 			path, env, err := parseHookEnv(postStartEnv)
 			if err != nil {
-				return nil
+				return err
 			}
 			g.AddPostStartHookEnv(path, env)
 		}
@@ -387,7 +387,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		for _, postStopEnv := range postStopEnvs {
 			path, env, err := parseHookEnv(postStopEnv)
 			if err != nil {
-				return nil
+				return err
 			}
 			g.AddPostStopHookEnv(path, env)
 		}
@@ -398,7 +398,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		for _, postStopTimeout := range postStopTimeouts {
 			path, timeout, err := parseHookTimeout(postStopTimeout)
 			if err != nil {
-				return nil
+				return err
 			}
 			g.AddPostStopHookTimeout(path, timeout)
 		}
@@ -409,7 +409,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		for _, hook := range preStartHooks {
 			path, args, err := parseHook(hook)
 			if err != nil {
-				return nil
+				return err
 			}
 			g.AddPreStartHook(path, args)
 		}
@@ -420,7 +420,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		for _, preStartEnv := range preStartEnvs {
 			path, env, err := parseHookEnv(preStartEnv)
 			if err != nil {
-				return nil
+				return err
 			}
 			g.AddPreStartHookEnv(path, env)
 		}
@@ -431,7 +431,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		for _, preStartTimeout := range preStartTimeouts {
 			path, timeout, err := parseHookTimeout(preStartTimeout)
 			if err != nil {
-				return nil
+				return err
 			}
 			g.AddPreStartHookTimeout(path, timeout)
 		}
