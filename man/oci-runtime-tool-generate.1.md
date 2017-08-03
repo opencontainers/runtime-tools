@@ -165,6 +165,8 @@ read the configuration from `config.json`.
 
 **--linux-device-remove-all**=true|false
   Remove all devices for linux inside the container. The default is *false*.
+  This option conflicts with --linux-device-add and --linux-device-remove.
+  When combined with them, no matter what the options' order is, parse this option first.
 
 **--linux-device-cgroup-add**=allow|deny[,type=TYPE][,major=MAJOR][,minor=MINOR][,access=ACCESS]
   Add a device control rule.
@@ -241,6 +243,8 @@ read the configuration from `config.json`.
 **--linux-namespace-remove-all**=true|false
   Removes all namespaces from the set of namespaces configured for a container,
   such that the container will effectively run on the host.
+  This option conflicts with --linux-namespace-add and --linux-namespace-remove.
+  When combined with them, no matter what the options' order is, parse this option first.
 
 **--linux-network-classid**=CLASSID
   Specifies network class identifier which will be tagged by container's network packets.
@@ -293,14 +297,16 @@ read the configuration from `config.json`.
 **--linux-seccomp-kill**=SYSCALL
   Specifies syscalls to create seccomp rule to respond with KILL.
 
-**--linux-seccomp-only**==true|false
+**--linux-seccomp-only**=true|false
   Option to only export the seccomp section of output
 
 **--linux-seccomp-remove**=[]
   Specifies syscall restrictions to remove from the configuration.
 
-**--linux-seccomp-remove-all**==true|false
+**--linux-seccomp-remove-all**=true|false
   Option to remove all syscall restrictions.
+  This option conflicts with other --linux-seccomp-xxx options.
+  When combined with them, no matter what the options' order is, parse this option first.
 
 **--linux-seccomp-trace**=SYSCALL
   Specifies syscalls to create seccomp rule to respond with TRACE.
@@ -371,8 +377,10 @@ read the configuration from `config.json`.
 **--process-cap-add-permitted**=[]
   Add Linux permitted capabilities
 
-**--process-cap-drop-all**true|false
+**--process-cap-drop-all**=true|false
   Drop all Linux capabilities
+  This option conflicts with other cap options, as --process-cap-*.
+  When combined with them, no matter what the options' order is, parse this option first.
 
 **--process-cap-drop-ambient**=[]
   Drop Linux ambient capabilities
@@ -417,6 +425,8 @@ read the configuration from `config.json`.
 
 **--process-rlimits-remove-all**=true|false
   Remove all resource limits for process inside the container. The default is *false*.
+  This option conflicts with --linux-rlimits-add and --linux-rlimits-remove.
+  When combined with them, no matter what the options' order is, parse this option first.
 
 **--process-terminal**=true|false
   Specifies whether a terminal is attached to the process. The default is *false*.
