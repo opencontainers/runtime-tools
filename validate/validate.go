@@ -111,7 +111,7 @@ func (v *Validator) CheckAll() (msgs []string) {
 func (v *Validator) CheckRoot() (msgs []string) {
 	logrus.Debugf("check root")
 
-	if v.platform == "windows" && v.spec.Windows.HyperV != nil {
+	if v.platform == "windows" && v.spec.Windows != nil && v.spec.Windows.HyperV != nil {
 		if v.spec.Root != nil {
 			msgs = append(msgs, fmt.Sprintf("for Hyper-V containers, Root must not be set"))
 			return
