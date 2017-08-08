@@ -47,15 +47,39 @@ read the configuration from `config.json`.
   gets launched but after the container environment and main process has been
   created.
 
+**--hooks-poststart-env**=[]
+  Set environment variables for commands in poststart hooks, format is CMD:ENV. e.g. --hooks-poststart-env=/bin/test:key=value
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+
+**--hooks-poststart-timeout**=[]
+  Set timeout for commands in poststart hooks, format is CMD:TIMEOUT. e.g. --hooks-poststart-timeout=/bin/test:5
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+
 **--hooks-poststop**=CMD[:ARGS...]
   Set command to run in poststop hooks. Can be specified multiple times.
   The multiple commands will be run in order after the container process
   is stopped.
 
+**--hook-poststop-env**=[]
+  Set environment variables for commands in poststop hooks, format is CMD:ENV. e.g. --hooks-poststop-env=/bin/test:key=value
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+
+**--hooks-poststop-timeout**=[]
+  Set timeout for commands in poststop hooks, format is CMD:TIMEOUT. e.g. --hooks-poststop-timeout=/bin/test:5
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+
 **--hooks-prestart**=CMD[:ARGS...]
   Set command to run in prestart hooks. Can be specified multiple times.
   The multiple commands will be run in order after the container process
   has been created but before it executes the user-configured code.
+
+**--hooks-prestart-env**=[]
+  Set environment variables for commands in prestart hooks, format is CMD:ENV. e.g. --hooks-prestart-env=/bin/test:key=value
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+
+**--hooks-prestart-timeout**=[]
+  Set timeout for commands in prestart hooks, format is CMD:TIMEOUT. e.g. --hooks-prestart-timeout=/bin/test:5
+  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
 
 **--label**=[]
   Add annotations to the configuration e.g. key=value.

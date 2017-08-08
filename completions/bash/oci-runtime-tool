@@ -308,8 +308,14 @@ _oci-runtime-tool_generate() {
 		--env
 		--env-file
 		--hooks-poststart
+		--hooks-poststart-env
+		--hooks-poststart-timeout
 		--hooks-poststop
+		--hooks-poststop-env
+		--hooks-poststop-timeout
 		--hooks-prestart
+		--hooks-prestart-env
+		--hooks-prestart-timeout
 		--hostname
 		--label
 		--linux-apparmor
