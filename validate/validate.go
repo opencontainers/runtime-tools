@@ -443,7 +443,7 @@ func (v *Validator) CheckLinux() (msgs []string) {
 		return
 	}
 
-	var typeList = map[rspec.LinuxNamespaceType]struct {
+	var nsTypeList = map[rspec.LinuxNamespaceType]struct {
 		num      int
 		newExist bool
 	}{
@@ -462,7 +462,7 @@ func (v *Validator) CheckLinux() (msgs []string) {
 			msgs = append(msgs, fmt.Sprintf("namespace %v is invalid.", ns))
 		}
 
-		tmpItem := typeList[ns.Type]
+		tmpItem := nsTypeList[ns.Type]
 		tmpItem.num = tmpItem.num + 1
 		if tmpItem.num > 1 {
 			msgs = append(msgs, fmt.Sprintf("duplicated namespace %q", ns.Type))
@@ -471,10 +471,10 @@ func (v *Validator) CheckLinux() (msgs []string) {
 		if len(ns.Path) == 0 {
 			tmpItem.newExist = true
 		}
-		typeList[ns.Type] = tmpItem
+		nsTypeList[ns.Type] = tmpItem
 	}
 
-	if (len(v.spec.Linux.UIDMappings) > 0 || len(v.spec.Linux.GIDMappings) > 0) && !typeList[rspec.UserNamespace].newExist {
+	if (len(v.spec.Linux.UIDMappings) > 0 || len(v.spec.Linux.GIDMappings) > 0) && !nsTypeList[rspec.UserNamespace].newExist {
 		msgs = append(msgs, "UID/GID mappings requires a new User namespace to be specified as well")
 	} else if len(v.spec.Linux.UIDMappings) > 5 {
 		msgs = append(msgs, "Only 5 UID mappings are allowed (linux kernel restriction).")
@@ -483,23 +483,23 @@ func (v *Validator) CheckLinux() (msgs []string) {
 	}
 
 	for k := range v.spec.Linux.Sysctl {
-		if strings.HasPrefix(k, "net.") && !typeList[rspec.NetworkNamespace].newExist {
+		if strings.HasPrefix(k, "net.") && !nsTypeList[rspec.NetworkNamespace].newExist {
 			msgs = append(msgs, fmt.Sprintf("Sysctl %v requires a new Network namespace to be specified as well", k))
 		}
 		if strings.HasPrefix(k, "fs.mqueue.") {
-			if !typeList[rspec.MountNamespace].newExist || !typeList[rspec.IPCNamespace].newExist {
+			if !nsTypeList[rspec.MountNamespace].newExist || !nsTypeList[rspec.IPCNamespace].newExist {
 				msgs = append(msgs, fmt.Sprintf("Sysctl %v requires a new IPC namespace and Mount namespace to be specified as well", k))
 			}
 		}
 	}
 
-	if v.platform == "linux" && !typeList[rspec.UTSNamespace].newExist && v.spec.Hostname != "" {
+	if v.platform == "linux" && !nsTypeList[rspec.UTSNamespace].newExist && v.spec.Hostname != "" {
 		msgs = append(msgs, fmt.Sprintf("On Linux, hostname requires a new UTS namespace to be specified as well"))
 	}
 
 	// Linux devices validation
 	devList := make(map[string]bool)
-	typeList := make(map[string]bool)
+	devTypeList := make(map[string]bool)
 	for index := 0; index < len(v.spec.Linux.Devices); index++ {
 		device := v.spec.Linux.Devices[index]
 		if !deviceValid(device) {
@@ -582,10 +582,10 @@ func (v *Validator) CheckLinux() (msgs []string) {
 			devID = fmt.Sprintf("%s:%d:%d", device.Type, device.Major, device.Minor)
 		}
 
-		if _, exists := typeList[devID]; exists {
+		if _, exists := devTypeList[devID]; exists {
 			logrus.Warnf("type:%s, major:%d and minor:%d for linux devices is duplicated", device.Type, device.Major, device.Minor)
 		} else {
-			typeList[devID] = true
+			devTypeList[devID] = true
 		}
 	}
 
