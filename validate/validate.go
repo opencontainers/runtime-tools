@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"syscall"
 	"unicode"
 	"unicode/utf8"
 
@@ -496,9 +497,95 @@ func (v *Validator) CheckLinux() (msgs []string) {
 		msgs = append(msgs, fmt.Sprintf("On Linux, hostname requires a new UTS namespace to be specified as well"))
 	}
 
+	// Linux devices validation
+	devList := make(map[string]bool)
+	typeList := make(map[string]bool)
 	for index := 0; index < len(v.spec.Linux.Devices); index++ {
-		if !deviceValid(v.spec.Linux.Devices[index]) {
-			msgs = append(msgs, fmt.Sprintf("device %v is invalid.", v.spec.Linux.Devices[index]))
+		device := v.spec.Linux.Devices[index]
+		if !deviceValid(device) {
+			msgs = append(msgs, fmt.Sprintf("device %v is invalid.", device))
+		}
+
+		if _, exists := devList[device.Path]; exists {
+			msgs = append(msgs, fmt.Sprintf("device %s is duplicated", device.Path))
+		} else {
+			var rootfsPath string
+			if filepath.IsAbs(v.spec.Root.Path) {
+				rootfsPath = v.spec.Root.Path
+			} else {
+				rootfsPath = filepath.Join(v.bundlePath, v.spec.Root.Path)
+			}
+			absPath := filepath.Join(rootfsPath, device.Path)
+			fi, err := os.Stat(absPath)
+			if os.IsNotExist(err) {
+				devList[device.Path] = true
+			} else if err != nil {
+				msgs = append(msgs, err.Error())
+			} else {
+				fStat, ok := fi.Sys().(*syscall.Stat_t)
+				if !ok {
+					msgs = append(msgs, fmt.Sprintf("cannot determine state for device %s", device.Path))
+					continue
+				}
+				var devType string
+				switch fStat.Mode & syscall.S_IFMT {
+				case syscall.S_IFCHR:
+					devType = "c"
+				case syscall.S_IFBLK:
+					devType = "b"
+				case syscall.S_IFIFO:
+					devType = "p"
+				default:
+					devType = "unmatched"
+				}
+				if devType != device.Type || (devType == "c" && device.Type == "u") {
+					msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+					continue
+				}
+				if devType != "p" {
+					dev := fStat.Rdev
+					major := (dev >> 8) & 0xfff
+					minor := (dev & 0xff) | ((dev >> 12) & 0xfff00)
+					if int64(major) != device.Major || int64(minor) != device.Minor {
+						msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+						continue
+					}
+				}
+				if device.FileMode != nil {
+					expectedPerm := *device.FileMode & os.ModePerm
+					actualPerm := fi.Mode() & os.ModePerm
+					if expectedPerm != actualPerm {
+						msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+						continue
+					}
+				}
+				if device.UID != nil {
+					if *device.UID != fStat.Uid {
+						msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+						continue
+					}
+				}
+				if device.GID != nil {
+					if *device.GID != fStat.Gid {
+						msgs = append(msgs, fmt.Sprintf("unmatched %s already exists in filesystem", device.Path))
+						continue
+					}
+				}
+			}
+		}
+
+		// unify u->c when comparing, they are synonyms
+		var devID string
+		if device.Type == "u" {
+			devID = fmt.Sprintf("%s:%d:%d", "c", device.Major, device.Minor)
+		} else {
+			devID = fmt.Sprintf("%s:%d:%d", device.Type, device.Major, device.Minor)
+		}
+
+		if _, exists := typeList[devID]; exists {
+			logrus.Warnf("type:%s, major:%d and minor:%d for linux devices is duplicated", device.Type, device.Major, device.Minor)
+		} else {
+			typeList[devID] = true
 		}
 	}
 
