@@ -12,7 +12,7 @@ tool:
 
 .PHONY: runtimetest
 runtimetest:
-	go build -tags "$(BUILDTAGS)" -o runtimetest ./cmd/runtimetest
+	CGO_ENABLED=0 go build -installsuffix cgo -tags "$(BUILDTAGS)" -o runtimetest ./cmd/runtimetest
 
 .PHONY: man
 man:
