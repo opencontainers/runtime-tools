@@ -53,6 +53,6 @@ test: .gofmt .govet .golint .gotest
 .golint:
 	golint -set_exit_status $(PACKAGES)
 
-UTDIRS = ./validate/...
+UTDIRS = ./filepath/... ./validate/...
 .gotest:
 	go test $(UTDIRS)

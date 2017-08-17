@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"runtime"
 	"strings"
 	"syscall"
@@ -20,6 +19,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/hashicorp/go-multierror"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	osFilepath "github.com/opencontainers/runtime-tools/filepath"
 	"github.com/sirupsen/logrus"
 	"github.com/syndtr/gocapability/capability"
 
@@ -202,18 +202,18 @@ func (v *Validator) CheckHooks() (errs error) {
 	logrus.Debugf("check hooks")
 
 	if v.spec.Hooks != nil {
-		errs = multierror.Append(errs, checkEventHooks("pre-start", v.spec.Hooks.Prestart, v.HostSpecific))
-		errs = multierror.Append(errs, checkEventHooks("post-start", v.spec.Hooks.Poststart, v.HostSpecific))
-		errs = multierror.Append(errs, checkEventHooks("post-stop", v.spec.Hooks.Poststop, v.HostSpecific))
+		errs = multierror.Append(errs, v.checkEventHooks("prestart", v.spec.Hooks.Prestart, v.HostSpecific))
+		errs = multierror.Append(errs, v.checkEventHooks("poststart", v.spec.Hooks.Poststart, v.HostSpecific))
+		errs = multierror.Append(errs, v.checkEventHooks("poststop", v.spec.Hooks.Poststop, v.HostSpecific))
 	}
 
 	return
 }
 
-func checkEventHooks(hookType string, hooks []rspec.Hook, hostSpecific bool) (errs error) {
-	for _, hook := range hooks {
-		if !filepath.IsAbs(hook.Path) {
-			errs = multierror.Append(errs, fmt.Errorf("the %s hook %v: is not absolute path", hookType, hook.Path))
+func (v *Validator) checkEventHooks(hookType string, hooks []rspec.Hook, hostSpecific bool) (errs error) {
+	for i, hook := range hooks {
+		if !osFilepath.IsAbs(v.platform, hook.Path) {
+			errs = multierror.Append(errs, fmt.Errorf("hooks.%s[%d].path %v: is not absolute path", hookType, i, hook.Path))
 		}
 
 		if hostSpecific {
@@ -245,7 +245,7 @@ func (v *Validator) CheckProcess() (errs error) {
 	}
 
 	process := v.spec.Process
-	if !filepath.IsAbs(process.Cwd) {
+	if !osFilepath.IsAbs(v.platform, process.Cwd) {
 		errs = multierror.Append(errs, fmt.Errorf("cwd %q is not an absolute path", process.Cwd))
 	}
 
@@ -425,24 +425,15 @@ func (v *Validator) CheckMounts() (errs error) {
 		if supportedTypes != nil && !supportedTypes[mountA.Type] {
 			errs = multierror.Append(errs, fmt.Errorf("unsupported mount type %q", mountA.Type))
 		}
-		if v.platform == "windows" {
-			if err := pathValid(v.platform, mountA.Destination); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-			if err := pathValid(v.platform, mountA.Source); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		} else {
-			if err := pathValid(v.platform, mountA.Destination); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+		if !osFilepath.IsAbs(v.platform, mountA.Destination) {
+			errs = multierror.Append(errs, fmt.Errorf("mounts[%d].destination %q is not absolute", i, mountA.Destination))
 		}
 		for j, mountB := range v.spec.Mounts {
 			if i == j {
 				continue
 			}
 			// whether B.Desination is nested within A.Destination
-			nested, err := nestedValid(v.platform, mountA.Destination, mountB.Destination)
+			nested, err := osFilepath.IsAncestor(v.platform, mountA.Destination, mountB.Destination, ".")
 			if err != nil {
 				errs = multierror.Append(errs, err)
 				continue
@@ -502,7 +493,7 @@ func (v *Validator) CheckLinux() (errs error) {
 
 	for index := 0; index < len(v.spec.Linux.Namespaces); index++ {
 		ns := v.spec.Linux.Namespaces[index]
-		if !namespaceValid(ns) {
+		if !v.namespaceValid(ns) {
 			errs = multierror.Append(errs, fmt.Errorf("namespace %v is invalid", ns))
 		}
 
@@ -834,7 +825,7 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 	return
 }
 
-func namespaceValid(ns rspec.LinuxNamespace) bool {
+func (v *Validator) namespaceValid(ns rspec.LinuxNamespace) bool {
 	switch ns.Type {
 	case rspec.PIDNamespace:
 	case rspec.NetworkNamespace:
@@ -847,70 +838,11 @@ func namespaceValid(ns rspec.LinuxNamespace) bool {
 		return false
 	}
 
-	if ns.Path != "" && !filepath.IsAbs(ns.Path) {
+	if ns.Path != "" && !osFilepath.IsAbs(v.platform, ns.Path) {
 		return false
 	}
 
 	return true
-}
-
-func pathValid(os, path string) error {
-	if os == "windows" {
-		matched, err := regexp.MatchString("^[a-zA-Z]:(\\\\[^\\\\/<>|:*?\"]+)+$", path)
-		if err != nil {
-			return err
-		}
-		if !matched {
-			return fmt.Errorf("invalid windows path %v", path)
-		}
-		return nil
-	}
-	if !filepath.IsAbs(path) {
-		return fmt.Errorf("%v is not an absolute path", path)
-	}
-	return nil
-}
-
-// Check whether pathB is nested whithin pathA
-func nestedValid(os, pathA, pathB string) (bool, error) {
-	if pathA == pathB {
-		return false, nil
-	}
-	if pathA == "/" && pathB != "" {
-		return true, nil
-	}
-
-	var sep string
-	if os == "windows" {
-		sep = "\\"
-	} else {
-		sep = "/"
-	}
-
-	splitedPathA := strings.Split(filepath.Clean(pathA), sep)
-	splitedPathB := strings.Split(filepath.Clean(pathB), sep)
-	lenA := len(splitedPathA)
-	lenB := len(splitedPathB)
-
-	if lenA > lenB {
-		if (lenA - lenB) == 1 {
-			// if pathA is longer but not end with separator
-			if splitedPathA[lenA-1] != "" {
-				return false, nil
-			}
-			splitedPathA = splitedPathA[:lenA-1]
-		} else {
-			return false, nil
-		}
-	}
-
-	for i, partA := range splitedPathA {
-		if partA != splitedPathB[i] {
-			return false, nil
-		}
-	}
-
-	return true, nil
 }
 
 func deviceValid(d rspec.LinuxDevice) bool {
