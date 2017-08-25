@@ -18,7 +18,10 @@ var (
 )
 
 func init() {
-	runtime = os.Getenv("RUNTIME")
+	runtimeInEnv := os.Getenv("RUNTIME")
+	if runtimeInEnv != "" {
+		runtime = runtimeInEnv
+	}
 }
 
 func runtimeValidate(runtime string, g *generate.Generator) error {
