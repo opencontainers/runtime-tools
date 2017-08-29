@@ -1,20 +1,34 @@
 package validate
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
+	"runtime"
 	"testing"
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/stretchr/testify/assert"
+
+	rerr "github.com/opencontainers/runtime-tools/error"
 )
 
-func checkErrors(t *testing.T, title string, msgs []string, valid bool) {
-	if valid && len(msgs) > 0 {
-		t.Fatalf("%s: expected not to get error, but get %d errors:\n%s", title, len(msgs), strings.Join(msgs, "\n"))
-	} else if !valid && len(msgs) == 0 {
-		t.Fatalf("%s: expected to get error, but actually not", title)
+func TestNewValidator(t *testing.T) {
+	testSpec := &rspec.Spec{}
+	testBundle := ""
+	testPlatform := "not" + runtime.GOOS
+	cases := []struct {
+		val      Validator
+		expected Validator
+	}{
+		{Validator{testSpec, testBundle, true, testPlatform}, Validator{testSpec, testBundle, true, runtime.GOOS}},
+		{Validator{testSpec, testBundle, true, runtime.GOOS}, Validator{testSpec, testBundle, true, runtime.GOOS}},
+		{Validator{testSpec, testBundle, false, testPlatform}, Validator{testSpec, testBundle, false, testPlatform}},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, c.expected, NewValidator(c.val.spec, c.val.bundlePath, c.val.HostSpecific, c.val.platform))
 	}
 }
 
@@ -25,7 +39,7 @@ func TestCheckRoot(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpBundle)
 
-	rootfsDir := "rootfs"
+	rootfsDir := "rootfs/rootfs"
 	rootfsNonDir := "rootfsfile"
 	rootfsNonExists := "rootfsnil"
 	if err := os.MkdirAll(filepath.Join(tmpBundle, rootfsDir), 0700); err != nil {
@@ -35,36 +49,44 @@ func TestCheckRoot(t *testing.T) {
 		t.Fatalf("Failed to create a non-directory rootfs in 'CheckRoot'")
 	}
 
+	// Note: Abs error is not tested
 	cases := []struct {
-		val      string
-		expected bool
+		val      rspec.Spec
+		platform string
+		expected rerr.SpecErrorCode
 	}{
-		{rootfsDir, true},
-		{rootfsNonDir, false},
-		{rootfsNonExists, false},
-		{filepath.Join(tmpBundle, rootfsDir), true},
-		{filepath.Join(tmpBundle, rootfsNonDir), false},
-		{filepath.Join(tmpBundle, rootfsNonExists), false},
+		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: &rspec.Root{}}, "windows", rerr.RootOnHyperV},
+		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: nil}, "windows", rerr.NonError},
+		{rspec.Spec{Root: nil}, "linux", rerr.RootOnNonHyperV},
+		{rspec.Spec{Root: &rspec.Root{Path: "maverick-rootfs"}}, "linux", rerr.PathName},
+		{rspec.Spec{Root: &rspec.Root{Path: "rootfs"}}, "linux", rerr.NonError},
+		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonExists)}}, "linux", rerr.PathExistence},
+		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonDir)}}, "linux", rerr.PathExistence},
+		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, "rootfs")}}, "linux", rerr.NonError},
+		{rspec.Spec{Root: &rspec.Root{Path: "rootfs/rootfs"}}, "linux", rerr.ArtifactsInSingleDir},
+		{rspec.Spec{Root: &rspec.Root{Readonly: true}}, "windows", rerr.ReadonlyOnWindows},
 	}
 	for _, c := range cases {
-		v := NewValidator(&rspec.Spec{Root: &rspec.Root{Path: c.val}}, tmpBundle, false, "linux")
-		checkErrors(t, "CheckRoot "+c.val, v.CheckRoot(), c.expected)
+		v := NewValidator(&c.val, tmpBundle, false, c.platform)
+		err := v.CheckRoot()
+		assert.Equal(t, c.expected, rerr.FindError(err, c.expected), fmt.Sprintf("Fail to check Root: %v %d", err, c.expected))
 	}
 }
 
 func TestCheckSemVer(t *testing.T) {
 	cases := []struct {
 		val      string
-		expected bool
+		expected rerr.SpecErrorCode
 	}{
-		{rspec.Version, true},
+		{rspec.Version, rerr.NonError},
 		//FIXME: validate currently only handles rpsec.Version
-		{"0.0.1", false},
-		{"invalid", false},
+		{"0.0.1", rerr.NonRFCError},
+		{"invalid", rerr.SpecVersion},
 	}
 
 	for _, c := range cases {
 		v := NewValidator(&rspec.Spec{Version: c.val}, "", false, "linux")
-		checkErrors(t, "CheckSemVer "+c.val, v.CheckSemVer(), c.expected)
+		err := v.CheckSemVer()
+		assert.Equal(t, c.expected, rerr.FindError(err, c.expected), "Fail to check SemVer "+c.val)
 	}
 }
