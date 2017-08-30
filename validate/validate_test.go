@@ -11,7 +11,7 @@ import (
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/assert"
 
-	rerr "github.com/opencontainers/runtime-tools/error"
+	"github.com/opencontainers/runtime-tools/specerror"
 )
 
 func TestNewValidator(t *testing.T) {
@@ -53,40 +53,40 @@ func TestCheckRoot(t *testing.T) {
 	cases := []struct {
 		val      rspec.Spec
 		platform string
-		expected rerr.SpecErrorCode
+		expected specerror.Code
 	}{
-		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: &rspec.Root{}}, "windows", rerr.RootOnHyperV},
-		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: nil}, "windows", rerr.NonError},
-		{rspec.Spec{Root: nil}, "linux", rerr.RootOnNonHyperV},
-		{rspec.Spec{Root: &rspec.Root{Path: "maverick-rootfs"}}, "linux", rerr.PathName},
-		{rspec.Spec{Root: &rspec.Root{Path: "rootfs"}}, "linux", rerr.NonError},
-		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonExists)}}, "linux", rerr.PathExistence},
-		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonDir)}}, "linux", rerr.PathExistence},
-		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, "rootfs")}}, "linux", rerr.NonError},
-		{rspec.Spec{Root: &rspec.Root{Path: "rootfs/rootfs"}}, "linux", rerr.ArtifactsInSingleDir},
-		{rspec.Spec{Root: &rspec.Root{Readonly: true}}, "windows", rerr.ReadonlyOnWindows},
+		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: &rspec.Root{}}, "windows", specerror.RootOnHyperV},
+		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: nil}, "windows", specerror.NonError},
+		{rspec.Spec{Root: nil}, "linux", specerror.RootOnNonHyperV},
+		{rspec.Spec{Root: &rspec.Root{Path: "maverick-rootfs"}}, "linux", specerror.PathName},
+		{rspec.Spec{Root: &rspec.Root{Path: "rootfs"}}, "linux", specerror.NonError},
+		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonExists)}}, "linux", specerror.PathExistence},
+		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonDir)}}, "linux", specerror.PathExistence},
+		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, "rootfs")}}, "linux", specerror.NonError},
+		{rspec.Spec{Root: &rspec.Root{Path: "rootfs/rootfs"}}, "linux", specerror.ArtifactsInSingleDir},
+		{rspec.Spec{Root: &rspec.Root{Readonly: true}}, "windows", specerror.ReadonlyOnWindows},
 	}
 	for _, c := range cases {
 		v := NewValidator(&c.val, tmpBundle, false, c.platform)
 		err := v.CheckRoot()
-		assert.Equal(t, c.expected, rerr.FindError(err, c.expected), fmt.Sprintf("Fail to check Root: %v %d", err, c.expected))
+		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("Fail to check Root: %v %d", err, c.expected))
 	}
 }
 
 func TestCheckSemVer(t *testing.T) {
 	cases := []struct {
 		val      string
-		expected rerr.SpecErrorCode
+		expected specerror.Code
 	}{
-		{rspec.Version, rerr.NonError},
+		{rspec.Version, specerror.NonError},
 		//FIXME: validate currently only handles rpsec.Version
-		{"0.0.1", rerr.NonRFCError},
-		{"invalid", rerr.SpecVersion},
+		{"0.0.1", specerror.NonRFCError},
+		{"invalid", specerror.SpecVersion},
 	}
 
 	for _, c := range cases {
 		v := NewValidator(&rspec.Spec{Version: c.val}, "", false, "linux")
 		err := v.CheckSemVer()
-		assert.Equal(t, c.expected, rerr.FindError(err, c.expected), "Fail to check SemVer "+c.val)
+		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), "Fail to check SemVer "+c.val)
 	}
 }

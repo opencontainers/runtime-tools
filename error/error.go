@@ -48,7 +48,6 @@ type Error struct {
 	Level     Level
 	Reference string
 	Err       error
-	ErrCode   int
 }
 
 // ParseLevel takes a string level and returns the OCI compliance level constant.
