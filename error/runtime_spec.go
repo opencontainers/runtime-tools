@@ -78,31 +78,31 @@ var (
 var ociErrors = map[SpecErrorCode]errorTemplate{
 	// Bundle.md
 	// Container Format
-	ConfigFileExistence:  errorTemplate{Level: Must, Reference: containerFormatRef},
-	ArtifactsInSingleDir: errorTemplate{Level: Must, Reference: containerFormatRef},
+	ConfigFileExistence:  {Level: Must, Reference: containerFormatRef},
+	ArtifactsInSingleDir: {Level: Must, Reference: containerFormatRef},
 
 	// Config.md
 	// Specification Version
-	SpecVersion: errorTemplate{Level: Must, Reference: specVersionRef},
+	SpecVersion: {Level: Must, Reference: specVersionRef},
 	// Root
-	RootOnNonHyperV: errorTemplate{Level: Required, Reference: rootRef},
-	RootOnHyperV:    errorTemplate{Level: Must, Reference: rootRef},
+	RootOnNonHyperV: {Level: Required, Reference: rootRef},
+	RootOnHyperV:    {Level: Must, Reference: rootRef},
 	// TODO: add tests for 'PathFormatOnWindows'
-	PathFormatOnWindows: errorTemplate{Level: Must, Reference: rootRef},
-	PathName:            errorTemplate{Level: Should, Reference: rootRef},
-	PathExistence:       errorTemplate{Level: Must, Reference: rootRef},
-	ReadonlyFilesystem:  errorTemplate{Level: Must, Reference: rootRef},
-	ReadonlyOnWindows:   errorTemplate{Level: Must, Reference: rootRef},
+	PathFormatOnWindows: {Level: Must, Reference: rootRef},
+	PathName:            {Level: Should, Reference: rootRef},
+	PathExistence:       {Level: Must, Reference: rootRef},
+	ReadonlyFilesystem:  {Level: Must, Reference: rootRef},
+	ReadonlyOnWindows:   {Level: Must, Reference: rootRef},
 
 	// Config-Linux.md
 	// Default Filesystems
-	DefaultFilesystems: errorTemplate{Level: Should, Reference: defaultFSRef},
+	DefaultFilesystems: {Level: Should, Reference: defaultFSRef},
 
 	// Runtime.md
 	// Create
-	CreateWithID:       errorTemplate{Level: Must, Reference: runtimeCreateRef},
-	CreateWithUniqueID: errorTemplate{Level: Must, Reference: runtimeCreateRef},
-	CreateNewContainer: errorTemplate{Level: Must, Reference: runtimeCreateRef},
+	CreateWithID:       {Level: Must, Reference: runtimeCreateRef},
+	CreateWithUniqueID: {Level: Must, Reference: runtimeCreateRef},
+	CreateNewContainer: {Level: Must, Reference: runtimeCreateRef},
 }
 
 // NewError creates an Error referencing a spec violation.  The error
@@ -126,7 +126,7 @@ func NewError(code SpecErrorCode, msg string, version string) (err error) {
 	}
 }
 
-// FindError finds an error from a source error (mulitple error) and
+// FindError finds an error from a source error (multiple error) and
 // returns the error code if founded.
 // If the source error is nil or empty, return NonError.
 // If the source error is not a multiple error, return NonRFCError.
