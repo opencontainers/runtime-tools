@@ -576,17 +576,17 @@ func validateGIDMappings(spec *rspec.Spec) error {
 	return validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
 }
 
-func mountMatch(specMount rspec.Mount, sysMount rspec.Mount) error {
-	if filepath.Clean(specMount.Destination) != sysMount.Destination {
-		return fmt.Errorf("mount destination expected: %v, actual: %v", specMount.Destination, sysMount.Destination)
+func mountMatch(configMount rspec.Mount, sysMount rspec.Mount) error {
+	if filepath.Clean(configMount.Destination) != sysMount.Destination {
+		return fmt.Errorf("mount destination expected: %v, actual: %v", configMount.Destination, sysMount.Destination)
 	}
 
-	if specMount.Type != sysMount.Type {
-		return fmt.Errorf("mount %v type expected: %v, actual: %v", specMount.Destination, specMount.Type, sysMount.Type)
+	if configMount.Type != sysMount.Type {
+		return fmt.Errorf("mount %v type expected: %v, actual: %v", configMount.Destination, configMount.Type, sysMount.Type)
 	}
 
-	if filepath.Clean(specMount.Source) != sysMount.Source {
-		return fmt.Errorf("mount %v source expected: %v, actual: %v", specMount.Destination, specMount.Source, sysMount.Source)
+	if filepath.Clean(configMount.Source) != sysMount.Source {
+		return fmt.Errorf("mount %v source expected: %v, actual: %v", configMount.Destination, configMount.Source, sysMount.Source)
 	}
 
 	return nil
@@ -608,21 +608,77 @@ func validateMountsExist(spec *rspec.Spec) error {
 		mountsMap[mountInfo.Mountpoint] = append(mountsMap[mountInfo.Mountpoint], m)
 	}
 
-	for _, specMount := range spec.Mounts {
-		if specMount.Type == "bind" || specMount.Type == "rbind" {
+	for _, configMount := range spec.Mounts {
+		if configMount.Type == "bind" || configMount.Type == "rbind" {
 			// TODO: add bind or rbind check.
 			continue
 		}
 
 		found := false
-		for _, sysMount := range mountsMap[filepath.Clean(specMount.Destination)] {
-			if err := mountMatch(specMount, sysMount); err == nil {
+		for _, sysMount := range mountsMap[filepath.Clean(configMount.Destination)] {
+			if err := mountMatch(configMount, sysMount); err == nil {
 				found = true
 				break
 			}
 		}
 		if !found {
-			return fmt.Errorf("Expected mount %v does not exist", specMount)
+			return fmt.Errorf("Expected mount %v does not exist", configMount)
+		}
+	}
+
+	return nil
+}
+
+func validateMountsOrder(spec *rspec.Spec) error {
+	if runtime.GOOS == "windows" {
+		logrus.Warnf("mounts order validation not yet implemented for OS %q", runtime.GOOS)
+		return nil
+	}
+
+	mountInfos, err := mount.GetMounts()
+	if err != nil {
+		return err
+	}
+
+	type mountOrder struct {
+		Order  int
+		Root   string
+		Dest   string
+		Source string
+	}
+	mountsMap := make(map[string][]mountOrder)
+	for i, mountInfo := range mountInfos {
+		m := mountOrder{
+			Order:  i,
+			Root:   mountInfo.Root,
+			Dest:   mountInfo.Mountpoint,
+			Source: mountInfo.Source,
+		}
+		mountsMap[mountInfo.Mountpoint] = append(mountsMap[mountInfo.Mountpoint], m)
+	}
+	current := -1
+	for i, configMount := range spec.Mounts {
+		mounts := mountsMap[configMount.Destination]
+		if len(mounts) == 0 {
+			return fmt.Errorf("Mounts[%d] %s is not mounted in order", i, configMount.Destination)
+		}
+		for j, mount := range mounts {
+			source := mount.Source
+			for _, option := range configMount.Options {
+				if option == "bind" || option == "rbind" {
+					source = mount.Root
+					break
+				}
+			}
+			if source == configMount.Source {
+				if current > mount.Order {
+					return fmt.Errorf("Mounts[%d] %s is not mounted in order", i, configMount.Destination)
+				}
+				current = mount.Order
+				// in order to deal with dup mount elements
+				mountsMap[configMount.Destination] = append(mountsMap[configMount.Destination][:j], mountsMap[configMount.Destination][j+1:]...)
+				break
+			}
 		}
 	}
 
@@ -657,6 +713,10 @@ func run(context *cli.Context) error {
 		{
 			test:        validateMountsExist,
 			description: "mounts",
+		},
+		{
+			test:        validateMountsOrder,
+			description: "mounts order",
 		},
 	}
 
