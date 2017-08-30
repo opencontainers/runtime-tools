@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Level represents the OCI compliance levels
+// Level represents the RFC 2119 compliance levels
 type Level int
 
 const (
@@ -43,14 +43,19 @@ const (
 	Required
 )
 
-// Error represents an error with compliance level and OCI reference.
+// Error represents an error with compliance level and specification reference.
 type Error struct {
-	Level     Level
+	// Level represents the RFC 2119 compliance level.
+	Level Level
+
+	// Reference is a URL for the violated specification requirement.
 	Reference string
-	Err       error
+
+	// Err holds additional details about the violation.
+	Err error
 }
 
-// ParseLevel takes a string level and returns the OCI compliance level constant.
+// ParseLevel takes a string level and returns the RFC 2119 compliance level constant.
 func ParseLevel(level string) (Level, error) {
 	switch strings.ToUpper(level) {
 	case "MAY":
@@ -81,7 +86,7 @@ func ParseLevel(level string) (Level, error) {
 	return l, fmt.Errorf("%q is not a valid compliance level", level)
 }
 
-// Error returns the error message with OCI reference
+// Error returns the error message with specification reference.
 func (err *Error) Error() string {
 	return fmt.Sprintf("%s\nRefer to: %s", err.Err.Error(), err.Reference)
 }
