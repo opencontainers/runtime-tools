@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/opencontainers/runtime-tools/validate"
 	"github.com/urfave/cli"
@@ -27,9 +26,8 @@ var bundleValidateCommand = cli.Command{
 			return err
 		}
 
-		errMsgs := v.CheckAll()
-		if len(errMsgs) > 0 {
-			return fmt.Errorf("%d Errors detected:\n%s", len(errMsgs), strings.Join(errMsgs, "\n"))
+		if err := v.CheckAll(); err != nil {
+			return err
 
 		}
 		fmt.Println("Bundle validation succeeded.")
