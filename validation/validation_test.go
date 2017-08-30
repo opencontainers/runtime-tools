@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -9,8 +8,12 @@ import (
 	"testing"
 
 	"github.com/mrunalp/fileutils"
-	"github.com/opencontainers/runtime-tools/generate"
+	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
+
+	rerr "github.com/opencontainers/runtime-tools/error"
+	"github.com/opencontainers/runtime-tools/generate"
 )
 
 var (
@@ -24,59 +27,22 @@ func init() {
 	}
 }
 
-func runtimeValidate(runtime string, g *generate.Generator) error {
-	// Find the runtime binary in the PATH
-	runtimePath, err := exec.LookPath(runtime)
-	if err != nil {
-		return err
-	}
-
+func prepareBundle() (string, error) {
 	// Setup a temporary test directory
-	tmpDir, err := ioutil.TempDir("", "ocitest")
+	bundleDir, err := ioutil.TempDir("", "ocitest")
 	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tmpDir)
-
-	// Create bundle directory for the test container
-	bundleDir := tmpDir + "/busybox"
-	if err := os.MkdirAll(bundleDir, 0755); err != nil {
-		return err
+		return "", err
 	}
 
 	// Untar the root fs
 	untarCmd := exec.Command("tar", "-xf", "../rootfs.tar.gz", "-C", bundleDir)
-	output, err := untarCmd.CombinedOutput()
+	_, err = untarCmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(string(output))
-		return err
+		os.RemoveAll(bundleDir)
+		return "", err
 	}
 
-	// Copy the runtimetest binary to the rootfs
-	err = fileutils.CopyFile("../runtimetest", filepath.Join(bundleDir, "runtimetest"))
-	if err != nil {
-		return err
-	}
-
-	// Generate test configuration
-	err = g.SaveToFile(filepath.Join(bundleDir, "config.json"), generate.ExportOptions{})
-	if err != nil {
-		return err
-	}
-
-	// TODO: Use a library to split run into create/start
-	// Launch the OCI runtime
-	containerID := uuid.NewV4()
-	runtimeCmd := exec.Command(runtimePath, "run", containerID.String())
-	runtimeCmd.Dir = bundleDir
-	runtimeCmd.Stdin = os.Stdin
-	runtimeCmd.Stdout = os.Stdout
-	runtimeCmd.Stderr = os.Stderr
-	if err = runtimeCmd.Run(); err != nil {
-		return err
-	}
-
-	return nil
+	return bundleDir, nil
 }
 
 func getDefaultGenerator() *generate.Generator {
@@ -86,19 +52,81 @@ func getDefaultGenerator() *generate.Generator {
 	return &g
 }
 
+func runtimeInsideValidate(g *generate.Generator) error {
+	bundleDir, err := prepareBundle()
+	if err != nil {
+		return err
+	}
+	r, err := NewRuntime(runtime, bundleDir)
+	if err != nil {
+		os.RemoveAll(bundleDir)
+		return err
+	}
+	defer r.Clean(true)
+	err = r.SetConfig(g)
+	if err != nil {
+		return err
+	}
+	err = fileutils.CopyFile("../runtimetest", filepath.Join(r.BundleDir, "runtimetest"))
+	if err != nil {
+		return err
+	}
+
+	r.SetID(uuid.NewV4().String())
+	err = r.Create()
+	if err != nil {
+		return err
+	}
+	return r.Start()
+}
+
 func TestValidateBasic(t *testing.T) {
 	g := getDefaultGenerator()
 
-	if err := runtimeValidate(runtime, g); err != nil {
-		t.Errorf("%s failed validation: %v", runtime, err)
-	}
+	assert.Nil(t, runtimeInsideValidate(g))
 }
 
 func TestValidateSysctls(t *testing.T) {
 	g := getDefaultGenerator()
 	g.AddLinuxSysctl("net.ipv4.ip_forward", "1")
 
-	if err := runtimeValidate(runtime, g); err != nil {
-		t.Errorf("%s failed validation: %v", runtime, err)
+	assert.Nil(t, runtimeInsideValidate(g))
+}
+
+func TestValidateCreate(t *testing.T) {
+	g := generate.New()
+	g.SetRootPath(".")
+	g.SetProcessArgs([]string{"ls"})
+
+	bundleDir, err := prepareBundle()
+	assert.Nil(t, err)
+
+	r, err := NewRuntime(runtime, bundleDir)
+	assert.Nil(t, err)
+	defer r.Clean(true)
+
+	err = r.SetConfig(&g)
+	assert.Nil(t, err)
+
+	containerID := uuid.NewV4().String()
+	cases := []struct {
+		id          string
+		errExpected bool
+		err         error
+	}{
+		{"", false, rerr.NewError(rerr.CreateWithID, "'Create' MUST generate an error if the ID is not provided", rspecs.Version)},
+		{containerID, true, rerr.NewError(rerr.CreateNewContainer, "'Create' MUST create a new container", rspecs.Version)},
+		{containerID, false, rerr.NewError(rerr.CreateWithUniqueID, "'Create' MUST generate an error if the ID provided is not unique", rspecs.Version)},
+	}
+
+	for _, c := range cases {
+		r.SetID(c.id)
+		err := r.Create()
+		assert.Equal(t, c.errExpected, err == nil, c.err.Error())
+
+		if err == nil {
+			state, _ := r.State()
+			assert.Equal(t, c.id, state.ID, c.err.Error())
+		}
 	}
 }

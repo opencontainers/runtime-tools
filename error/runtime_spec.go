@@ -43,6 +43,13 @@ const (
 
 	// DefaultFilesystems represents the error code of default filesystems test
 	DefaultFilesystems
+
+	// CreateWithID represents the error code of 'create' lifecyle test with 'id' provided
+	CreateWithID
+	// CreateWithUniqueID represents the error code of 'create' lifecyle test with unique 'id' provided
+	CreateWithUniqueID
+	// CreateNewContainer represents the error code 'create' lifecyle test that creates new container
+	CreateNewContainer
 )
 
 type errorTemplate struct {
@@ -62,6 +69,9 @@ var (
 	}
 	defaultFSRef = func(version string) (reference string, err error) {
 		return fmt.Sprintf(referenceTemplate, version, "config-linux.md#default-filesystems"), nil
+	}
+	runtimeCreateRef = func(version string) (reference string, err error) {
+		return fmt.Sprintf(referenceTemplate, version, "runtime.md#create"), nil
 	}
 )
 
@@ -87,6 +97,12 @@ var ociErrors = map[SpecErrorCode]errorTemplate{
 	// Config-Linux.md
 	// Default Filesystems
 	DefaultFilesystems: errorTemplate{Level: Should, Reference: defaultFSRef},
+
+	// Runtime.md
+	// Create
+	CreateWithID:       errorTemplate{Level: Must, Reference: runtimeCreateRef},
+	CreateWithUniqueID: errorTemplate{Level: Must, Reference: runtimeCreateRef},
+	CreateNewContainer: errorTemplate{Level: Must, Reference: runtimeCreateRef},
 }
 
 // NewError creates an Error referencing a spec violation.  The error
