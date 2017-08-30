@@ -13,6 +13,7 @@ import (
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/generate/seccomp"
+	"github.com/opencontainers/runtime-tools/utils"
 	"github.com/urfave/cli"
 )
 
@@ -495,6 +496,9 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-cpus") {
+		if err := utils.UnitListValid(context.String("linux-cpus")); err != nil {
+			return err
+		}
 		g.SetLinuxResourcesCPUCpus(context.String("linux-cpus"))
 	}
 
@@ -517,6 +521,9 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("linux-mems") {
+		if err := utils.UnitListValid(context.String("linux-mems")); err != nil {
+			return err
+		}
 		g.SetLinuxResourcesCPUMems(context.String("linux-mems"))
 	}
 
@@ -660,6 +667,38 @@ func parseConsoleSize(consoleSize string) (uint, uint, error) {
 	}
 
 	return uint(width), uint(height), nil
+}
+
+func uintListValid(val string) error {
+	if val == "" {
+		return nil
+	}
+
+	split := strings.Split(val, ",")
+	errInvalidFormat := fmt.Errorf("invalid format: %s", val)
+
+	for _, r := range split {
+		if !strings.Contains(r, "-") {
+			_, err := strconv.Atoi(r)
+			if err != nil {
+				return errInvalidFormat
+			}
+		} else {
+			split := strings.SplitN(r, "-", 2)
+			min, err := strconv.Atoi(split[0])
+			if err != nil {
+				return errInvalidFormat
+			}
+			max, err := strconv.Atoi(split[1])
+			if err != nil {
+				return errInvalidFormat
+			}
+			if max < min {
+				return errInvalidFormat
+			}
+		}
+	}
+	return nil
 }
 
 func parseIDMapping(idms string) (uint32, uint32, uint32, error) {
