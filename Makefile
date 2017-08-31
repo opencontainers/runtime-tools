@@ -36,6 +36,10 @@ uninstall:
 clean:
 	rm -f oci-runtime-tool runtimetest *.1
 
+FILES = $(shell find ./ -name *.go | grep -v vendor)
+gofmt:
+	gofmt -s -w $(FILES)
+
 localvalidation: runtimetest
 	RUNTIME=$(RUNTIME) go test -tags "$(BUILDTAGS)" ${TESTFLAGS} -v github.com/opencontainers/runtime-tools/validation
 
