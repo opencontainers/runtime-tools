@@ -23,7 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/syndtr/gocapability/capability"
 
-	rerr "github.com/opencontainers/runtime-tools/error"
+	"github.com/opencontainers/runtime-tools/specerror"
 )
 
 const specConfig = "config.json"
@@ -86,7 +86,7 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string)
 	configPath := filepath.Join(bundlePath, specConfig)
 	content, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return Validator{}, rerr.NewError(rerr.ConfigFileExistence, err.Error(), rspec.Version)
+		return Validator{}, specerror.NewError(specerror.ConfigFileExistence, err, rspec.Version)
 	}
 	if !utf8.Valid(content) {
 		return Validator{}, fmt.Errorf("%q is not encoded in UTF-8", configPath)
@@ -120,13 +120,13 @@ func (v *Validator) CheckRoot() (errs error) {
 	if v.platform == "windows" && v.spec.Windows != nil && v.spec.Windows.HyperV != nil {
 		if v.spec.Root != nil {
 			errs = multierror.Append(errs,
-				rerr.NewError(rerr.RootOnHyperV, "for Hyper-V containers, Root must not be set", rspec.Version))
+				specerror.NewError(specerror.RootOnHyperV, fmt.Errorf("for Hyper-V containers, Root must not be set"), rspec.Version))
 			return
 		}
 		return
 	} else if v.spec.Root == nil {
 		errs = multierror.Append(errs,
-			rerr.NewError(rerr.RootOnNonHyperV, "for non-Hyper-V containers, Root must be set", rspec.Version))
+			specerror.NewError(specerror.RootOnNonHyperV, fmt.Errorf("for non-Hyper-V containers, Root must be set"), rspec.Version))
 		return
 	}
 
@@ -138,7 +138,7 @@ func (v *Validator) CheckRoot() (errs error) {
 
 	if filepath.Base(v.spec.Root.Path) != "rootfs" {
 		errs = multierror.Append(errs,
-			rerr.NewError(rerr.PathName, "Path name should be the conventional 'rootfs'", rspec.Version))
+			specerror.NewError(specerror.PathName, fmt.Errorf("path name should be the conventional 'rootfs'"), rspec.Version))
 	}
 
 	var rootfsPath string
@@ -158,22 +158,22 @@ func (v *Validator) CheckRoot() (errs error) {
 
 	if fi, err := os.Stat(rootfsPath); err != nil {
 		errs = multierror.Append(errs,
-			rerr.NewError(rerr.PathExistence, fmt.Sprintf("Cannot find the root path %q", rootfsPath), rspec.Version))
+			specerror.NewError(specerror.PathExistence, fmt.Errorf("cannot find the root path %q", rootfsPath), rspec.Version))
 	} else if !fi.IsDir() {
 		errs = multierror.Append(errs,
-			rerr.NewError(rerr.PathExistence, fmt.Sprintf("The root path %q is not a directory", rootfsPath), rspec.Version))
+			specerror.NewError(specerror.PathExistence, fmt.Errorf("root.path %q is not a directory", rootfsPath), rspec.Version))
 	}
 
 	rootParent := filepath.Dir(absRootPath)
 	if absRootPath == string(filepath.Separator) || rootParent != absBundlePath {
 		errs = multierror.Append(errs,
-			rerr.NewError(rerr.ArtifactsInSingleDir, fmt.Sprintf("root.path is %q, but it MUST be a child of %q", v.spec.Root.Path, absBundlePath), rspec.Version))
+			specerror.NewError(specerror.ArtifactsInSingleDir, fmt.Errorf("root.path is %q, but it MUST be a child of %q", v.spec.Root.Path, absBundlePath), rspec.Version))
 	}
 
 	if v.platform == "windows" {
 		if v.spec.Root.Readonly {
 			errs = multierror.Append(errs,
-				rerr.NewError(rerr.ReadonlyOnWindows, "root.readonly field MUST be omitted or false when target platform is windows", rspec.Version))
+				specerror.NewError(specerror.ReadonlyOnWindows, fmt.Errorf("root.readonly field MUST be omitted or false when target platform is windows"), rspec.Version))
 		}
 	}
 
@@ -188,7 +188,7 @@ func (v *Validator) CheckSemVer() (errs error) {
 	_, err := semver.Parse(version)
 	if err != nil {
 		errs = multierror.Append(errs,
-			rerr.NewError(rerr.SpecVersion, fmt.Sprintf("%q is not valid SemVer: %s", version, err.Error()), rspec.Version))
+			specerror.NewError(specerror.SpecVersion, fmt.Errorf("%q is not valid SemVer: %s", version, err.Error()), rspec.Version))
 	}
 	if version != rspec.Version {
 		errs = multierror.Append(errs, fmt.Errorf("validate currently only handles version %s, but the supplied configuration targets %s", rspec.Version, version))

@@ -22,7 +22,8 @@ import (
 	"github.com/urfave/cli"
 
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
-	rerr "github.com/opencontainers/runtime-tools/error"
+	rfc2119 "github.com/opencontainers/runtime-tools/error"
+	"github.com/opencontainers/runtime-tools/specerror"
 )
 
 // PrGetNoNewPrivs isn't exposed in Golang so we define it ourselves copying the value from
@@ -313,7 +314,7 @@ func validateRootFS(spec *rspec.Spec) error {
 	if spec.Root.Readonly {
 		err := testWriteAccess("/")
 		if err == nil {
-			return rerr.NewError(rerr.ReadonlyFilesystem, "Rootfs should be readonly", rspec.Version)
+			return specerror.NewError(specerror.ReadonlyFilesystem, fmt.Errorf("rootfs must be readonly"), rspec.Version)
 		}
 	}
 
@@ -325,7 +326,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
-		rerr.NewError(rerr.DefaultFilesystems, err.Error(), spec.Version)
+		specerror.NewError(specerror.DefaultFilesystems, err, spec.Version)
 	}
 
 	mountsMap := make(map[string]string)
@@ -335,7 +336,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 
 	for fs, fstype := range defaultFS {
 		if !(mountsMap[fs] == fstype) {
-			return rerr.NewError(rerr.DefaultFilesystems, fmt.Sprintf("%v SHOULD exist and expected type is %v", fs, fstype), rspec.Version)
+			return specerror.NewError(specerror.DefaultFilesystems, fmt.Errorf("%v SHOULD exist and expected type is %v", fs, fstype), rspec.Version)
 		}
 	}
 
@@ -779,9 +780,9 @@ func run(context *cli.Context) error {
 	t.Header(0)
 
 	complianceLevelString := context.String("compliance-level")
-	complianceLevel, err := rerr.ParseLevel(complianceLevelString)
+	complianceLevel, err := rfc2119.ParseLevel(complianceLevelString)
 	if err != nil {
-		complianceLevel = rerr.Must
+		complianceLevel = rfc2119.Must
 		logrus.Warningf("%s, using 'MUST' by default.", err.Error())
 	}
 	var validationErrors error
@@ -789,7 +790,7 @@ func run(context *cli.Context) error {
 		err := v.test(spec)
 		t.Ok(err == nil, v.description)
 		if err != nil {
-			if e, ok := err.(*rerr.Error); ok && e.Level < complianceLevel {
+			if e, ok := err.(*specerror.Error); ok && e.Err.Level < complianceLevel {
 				continue
 			}
 			validationErrors = multierror.Append(validationErrors, err)
@@ -801,7 +802,7 @@ func run(context *cli.Context) error {
 			err := v.test(spec)
 			t.Ok(err == nil, v.description)
 			if err != nil {
-				if e, ok := err.(*rerr.Error); ok && e.Level < complianceLevel {
+				if e, ok := err.(*specerror.Error); ok && e.Err.Level < complianceLevel {
 					continue
 				}
 				validationErrors = multierror.Append(validationErrors, err)

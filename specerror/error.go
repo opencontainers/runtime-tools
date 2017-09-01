@@ -1,20 +1,23 @@
-package error
+// Package specerror implements runtime-spec-specific tooling for
+// tracking RFC 2119 violations.
+package specerror
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/go-multierror"
+	rfc2119 "github.com/opencontainers/runtime-tools/error"
 )
 
 const referenceTemplate = "https://github.com/opencontainers/runtime-spec/blob/v%s/%s"
 
-// SpecErrorCode represents the compliance content.
-type SpecErrorCode int
+// Code represents the spec violation, enumerating both
+// configuration violations and runtime violations.
+type Code int
 
 const (
 	// NonError represents that an input is not an error
-	NonError SpecErrorCode = iota
+	NonError Code = iota
 	// NonRFCError represents that an error is not a rfc2119 error
 	NonRFCError
 
@@ -53,8 +56,17 @@ const (
 )
 
 type errorTemplate struct {
-	Level     Level
+	Level     rfc2119.Level
 	Reference func(version string) (reference string, err error)
+}
+
+// Error represents a runtime-spec violation.
+type Error struct {
+	// Err holds the RFC 2119 violation.
+	Err rfc2119.Error
+
+	// Code is a matchable holds a Code
+	Code Code
 }
 
 var (
@@ -75,62 +87,69 @@ var (
 	}
 )
 
-var ociErrors = map[SpecErrorCode]errorTemplate{
+var ociErrors = map[Code]errorTemplate{
 	// Bundle.md
 	// Container Format
-	ConfigFileExistence:  {Level: Must, Reference: containerFormatRef},
-	ArtifactsInSingleDir: {Level: Must, Reference: containerFormatRef},
+	ConfigFileExistence:  {Level: rfc2119.Must, Reference: containerFormatRef},
+	ArtifactsInSingleDir: {Level: rfc2119.Must, Reference: containerFormatRef},
 
 	// Config.md
 	// Specification Version
-	SpecVersion: {Level: Must, Reference: specVersionRef},
+	SpecVersion: {Level: rfc2119.Must, Reference: specVersionRef},
 	// Root
-	RootOnNonHyperV: {Level: Required, Reference: rootRef},
-	RootOnHyperV:    {Level: Must, Reference: rootRef},
+	RootOnNonHyperV: {Level: rfc2119.Required, Reference: rootRef},
+	RootOnHyperV:    {Level: rfc2119.Must, Reference: rootRef},
 	// TODO: add tests for 'PathFormatOnWindows'
-	PathFormatOnWindows: {Level: Must, Reference: rootRef},
-	PathName:            {Level: Should, Reference: rootRef},
-	PathExistence:       {Level: Must, Reference: rootRef},
-	ReadonlyFilesystem:  {Level: Must, Reference: rootRef},
-	ReadonlyOnWindows:   {Level: Must, Reference: rootRef},
+	PathFormatOnWindows: {Level: rfc2119.Must, Reference: rootRef},
+	PathName:            {Level: rfc2119.Should, Reference: rootRef},
+	PathExistence:       {Level: rfc2119.Must, Reference: rootRef},
+	ReadonlyFilesystem:  {Level: rfc2119.Must, Reference: rootRef},
+	ReadonlyOnWindows:   {Level: rfc2119.Must, Reference: rootRef},
 
 	// Config-Linux.md
 	// Default Filesystems
-	DefaultFilesystems: {Level: Should, Reference: defaultFSRef},
+	DefaultFilesystems: {Level: rfc2119.Should, Reference: defaultFSRef},
 
 	// Runtime.md
 	// Create
-	CreateWithID:       {Level: Must, Reference: runtimeCreateRef},
-	CreateWithUniqueID: {Level: Must, Reference: runtimeCreateRef},
-	CreateNewContainer: {Level: Must, Reference: runtimeCreateRef},
+	CreateWithID:       {Level: rfc2119.Must, Reference: runtimeCreateRef},
+	CreateWithUniqueID: {Level: rfc2119.Must, Reference: runtimeCreateRef},
+	CreateNewContainer: {Level: rfc2119.Must, Reference: runtimeCreateRef},
+}
+
+// Error returns the error message with specification reference.
+func (err *Error) Error() string {
+	return err.Err.Error()
 }
 
 // NewError creates an Error referencing a spec violation.  The error
-// can be cast to a *runtime-tools.error.Error for extracting
-// structured information about the level of the violation and a
-// reference to the violated spec condition.
+// can be cast to an *Error for extracting structured information
+// about the level of the violation and a reference to the violated
+// spec condition.
 //
 // A version string (for the version of the spec that was violated)
 // must be set to get a working URL.
-func NewError(code SpecErrorCode, msg string, version string) (err error) {
+func NewError(code Code, err error, version string) error {
 	template := ociErrors[code]
-	reference, err := template.Reference(version)
-	if err != nil {
-		return err
+	reference, err2 := template.Reference(version)
+	if err2 != nil {
+		return err2
 	}
 	return &Error{
-		Level:     template.Level,
-		Reference: reference,
-		Err:       errors.New(msg),
-		ErrCode:   int(code),
+		Err: rfc2119.Error{
+			Level:     template.Level,
+			Reference: reference,
+			Err:       err,
+		},
+		Code: code,
 	}
 }
 
 // FindError finds an error from a source error (multiple error) and
-// returns the error code if founded.
+// returns the error code if found.
 // If the source error is nil or empty, return NonError.
 // If the source error is not a multiple error, return NonRFCError.
-func FindError(err error, code SpecErrorCode) SpecErrorCode {
+func FindError(err error, code Code) Code {
 	if err == nil {
 		return NonError
 	}
@@ -141,7 +160,7 @@ func FindError(err error, code SpecErrorCode) SpecErrorCode {
 		}
 		for _, e := range merr.Errors {
 			if rfcErr, ok := e.(*Error); ok {
-				if rfcErr.ErrCode == int(code) {
+				if rfcErr.Code == code {
 					return code
 				}
 			}

@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -12,8 +13,8 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 
-	rerr "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/generate"
+	"github.com/opencontainers/runtime-tools/specerror"
 )
 
 var (
@@ -114,9 +115,9 @@ func TestValidateCreate(t *testing.T) {
 		errExpected bool
 		err         error
 	}{
-		{"", false, rerr.NewError(rerr.CreateWithID, "'Create' MUST generate an error if the ID is not provided", rspecs.Version)},
-		{containerID, true, rerr.NewError(rerr.CreateNewContainer, "'Create' MUST create a new container", rspecs.Version)},
-		{containerID, false, rerr.NewError(rerr.CreateWithUniqueID, "'Create' MUST generate an error if the ID provided is not unique", rspecs.Version)},
+		{"", false, specerror.NewError(specerror.CreateWithID, fmt.Errorf("create MUST generate an error if the ID is not provided"), rspecs.Version)},
+		{containerID, true, specerror.NewError(specerror.CreateNewContainer, fmt.Errorf("create MUST create a new container"), rspecs.Version)},
+		{containerID, false, specerror.NewError(specerror.CreateWithUniqueID, fmt.Errorf("create MUST generate an error if the ID provided is not unique"), rspecs.Version)},
 	}
 
 	for _, c := range cases {
