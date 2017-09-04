@@ -35,6 +35,16 @@ var (
 		"RLIMIT_CPU",
 		"RLIMIT_DATA",
 		"RLIMIT_FSIZE",
+		"RLIMIT_NOFILE",
+		"RLIMIT_STACK",
+	}
+
+	defaultLinuxRlimits = []string{
+		"RLIMIT_AS",
+		"RLIMIT_CORE",
+		"RLIMIT_CPU",
+		"RLIMIT_DATA",
+		"RLIMIT_FSIZE",
 		"RLIMIT_LOCKS",
 		"RLIMIT_MEMLOCK",
 		"RLIMIT_MSGQUEUE",
@@ -821,6 +831,13 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 	}
 
 	if v.platform == "linux" {
+		for _, val := range defaultLinuxRlimits {
+			if val == rlimit.Type {
+				return
+			}
+		}
+		errs = multierror.Append(errs, fmt.Errorf("rlimit type %q is invalid", rlimit.Type))
+	} else if v.platform == "solaris" {
 		for _, val := range defaultRlimits {
 			if val == rlimit.Type {
 				return
