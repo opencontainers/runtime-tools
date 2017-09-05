@@ -116,7 +116,7 @@ func TestValidateCreate(t *testing.T) {
 		errExpected bool
 		err         error
 	}{
-		{"", false, specerror.NewError(specerror.CreateWithID, fmt.Errorf("create MUST generate an error if the ID is not provided"), rspecs.Version)},
+		{"", false, specerror.NewError(specerror.CreateWithBundlePathAndID, fmt.Errorf("create MUST generate an error if the ID is not provided"), rspecs.Version)},
 		{containerID, true, specerror.NewError(specerror.CreateNewContainer, fmt.Errorf("create MUST create a new container"), rspecs.Version)},
 		{containerID, false, specerror.NewError(specerror.CreateWithUniqueID, fmt.Errorf("create MUST generate an error if the ID provided is not unique"), rspecs.Version)},
 	}

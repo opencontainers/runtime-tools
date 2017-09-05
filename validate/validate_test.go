@@ -151,18 +151,18 @@ func TestCheckRoot(t *testing.T) {
 		platform string
 		expected specerror.Code
 	}{
-		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: &rspec.Root{}}, "windows", specerror.RootOnHyperV},
+		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: &rspec.Root{}}, "windows", specerror.RootOnHyperVNotSet},
 		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: nil}, "windows", specerror.NonError},
-		{rspec.Spec{Windows: &rspec.Windows{}, Root: &rspec.Root{Path: filepath.Join(tmpBundle, "rootfs")}}, "windows", specerror.PathFormatOnWindows},
+		{rspec.Spec{Windows: &rspec.Windows{}, Root: &rspec.Root{Path: filepath.Join(tmpBundle, "rootfs")}}, "windows", specerror.RootPathOnWindowsGUID},
 		{rspec.Spec{Windows: &rspec.Windows{}, Root: &rspec.Root{Path: "\\\\?\\Volume{ec84d99e-3f02-11e7-ac6c-00155d7682cf}\\"}}, "windows", specerror.NonError},
-		{rspec.Spec{Root: nil}, "linux", specerror.RootOnNonHyperV},
-		{rspec.Spec{Root: &rspec.Root{Path: "maverick-rootfs"}}, "linux", specerror.PathName},
+		{rspec.Spec{Root: nil}, "linux", specerror.RootOnNonHyperVRequired},
+		{rspec.Spec{Root: &rspec.Root{Path: "maverick-rootfs"}}, "linux", specerror.RootPathOnPosixConvention},
 		{rspec.Spec{Root: &rspec.Root{Path: "rootfs"}}, "linux", specerror.NonError},
-		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonExists)}}, "linux", specerror.PathExistence},
-		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonDir)}}, "linux", specerror.PathExistence},
+		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonExists)}}, "linux", specerror.RootPathExist},
+		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, rootfsNonDir)}}, "linux", specerror.RootPathExist},
 		{rspec.Spec{Root: &rspec.Root{Path: filepath.Join(tmpBundle, "rootfs")}}, "linux", specerror.NonError},
 		{rspec.Spec{Root: &rspec.Root{Path: "rootfs/rootfs"}}, "linux", specerror.ArtifactsInSingleDir},
-		{rspec.Spec{Root: &rspec.Root{Readonly: true}}, "windows", specerror.ReadonlyOnWindows},
+		{rspec.Spec{Root: &rspec.Root{Readonly: true}}, "windows", specerror.RootReadonlyOnWindowsFalse},
 	}
 	for _, c := range cases {
 		v := NewValidator(&c.val, tmpBundle, false, c.platform)
@@ -179,7 +179,7 @@ func TestCheckSemVer(t *testing.T) {
 		{rspec.Version, specerror.NonError},
 		//FIXME: validate currently only handles rpsec.Version
 		{"0.0.1", specerror.NonRFCError},
-		{"invalid", specerror.SpecVersion},
+		{"invalid", specerror.SpecVersionInSemVer},
 	}
 
 	for _, c := range cases {
