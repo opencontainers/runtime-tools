@@ -100,7 +100,8 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string)
 }
 
 // CheckAll checks all parts of runtime bundle
-func (v *Validator) CheckAll() (errs error) {
+func (v *Validator) CheckAll() error {
+	var errs *multierror.Error
 	errs = multierror.Append(errs, v.CheckPlatform())
 	errs = multierror.Append(errs, v.CheckRoot())
 	errs = multierror.Append(errs, v.CheckMandatoryFields())
@@ -110,7 +111,7 @@ func (v *Validator) CheckAll() (errs error) {
 	errs = multierror.Append(errs, v.CheckHooks())
 	errs = multierror.Append(errs, v.CheckLinux())
 
-	return
+	return errs.ErrorOrNil()
 }
 
 // CheckRoot checks status of v.spec.Root
