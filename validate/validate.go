@@ -330,15 +330,19 @@ func (v *Validator) CheckCapabilities() (errs error) {
 			for _, set := range owns {
 				if set == "effective" {
 					effective = true
+					continue
 				}
 				if set == "inheritable" {
 					inheritable = true
+					continue
 				}
 				if set == "permitted" {
 					permitted = true
+					continue
 				}
 				if set == "ambient" {
 					ambient = true
+					continue
 				}
 			}
 			if effective && !permitted {
@@ -775,7 +779,7 @@ func CapValid(c string, hostSpecific bool) error {
 	for _, cap := range capability.List() {
 		if c == fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String())) {
 			if hostSpecific && cap > LastCap() {
-				return fmt.Errorf("the CAP_%s is not supported on the current host", c)
+				return fmt.Errorf("%s is not supported on the current host", c)
 			}
 			isValid = true
 			break

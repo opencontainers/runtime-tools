@@ -956,11 +956,12 @@ func (g *Generator) SetupPrivileged(privileged bool) {
 		}
 		g.initSpecLinux()
 		g.initSpecProcessCapabilities()
-		g.spec.Process.Capabilities.Bounding = finalCapList
-		g.spec.Process.Capabilities.Effective = finalCapList
-		g.spec.Process.Capabilities.Inheritable = finalCapList
-		g.spec.Process.Capabilities.Permitted = finalCapList
-		g.spec.Process.Capabilities.Ambient = finalCapList
+		g.ClearProcessCapabilities()
+		g.spec.Process.Capabilities.Bounding = append(g.spec.Process.Capabilities.Bounding, finalCapList...)
+		g.spec.Process.Capabilities.Effective = append(g.spec.Process.Capabilities.Effective, finalCapList...)
+		g.spec.Process.Capabilities.Inheritable = append(g.spec.Process.Capabilities.Inheritable, finalCapList...)
+		g.spec.Process.Capabilities.Permitted = append(g.spec.Process.Capabilities.Permitted, finalCapList...)
+		g.spec.Process.Capabilities.Ambient = append(g.spec.Process.Capabilities.Ambient, finalCapList...)
 		g.spec.Process.SelinuxLabel = ""
 		g.spec.Process.ApparmorProfile = ""
 		g.spec.Linux.Seccomp = nil
@@ -988,40 +989,60 @@ func (g *Generator) AddProcessCapability(c string) error {
 
 	g.initSpecProcessCapabilities()
 
+	var foundBounding bool
 	for _, cap := range g.spec.Process.Capabilities.Bounding {
 		if strings.ToUpper(cap) == cp {
-			return nil
+			foundBounding = true
+			break
 		}
 	}
-	g.spec.Process.Capabilities.Bounding = append(g.spec.Process.Capabilities.Bounding, cp)
+	if !foundBounding {
+		g.spec.Process.Capabilities.Bounding = append(g.spec.Process.Capabilities.Bounding, cp)
+	}
 
+	var foundEffective bool
 	for _, cap := range g.spec.Process.Capabilities.Effective {
 		if strings.ToUpper(cap) == cp {
-			return nil
+			foundEffective = true
+			break
 		}
 	}
-	g.spec.Process.Capabilities.Effective = append(g.spec.Process.Capabilities.Effective, cp)
+	if !foundEffective {
+		g.spec.Process.Capabilities.Effective = append(g.spec.Process.Capabilities.Effective, cp)
+	}
 
+	var foundInheritable bool
 	for _, cap := range g.spec.Process.Capabilities.Inheritable {
 		if strings.ToUpper(cap) == cp {
-			return nil
+			foundInheritable = true
+			break
 		}
 	}
-	g.spec.Process.Capabilities.Inheritable = append(g.spec.Process.Capabilities.Inheritable, cp)
+	if !foundInheritable {
+		g.spec.Process.Capabilities.Inheritable = append(g.spec.Process.Capabilities.Inheritable, cp)
+	}
 
+	var foundPermitted bool
 	for _, cap := range g.spec.Process.Capabilities.Permitted {
 		if strings.ToUpper(cap) == cp {
-			return nil
+			foundPermitted = true
+			break
 		}
 	}
-	g.spec.Process.Capabilities.Permitted = append(g.spec.Process.Capabilities.Permitted, cp)
+	if !foundPermitted {
+		g.spec.Process.Capabilities.Permitted = append(g.spec.Process.Capabilities.Permitted, cp)
+	}
 
+	var foundAmbient bool
 	for _, cap := range g.spec.Process.Capabilities.Ambient {
 		if strings.ToUpper(cap) == cp {
-			return nil
+			foundAmbient = true
+			break
 		}
 	}
-	g.spec.Process.Capabilities.Ambient = append(g.spec.Process.Capabilities.Ambient, cp)
+	if !foundAmbient {
+		g.spec.Process.Capabilities.Ambient = append(g.spec.Process.Capabilities.Ambient, cp)
+	}
 
 	return nil
 }
@@ -1035,33 +1056,39 @@ func (g *Generator) DropProcessCapability(c string) error {
 
 	g.initSpecProcessCapabilities()
 
+	// we don't care about order...and this is way faster...
+	removeFunc := func(s []string, i int) []string {
+		s[i] = s[len(s)-1]
+		return s[:len(s)-1]
+	}
+
 	for i, cap := range g.spec.Process.Capabilities.Bounding {
 		if strings.ToUpper(cap) == cp {
-			g.spec.Process.Capabilities.Bounding = append(g.spec.Process.Capabilities.Bounding[:i], g.spec.Process.Capabilities.Bounding[i+1:]...)
+			g.spec.Process.Capabilities.Bounding = removeFunc(g.spec.Process.Capabilities.Bounding, i)
 		}
 	}
 
 	for i, cap := range g.spec.Process.Capabilities.Effective {
 		if strings.ToUpper(cap) == cp {
-			g.spec.Process.Capabilities.Effective = append(g.spec.Process.Capabilities.Effective[:i], g.spec.Process.Capabilities.Effective[i+1:]...)
+			g.spec.Process.Capabilities.Effective = removeFunc(g.spec.Process.Capabilities.Effective, i)
 		}
 	}
 
 	for i, cap := range g.spec.Process.Capabilities.Inheritable {
 		if strings.ToUpper(cap) == cp {
-			g.spec.Process.Capabilities.Inheritable = append(g.spec.Process.Capabilities.Inheritable[:i], g.spec.Process.Capabilities.Inheritable[i+1:]...)
+			g.spec.Process.Capabilities.Inheritable = removeFunc(g.spec.Process.Capabilities.Inheritable, i)
 		}
 	}
 
 	for i, cap := range g.spec.Process.Capabilities.Permitted {
 		if strings.ToUpper(cap) == cp {
-			g.spec.Process.Capabilities.Permitted = append(g.spec.Process.Capabilities.Permitted[:i], g.spec.Process.Capabilities.Permitted[i+1:]...)
+			g.spec.Process.Capabilities.Permitted = removeFunc(g.spec.Process.Capabilities.Permitted, i)
 		}
 	}
 
 	for i, cap := range g.spec.Process.Capabilities.Ambient {
 		if strings.ToUpper(cap) == cp {
-			g.spec.Process.Capabilities.Ambient = append(g.spec.Process.Capabilities.Ambient[:i], g.spec.Process.Capabilities.Ambient[i+1:]...)
+			g.spec.Process.Capabilities.Ambient = removeFunc(g.spec.Process.Capabilities.Ambient, i)
 		}
 	}
 
