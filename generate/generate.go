@@ -1029,7 +1029,7 @@ func (g *Generator) AddProcessCapability(c string) error {
 // DropProcessCapability drops a process capability from g.spec.Process.Capabilities.
 func (g *Generator) DropProcessCapability(c string) error {
 	cp := strings.ToUpper(c)
-	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
+	if err := validate.CapValid(cp, false); err != nil {
 		return err
 	}
 
