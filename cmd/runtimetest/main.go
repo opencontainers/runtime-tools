@@ -791,7 +791,7 @@ func run(context *cli.Context) error {
 func main() {
 	app := cli.NewApp()
 	app.Name = "runtimetest"
-	app.Version = "0.0.1"
+	app.Version = "0.1.0"
 	app.Usage = "Compare the environment with an OCI configuration"
 	app.Description = "runtimetest compares its current environment with an OCI runtime configuration read from config.json in its current working directory.  The tests are fairly generic and cover most configurations used by the runtime validation suite, but there are corner cases where a container launched by a valid runtime would not satisfy runtimetest."
 	app.Flags = []cli.Flag{
