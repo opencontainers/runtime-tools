@@ -935,7 +935,6 @@ func deviceValid(d rspec.LinuxDevice) bool {
 
 func seccompActionValid(secc rspec.LinuxSeccompAction) bool {
 	switch secc {
-	case "":
 	case rspec.ActKill:
 	case rspec.ActTrap:
 	case rspec.ActErrno:
