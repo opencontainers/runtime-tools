@@ -1050,9 +1050,6 @@ func (g *Generator) AddProcessCapability(c string) error {
 // DropProcessCapability drops a process capability from g.spec.Process.Capabilities.
 func (g *Generator) DropProcessCapability(c string) error {
 	cp := strings.ToUpper(c)
-	if err := validate.CapValid(cp, false); err != nil {
-		return err
-	}
 
 	g.initSpecProcessCapabilities()
 
@@ -1090,6 +1087,10 @@ func (g *Generator) DropProcessCapability(c string) error {
 		if strings.ToUpper(cap) == cp {
 			g.spec.Process.Capabilities.Ambient = removeFunc(g.spec.Process.Capabilities.Ambient, i)
 		}
+	}
+
+	if err := validate.CapValid(cp, false); err != nil {
+		return err
 	}
 
 	return nil
