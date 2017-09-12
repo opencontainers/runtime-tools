@@ -11,28 +11,26 @@ import (
 	"github.com/opencontainers/runtime-tools/generate"
 )
 
-// Runtime represents the basic requirement of a container runtime
-type Runtime struct {
-	RuntimeCommand string
-	BundleDir      string
-	ID             string
+// Runc represents runtime runc
+type Runc struct {
+	Runtime
 }
 
-// NewRuntime create a runtime by command and the bundle directory
-func NewRuntime(runtimeCommand string, bundleDir string) (Runtime, error) {
-	var r Runtime
+// NewRunc creates a Runc runtime
+func NewRunc(runtimeCommand string, bundleDir string) (*Runc, error) {
 	var err error
+	r := &Runc{}
 	r.RuntimeCommand, err = exec.LookPath(runtimeCommand)
 	if err != nil {
-		return Runtime{}, err
+		return r, err
 	}
-
 	r.BundleDir = bundleDir
+
 	return r, err
 }
 
 // SetConfig creates a 'config.json' by the generator
-func (r *Runtime) SetConfig(g *generate.Generator) error {
+func (r *Runc) SetConfig(g *generate.Generator) error {
 	if r.BundleDir == "" {
 		return errors.New("Please set the bundle directory first")
 	}
@@ -40,22 +38,21 @@ func (r *Runtime) SetConfig(g *generate.Generator) error {
 }
 
 // SetID sets the container ID
-func (r *Runtime) SetID(id string) {
+func (r *Runc) SetID(id string) {
 	r.ID = id
 }
 
 // Create a container
-func (r *Runtime) Create() error {
+func (r *Runc) Create() error {
 	var args []string
 	args = append(args, "create")
+	if r.BundleDir != "" {
+		args = append(args, "--bundle="+r.BundleDir)
+	}
 	if r.ID != "" {
 		args = append(args, r.ID)
 	}
 
-	// TODO: following the spec, we need define the bundle, but 'runc' does not..
-	//	if r.BundleDir != "" {
-	//		args = append(args, r.BundleDir)
-	//	}
 	cmd := exec.Command(r.RuntimeCommand, args...)
 	cmd.Dir = r.BundleDir
 	cmd.Stdin = os.Stdin
@@ -65,7 +62,7 @@ func (r *Runtime) Create() error {
 }
 
 // Start a container
-func (r *Runtime) Start() error {
+func (r *Runc) Start() error {
 	var args []string
 	args = append(args, "start")
 	if r.ID != "" {
@@ -80,7 +77,7 @@ func (r *Runtime) Start() error {
 }
 
 // State a container information
-func (r *Runtime) State() (rspecs.State, error) {
+func (r *Runc) State() (rspecs.State, error) {
 	var args []string
 	args = append(args, "state")
 	if r.ID != "" {
@@ -98,7 +95,7 @@ func (r *Runtime) State() (rspecs.State, error) {
 }
 
 // Delete a container
-func (r *Runtime) Delete() error {
+func (r *Runc) Delete() error {
 	var args []string
 	args = append(args, "delete")
 	if r.ID != "" {
@@ -110,7 +107,7 @@ func (r *Runtime) Delete() error {
 }
 
 // Clean deletes the container and removes the bundle file according to the input parameter
-func (r *Runtime) Clean(removeBundle bool) error {
+func (r *Runc) Clean(removeBundle bool) error {
 	err := r.Delete()
 	if err != nil {
 		return err
