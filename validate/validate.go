@@ -693,20 +693,6 @@ func (v *Validator) CheckLinux() (errs error) {
 		errs = multierror.Append(errs, v.CheckSeccomp())
 	}
 
-	switch v.spec.Linux.RootfsPropagation {
-	case "":
-	case "private":
-	case "rprivate":
-	case "slave":
-	case "rslave":
-	case "shared":
-	case "rshared":
-	case "unbindable":
-	case "runbindable":
-	default:
-		errs = multierror.Append(errs, errors.New("rootfsPropagation must be empty or one of \"private|rprivate|slave|rslave|shared|rshared|unbindable|runbindable\""))
-	}
-
 	for _, maskedPath := range v.spec.Linux.MaskedPaths {
 		if !strings.HasPrefix(maskedPath, "/") {
 			errs = multierror.Append(errs, fmt.Errorf("maskedPath %v is not an absolute path", maskedPath))
