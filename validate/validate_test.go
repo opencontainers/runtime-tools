@@ -63,6 +63,40 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux:   &rspec.Linux{},
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					RootfsPropagation: "",
+				},
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					RootfsPropagation: "shared",
+				},
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					RootfsPropagation: "rshared",
+				},
+			},
+			error: "linux.rootfsPropagation: linux.rootfsPropagation must be one of the following: \"private\", \"shared\", \"slave\", \"unbindable\"",
+		},
+		{
+			config: &rspec.Spec{
 				Version: "1.0.0-rc5",
 			},
 			error: "process: process is required",
