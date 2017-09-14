@@ -75,6 +75,9 @@ func TestJSONSchema(t *testing.T) {
 				assert.Equal(t, nil, errs)
 				return
 			}
+			if errs == nil {
+				t.Fatal("failed to raise the expected error")
+			}
 			merr, ok := errs.(*multierror.Error)
 			if !ok {
 				t.Fatalf("non-multierror returned by CheckJSONSchema: %s", errs.Error())
