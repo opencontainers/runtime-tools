@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/assert"
 
@@ -29,6 +30,62 @@ func TestNewValidator(t *testing.T) {
 
 	for _, c := range cases {
 		assert.Equal(t, c.expected, NewValidator(c.val.spec, c.val.bundlePath, c.val.HostSpecific, c.val.platform))
+	}
+}
+
+func TestJSONSchema(t *testing.T) {
+	for _, tt := range []struct {
+		config *rspec.Spec
+		error  string
+	}{
+		{
+			config: &rspec.Spec{},
+			error:  "Version string empty",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.1-rc1",
+			},
+			error: "Could not read schema from HTTP, response status is 404 Not Found",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{},
+			},
+			error: "process.args: Invalid type. Expected: array, given: null",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0-rc5",
+			},
+			error: "process: process is required",
+		},
+	} {
+		t.Run(tt.error, func(t *testing.T) {
+			v := &Validator{spec: tt.config}
+			errs := v.CheckJSONSchema()
+			if tt.error == "" {
+				assert.Equal(t, nil, errs)
+				return
+			}
+			merr, ok := errs.(*multierror.Error)
+			if !ok {
+				t.Fatalf("non-multierror returned by CheckJSONSchema: %s", errs.Error())
+			}
+			for _, err := range merr.Errors {
+				if err.Error() == tt.error {
+					return
+				}
+			}
+			assert.Equal(t, tt.error, errs.Error())
+		})
 	}
 }
 
