@@ -72,8 +72,10 @@ func TestJSONSchema(t *testing.T) {
 			v := &Validator{spec: tt.config}
 			errs := v.CheckJSONSchema()
 			if tt.error == "" {
-				assert.Equal(t, nil, errs)
-				return
+				if errs == nil {
+					return
+				}
+				t.Fatalf("expected no error, but got: %s", errs.Error())
 			}
 			merr, ok := errs.(*multierror.Error)
 			if !ok {
