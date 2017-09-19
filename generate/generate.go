@@ -1089,11 +1089,7 @@ func (g *Generator) DropProcessCapability(c string) error {
 		}
 	}
 
-	if err := validate.CapValid(cp, false); err != nil {
-		return err
-	}
-
-	return nil
+	return validate.CapValid(cp, false)
 }
 
 func mapStrToNamespace(ns string, path string) (rspec.LinuxNamespace, error) {
