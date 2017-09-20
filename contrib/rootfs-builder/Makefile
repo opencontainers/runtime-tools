@@ -14,8 +14,8 @@ rootfs/bin/busybox: downloads/stage3-amd64-current.tar.bz2 rootfs-files
 	sudo touch $@
 
 rootfs/bin/echo: rootfs/bin/busybox
-	sudo sh -c 'for COMMAND in $$($< --list); do \
-		ln -rs $< "rootfs/bin/$${COMMAND}"; \
+	sudo sh -c 'COMMANDS=$$($< --list) || exit 1; for COMMAND in $${COMMANDS}; do \
+		ln -rs $< "rootfs/bin/$${COMMAND}" || exit; \
 	done'
 
 downloads/stage3-amd64-current.tar.bz2: get-stage3.sh
