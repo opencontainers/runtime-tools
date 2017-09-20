@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/mrunalp/fileutils"
@@ -18,13 +19,13 @@ import (
 )
 
 var (
-	runtime = "runc"
+	runtimeCommand = "runc"
 )
 
 func init() {
 	runtimeInEnv := os.Getenv("RUNTIME")
 	if runtimeInEnv != "" {
-		runtime = runtimeInEnv
+		runtimeCommand = runtimeInEnv
 	}
 }
 
@@ -36,7 +37,7 @@ func prepareBundle() (string, error) {
 	}
 
 	// Untar the root fs
-	untarCmd := exec.Command("tar", "-xf", "../rootfs.tar.gz", "-C", bundleDir)
+	untarCmd := exec.Command("tar", "-xf", fmt.Sprintf("../rootfs-%s.tar.gz", runtime.GOARCH), "-C", bundleDir)
 	_, err = untarCmd.CombinedOutput()
 	if err != nil {
 		os.RemoveAll(bundleDir)
@@ -58,7 +59,7 @@ func runtimeInsideValidate(g *generate.Generator) error {
 	if err != nil {
 		return err
 	}
-	r, err := NewRuntime(runtime, bundleDir)
+	r, err := NewRuntime(runtimeCommand, bundleDir)
 	if err != nil {
 		os.RemoveAll(bundleDir)
 		return err
@@ -102,7 +103,7 @@ func TestValidateCreate(t *testing.T) {
 	bundleDir, err := prepareBundle()
 	assert.Nil(t, err)
 
-	r, err := NewRuntime(runtime, bundleDir)
+	r, err := NewRuntime(runtimeCommand, bundleDir)
 	assert.Nil(t, err)
 	defer r.Clean(true)
 
