@@ -17,11 +17,31 @@
 # limitations under the License.
 
 MIRROR="${MIRROR:-http://distfiles.gentoo.org/}"
-BASE_ARCH_URL="${BASE_ARCH_URL:-${MIRROR}releases/amd64/autobuilds/}"
+STAGE3_ARCH="${STAGE3_ARCH:-amd64}"
+
+if test -z "${BASE_ARCH}"
+then
+	case "${STAGE3_ARCH}" in
+		arm*)
+			BASE_ARCH=arm
+			;;
+		i[46]86)
+			BASE_ARCH=x86
+			;;
+		ppc*)
+			BASE_ARCH=ppc
+			;;
+		*)
+			BASE_ARCH="${STAGE3_ARCH}"
+			;;
+	esac
+fi
+
+BASE_ARCH_URL="${BASE_ARCH_URL:-${MIRROR}releases/${BASE_ARCH}/autobuilds/}"
 LATEST=$(wget -O - "${BASE_ARCH_URL}latest-stage3.txt")
-DATE=$(echo "${LATEST}" | sed -n 's|/stage3-amd64-[0-9]*[.]tar[.]bz2.*||p')
+DATE=$(echo "${LATEST}" | sed -n "s|/stage3-${STAGE3_ARCH}-[0-9]*[.]tar[.]bz2.*||p")
 ARCH_URL="${ARCH_URL:-${BASE_ARCH_URL}${DATE}/}"
-STAGE3="${STAGE3:-stage3-amd64-${DATE}.tar.bz2}"
+STAGE3="${STAGE3:-stage3-${STAGE3_ARCH}-${DATE}.tar.bz2}"
 STAGE3_CONTENTS="${STAGE3_CONTENTS:-${STAGE3}.CONTENTS}"
 STAGE3_DIGESTS="${STAGE3_DIGESTS:-${STAGE3}.DIGESTS.asc}"
 
