@@ -424,6 +424,10 @@ func (v *Validator) CheckCapabilities() (errs error) {
 
 // CheckRlimits checks v.spec.Process.Rlimits
 func (v *Validator) CheckRlimits() (errs error) {
+	if v.platform == "windows" {
+		return
+	}
+
 	process := v.spec.Process
 	for index, rlimit := range process.Rlimits {
 		for i := index + 1; i < len(process.Rlimits); i++ {
@@ -870,14 +874,14 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 				return
 			}
 		}
-		errs = multierror.Append(errs, fmt.Errorf("rlimit type %q is invalid", rlimit.Type))
+		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
 	} else if v.platform == "solaris" {
 		for _, val := range posixRlimits {
 			if val == rlimit.Type {
 				return
 			}
 		}
-		errs = multierror.Append(errs, fmt.Errorf("rlimit type %q is invalid", rlimit.Type))
+		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
 	} else {
 		logrus.Warnf("process.rlimits validation not yet implemented for platform %q", v.platform)
 	}

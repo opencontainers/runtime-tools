@@ -188,3 +188,105 @@ func TestCheckSemVer(t *testing.T) {
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), "Fail to check SemVer "+c.val)
 	}
 }
+
+func TestCheckProcess(t *testing.T) {
+	cases := []struct {
+		val      rspec.Spec
+		platform string
+		expected specerror.Code
+	}{
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "/",
+				},
+			},
+			platform: "linux",
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "/",
+					Rlimits: []rspec.POSIXRlimit{
+						{
+							Type: "RLIMIT_NOFILE",
+							Hard: 1024,
+							Soft: 1024,
+						},
+						{
+							Type: "RLIMIT_NPROC",
+							Hard: 512,
+							Soft: 512,
+						},
+					},
+				},
+			},
+			platform: "linux",
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "/",
+					Rlimits: []rspec.POSIXRlimit{
+						{
+							Type: "RLIMIT_NOFILE",
+							Hard: 1024,
+							Soft: 1024,
+						},
+					},
+				},
+			},
+			platform: "solaris",
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "/",
+					Rlimits: []rspec.POSIXRlimit{
+						{
+							Type: "RLIMIT_DOES_NOT_EXIST",
+							Hard: 512,
+							Soft: 512,
+						},
+					},
+				},
+			},
+			platform: "linux",
+			expected: specerror.PosixProcRlimitsTypeValueError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "/",
+					Rlimits: []rspec.POSIXRlimit{
+						{
+							Type: "RLIMIT_NPROC",
+							Hard: 512,
+							Soft: 512,
+						},
+					},
+				},
+			},
+			platform: "solaris",
+			expected: specerror.PosixProcRlimitsTypeValueError,
+		},
+	}
+	for _, c := range cases {
+		v := NewValidator(&c.val, ".", false, c.platform)
+		err := v.CheckProcess()
+		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckProcess: %v %d", err, c.expected))
+	}
+}
