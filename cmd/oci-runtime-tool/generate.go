@@ -82,9 +82,17 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
-	cli.StringSliceFlag{Name: "process-cap-add", Usage: "add Linux capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-drop", Usage: "drop Linux capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-ambient", Usage: "add Linux ambient capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-bounding", Usage: "add Linux bounding capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-effective", Usage: "add Linux effective capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-inheritable", Usage: "add Linux inheritable capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-add-permitted", Usage: "add Linux permitted capabilities"},
 	cli.BoolFlag{Name: "process-cap-drop-all", Usage: "drop all Linux capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-drop-ambient", Usage: "drop Linux ambient capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-drop-bounding", Usage: "drop Linux bounding capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-drop-effective", Usage: "drop Linux effective capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-drop-inheritable", Usage: "drop Linux inheritable capabilities"},
+	cli.StringSliceFlag{Name: "process-cap-drop-permitted", Usage: "drop Linux permitted capabilities"},
 	cli.StringFlag{Name: "process-consolesize", Usage: "specifies the console size in characters (width:height)"},
 	cli.StringFlag{Name: "process-cwd", Value: "/", Usage: "current working directory for the process"},
 	cli.IntFlag{Name: "process-gid", Usage: "gid for the process"},
@@ -265,19 +273,95 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	g.SetupPrivileged(context.Bool("privileged"))
 
-	if context.IsSet("process-cap-add") {
-		addCaps := context.StringSlice("process-cap-add")
+	if context.IsSet("process-cap-add-ambient") {
+		addCaps := context.StringSlice("process-cap-add-ambient")
 		for _, cap := range addCaps {
-			if err := g.AddProcessCapability(cap); err != nil {
+			if err := g.AddProcessCapabilityAmbient(cap); err != nil {
 				return err
 			}
 		}
 	}
 
-	if context.IsSet("process-cap-drop") {
-		dropCaps := context.StringSlice("process-cap-drop")
+	if context.IsSet("process-cap-add-bounding") {
+		addCaps := context.StringSlice("process-cap-add-bounding")
+		for _, cap := range addCaps {
+			if err := g.AddProcessCapabilityBounding(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-add-effective") {
+		addCaps := context.StringSlice("process-cap-add-effective")
+		for _, cap := range addCaps {
+			if err := g.AddProcessCapabilityEffective(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-add-inheritable") {
+		addCaps := context.StringSlice("process-cap-add-inheritable")
+		for _, cap := range addCaps {
+			if err := g.AddProcessCapabilityInheritable(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-add-permitted") {
+		addCaps := context.StringSlice("process-cap-add-permitted")
+		for _, cap := range addCaps {
+			if err := g.AddProcessCapabilityPermitted(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.Bool("process-cap-drop-all") {
+		g.ClearProcessCapabilities()
+	}
+
+	if context.IsSet("process-cap-drop-ambient") {
+		dropCaps := context.StringSlice("process-cap-drop-ambient")
 		for _, cap := range dropCaps {
-			if err := g.DropProcessCapability(cap); err != nil {
+			if err := g.DropProcessCapabilityAmbient(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-drop-bounding") {
+		dropCaps := context.StringSlice("process-cap-drop-bounding")
+		for _, cap := range dropCaps {
+			if err := g.DropProcessCapabilityBounding(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-drop-effective") {
+		dropCaps := context.StringSlice("process-cap-drop-effective")
+		for _, cap := range dropCaps {
+			if err := g.DropProcessCapabilityEffective(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-drop-inheritable") {
+		dropCaps := context.StringSlice("process-cap-drop-inheritable")
+		for _, cap := range dropCaps {
+			if err := g.DropProcessCapabilityInheritable(cap); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-drop-permitted") {
+		dropCaps := context.StringSlice("process-cap-drop-permitted")
+		for _, cap := range dropCaps {
+			if err := g.DropProcessCapabilityPermitted(cap); err != nil {
 				return err
 			}
 		}
@@ -290,10 +374,6 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			return err
 		}
 		g.SetProcessConsoleSize(width, height)
-	}
-
-	if context.Bool("process-cap-drop-all") {
-		g.ClearProcessCapabilities()
 	}
 
 	var uidMaps, gidMaps []string

@@ -298,14 +298,38 @@ read the configuration from `config.json`.
 
   When the operator executes **oci-runtime-tool generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
 
-**--process-cap-add**=[]
-  Add Linux capabilities
+**--process-cap-add-ambient**=[]
+  Add Linux ambient capabilities
 
-**--process-cap-drop**=[]
-  Drop Linux capabilities
+**--process-cap-add-bounding**=[]
+  Add Linux bounding capabilities
+
+**--process-cap-add-effective**=[]
+  Add Linux effective capabilities
+
+**--process-cap-add-inheritable**=[]
+  Add Linux inheritable capabilities
+
+**--process-cap-add-permitted**=[]
+  Add Linux permitted capabilities
 
 **--process-cap-drop-all**true|false
   Drop all Linux capabilities
+
+**--process-cap-drop-ambient**=[]
+  Drop Linux ambient capabilities
+
+**--process-cap-drop-bounding**=[]
+  Drop Linux bounding capabilities
+
+**--process-cap-drop-effective**=[]
+  Drop Linux effective capabilities
+
+**--process-cap-drop-inheritable**=[]
+  Drop Linux inheritable capabilities
+
+**--process-cap-drop-permitted**=[]
+  Drop Linux permitted capabilities
 
 **--process-consolesize**=WIDTH:HEIGHT
   Specifies the console size in characters of the terminal. e.g. --process-consolesize=80:40
