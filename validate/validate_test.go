@@ -119,6 +119,8 @@ func TestCheckRoot(t *testing.T) {
 	}{
 		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: &rspec.Root{}}, "windows", specerror.RootOnHyperV},
 		{rspec.Spec{Windows: &rspec.Windows{HyperV: &rspec.WindowsHyperV{}}, Root: nil}, "windows", specerror.NonError},
+		{rspec.Spec{Windows: &rspec.Windows{}, Root: &rspec.Root{Path: filepath.Join(tmpBundle, "rootfs")}}, "windows", specerror.PathFormatOnWindows},
+		{rspec.Spec{Windows: &rspec.Windows{}, Root: &rspec.Root{Path: "\\\\?\\Volume{ec84d99e-3f02-11e7-ac6c-00155d7682cf}\\"}}, "windows", specerror.NonError},
 		{rspec.Spec{Root: nil}, "linux", specerror.RootOnNonHyperV},
 		{rspec.Spec{Root: &rspec.Root{Path: "maverick-rootfs"}}, "linux", specerror.PathName},
 		{rspec.Spec{Root: &rspec.Root{Path: "rootfs"}}, "linux", specerror.NonError},

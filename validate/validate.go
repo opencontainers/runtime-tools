@@ -178,6 +178,23 @@ func (v *Validator) CheckRoot() (errs error) {
 		return
 	}
 
+	if v.platform == "windows" {
+		matched, err := regexp.MatchString(`\\\\[?]\\Volume[{][a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}[}]\\`, v.spec.Root.Path)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+		} else if !matched {
+			errs = multierror.Append(errs,
+				specerror.NewError(specerror.PathFormatOnWindows, fmt.Errorf("root.path is %q, but it MUST be a volume GUID path when target platform is windows", v.spec.Root.Path), rspec.Version))
+		}
+
+		if v.spec.Root.Readonly {
+			errs = multierror.Append(errs,
+				specerror.NewError(specerror.ReadonlyOnWindows, fmt.Errorf("root.readonly field MUST be omitted or false when target platform is windows"), rspec.Version))
+		}
+
+		return
+	}
+
 	absBundlePath, err := filepath.Abs(v.bundlePath)
 	if err != nil {
 		errs = multierror.Append(errs, fmt.Errorf("unable to convert %q to an absolute path", v.bundlePath))
@@ -216,13 +233,6 @@ func (v *Validator) CheckRoot() (errs error) {
 	if absRootPath == string(filepath.Separator) || rootParent != absBundlePath {
 		errs = multierror.Append(errs,
 			specerror.NewError(specerror.ArtifactsInSingleDir, fmt.Errorf("root.path is %q, but it MUST be a child of %q", v.spec.Root.Path, absBundlePath), rspec.Version))
-	}
-
-	if v.platform == "windows" {
-		if v.spec.Root.Readonly {
-			errs = multierror.Append(errs,
-				specerror.NewError(specerror.ReadonlyOnWindows, fmt.Errorf("root.readonly field MUST be omitted or false when target platform is windows"), rspec.Version))
-		}
 	}
 
 	return
