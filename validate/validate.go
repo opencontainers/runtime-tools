@@ -757,7 +757,7 @@ func (v *Validator) CheckLinuxResources() (errs error) {
 	}
 	for index := 0; index < len(r.Devices); index++ {
 		switch r.Devices[index].Type {
-		case "a", "b", "c":
+		case "a", "b", "c", "":
 		default:
 			errs = multierror.Append(errs, fmt.Errorf("type of devices %s is invalid", r.Devices[index].Type))
 		}
