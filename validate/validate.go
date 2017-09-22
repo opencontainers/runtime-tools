@@ -30,7 +30,8 @@ import (
 const specConfig = "config.json"
 
 var (
-	defaultRlimits = []string{
+	// http://pubs.opengroup.org/onlinepubs/9699919799/functions/getrlimit.html
+	posixRlimits = []string{
 		"RLIMIT_AS",
 		"RLIMIT_CORE",
 		"RLIMIT_CPU",
@@ -40,24 +41,17 @@ var (
 		"RLIMIT_STACK",
 	}
 
-	defaultLinuxRlimits = []string{
-		"RLIMIT_AS",
-		"RLIMIT_CORE",
-		"RLIMIT_CPU",
-		"RLIMIT_DATA",
-		"RLIMIT_FSIZE",
-		"RLIMIT_LOCKS",
+	// https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git/tree/man2/getrlimit.2?h=man-pages-4.13
+	linuxRlimits = append(posixRlimits, []string{
 		"RLIMIT_MEMLOCK",
 		"RLIMIT_MSGQUEUE",
 		"RLIMIT_NICE",
-		"RLIMIT_NOFILE",
 		"RLIMIT_NPROC",
 		"RLIMIT_RSS",
 		"RLIMIT_RTPRIO",
 		"RLIMIT_RTTIME",
 		"RLIMIT_SIGPENDING",
-		"RLIMIT_STACK",
-	}
+	}...)
 
 	configSchemaTemplate = "https://raw.githubusercontent.com/opencontainers/runtime-spec/v%s/schema/config-schema.json"
 )
@@ -879,14 +873,14 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 	}
 
 	if v.platform == "linux" {
-		for _, val := range defaultLinuxRlimits {
+		for _, val := range linuxRlimits {
 			if val == rlimit.Type {
 				return
 			}
 		}
 		errs = multierror.Append(errs, fmt.Errorf("rlimit type %q is invalid", rlimit.Type))
 	} else if v.platform == "solaris" {
-		for _, val := range defaultRlimits {
+		for _, val := range posixRlimits {
 			if val == rlimit.Type {
 				return
 			}
