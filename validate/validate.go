@@ -979,7 +979,7 @@ func deviceValid(d rspec.LinuxDevice) bool {
 			return false
 		}
 	case "p":
-		if d.Major > 0 || d.Minor > 0 {
+		if d.Major != 0 || d.Minor != 0 {
 			return false
 		}
 	default:
