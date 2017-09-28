@@ -410,7 +410,7 @@ func (v *Validator) CheckCapabilities() (errs error) {
 			if effective && !permitted {
 				errs = multierror.Append(errs, fmt.Errorf("effective capability %q is not allowed, as it's not permitted", capability))
 			}
-			if ambient && !(effective && inheritable) {
+			if ambient && !(permitted && inheritable) {
 				errs = multierror.Append(errs, fmt.Errorf("ambient capability %q is not allowed, as it's not permitted and inheribate", capability))
 			}
 		}
