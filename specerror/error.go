@@ -69,6 +69,16 @@ type Error struct {
 	Code Code
 }
 
+// LevelErrors represents Errors filtered into fatal and warnings.
+type LevelErrors struct {
+	// Warnings holds Errors that were below a compliance-level threshold.
+	Warnings []*Error
+
+	// Error holds errors that were at or above a compliance-level
+	// threshold, as well as errors that are not Errors.
+	Error *multierror.Error
+}
+
 var (
 	containerFormatRef = func(version string) (reference string, err error) {
 		return fmt.Sprintf(referenceTemplate, version, "bundle.md#container-format"), nil
@@ -167,4 +177,24 @@ func FindError(err error, code Code) Code {
 		}
 	}
 	return NonRFCError
+}
+
+// SplitLevel removes RFC 2119 errors with a level less than 'level'
+// from the source error.  If the source error is not a multierror, it
+// is returned unchanged.
+func SplitLevel(errIn error, level rfc2119.Level) (levelErrors LevelErrors, errOut error) {
+	merr, ok := errIn.(*multierror.Error)
+	if !ok {
+		return levelErrors, errIn
+	}
+	for _, err := range merr.Errors {
+		e, ok := err.(*Error)
+		if ok && e.Err.Level < level {
+			fmt.Println(e)
+			levelErrors.Warnings = append(levelErrors.Warnings, e)
+			continue
+		}
+		levelErrors.Error = multierror.Append(levelErrors.Error, err)
+	}
+	return levelErrors, nil
 }

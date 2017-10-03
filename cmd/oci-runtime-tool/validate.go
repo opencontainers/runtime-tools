@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/hashicorp/go-multierror"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validate"
@@ -37,20 +36,14 @@ var bundleValidateCommand = cli.Command{
 		}
 
 		if err := v.CheckAll(); err != nil {
-			merr, ok := err.(*multierror.Error)
-			if !ok {
+			levelErrors, err := specerror.SplitLevel(err, complianceLevel)
+			if err != nil {
 				return err
 			}
-			var validationErrors error
-			for _, err = range merr.Errors {
-				e, ok := err.(*specerror.Error)
-				if ok && e.Err.Level < complianceLevel {
-					logrus.Warn(e)
-					continue
-				}
-				validationErrors = multierror.Append(validationErrors, err)
+			for _, e := range levelErrors.Warnings {
+				logrus.Warn(e)
 			}
-			return validationErrors
+			return levelErrors.Error
 		}
 		fmt.Println("Bundle validation succeeded.")
 		return nil
