@@ -22,6 +22,11 @@ func main() {
 	}
 	app.Usage = "OCI (Open Container Initiative) runtime tools"
 	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "compliance-level",
+			Value: "must",
+			Usage: "compliance level (may, should, or must).",
+		},
 		cli.BoolFlag{
 			Name:  "host-specific",
 			Usage: "generate host-specific configs or do host-specific validations",
