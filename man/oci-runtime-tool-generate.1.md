@@ -202,7 +202,7 @@ read the configuration from `config.json`.
   Set maximum number of PIDs.
 
 **--linux-readonly-paths**=[]
-  Specifies paths readonly inside container. e.g. --readonly-paths=/proc/sys
+  Specifies paths readonly inside container. e.g. --linux-readonly-paths=/proc/sys
   This option can be specified multiple times.
 
 **--linux-realtime-period**=REALTIMEPERIOD
@@ -215,7 +215,7 @@ read the configuration from `config.json`.
   Mount propagation for root filesystem.
   Values are "shared, rshared, private, rprivate, slave, rslave"
 
-**--linux-eccomp-allow**=SYSCALL
+**--linux-seccomp-allow**=SYSCALL
   Specifies syscalls to be added to the ALLOW list.
   See --linux-seccomp-syscalls for setting limits on arguments.
 
@@ -350,7 +350,7 @@ read the configuration from `config.json`.
   containers with this flag.
 
 **--process-rlimits-add**=[]
-  Specifies resource limits, format is RLIMIT:HARD:SOFT. e.g. --rlimits-add=RLIMIT_NOFILE:1024:1024
+  Specifies resource limits, format is RLIMIT:HARD:SOFT. e.g. --process-rlimits-add=RLIMIT_NOFILE:1024:1024
   This option can be specified multiple times. When same RLIMIT specified over once, the last one make sense.
 
 **--process-rlimits-remove**=[]
