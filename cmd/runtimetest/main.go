@@ -105,6 +105,10 @@ func validateGeneralProcess(spec *rspec.Spec) error {
 }
 
 func validateLinuxProcess(spec *rspec.Spec) error {
+	if spec.Process == nil {
+		return nil
+	}
+
 	validateGeneralProcess(spec)
 
 	uid := os.Getuid()
@@ -162,6 +166,10 @@ func validateLinuxProcess(spec *rspec.Spec) error {
 }
 
 func validateCapabilities(spec *rspec.Spec) error {
+	if spec.Process == nil || spec.Process.Capabilities == nil {
+		return nil
+	}
+
 	last := capability.CAP_LAST_CAP
 	// workaround for RHEL6 which has no /proc/sys/kernel/cap_last_cap
 	if last == capability.Cap(63) {
@@ -178,22 +186,20 @@ func validateCapabilities(spec *rspec.Spec) error {
 	expectedCaps3 := make(map[string]bool)
 	expectedCaps4 := make(map[string]bool)
 	expectedCaps5 := make(map[string]bool)
-	if spec.Process.Capabilities != nil {
-		for _, ec := range spec.Process.Capabilities.Bounding {
-			expectedCaps1[ec] = true
-		}
-		for _, ec := range spec.Process.Capabilities.Effective {
-			expectedCaps2[ec] = true
-		}
-		for _, ec := range spec.Process.Capabilities.Inheritable {
-			expectedCaps3[ec] = true
-		}
-		for _, ec := range spec.Process.Capabilities.Permitted {
-			expectedCaps4[ec] = true
-		}
-		for _, ec := range spec.Process.Capabilities.Ambient {
-			expectedCaps5[ec] = true
-		}
+	for _, ec := range spec.Process.Capabilities.Bounding {
+		expectedCaps1[ec] = true
+	}
+	for _, ec := range spec.Process.Capabilities.Effective {
+		expectedCaps2[ec] = true
+	}
+	for _, ec := range spec.Process.Capabilities.Inheritable {
+		expectedCaps3[ec] = true
+	}
+	for _, ec := range spec.Process.Capabilities.Permitted {
+		expectedCaps4[ec] = true
+	}
+	for _, ec := range spec.Process.Capabilities.Ambient {
+		expectedCaps5[ec] = true
 	}
 
 	for _, cap := range capability.List() {
@@ -259,6 +265,10 @@ func validateHostname(spec *rspec.Spec) error {
 }
 
 func validateRlimits(spec *rspec.Spec) error {
+	if spec.Process == nil {
+		return nil
+	}
+
 	for _, r := range spec.Process.Rlimits {
 		rl, err := strToRlimit(r.Type)
 		if err != nil {
@@ -311,6 +321,10 @@ func testWriteAccess(path string) error {
 }
 
 func validateRootFS(spec *rspec.Spec) error {
+	if spec.Root == nil {
+		return nil
+	}
+
 	if spec.Root.Readonly {
 		err := testWriteAccess("/")
 		if err == nil {
@@ -422,6 +436,10 @@ func validateDefaultSymlinks(spec *rspec.Spec) error {
 }
 
 func validateDefaultDevices(spec *rspec.Spec) error {
+	if spec.Process == nil {
+		return nil
+	}
+
 	if spec.Process.Terminal {
 		defaultDevices = append(defaultDevices, "/dev/console")
 	}
