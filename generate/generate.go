@@ -398,7 +398,7 @@ func (g *Generator) SetProcessArgs(args []string) {
 
 // ClearProcessEnv clears g.spec.Process.Env.
 func (g *Generator) ClearProcessEnv() {
-	if g.spec == nil {
+	if g.spec == nil || g.spec.Process == nil {
 		return
 	}
 	g.spec.Process.Env = []string{}
@@ -440,7 +440,7 @@ func (g *Generator) AddProcessRlimits(rType string, rHard uint64, rSoft uint64) 
 
 // RemoveProcessRlimits removes a rlimit from g.spec.Process.Rlimits.
 func (g *Generator) RemoveProcessRlimits(rType string) error {
-	if g.spec == nil {
+	if g.spec == nil || g.spec.Process == nil {
 		return nil
 	}
 	for i, rlimit := range g.spec.Process.Rlimits {
@@ -454,7 +454,7 @@ func (g *Generator) RemoveProcessRlimits(rType string) error {
 
 // ClearProcessRlimits clear g.spec.Process.Rlimits.
 func (g *Generator) ClearProcessRlimits() {
-	if g.spec == nil {
+	if g.spec == nil || g.spec.Process == nil {
 		return
 	}
 	g.spec.Process.Rlimits = []rspec.POSIXRlimit{}
@@ -462,7 +462,7 @@ func (g *Generator) ClearProcessRlimits() {
 
 // ClearProcessAdditionalGids clear g.spec.Process.AdditionalGids.
 func (g *Generator) ClearProcessAdditionalGids() {
-	if g.spec == nil {
+	if g.spec == nil || g.spec.Process == nil {
 		return
 	}
 	g.spec.Process.User.AdditionalGids = []uint32{}
@@ -737,10 +737,7 @@ func (g *Generator) SetLinuxRootPropagation(rp string) error {
 
 // ClearPreStartHooks clear g.spec.Hooks.Prestart.
 func (g *Generator) ClearPreStartHooks() {
-	if g.spec == nil {
-		return
-	}
-	if g.spec.Hooks == nil {
+	if g.spec == nil || g.spec.Hooks == nil {
 		return
 	}
 	g.spec.Hooks.Prestart = []rspec.Hook{}
@@ -787,10 +784,7 @@ func (g *Generator) AddPreStartHookTimeout(path string, timeout int) {
 
 // ClearPostStopHooks clear g.spec.Hooks.Poststop.
 func (g *Generator) ClearPostStopHooks() {
-	if g.spec == nil {
-		return
-	}
-	if g.spec.Hooks == nil {
+	if g.spec == nil || g.spec.Hooks == nil {
 		return
 	}
 	g.spec.Hooks.Poststop = []rspec.Hook{}
@@ -837,10 +831,7 @@ func (g *Generator) AddPostStopHookTimeout(path string, timeout int) {
 
 // ClearPostStartHooks clear g.spec.Hooks.Poststart.
 func (g *Generator) ClearPostStartHooks() {
-	if g.spec == nil {
-		return
-	}
-	if g.spec.Hooks == nil {
+	if g.spec == nil || g.spec.Hooks == nil {
 		return
 	}
 	g.spec.Hooks.Poststart = []rspec.Hook{}
@@ -976,7 +967,7 @@ func (g *Generator) SetupPrivileged(privileged bool) {
 
 // ClearProcessCapabilities clear g.spec.Process.Capabilities.
 func (g *Generator) ClearProcessCapabilities() {
-	if g.spec == nil {
+	if g.spec == nil || g.spec.Process == nil || g.spec.Process.Capabilities == nil {
 		return
 	}
 	g.spec.Process.Capabilities.Bounding = []string{}
