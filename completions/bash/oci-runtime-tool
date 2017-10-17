@@ -403,11 +403,6 @@ _oci-runtime-tool_generate() {
 	local all_options="$options_with_args $boolean_options"
 
 	case "$prev" in
-		--process-cap-add|--process-cap-drop)
-			__oci-runtime-tool_complete_capabilities
-			return
-			;;
-
 		--env|-e)
 			COMPREPLY=( $( compgen -e -- "$cur" ) )
 			__oci-runtime-tool_nospace
@@ -420,14 +415,24 @@ _oci-runtime-tool_generate() {
 			return
 			;;
 
-		--gid)
-			_gids
+		--hooks-poststart|--hooks-poststop|--hooks-prestart)
+			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_hooks )" -- "$cur" ) )
+			__oci-runtime-tool_nospace
 			return
 			;;
 
-		--groups)
-			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_groups )" -- "$cur" ) )
-			__oci-runtime-tool_nospace
+		--linux-rootfs-propagation)
+			__oci-runtime-tool_complete_propagations
+			return
+			;;
+
+		--linux-seccomp-arch)
+			__oci-runtime-tool_complete_seccomp_arches
+			return
+			;;
+
+		--linux-seccomp-default)
+			__oci-runtime-tool_complete_seccomp_actions
 			return
 			;;
 
@@ -436,14 +441,24 @@ _oci-runtime-tool_generate() {
 			return
 			;;
 
-		--poststart|--poststop|--prestart)
-			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_hooks )" -- "$cur" ) )
+		--process-cap-add-ambient|--process-cap-add-bounding|--process-cap-add-effective|--process-cap-add-inheritable|--process-cap-add-permitted|--process-cap-drop-ambient|--process-cap-drop-bounding|--process-cap-drop-effective|--process-cap-drop-inheritable|--process-cap-drop-permitted)
+			__oci-runtime-tool_complete_capabilities
+			return
+			;;
+
+		--process-gid)
+			_gids
+			return
+			;;
+
+		--process-groups)
+			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_groups )" -- "$cur" ) )
 			__oci-runtime-tool_nospace
 			return
 			;;
 
-		--root-propagation)
-			__oci-runtime-tool_complete_propagations
+		--process-uid)
+			_uids
 			return
 			;;
 
@@ -461,21 +476,6 @@ _oci-runtime-tool_generate() {
 					__oci-runtime-tool_nospace
 					;;
 			esac
-			return
-			;;
-
-		--seccomp-arch)
-			__oci-runtime-tool_complete_seccomp_arches
-			return
-			;;
-
-		--seccomp-default)
-			__oci-runtime-tool_complete_seccomp_actions
-			return
-			;;
-
-		--uid)
-			_uids
 			return
 			;;
 	esac
