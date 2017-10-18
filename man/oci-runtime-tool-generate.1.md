@@ -121,6 +121,17 @@ read the configuration from `config.json`.
 **--linux-device-remove-all**=true|false
   Remove all devices for linux inside the container. The default is *false*.
 
+**--linux-device-cgroup-add**=allow|deny[,type=TYPE][,major=MAJOR][,minor=MINOR][,access=ACCESS]
+  Add a device control rule.
+  allow|deny: whether the entry is allowed or denied.
+  TYPE: the device type. The value could be one of 'a' (all), 'b' (block), 'c' (character).
+  MAJOR/MINOR: the major/minor id of device.
+  ACCESS: cgroup permissions for device. A composition of r (read), w (write), and m (mknod).
+
+**--linux-device-cgroup-remove**=allow|deny[,type=TYPE][,major=MAJOR][,minor=MINOR][,access=ACCESS]
+  Remove a device control rule.
+  The arguments is same as *--linux-device-cgroup-add*.
+  
 **--linux-disable-oom-kill**=true|false
   Whether to disable OOM Killer for the container or not.
 

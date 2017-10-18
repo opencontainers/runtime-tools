@@ -1279,6 +1279,39 @@ func (g *Generator) ClearLinuxDevices() {
 	g.spec.Linux.Devices = []rspec.LinuxDevice{}
 }
 
+// AddLinuxResourcesDevice - add a device into g.spec.Linux.Resources.Devices
+func (g *Generator) AddLinuxResourcesDevice(allow bool, devType string, major, minor *int64, access string) {
+	g.initSpecLinuxResources()
+
+	device := rspec.LinuxDeviceCgroup{
+		Allow:  allow,
+		Type:   devType,
+		Access: access,
+		Major:  major,
+		Minor:  minor,
+	}
+	g.spec.Linux.Resources.Devices = append(g.spec.Linux.Resources.Devices, device)
+}
+
+// RemoveLinuxResourcesDevice - remove a device from g.spec.Linux.Resources.Devices
+func (g *Generator) RemoveLinuxResourcesDevice(allow bool, devType string, major, minor *int64, access string) {
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil {
+		return
+	}
+	for i, device := range g.spec.Linux.Resources.Devices {
+		if device.Allow == allow &&
+			(devType == device.Type || (devType != "" && device.Type != "" && devType == device.Type)) &&
+			(access == device.Access || (access != "" && device.Access != "" && access == device.Access)) &&
+			(major == device.Major || (major != nil && device.Major != nil && *major == *device.Major)) &&
+			(minor == device.Minor || (minor != nil && device.Minor != nil && *minor == *device.Minor)) {
+
+			g.spec.Linux.Resources.Devices = append(g.spec.Linux.Resources.Devices[:i], g.spec.Linux.Resources.Devices[i+1:]...)
+			return
+		}
+	}
+	return
+}
+
 // strPtr returns the pointer pointing to the string s.
 func strPtr(s string) *string { return &s }
 

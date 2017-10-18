@@ -40,6 +40,8 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "linux-device-add", Usage: "add a device which must be made available in the container"},
 	cli.StringSliceFlag{Name: "linux-device-remove", Usage: "remove a device which must be made available in the container"},
 	cli.BoolFlag{Name: "linux-device-remove-all", Usage: "remove all devices which must be made available in the container"},
+	cli.StringSliceFlag{Name: "linux-device-cgroup-add", Usage: "add a device access rule"},
+	cli.StringSliceFlag{Name: "linux-device-cgroup-remove", Usage: "remove a device access rule"},
 	cli.BoolFlag{Name: "linux-disable-oom-kill", Usage: "disable OOM Killer"},
 	cli.StringSliceFlag{Name: "linux-gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "linux-hugepage-limits-add", Usage: "add hugepage resource limits"},
@@ -246,6 +248,28 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		paths := context.StringSlice("linux-masked-paths")
 		for _, path := range paths {
 			g.AddLinuxMaskedPaths(path)
+		}
+	}
+
+	if context.IsSet("linux-device-cgroup-add") {
+		devices := context.StringSlice("linux-device-cgroup-add")
+		for _, device := range devices {
+			dev, err := parseLinuxResourcesDeviceAccess(device, g)
+			if err != nil {
+				return err
+			}
+			g.AddLinuxResourcesDevice(dev.Allow, dev.Type, dev.Major, dev.Minor, dev.Access)
+		}
+	}
+
+	if context.IsSet("linux-device-cgroup-remove") {
+		devices := context.StringSlice("linux-device-cgroup-remove")
+		for _, device := range devices {
+			dev, err := parseLinuxResourcesDeviceAccess(device, g)
+			if err != nil {
+				return err
+			}
+			g.RemoveLinuxResourcesDevice(dev.Allow, dev.Type, dev.Major, dev.Minor, dev.Access)
 		}
 	}
 
@@ -984,6 +1008,82 @@ func parseDevice(device string, g *generate.Generator) (rspec.LinuxDevice, error
 	}
 
 	return dev, nil
+}
+
+var cgroupDeviceType = map[string]bool{
+	"a": true, // all
+	"b": true, // block device
+	"c": true, // character device
+}
+var cgroupDeviceAccess = map[string]bool{
+	"r": true, //read
+	"w": true, //write
+	"m": true, //mknod
+}
+
+// parseLinuxResourcesDeviceAccess parses the raw string passed with the --device-access-add flag
+func parseLinuxResourcesDeviceAccess(device string, g *generate.Generator) (rspec.LinuxDeviceCgroup, error) {
+	var allow bool
+	var devType, access string
+	var major, minor *int64
+
+	argsParts := strings.Split(device, ",")
+
+	switch argsParts[0] {
+	case "allow":
+		allow = true
+	case "deny":
+		allow = false
+	default:
+		return rspec.LinuxDeviceCgroup{},
+			fmt.Errorf("Only 'allow' and 'deny' are allowed in the first field of device-access-add: %s", device)
+	}
+
+	for _, s := range argsParts[1:] {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			continue
+		}
+		parts := strings.SplitN(s, "=", 2)
+		if len(parts) != 2 {
+			return rspec.LinuxDeviceCgroup{}, fmt.Errorf("Incomplete device-access-add arguments: %s", s)
+		}
+		name, value := parts[0], parts[1]
+
+		switch name {
+		case "type":
+			if !cgroupDeviceType[value] {
+				return rspec.LinuxDeviceCgroup{}, fmt.Errorf("Invalid device type in device-access-add: %s", value)
+			}
+			devType = value
+		case "major":
+			i, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return rspec.LinuxDeviceCgroup{}, err
+			}
+			major = &i
+		case "minor":
+			i, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return rspec.LinuxDeviceCgroup{}, err
+			}
+			minor = &i
+		case "access":
+			for _, c := range strings.Split(value, "") {
+				if !cgroupDeviceAccess[c] {
+					return rspec.LinuxDeviceCgroup{}, fmt.Errorf("Invalid device access in device-access-add: %s", c)
+				}
+			}
+			access = value
+		}
+	}
+	return rspec.LinuxDeviceCgroup{
+		Allow:  allow,
+		Type:   devType,
+		Major:  major,
+		Minor:  minor,
+		Access: access,
+	}, nil
 }
 
 func addSeccomp(context *cli.Context, g *generate.Generator) error {
