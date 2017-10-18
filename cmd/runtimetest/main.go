@@ -328,7 +328,7 @@ func validateRootFS(spec *rspec.Spec) error {
 	if spec.Root.Readonly {
 		err := testWriteAccess("/")
 		if err == nil {
-			return specerror.NewError(specerror.ReadonlyFilesystem, fmt.Errorf("rootfs must be readonly"), rspec.Version)
+			return specerror.NewError(specerror.RootReadonlyImplement, fmt.Errorf("rootfs must be readonly"), rspec.Version)
 		}
 	}
 
