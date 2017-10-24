@@ -41,7 +41,7 @@ func New() Generator {
 	spec := rspec.Spec{
 		Version: rspec.Version,
 		Root: &rspec.Root{
-			Path:     "",
+			Path:     "rootfs",
 			Readonly: false,
 		},
 		Process: &rspec.Process{
