@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
@@ -12,7 +13,7 @@ import (
 
 var bundleValidateFlags = []cli.Flag{
 	cli.StringFlag{Name: "path", Value: ".", Usage: "path to a bundle"},
-	cli.StringFlag{Name: "platform", Value: "linux", Usage: "platform of the target bundle (linux, windows, solaris)"},
+	cli.StringFlag{Name: "platform", Value: runtime.GOOS, Usage: "platform of the target bundle (linux, windows, solaris)"},
 }
 
 var bundleValidateCommand = cli.Command{
