@@ -46,6 +46,8 @@ const (
 	PosixProcRlimitsTypeGeneError = "The runtime MUST [generate an error](runtime.md#errors) for any values which cannot be mapped to a relevant kernel interface."
 	// PosixProcRlimitsTypeGet represents "For each entry in `rlimits`, a [`getrlimit(3)`][getrlimit.3] on `type` MUST succeed."
 	PosixProcRlimitsTypeGet = "For each entry in `rlimits`, a [`getrlimit(3)`][getrlimit.3] on `type` MUST succeed."
+	// PosixProcRlimitsTypeValueError represents "valid values are defined in the ... man page"
+	PosixProcRlimitsTypeValueError = "valid values are defined in the ... man page"
 	// PosixProcRlimitsSoftMatchCur represents "`rlim.rlim_cur` MUST match the configured value."
 	PosixProcRlimitsSoftMatchCur = "`rlim.rlim_cur` MUST match the configured value."
 	// PosixProcRlimitsHardMatchMax represents "`rlim.rlim_max` MUST match the configured value."
@@ -159,6 +161,7 @@ func init() {
 	register(ProcArgsOneEntryRequired, rfc2119.Required, processRef)
 	register(PosixProcRlimitsTypeGeneError, rfc2119.Must, posixProcessRef)
 	register(PosixProcRlimitsTypeGet, rfc2119.Must, posixProcessRef)
+	register(PosixProcRlimitsTypeValueError, rfc2119.Should, posixProcessRef)
 	register(PosixProcRlimitsSoftMatchCur, rfc2119.Must, posixProcessRef)
 	register(PosixProcRlimitsHardMatchMax, rfc2119.Must, posixProcessRef)
 	register(PosixProcRlimitsErrorOnDup, rfc2119.Must, posixProcessRef)
