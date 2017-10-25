@@ -42,8 +42,8 @@ const (
 	ProcCwdAbs = "cwd (string, REQUIRED) is the working directory that will be set for the executable. This value MUST be an absolute path."
 	// ProcArgsOneEntryRequired represents "This specification extends the IEEE standard in that at least one entry is REQUIRED, and that entry is used with the same semantics as `execvp`'s *file*."
 	ProcArgsOneEntryRequired = "This specification extends the IEEE standard in that at least one entry is REQUIRED, and that entry is used with the same semantics as `execvp`'s *file*."
-	// PosixProcRlimitsTypeGeneError represents "The runtime MUST generate an error for any values which cannot be mapped to a relevant kernel interface."
-	PosixProcRlimitsTypeGeneError = "The runtime MUST generate an error for any values which cannot be mapped to a relevant kernel interface."
+	// PosixProcRlimitsTypeGenError represents "The runtime MUST generate an error for any values which cannot be mapped to a relevant kernel interface."
+	PosixProcRlimitsTypeGenError = "The runtime MUST generate an error for any values which cannot be mapped to a relevant kernel interface."
 	// PosixProcRlimitsTypeGet represents "For each entry in `rlimits`, a `getrlimit(3)` on `type` MUST succeed."
 	PosixProcRlimitsTypeGet = "For each entry in `rlimits`, a `getrlimit(3)` on `type` MUST succeed."
 	// PosixProcRlimitsTypeValueError represents "valid values are defined in the ... man page"
@@ -159,7 +159,7 @@ func init() {
 	register(ProcConsoleSizeIgnore, rfc2119.Must, processRef)
 	register(ProcCwdAbs, rfc2119.Must, processRef)
 	register(ProcArgsOneEntryRequired, rfc2119.Required, processRef)
-	register(PosixProcRlimitsTypeGeneError, rfc2119.Must, posixProcessRef)
+	register(PosixProcRlimitsTypeGenError, rfc2119.Must, posixProcessRef)
 	register(PosixProcRlimitsTypeGet, rfc2119.Must, posixProcessRef)
 	register(PosixProcRlimitsTypeValueError, rfc2119.Should, posixProcessRef)
 	register(PosixProcRlimitsSoftMatchCur, rfc2119.Must, posixProcessRef)
