@@ -40,7 +40,7 @@ func TestJSONSchema(t *testing.T) {
 	}{
 		{
 			config: &rspec.Spec{},
-			error:  "Version string empty",
+			error:  "1 error occurred:\n\n* Version string empty\nRefer to: https://github.com/opencontainers/runtime-spec/blob/v1.0.0/config.md#specification-version",
 		},
 		{
 			config: &rspec.Spec{

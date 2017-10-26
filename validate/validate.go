@@ -130,7 +130,7 @@ func (v *Validator) CheckAll() error {
 func JSONSchemaURL(version string) (url string, err error) {
 	ver, err := semver.Parse(version)
 	if err != nil {
-		return "", err
+		return "", specerror.NewError(specerror.SpecVersionInSemVer, err, rspec.Version)
 	}
 	configRenamedToConfigSchemaVersion, err := semver.Parse("1.0.0-rc2") // config.json became config-schema.json in 1.0.0-rc2
 	if ver.Compare(configRenamedToConfigSchemaVersion) == -1 {
@@ -276,7 +276,12 @@ func (v *Validator) CheckHooks() (errs error) {
 func (v *Validator) checkEventHooks(hookType string, hooks []rspec.Hook, hostSpecific bool) (errs error) {
 	for i, hook := range hooks {
 		if !osFilepath.IsAbs(v.platform, hook.Path) {
-			errs = multierror.Append(errs, fmt.Errorf("hooks.%s[%d].path %v: is not absolute path", hookType, i, hook.Path))
+			errs = multierror.Append(errs,
+				specerror.NewError(
+					specerror.PosixHooksPathAbs,
+					fmt.Errorf("hooks.%s[%d].path %v: is not absolute path",
+						hookType, i, hook.Path),
+					rspec.Version))
 		}
 
 		if hostSpecific {
@@ -309,7 +314,11 @@ func (v *Validator) CheckProcess() (errs error) {
 
 	process := v.spec.Process
 	if !osFilepath.IsAbs(v.platform, process.Cwd) {
-		errs = multierror.Append(errs, fmt.Errorf("cwd %q is not an absolute path", process.Cwd))
+		errs = multierror.Append(errs,
+			specerror.NewError(
+				specerror.ProcCwdAbs,
+				fmt.Errorf("cwd %q is not an absolute path", process.Cwd),
+				rspec.Version))
 	}
 
 	for _, env := range process.Env {
@@ -319,7 +328,11 @@ func (v *Validator) CheckProcess() (errs error) {
 	}
 
 	if len(process.Args) == 0 {
-		errs = multierror.Append(errs, fmt.Errorf("args must not be empty"))
+		errs = multierror.Append(errs,
+			specerror.NewError(
+				specerror.ProcArgsOneEntryRequired,
+				fmt.Errorf("args must not be empty"),
+				rspec.Version))
 	} else {
 		if filepath.IsAbs(process.Args[0]) {
 			var rootfsPath string
@@ -432,7 +445,12 @@ func (v *Validator) CheckRlimits() (errs error) {
 	for index, rlimit := range process.Rlimits {
 		for i := index + 1; i < len(process.Rlimits); i++ {
 			if process.Rlimits[index].Type == process.Rlimits[i].Type {
-				errs = multierror.Append(errs, fmt.Errorf("rlimit can not contain the same type %q", process.Rlimits[index].Type))
+				errs = multierror.Append(errs,
+					specerror.NewError(
+						specerror.PosixProcRlimitsErrorOnDup,
+						fmt.Errorf("rlimit can not contain the same type %q",
+							process.Rlimits[index].Type),
+						rspec.Version))
 			}
 		}
 		errs = multierror.Append(errs, v.rlimitValid(rlimit))
@@ -497,7 +515,13 @@ func (v *Validator) CheckMounts() (errs error) {
 			errs = multierror.Append(errs, fmt.Errorf("unsupported mount type %q", mountA.Type))
 		}
 		if !osFilepath.IsAbs(v.platform, mountA.Destination) {
-			errs = multierror.Append(errs, fmt.Errorf("mounts[%d].destination %q is not absolute", i, mountA.Destination))
+			errs = multierror.Append(errs,
+				specerror.NewError(
+					specerror.MountsDestAbs,
+					fmt.Errorf("mounts[%d].destination %q is not absolute",
+						i,
+						mountA.Destination),
+					rspec.Version))
 		}
 		for j, mountB := range v.spec.Mounts {
 			if i == j {
@@ -511,7 +535,12 @@ func (v *Validator) CheckMounts() (errs error) {
 			}
 			if nested {
 				if v.platform == "windows" && i < j {
-					errs = multierror.Append(errs, fmt.Errorf("on Windows, %v nested within %v is forbidden", mountB.Destination, mountA.Destination))
+					errs = multierror.Append(errs,
+						specerror.NewError(
+							specerror.MountsDestOnWindowsNotNested,
+							fmt.Errorf("on Windows, %v nested within %v is forbidden",
+								mountB.Destination, mountA.Destination),
+							rspec.Version))
 				}
 				if i > j {
 					logrus.Warnf("%v will be covered by %v", mountB.Destination, mountA.Destination)
@@ -534,7 +563,11 @@ func (v *Validator) CheckPlatform() (errs error) {
 
 	if v.platform == "windows" {
 		if v.spec.Windows == nil {
-			errs = multierror.Append(errs, errors.New("'windows' MUST be set when platform is `windows`"))
+			errs = multierror.Append(errs,
+				specerror.NewError(
+					specerror.PlatformSpecConfOnWindowsSet,
+					fmt.Errorf("'windows' MUST be set when platform is `windows`"),
+					rspec.Version))
 		}
 	}
 
@@ -705,13 +738,21 @@ func (v *Validator) CheckLinux() (errs error) {
 
 	for _, maskedPath := range v.spec.Linux.MaskedPaths {
 		if !strings.HasPrefix(maskedPath, "/") {
-			errs = multierror.Append(errs, fmt.Errorf("maskedPath %v is not an absolute path", maskedPath))
+			errs = multierror.Append(errs,
+				specerror.NewError(
+					specerror.MaskedPathsAbs,
+					fmt.Errorf("maskedPath %v is not an absolute path", maskedPath),
+					rspec.Version))
 		}
 	}
 
 	for _, readonlyPath := range v.spec.Linux.ReadonlyPaths {
 		if !strings.HasPrefix(readonlyPath, "/") {
-			errs = multierror.Append(errs, fmt.Errorf("readonlyPath %v is not an absolute path", readonlyPath))
+			errs = multierror.Append(errs,
+				specerror.NewError(
+					specerror.ReadonlyPathsAbs,
+					fmt.Errorf("readonlyPath %v is not an absolute path", readonlyPath),
+					rspec.Version))
 		}
 	}
 

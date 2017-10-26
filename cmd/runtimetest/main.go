@@ -421,14 +421,19 @@ func validateDefaultSymlinks(spec *rspec.Spec) error {
 			return err
 		}
 		if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
-			return fmt.Errorf("%v is not a symbolic link as expected", symlink)
+			return specerror.NewError(specerror.DefaultRuntimeLinuxSymlinks,
+				fmt.Errorf("%v is not a symbolic link as expected", symlink),
+				rspec.Version)
 		}
 		realDest, err := os.Readlink(symlink)
 		if err != nil {
 			return err
 		}
 		if realDest != dest {
-			return fmt.Errorf("link destation of %v expected is %v, actual is %v", symlink, dest, realDest)
+			return specerror.NewError(specerror.DefaultRuntimeLinuxSymlinks,
+				fmt.Errorf("link destation of %v expected is %v, actual is %v",
+					symlink, dest, realDest),
+				rspec.Version)
 		}
 	}
 
@@ -447,12 +452,16 @@ func validateDefaultDevices(spec *rspec.Spec) error {
 		fi, err := os.Stat(device)
 		if err != nil {
 			if os.IsNotExist(err) {
-				return fmt.Errorf("device node %v not found", device)
+				return specerror.NewError(specerror.DefaultDevices,
+					fmt.Errorf("device node %v not found", device),
+					rspec.Version)
 			}
 			return err
 		}
 		if fi.Mode()&os.ModeDevice != os.ModeDevice {
-			return fmt.Errorf("file %v is not a device as expected", device)
+			return specerror.NewError(specerror.DefaultDevices,
+				fmt.Errorf("file %v is not a device as expected", device),
+				rspec.Version)
 		}
 	}
 
@@ -512,7 +521,7 @@ func validateOOMScoreAdj(spec *rspec.Spec) error {
 				return err
 			}
 			if actual != expected {
-				return fmt.Errorf("oomScoreAdj expected: %v, actual: %v", expected, actual)
+				return specerror.NewError(specerror.LinuxProcOomScoreAdjSet, fmt.Errorf("oomScoreAdj expected: %v, actual: %v", expected, actual), rspec.Version)
 			}
 		}
 	}
@@ -667,14 +676,21 @@ func validateMounts(spec *rspec.Spec) error {
 			if found {
 				mountErrs = multierror.Append(
 					mountErrs,
-					fmt.Errorf(
-						"mounts[%d] %v mounted before mounts[%d] %v",
-						i,
-						configMount,
-						highestMatchedConfig,
-						spec.Mounts[highestMatchedConfig]))
+					specerror.NewError(specerror.MountsInOrder,
+						fmt.Errorf(
+							"mounts[%d] %v mounted before mounts[%d] %v",
+							i,
+							configMount,
+							highestMatchedConfig,
+							spec.Mounts[highestMatchedConfig]),
+						rspec.Version))
 			} else {
-				mountErrs = multierror.Append(mountErrs, fmt.Errorf("mounts[%d] %v does not exist", i, configMount))
+				mountErrs = multierror.Append(
+					mountErrs,
+					specerror.NewError(specerror.MountsInOrder, fmt.Errorf(
+						"mounts[%d] %v does not exist",
+						i,
+						configMount), rspec.Version))
 			}
 		}
 	}
