@@ -368,7 +368,7 @@ func validateLinuxDevices(spec *rspec.Spec) error {
 		}
 		fStat, ok := fi.Sys().(*syscall.Stat_t)
 		if !ok {
-			return fmt.Errorf("cannot determine state for device %s", device.Path)
+			return specerror.NewError(specerror.DevicesAvailable, fmt.Errorf("cannot determine state for device %s", device.Path), rspec.Version)
 		}
 		var devType string
 		switch fStat.Mode & syscall.S_IFMT {
