@@ -604,7 +604,7 @@ func (v *Validator) CheckLinux() (errs error) {
 		tmpItem := nsTypeList[ns.Type]
 		tmpItem.num = tmpItem.num + 1
 		if tmpItem.num > 1 {
-			errs = multierror.Append(errs, fmt.Errorf("duplicated namespace %q", ns.Type))
+			errs = multierror.Append(errs, specerror.NewError(specerror.NSErrorOnDup, fmt.Errorf("duplicated namespace %q", ns.Type), rspec.Version))
 		}
 
 		if len(ns.Path) == 0 {
@@ -663,7 +663,8 @@ func (v *Validator) CheckLinux() (errs error) {
 			} else {
 				fStat, ok := fi.Sys().(*syscall.Stat_t)
 				if !ok {
-					errs = multierror.Append(errs, fmt.Errorf("cannot determine state for device %s", device.Path))
+					errs = multierror.Append(errs, specerror.NewError(specerror.DevicesAvailable,
+						fmt.Errorf("cannot determine state for device %s", device.Path), rspec.Version))
 					continue
 				}
 				var devType string
@@ -678,7 +679,8 @@ func (v *Validator) CheckLinux() (errs error) {
 					devType = "unmatched"
 				}
 				if devType != device.Type || (devType == "c" && device.Type == "u") {
-					errs = multierror.Append(errs, fmt.Errorf("unmatched %s already exists in filesystem", device.Path))
+					errs = multierror.Append(errs, specerror.NewError(specerror.DevicesFileNotMatch,
+						fmt.Errorf("unmatched %s already exists in filesystem", device.Path), rspec.Version))
 					continue
 				}
 				if devType != "p" {
@@ -686,7 +688,8 @@ func (v *Validator) CheckLinux() (errs error) {
 					major := (dev >> 8) & 0xfff
 					minor := (dev & 0xff) | ((dev >> 12) & 0xfff00)
 					if int64(major) != device.Major || int64(minor) != device.Minor {
-						errs = multierror.Append(errs, fmt.Errorf("unmatched %s already exists in filesystem", device.Path))
+						errs = multierror.Append(errs, specerror.NewError(specerror.DevicesFileNotMatch,
+							fmt.Errorf("unmatched %s already exists in filesystem", device.Path), rspec.Version))
 						continue
 					}
 				}
@@ -694,19 +697,22 @@ func (v *Validator) CheckLinux() (errs error) {
 					expectedPerm := *device.FileMode & os.ModePerm
 					actualPerm := fi.Mode() & os.ModePerm
 					if expectedPerm != actualPerm {
-						errs = multierror.Append(errs, fmt.Errorf("unmatched %s already exists in filesystem", device.Path))
+						errs = multierror.Append(errs, specerror.NewError(specerror.DevicesFileNotMatch,
+							fmt.Errorf("unmatched %s already exists in filesystem", device.Path), rspec.Version))
 						continue
 					}
 				}
 				if device.UID != nil {
 					if *device.UID != fStat.Uid {
-						errs = multierror.Append(errs, fmt.Errorf("unmatched %s already exists in filesystem", device.Path))
+						errs = multierror.Append(errs, specerror.NewError(specerror.DevicesFileNotMatch,
+							fmt.Errorf("unmatched %s already exists in filesystem", device.Path), rspec.Version))
 						continue
 					}
 				}
 				if device.GID != nil {
 					if *device.GID != fStat.Gid {
-						errs = multierror.Append(errs, fmt.Errorf("unmatched %s already exists in filesystem", device.Path))
+						errs = multierror.Append(errs, specerror.NewError(specerror.DevicesFileNotMatch,
+							fmt.Errorf("unmatched %s already exists in filesystem", device.Path), rspec.Version))
 						continue
 					}
 				}
