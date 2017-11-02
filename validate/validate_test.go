@@ -212,6 +212,49 @@ func TestCheckProcess(t *testing.T) {
 				Process: &rspec.Process{
 					Args: []string{"sh"},
 					Cwd:  "/",
+				},
+			},
+			platform: "windows",
+			expected: specerror.ProcCwdAbs,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "c:\\foo",
+				},
+			},
+			platform: "linux",
+			expected: specerror.ProcCwdAbs,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "c:\\foo",
+				},
+			},
+			platform: "windows",
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Cwd: "/",
+				},
+			},
+			platform: "linux",
+			expected: specerror.ProcArgsOneEntryRequired,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "/",
 					Rlimits: []rspec.POSIXRlimit{
 						{
 							Type: "RLIMIT_NOFILE",
