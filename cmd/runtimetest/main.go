@@ -82,7 +82,7 @@ func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
 }
 
 // should be included by other platform specified process validation
-func validateGeneralProcess(spec *rspec.Spec) error {
+func validateProcess(spec *rspec.Spec) error {
 	if spec.Process.Cwd != "" {
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -110,8 +110,6 @@ func validateLinuxProcess(spec *rspec.Spec) error {
 	if spec.Process == nil {
 		return nil
 	}
-
-	validateGeneralProcess(spec)
 
 	uid := os.Getuid()
 	if uint32(uid) != spec.Process.User.UID {
@@ -736,6 +734,10 @@ func run(context *cli.Context) error {
 		{
 			test:        validateRlimits,
 			description: "rlimits",
+		},
+		{
+			test:        validateProcess,
+			description: "process",
 		},
 	}
 
