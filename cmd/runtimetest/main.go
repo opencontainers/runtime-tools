@@ -68,7 +68,7 @@ func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
 	cf, err := os.Open(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("%s not found", specConfig)
+			return nil, specerror.NewError(specerror.ConfigInRootBundleDir, err, rspec.Version)
 		}
 
 		return nil, err
