@@ -24,6 +24,8 @@ import (
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
+
+	"golang.org/x/sys/unix"
 )
 
 // PrGetNoNewPrivs isn't exposed in Golang so we define it ourselves copying the value from
@@ -341,6 +343,71 @@ func validateRootFS(spec *rspec.Spec) error {
 		if err != nil {
 			return specerror.NewError(specerror.RootReadonlyImplement, fmt.Errorf("rootfs must not be readonly"), rspec.Version)
 		}
+	}
+
+	return nil
+}
+
+func validateRootfsPropagation(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.RootfsPropagation == "" {
+		return nil
+	}
+
+	targetDir, err := ioutil.TempDir("/", "target")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(targetDir)
+
+	switch spec.Linux.RootfsPropagation {
+	case "shared", "slave", "private":
+		mountDir, err := ioutil.TempDir("/", "mount")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(mountDir)
+
+		testDir, err := ioutil.TempDir("/", "test")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(testDir)
+
+		tmpfile, err := ioutil.TempFile(testDir, "example")
+		if err != nil {
+			return err
+		}
+		defer os.Remove(tmpfile.Name())
+
+		if err := unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
+			return err
+		}
+		defer unix.Unmount(targetDir, unix.MNT_DETACH)
+		if err := unix.Mount(testDir, mountDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
+			return err
+		}
+		defer unix.Unmount(mountDir, unix.MNT_DETACH)
+		if _, err := os.Stat(filepath.Join(targetDir, filepath.Join(mountDir, filepath.Base(tmpfile.Name())))); os.IsNotExist(err) {
+			if spec.Linux.RootfsPropagation == "shared" {
+				return fmt.Errorf("rootfs should be %s, but not", spec.Linux.RootfsPropagation)
+			}
+			return nil
+		}
+		if spec.Linux.RootfsPropagation == "shared" {
+			return nil
+		}
+		return fmt.Errorf("rootfs should be %s, but not", spec.Linux.RootfsPropagation)
+	case "unbindable":
+		if err := unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
+			if err == syscall.EINVAL {
+				return nil
+			}
+			return err
+		}
+		defer unix.Unmount(targetDir, unix.MNT_DETACH)
+		return fmt.Errorf("rootfs expected to be unbindable, but not")
+	default:
+		logrus.Warnf("unrecognized linux.rootfsPropagation %s", spec.Linux.RootfsPropagation)
 	}
 
 	return nil
@@ -778,6 +845,10 @@ func run(context *cli.Context) error {
 		{
 			test:        validateROPaths,
 			description: "read only paths",
+		},
+		{
+			test:        validateRootfsPropagation,
+			description: "rootfs propagation",
 		},
 		{
 			test:        validateSysctls,
