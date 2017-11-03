@@ -70,6 +70,8 @@ func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("%s not found", specConfig)
 		}
+
+		return nil, err
 	}
 	defer cf.Close()
 
