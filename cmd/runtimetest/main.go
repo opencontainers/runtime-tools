@@ -271,6 +271,11 @@ func validateRlimits(spec *rspec.Spec) error {
 		return nil
 	}
 
+	if runtime.GOOS != "linux" && runtime.GOOS != "solaris" {
+		logrus.Warnf("process.rlimits validation not yet implemented for OS %q", runtime.GOOS)
+		return nil
+	}
+
 	for _, r := range spec.Process.Rlimits {
 		rl, err := strToRlimit(r.Type)
 		if err != nil {
@@ -729,6 +734,10 @@ func run(context *cli.Context) error {
 			test:        validateMounts,
 			description: "mounts",
 		},
+		{
+			test:        validateRlimits,
+			description: "rlimits",
+		},
 	}
 
 	linuxValidations := []validation{
@@ -767,10 +776,6 @@ func run(context *cli.Context) error {
 		{
 			test:        validateROPaths,
 			description: "read only paths",
-		},
-		{
-			test:        validateRlimits,
-			description: "rlimits",
 		},
 		{
 			test:        validateSysctls,
