@@ -81,6 +81,43 @@ func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
 	return spec, nil
 }
 
+func validateUser(spec *rspec.Spec) error {
+	if runtime.GOOS == "windows" {
+		return nil
+	}
+
+	if spec.Process == nil {
+		return nil
+	}
+
+	uid := os.Getuid()
+	if uint32(uid) != spec.Process.User.UID {
+		return fmt.Errorf("UID expected: %v, actual: %v", spec.Process.User.UID, uid)
+	}
+	gid := os.Getgid()
+	if uint32(gid) != spec.Process.User.GID {
+		return fmt.Errorf("GID expected: %v, actual: %v", spec.Process.User.GID, gid)
+	}
+
+	groups, err := os.Getgroups()
+	if err != nil {
+		return err
+	}
+
+	groupsMap := make(map[int]bool)
+	for _, g := range groups {
+		groupsMap[g] = true
+	}
+
+	for _, g := range spec.Process.User.AdditionalGids {
+		if !groupsMap[int(g)] {
+			return fmt.Errorf("Groups expected: %v, actual (should be superset): %v", spec.Process.User.AdditionalGids, groups)
+		}
+	}
+
+	return nil
+}
+
 // should be included by other platform specified process validation
 func validateProcess(spec *rspec.Spec) error {
 	if spec.Process.Cwd != "" {
@@ -109,31 +146,6 @@ func validateProcess(spec *rspec.Spec) error {
 func validateLinuxProcess(spec *rspec.Spec) error {
 	if spec.Process == nil {
 		return nil
-	}
-
-	uid := os.Getuid()
-	if uint32(uid) != spec.Process.User.UID {
-		return fmt.Errorf("UID expected: %v, actual: %v", spec.Process.User.UID, uid)
-	}
-	gid := os.Getgid()
-	if uint32(gid) != spec.Process.User.GID {
-		return fmt.Errorf("GID expected: %v, actual: %v", spec.Process.User.GID, gid)
-	}
-
-	groups, err := os.Getgroups()
-	if err != nil {
-		return err
-	}
-
-	groupsMap := make(map[int]bool)
-	for _, g := range groups {
-		groupsMap[g] = true
-	}
-
-	for _, g := range spec.Process.User.AdditionalGids {
-		if !groupsMap[int(g)] {
-			return fmt.Errorf("Groups expected: %v, actual (should be superset): %v", spec.Process.User.AdditionalGids, groups)
-		}
 	}
 
 	cmdlineBytes, err := ioutil.ReadFile("/proc/self/cmdline")
@@ -738,6 +750,10 @@ func run(context *cli.Context) error {
 		{
 			test:        validateProcess,
 			description: "process",
+		},
+		{
+			test:        validateUser,
+			description: "user",
 		},
 	}
 
