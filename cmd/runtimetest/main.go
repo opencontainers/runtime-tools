@@ -267,12 +267,11 @@ func validateHostname(spec *rspec.Spec) error {
 }
 
 func validateRlimits(spec *rspec.Spec) error {
-	if spec.Process == nil {
+	if runtime.GOOS == "windows" {
 		return nil
 	}
 
-	if runtime.GOOS != "linux" && runtime.GOOS != "solaris" {
-		logrus.Warnf("process.rlimits validation not yet implemented for OS %q", runtime.GOOS)
+	if spec.Process == nil {
 		return nil
 	}
 
