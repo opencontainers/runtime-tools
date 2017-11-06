@@ -88,6 +88,49 @@ func TestValidateBasic(t *testing.T) {
 	assert.Nil(t, runtimeInsideValidate(g))
 }
 
+// Test whether rootfs Readonly can be applied as false
+func TestValidateRootFSReadWrite(t *testing.T) {
+	g := getDefaultGenerator()
+	g.SetRootReadonly(false)
+
+	assert.Nil(t, runtimeInsideValidate(g))
+}
+
+// Test whether rootfs Readonly can be applied as true
+func TestValidateRootFSReadonly(t *testing.T) {
+	if "windows" == runtime.GOOS {
+		t.Skip("skip this test on windows platform")
+	}
+
+	g := getDefaultGenerator()
+	g.SetRootReadonly(true)
+
+	assert.Nil(t, runtimeInsideValidate(g))
+}
+
+// Test whether hostname can be applied or not
+func TestValidateHostname(t *testing.T) {
+	g := getDefaultGenerator()
+	g.SetHostname("hostname-specific")
+
+	assert.Nil(t, runtimeInsideValidate(g))
+}
+
+// Test whether mounts are correctly mounted
+func TestValidateMounts(t *testing.T) {
+	// TODO mounts generation options have not been implemented
+	// will add it after 'mounts generate' done
+}
+
+// Test whether rlimits can be applied or not
+func TestValidateRlimits(t *testing.T) {
+	g := getDefaultGenerator()
+	g.AddProcessRlimits("RLIMIT_NOFILE", 1024, 1024)
+
+	assert.Nil(t, runtimeInsideValidate(g))
+}
+
+// Test whether sysctls can be applied or not
 func TestValidateSysctls(t *testing.T) {
 	g := getDefaultGenerator()
 	g.AddLinuxSysctl("net.ipv4.ip_forward", "1")
@@ -95,6 +138,7 @@ func TestValidateSysctls(t *testing.T) {
 	assert.Nil(t, runtimeInsideValidate(g))
 }
 
+// Test Create operation
 func TestValidateCreate(t *testing.T) {
 	g := generate.New()
 	g.SetRootPath(".")
