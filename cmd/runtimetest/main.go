@@ -81,11 +81,7 @@ func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
 	return spec, nil
 }
 
-func validateUser(spec *rspec.Spec) error {
-	if runtime.GOOS == "windows" {
-		return nil
-	}
-
+func validatePosixUser(spec *rspec.Spec) error {
 	if spec.Process == nil {
 		return nil
 	}
@@ -118,7 +114,6 @@ func validateUser(spec *rspec.Spec) error {
 	return nil
 }
 
-// should be included by other platform specified process validation
 func validateProcess(spec *rspec.Spec) error {
 	if spec.Process.Cwd != "" {
 		cwd, err := os.Getwd()
@@ -277,10 +272,6 @@ func validateHostname(spec *rspec.Spec) error {
 }
 
 func validateRlimits(spec *rspec.Spec) error {
-	if runtime.GOOS == "windows" {
-		return nil
-	}
-
 	if spec.Process == nil {
 		return nil
 	}
@@ -642,12 +633,7 @@ func mountMatch(configMount rspec.Mount, sysMount *mount.Info) error {
 	return nil
 }
 
-func validateMounts(spec *rspec.Spec) error {
-	if runtime.GOOS == "windows" {
-		logrus.Warnf("mounts validation not yet implemented for OS %q", runtime.GOOS)
-		return nil
-	}
-
+func validatePosixMounts(spec *rspec.Spec) error {
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
 		return err
@@ -740,20 +726,23 @@ func run(context *cli.Context) error {
 			description: "hostname",
 		},
 		{
-			test:        validateMounts,
+			test:        validateProcess,
+			description: "process",
+		},
+	}
+
+	posixValidations := []validation{
+		{
+			test:        validatePosixMounts,
 			description: "mounts",
+		},
+		{
+			test:        validatePosixUser,
+			description: "user",
 		},
 		{
 			test:        validateRlimits,
 			description: "rlimits",
-		},
-		{
-			test:        validateProcess,
-			description: "process",
-		},
-		{
-			test:        validateUser,
-			description: "user",
 		},
 	}
 
@@ -826,6 +815,19 @@ func run(context *cli.Context) error {
 				continue
 			}
 			validationErrors = multierror.Append(validationErrors, err)
+		}
+	}
+
+	if platform == "linux" || platform == "solaris" {
+		for _, v := range posixValidations {
+			err := v.test(spec)
+			t.Ok(err == nil, v.description)
+			if err != nil {
+				if e, ok := err.(*specerror.Error); ok && e.Err.Level < complianceLevel {
+					continue
+				}
+				validationErrors = multierror.Append(validationErrors, err)
+			}
 		}
 	}
 
