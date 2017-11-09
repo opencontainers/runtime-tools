@@ -1,0 +1,20 @@
+package main
+
+import (
+	"github.com/opencontainers/runtime-tools/generate/seccomp"
+	"github.com/opencontainers/runtime-tools/validation/util"
+)
+
+func main() {
+	g := util.GetDefaultGenerator()
+	syscallArgs := seccomp.SyscallOpts{
+		Action:  "errno",
+		Syscall: "getcwd",
+	}
+	g.SetDefaultSeccompAction("allow")
+	g.SetSyscallAction(syscallArgs)
+	err := util.RuntimeInsideValidate(g, nil)
+	if err != nil {
+		util.Fatal(err)
+	}
+}
