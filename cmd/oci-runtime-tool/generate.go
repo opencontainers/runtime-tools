@@ -1168,7 +1168,7 @@ func addSeccomp(context *cli.Context, g *generate.Generator) error {
 }
 
 func seccompSet(context *cli.Context, seccompFlag string, g *generate.Generator) error {
-	flagInput := context.String("seccomp-" + seccompFlag)
+	flagInput := context.String("linux-seccomp-" + seccompFlag)
 	flagArgs := strings.Split(flagInput, ",")
 	setSyscallArgsSlice := []seccomp.SyscallOpts{}
 	for _, flagArg := range flagArgs {
