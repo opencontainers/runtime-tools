@@ -67,15 +67,15 @@ func ParseLevel(level string) (Level, error) {
 	case "SHOULDNOT":
 		fallthrough
 	case "RECOMMENDED":
-		fallthrough
-	case "NOTRECOMMENDED":
 		return Should, nil
+	case "NOTRECOMMENDED":
+		fallthrough
 	case "MUST":
 		fallthrough
 	case "MUSTNOT":
 		fallthrough
 	case "SHALL":
-		fallthrough
+		return Must, nil
 	case "SHALLNOT":
 		fallthrough
 	case "REQUIRED":
