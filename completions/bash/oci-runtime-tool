@@ -396,7 +396,7 @@ _oci-runtime-tool_generate() {
 		--process-cap-drop-all
 		--process-no-new-privileges
 		--process-rlimits-remove-all
-		--process-tty
+		--process-terminal
 		--rootfs-readonly
 	"
 

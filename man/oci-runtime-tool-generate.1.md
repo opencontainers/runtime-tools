@@ -371,8 +371,8 @@ read the configuration from `config.json`.
 **--process-rlimits-remove-all**=true|false
   Remove all resource limits for process inside the container. The default is *false*.
 
-**--process-tty**=true|false
-  Allocate a new tty for the container process. The default is *false*.
+**--process-terminal**=true|false
+  Specifies whether a terminal is attached to the process. The default is *false*.
 
 **--process-uid**=UID
   Sets the UID used within the container.

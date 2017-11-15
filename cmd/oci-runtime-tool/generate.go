@@ -103,7 +103,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "process-rlimits-add", Usage: "specifies resource limits for processes inside the container. "},
 	cli.StringSliceFlag{Name: "process-rlimits-remove", Usage: "remove specified resource limits for processes inside the container. "},
 	cli.BoolFlag{Name: "process-rlimits-remove-all", Usage: "remove all resource limits for processes inside the container. "},
-	cli.BoolFlag{Name: "process-tty", Usage: "allocate a new tty for the container process"},
+	cli.BoolFlag{Name: "process-terminal", Usage: "specifies whether a terminal is attached to the process"},
 	cli.IntFlag{Name: "process-uid", Usage: "uid for the process"},
 	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
 	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
@@ -206,8 +206,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetProcessNoNewPrivileges(context.Bool("process-no-new-privileges"))
 	}
 
-	if context.IsSet("process-tty") {
-		g.SetProcessTerminal(context.Bool("process-tty"))
+	if context.IsSet("process-terminal") {
+		g.SetProcessTerminal(context.Bool("process-terminal"))
 	}
 
 	if context.IsSet("args") {
