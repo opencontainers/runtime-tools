@@ -1139,9 +1139,6 @@ func (g *Generator) DropProcessCapabilityEffective(c string) error {
 // DropProcessCapabilityInheritable drops a process capability from g.spec.Process.Capabilities.Inheritable.
 func (g *Generator) DropProcessCapabilityInheritable(c string) error {
 	cp := strings.ToUpper(c)
-	if err := validate.CapValid(cp, g.HostSpecific); err != nil {
-		return err
-	}
 
 	g.initSpecProcessCapabilities()
 
