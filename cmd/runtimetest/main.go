@@ -347,8 +347,6 @@ func validateRootFS(spec *rspec.Spec) error {
 }
 
 func validateDefaultFS(spec *rspec.Spec) error {
-	logrus.Debugf("validating linux default filesystem")
-
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
 		specerror.NewError(specerror.DefaultFilesystems, err, spec.Version)
