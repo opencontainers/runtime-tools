@@ -1093,10 +1093,11 @@ func (g *Generator) AddProcessCapabilityPermitted(c string) error {
 
 // DropProcessCapabilityAmbient drops a process capability from g.spec.Process.Capabilities.Ambient.
 func (g *Generator) DropProcessCapabilityAmbient(c string) error {
+	if g.spec == nil || g.spec.Process == nil || g.spec.Process.Capabilities == nil {
+		return nil
+	}
+
 	cp := strings.ToUpper(c)
-
-	g.initSpecProcessCapabilities()
-
 	for i, cap := range g.spec.Process.Capabilities.Ambient {
 		if strings.ToUpper(cap) == cp {
 			g.spec.Process.Capabilities.Ambient = removeFunc(g.spec.Process.Capabilities.Ambient, i)
@@ -1108,10 +1109,11 @@ func (g *Generator) DropProcessCapabilityAmbient(c string) error {
 
 // DropProcessCapabilityBounding drops a process capability from g.spec.Process.Capabilities.Bounding.
 func (g *Generator) DropProcessCapabilityBounding(c string) error {
+	if g.spec == nil || g.spec.Process == nil || g.spec.Process.Capabilities == nil {
+		return nil
+	}
+
 	cp := strings.ToUpper(c)
-
-	g.initSpecProcessCapabilities()
-
 	for i, cap := range g.spec.Process.Capabilities.Bounding {
 		if strings.ToUpper(cap) == cp {
 			g.spec.Process.Capabilities.Bounding = removeFunc(g.spec.Process.Capabilities.Bounding, i)
@@ -1123,10 +1125,11 @@ func (g *Generator) DropProcessCapabilityBounding(c string) error {
 
 // DropProcessCapabilityEffective drops a process capability from g.spec.Process.Capabilities.Effective.
 func (g *Generator) DropProcessCapabilityEffective(c string) error {
+	if g.spec == nil || g.spec.Process == nil || g.spec.Process.Capabilities == nil {
+		return nil
+	}
+
 	cp := strings.ToUpper(c)
-
-	g.initSpecProcessCapabilities()
-
 	for i, cap := range g.spec.Process.Capabilities.Effective {
 		if strings.ToUpper(cap) == cp {
 			g.spec.Process.Capabilities.Effective = removeFunc(g.spec.Process.Capabilities.Effective, i)
@@ -1138,10 +1141,11 @@ func (g *Generator) DropProcessCapabilityEffective(c string) error {
 
 // DropProcessCapabilityInheritable drops a process capability from g.spec.Process.Capabilities.Inheritable.
 func (g *Generator) DropProcessCapabilityInheritable(c string) error {
+	if g.spec == nil || g.spec.Process == nil || g.spec.Process.Capabilities == nil {
+		return nil
+	}
+
 	cp := strings.ToUpper(c)
-
-	g.initSpecProcessCapabilities()
-
 	for i, cap := range g.spec.Process.Capabilities.Inheritable {
 		if strings.ToUpper(cap) == cp {
 			g.spec.Process.Capabilities.Inheritable = removeFunc(g.spec.Process.Capabilities.Inheritable, i)
@@ -1153,10 +1157,11 @@ func (g *Generator) DropProcessCapabilityInheritable(c string) error {
 
 // DropProcessCapabilityPermitted drops a process capability from g.spec.Process.Capabilities.Permitted.
 func (g *Generator) DropProcessCapabilityPermitted(c string) error {
+	if g.spec == nil || g.spec.Process == nil || g.spec.Process.Capabilities == nil {
+		return nil
+	}
+
 	cp := strings.ToUpper(c)
-
-	g.initSpecProcessCapabilities()
-
 	for i, cap := range g.spec.Process.Capabilities.Permitted {
 		if strings.ToUpper(cap) == cp {
 			g.spec.Process.Capabilities.Ambient = removeFunc(g.spec.Process.Capabilities.Ambient, i)
