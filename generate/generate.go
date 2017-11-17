@@ -233,6 +233,7 @@ func NewFromFile(path string) (Generator, error) {
 		if os.IsNotExist(err) {
 			return Generator{}, fmt.Errorf("template configuration at %s not found", path)
 		}
+		return Generator{}, err
 	}
 	defer cf.Close()
 
