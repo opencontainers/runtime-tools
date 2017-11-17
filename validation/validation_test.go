@@ -116,6 +116,30 @@ func TestValidateHostname(t *testing.T) {
 	assert.Nil(t, runtimeInsideValidate(g))
 }
 
+func TestValidateRootfsPropagationPrivate(t *testing.T) {
+	t.Skip("has not been implemented yet")
+}
+
+func TestValidateRootfsPropagationSlave(t *testing.T) {
+	t.Skip("has not been implemented yet")
+}
+
+func TestValidateRootfsPropagationShared(t *testing.T) {
+	g := getDefaultGenerator()
+	g.SetupPrivileged(true)
+	g.SetLinuxRootPropagation("shared")
+
+	assert.Nil(t, runtimeInsideValidate(g))
+}
+
+func TestValidateRootfsPropagationUnbindable(t *testing.T) {
+	g := getDefaultGenerator()
+	g.SetupPrivileged(true)
+	g.SetLinuxRootPropagation("unbindable")
+
+	assert.Nil(t, runtimeInsideValidate(g))
+}
+
 // Test whether mounts are correctly mounted
 func TestValidateMounts(t *testing.T) {
 	// TODO mounts generation options have not been implemented
