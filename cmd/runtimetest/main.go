@@ -778,13 +778,16 @@ func run(context *cli.Context) error {
 	}
 	logrus.SetLevel(logLevel)
 
+	platform := runtime.GOOS
+	if platform != "linux" && platform != "solaris" && platform != "windows" {
+		return fmt.Errorf("runtime-tools has not implemented testing for your platform %q, because the spec has nothing to say about it", platform)
+	}
+
 	inputPath := context.String("path")
 	spec, err := loadSpecConfig(inputPath)
 	if err != nil {
 		return err
 	}
-
-	platform := runtime.GOOS
 
 	defaultValidations := []validation{
 		{
