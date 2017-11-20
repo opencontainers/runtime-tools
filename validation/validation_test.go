@@ -53,7 +53,7 @@ func prepareBundle() (string, error) {
 func getDefaultGenerator() *generate.Generator {
 	g := generate.New()
 	g.SetRootPath(".")
-	g.SetProcessArgs([]string{"/runtimetest"})
+	g.SetProcessArgs([]string{"/runtimetest", "--path=/"})
 	return &g
 }
 
@@ -118,6 +118,31 @@ func TestValidateRootFSReadonly(t *testing.T) {
 	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
+// Test Process
+func TestValidateProcess(t *testing.T) {
+	g := getDefaultGenerator()
+	g.SetProcessCwd("/test")
+	g.AddProcessEnv("testa", "valuea")
+	g.AddProcessEnv("testb", "123")
+
+	assert.Nil(t, runtimeInsideValidate(g, func(path string) error {
+		pathName := filepath.Join(path, "test")
+		return os.MkdirAll(pathName, 0700)
+	}))
+}
+
+// Test whether Capabilites can be applied or not
+func TestValidateCapabilities(t *testing.T) {
+	if "linux" != runtime.GOOS {
+		t.Skip("skip linux-specific capabilities test")
+	}
+
+	g := getDefaultGenerator()
+	g.SetupPrivileged(true)
+
+	assert.Nil(t, runtimeInsideValidate(g, nil))
+}
+
 // Test whether hostname can be applied or not
 func TestValidateHostname(t *testing.T) {
 	g := getDefaultGenerator()
@@ -146,6 +171,89 @@ func TestValidateRootfsPropagationUnbindable(t *testing.T) {
 	g := getDefaultGenerator()
 	g.SetupPrivileged(true)
 	g.SetLinuxRootPropagation("unbindable")
+
+	assert.Nil(t, runtimeInsideValidate(g, nil))
+}
+
+func TestValidateLinuxDevices(t *testing.T) {
+	g := getDefaultGenerator()
+
+	// add char device
+	cdev := rspecs.LinuxDevice{}
+	cdev.Path = "/dev/test1"
+	cdev.Type = "c"
+	cdev.Major = 10
+	cdev.Minor = 666
+	cmode := os.FileMode(int32(432))
+	cdev.FileMode = &cmode
+	cuid := uint32(0)
+	cdev.UID = &cuid
+	cgid := uint32(0)
+	cdev.GID = &cgid
+	g.AddDevice(cdev)
+	// add block device
+	bdev := rspecs.LinuxDevice{}
+	bdev.Path = "/dev/test2"
+	bdev.Type = "b"
+	bdev.Major = 8
+	bdev.Minor = 666
+	bmode := os.FileMode(int32(432))
+	bdev.FileMode = &bmode
+	uid := uint32(0)
+	bdev.UID = &uid
+	gid := uint32(0)
+	bdev.GID = &gid
+	g.AddDevice(bdev)
+	// add fifo device
+	pdev := rspecs.LinuxDevice{}
+	pdev.Path = "/dev/test3"
+	pdev.Type = "p"
+	pdev.Major = 8
+	pdev.Minor = 666
+	pmode := os.FileMode(int32(432))
+	pdev.FileMode = &pmode
+	g.AddDevice(pdev)
+
+	assert.Nil(t, runtimeInsideValidate(g, nil))
+}
+
+func TestValidateMaskedPaths(t *testing.T) {
+	g := getDefaultGenerator()
+	g.AddLinuxMaskedPaths("/masktest")
+
+	assert.Nil(t, runtimeInsideValidate(g, func(path string) error {
+		pathName := filepath.Join(path, "masktest")
+		return os.MkdirAll(pathName, 0700)
+	}))
+}
+
+func TestValidateROPaths(t *testing.T) {
+	g := getDefaultGenerator()
+	g.AddLinuxReadonlyPaths("readonlytest")
+
+	assert.Nil(t, runtimeInsideValidate(g, func(path string) error {
+		pathName := filepath.Join(path, "readonlytest")
+		return os.MkdirAll(pathName, 0700)
+	}))
+}
+
+func TestValidateOOMScoreAdj(t *testing.T) {
+	g := getDefaultGenerator()
+	g.SetProcessOOMScoreAdj(500)
+
+	assert.Nil(t, runtimeInsideValidate(g, nil))
+}
+
+func TestValidateUIDMappings(t *testing.T) {
+	g := getDefaultGenerator()
+	g.AddLinuxUIDMapping(uint32(1000), uint32(0), uint32(3200))
+
+	assert.Nil(t, runtimeInsideValidate(g, nil))
+}
+
+func TestValidateGIDMappings(t *testing.T) {
+	g := getDefaultGenerator()
+	g.AddLinuxGIDMapping(uint32(1000), uint32(0), uint32(3200))
 
 	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
