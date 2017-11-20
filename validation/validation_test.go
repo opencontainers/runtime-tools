@@ -22,6 +22,9 @@ var (
 	runtimeCommand = "runc"
 )
 
+// build test environment before running container
+type preFunc func(string) error
+
 func init() {
 	runtimeInEnv := os.Getenv("RUNTIME")
 	if runtimeInEnv != "" {
@@ -54,11 +57,18 @@ func getDefaultGenerator() *generate.Generator {
 	return &g
 }
 
-func runtimeInsideValidate(g *generate.Generator) error {
+func runtimeInsideValidate(g *generate.Generator, f preFunc) error {
 	bundleDir, err := prepareBundle()
 	if err != nil {
 		return err
 	}
+
+	if f != nil {
+		if err := f(bundleDir); err != nil {
+			return err
+		}
+	}
+
 	r, err := NewRuntime(runtimeCommand, bundleDir)
 	if err != nil {
 		os.RemoveAll(bundleDir)
@@ -85,7 +95,7 @@ func runtimeInsideValidate(g *generate.Generator) error {
 func TestValidateBasic(t *testing.T) {
 	g := getDefaultGenerator()
 
-	assert.Nil(t, runtimeInsideValidate(g))
+	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
 // Test whether rootfs Readonly can be applied as false
@@ -93,7 +103,7 @@ func TestValidateRootFSReadWrite(t *testing.T) {
 	g := getDefaultGenerator()
 	g.SetRootReadonly(false)
 
-	assert.Nil(t, runtimeInsideValidate(g))
+	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
 // Test whether rootfs Readonly can be applied as true
@@ -105,7 +115,7 @@ func TestValidateRootFSReadonly(t *testing.T) {
 	g := getDefaultGenerator()
 	g.SetRootReadonly(true)
 
-	assert.Nil(t, runtimeInsideValidate(g))
+	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
 // Test whether hostname can be applied or not
@@ -113,7 +123,7 @@ func TestValidateHostname(t *testing.T) {
 	g := getDefaultGenerator()
 	g.SetHostname("hostname-specific")
 
-	assert.Nil(t, runtimeInsideValidate(g))
+	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
 func TestValidateRootfsPropagationPrivate(t *testing.T) {
@@ -129,7 +139,7 @@ func TestValidateRootfsPropagationShared(t *testing.T) {
 	g.SetupPrivileged(true)
 	g.SetLinuxRootPropagation("shared")
 
-	assert.Nil(t, runtimeInsideValidate(g))
+	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
 func TestValidateRootfsPropagationUnbindable(t *testing.T) {
@@ -137,7 +147,7 @@ func TestValidateRootfsPropagationUnbindable(t *testing.T) {
 	g.SetupPrivileged(true)
 	g.SetLinuxRootPropagation("unbindable")
 
-	assert.Nil(t, runtimeInsideValidate(g))
+	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
 // Test whether mounts are correctly mounted
@@ -151,7 +161,7 @@ func TestValidateRlimits(t *testing.T) {
 	g := getDefaultGenerator()
 	g.AddProcessRlimits("RLIMIT_NOFILE", 1024, 1024)
 
-	assert.Nil(t, runtimeInsideValidate(g))
+	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
 // Test whether sysctls can be applied or not
@@ -159,7 +169,7 @@ func TestValidateSysctls(t *testing.T) {
 	g := getDefaultGenerator()
 	g.AddLinuxSysctl("net.ipv4.ip_forward", "1")
 
-	assert.Nil(t, runtimeInsideValidate(g))
+	assert.Nil(t, runtimeInsideValidate(g, nil))
 }
 
 // Test Create operation
