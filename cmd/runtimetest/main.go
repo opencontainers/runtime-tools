@@ -28,6 +28,14 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// gitCommit will be the hash that the binary was built from
+// and will be populated by the Makefile
+var gitCommit = ""
+
+// version will be populated by the Makefile, read from
+// VERSION file of the source code.
+var version = ""
+
 // PrGetNoNewPrivs isn't exposed in Golang so we define it ourselves copying the value from
 // the kernel
 const PrGetNoNewPrivs = 39
@@ -928,7 +936,11 @@ func run(context *cli.Context) error {
 func main() {
 	app := cli.NewApp()
 	app.Name = "runtimetest"
-	app.Version = "0.3.0"
+	if gitCommit != "" {
+		app.Version = fmt.Sprintf("%s, commit: %s", version, gitCommit)
+	} else {
+		app.Version = version
+	}
 	app.Usage = "Compare the environment with an OCI configuration"
 	app.Description = "runtimetest compares its current environment with an OCI runtime configuration read from config.json in its current working directory.  The tests are fairly generic and cover most configurations used by the runtime validation suite, but there are corner cases where a container launched by a valid runtime would not satisfy runtimetest."
 	app.Flags = []cli.Flag{

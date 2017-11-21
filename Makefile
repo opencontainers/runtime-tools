@@ -4,15 +4,16 @@ BINDIR ?= $(DESTDIR)/usr/bin
 BUILDTAGS=
 RUNTIME ?= runc
 COMMIT=$(shell git rev-parse HEAD 2> /dev/null || true)
+VERSION := ${shell cat ./VERSION}
 
 all: tool runtimetest
 
 tool:
-	go build -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT}" -o oci-runtime-tool ./cmd/oci-runtime-tool
+	go build -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION}" -o oci-runtime-tool ./cmd/oci-runtime-tool
 
 .PHONY: runtimetest
 runtimetest:
-	CGO_ENABLED=0 go build -installsuffix cgo -tags "$(BUILDTAGS)" -o runtimetest ./cmd/runtimetest
+	CGO_ENABLED=0 go build -installsuffix cgo -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION}" -o runtimetest ./cmd/runtimetest
 
 .PHONY: man
 man:
