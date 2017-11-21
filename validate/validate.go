@@ -334,7 +334,7 @@ func (v *Validator) CheckProcess() (errs error) {
 				fmt.Errorf("args must not be empty"),
 				rspec.Version))
 	} else {
-		if filepath.IsAbs(process.Args[0]) {
+		if filepath.IsAbs(process.Args[0]) && v.spec.Root != nil {
 			var rootfsPath string
 			if filepath.IsAbs(v.spec.Root.Path) {
 				rootfsPath = v.spec.Root.Path
