@@ -806,7 +806,7 @@ func parseHugepageLimit(pageLimit string) (string, uint64, error) {
 
 func parseHook(s string) (string, []string, error) {
 	args := []string{}
-	parts := strings.Split(s, ":")
+	parts := strings.Split(s, ",")
 	if len(parts) > 1 && parts[0] == "" {
 		return "", args, fmt.Errorf("invalid hook value: %s", s)
 	}
@@ -818,7 +818,7 @@ func parseHook(s string) (string, []string, error) {
 }
 
 func parseHookEnv(s string) (string, []string, error) {
-	parts := strings.Split(s, ":")
+	parts := strings.Split(s, ",")
 	envs := []string{}
 	if len(parts) < 2 {
 		return "", envs, fmt.Errorf("invalid format: %s", s)
@@ -829,7 +829,7 @@ func parseHookEnv(s string) (string, []string, error) {
 }
 
 func parseHookTimeout(s string) (string, int, error) {
-	parts := strings.Split(s, ":")
+	parts := strings.Split(s, ",")
 	if len(parts) != 2 {
 		return "", 0, fmt.Errorf("invalid format: %s", s)
 	}
