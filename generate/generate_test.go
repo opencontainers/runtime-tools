@@ -1,4 +1,4 @@
-package validation
+package generate_test
 
 import (
 	"io/ioutil"
