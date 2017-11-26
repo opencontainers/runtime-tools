@@ -151,16 +151,19 @@ func (r *Runtime) Delete() error {
 	return cmd.Run()
 }
 
-// Clean deletes the container and removes the bundle file according to the input parameter
-func (r *Runtime) Clean(removeBundle bool) error {
+// Clean deletes the container.  If removeBundle is set, the bundle
+// directory is removed after the container is deleted succesfully or, if
+// forceRemoveBundle is true, after the deletion attempt regardless of
+// whether it was successful or not.
+func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) error {
 	err := r.Delete()
-	if err != nil {
-		return err
+
+	if removeBundle && (err == nil || forceRemoveBundle) {
+		err2 := os.RemoveAll(r.BundleDir)
+		if err2 != nil && err == nil {
+			err = err2
+		}
 	}
 
-	if removeBundle {
-		os.RemoveAll(r.BundleDir)
-	}
-
-	return nil
+	return err
 }

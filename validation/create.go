@@ -13,6 +13,7 @@ import (
 
 func main() {
 	t := tap.New()
+	t.Header(0)
 
 	g := generate.New()
 	g.SetRootPath(".")
@@ -27,7 +28,7 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	defer r.Clean(true)
+	defer r.Clean(true, true)
 
 	err = r.SetConfig(&g)
 	if err != nil {

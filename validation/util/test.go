@@ -92,7 +92,7 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 		os.RemoveAll(bundleDir)
 		return err
 	}
-	defer r.Clean(true)
+	defer r.Clean(true, true)
 	err = r.SetConfig(g)
 	if err != nil {
 		return err
