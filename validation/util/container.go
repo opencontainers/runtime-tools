@@ -1,8 +1,11 @@
-package validation
+package util
 
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,6 +19,8 @@ type Runtime struct {
 	RuntimeCommand string
 	BundleDir      string
 	ID             string
+	stdout         *os.File
+	stderr         *os.File
 }
 
 // NewRuntime create a runtime by command and the bundle directory
@@ -45,7 +50,7 @@ func (r *Runtime) SetID(id string) {
 }
 
 // Create a container
-func (r *Runtime) Create() error {
+func (r *Runtime) Create() (stderr []byte, err error) {
 	var args []string
 	args = append(args, "create")
 	if r.ID != "" {
@@ -58,14 +63,46 @@ func (r *Runtime) Create() error {
 	//	}
 	cmd := exec.Command(r.RuntimeCommand, args...)
 	cmd.Dir = r.BundleDir
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	r.stdout, err = os.OpenFile(filepath.Join(r.BundleDir, fmt.Sprintf("stdout-%s", r.ID)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	if err != nil {
+		return []byte(""), err
+	}
+	cmd.Stdout = r.stdout
+	r.stderr, err = os.OpenFile(filepath.Join(r.BundleDir, fmt.Sprintf("stderr-%s", r.ID)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	if err != nil {
+		return []byte(""), err
+	}
+	cmd.Stderr = r.stderr
+
+	err = cmd.Run()
+	if err == nil {
+		return []byte(""), err
+	}
+
+	stdout, stderr, _ := r.ReadStandardStreams()
+	if len(stderr) == 0 {
+		stderr = stdout
+	}
+	return stderr, err
+}
+
+// ReadStandardStreams collects content from the stdout and stderr buffers.
+func (r *Runtime) ReadStandardStreams() (stdout []byte, stderr []byte, err error) {
+	_, err = r.stdout.Seek(0, io.SeekStart)
+	stdout, err2 := ioutil.ReadAll(r.stdout)
+	if err == nil && err2 != nil {
+		err = err2
+	}
+	_, err = r.stderr.Seek(0, io.SeekStart)
+	stderr, err2 = ioutil.ReadAll(r.stderr)
+	if err == nil && err2 != nil {
+		err = err2
+	}
+	return stdout, stderr, err
 }
 
 // Start a container
-func (r *Runtime) Start() error {
+func (r *Runtime) Start() (stderr []byte, err error) {
 	var args []string
 	args = append(args, "start")
 	if r.ID != "" {
@@ -73,10 +110,15 @@ func (r *Runtime) Start() error {
 	}
 
 	cmd := exec.Command(r.RuntimeCommand, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	stdout, err := cmd.Output()
+	if e, ok := err.(*exec.ExitError); ok {
+		stderr = e.Stderr
+	}
+	if err != nil && len(stderr) == 0 {
+		stderr = stdout
+	}
+
+	return stderr, err
 }
 
 // State a container information
