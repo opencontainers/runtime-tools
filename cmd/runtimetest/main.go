@@ -125,6 +125,10 @@ func validatePosixUser(spec *rspec.Spec) error {
 }
 
 func validateProcess(spec *rspec.Spec) error {
+	if spec.Process == nil {
+		return nil
+	}
+
 	if spec.Process.Cwd != "" {
 		cwd, err := os.Getwd()
 		if err != nil {
