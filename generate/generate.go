@@ -743,42 +743,21 @@ func (g *Generator) ClearPreStartHooks() {
 }
 
 // AddPreStartHook add a prestart hook into g.spec.Hooks.Prestart.
-func (g *Generator) AddPreStartHook(path string, args []string) {
+func (g *Generator) AddPreStartHook(hookObject string) error {
 	g.initSpecHooks()
-	hook := rspec.Hook{Path: path, Args: args}
+	tmpHook := rspec.Hook{}
+	err := json.Unmarshal([]byte(hookObject), &tmpHook)
+	if err != nil {
+		return err
+	}
 	for i, hook := range g.spec.Hooks.Prestart {
-		if hook.Path == path {
-			g.spec.Hooks.Prestart[i] = hook
-			return
+		if hook.Path == tmpHook.Path {
+			g.spec.Hooks.Prestart[i] = tmpHook
+			return nil
 		}
 	}
-	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, hook)
-}
-
-// AddPreStartHookEnv adds envs of a prestart hook into g.spec.Hooks.Prestart.
-func (g *Generator) AddPreStartHookEnv(path string, envs []string) {
-	g.initSpecHooks()
-	for i, hook := range g.spec.Hooks.Prestart {
-		if hook.Path == path {
-			g.spec.Hooks.Prestart[i].Env = envs
-			return
-		}
-	}
-	hook := rspec.Hook{Path: path, Env: envs}
-	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, hook)
-}
-
-// AddPreStartHookTimeout adds timeout of a prestart hook into g.spec.Hooks.Prestart.
-func (g *Generator) AddPreStartHookTimeout(path string, timeout int) {
-	g.initSpecHooks()
-	for i, hook := range g.spec.Hooks.Prestart {
-		if hook.Path == path {
-			g.spec.Hooks.Prestart[i].Timeout = &timeout
-			return
-		}
-	}
-	hook := rspec.Hook{Path: path, Timeout: &timeout}
-	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, hook)
+	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, tmpHook)
+	return nil
 }
 
 // ClearPostStopHooks clear g.spec.Hooks.Poststop.
@@ -790,42 +769,21 @@ func (g *Generator) ClearPostStopHooks() {
 }
 
 // AddPostStopHook adds a poststop hook into g.spec.Hooks.Poststop.
-func (g *Generator) AddPostStopHook(path string, args []string) {
+func (g *Generator) AddPostStopHook(hookObject string) error {
 	g.initSpecHooks()
-	hook := rspec.Hook{Path: path, Args: args}
+	tmpHook := rspec.Hook{}
+	err := json.Unmarshal([]byte(hookObject), &tmpHook)
+	if err != nil {
+		return err
+	}
 	for i, hook := range g.spec.Hooks.Poststop {
-		if hook.Path == path {
-			g.spec.Hooks.Poststop[i] = hook
-			return
+		if hook.Path == tmpHook.Path {
+			g.spec.Hooks.Poststop[i] = tmpHook
+			return nil
 		}
 	}
-	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, hook)
-}
-
-// AddPostStopHookEnv adds envs of a poststop hook into g.spec.Hooks.Poststop.
-func (g *Generator) AddPostStopHookEnv(path string, envs []string) {
-	g.initSpecHooks()
-	for i, hook := range g.spec.Hooks.Poststop {
-		if hook.Path == path {
-			g.spec.Hooks.Poststop[i].Env = envs
-			return
-		}
-	}
-	hook := rspec.Hook{Path: path, Env: envs}
-	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, hook)
-}
-
-// AddPostStopHookTimeout adds timeout of a poststop hook into g.spec.Hooks.Poststop.
-func (g *Generator) AddPostStopHookTimeout(path string, timeout int) {
-	g.initSpecHooks()
-	for i, hook := range g.spec.Hooks.Poststop {
-		if hook.Path == path {
-			g.spec.Hooks.Poststop[i].Timeout = &timeout
-			return
-		}
-	}
-	hook := rspec.Hook{Path: path, Timeout: &timeout}
-	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, hook)
+	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, tmpHook)
+	return nil
 }
 
 // ClearPostStartHooks clear g.spec.Hooks.Poststart.
@@ -837,42 +795,21 @@ func (g *Generator) ClearPostStartHooks() {
 }
 
 // AddPostStartHook adds a poststart hook into g.spec.Hooks.Poststart.
-func (g *Generator) AddPostStartHook(path string, args []string) {
+func (g *Generator) AddPostStartHook(hookObject string) error {
 	g.initSpecHooks()
-	hook := rspec.Hook{Path: path, Args: args}
+	tmpHook := rspec.Hook{}
+	err := json.Unmarshal([]byte(hookObject), &tmpHook)
+	if err != nil {
+		return err
+	}
 	for i, hook := range g.spec.Hooks.Poststart {
-		if hook.Path == path {
-			g.spec.Hooks.Poststart[i] = hook
-			return
+		if hook.Path == tmpHook.Path {
+			g.spec.Hooks.Poststart[i] = tmpHook
+			return nil
 		}
 	}
-	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, hook)
-}
-
-// AddPostStartHookEnv adds envs of a poststart hook into g.spec.Hooks.Poststart.
-func (g *Generator) AddPostStartHookEnv(path string, envs []string) {
-	g.initSpecHooks()
-	for i, hook := range g.spec.Hooks.Poststart {
-		if hook.Path == path {
-			g.spec.Hooks.Poststart[i].Env = envs
-			return
-		}
-	}
-	hook := rspec.Hook{Path: path, Env: envs}
-	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, hook)
-}
-
-// AddPostStartHookTimeout adds timeout of a poststart hook into g.spec.Hooks.Poststart.
-func (g *Generator) AddPostStartHookTimeout(path string, timeout int) {
-	g.initSpecHooks()
-	for i, hook := range g.spec.Hooks.Poststart {
-		if hook.Path == path {
-			g.spec.Hooks.Poststart[i].Timeout = &timeout
-			return
-		}
-	}
-	hook := rspec.Hook{Path: path, Timeout: &timeout}
-	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, hook)
+	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, tmpHook)
+	return nil
 }
 
 // AddTmpfsMount adds a tmpfs mount into g.spec.Mounts.

@@ -41,45 +41,51 @@ read the configuration from `config.json`.
 **--hostname**=""
   Set the container host name that is available inside the container.
 
-**--hooks-poststart**=CMD[:ARGS...]
+**--hooks-poststart-add**=[]
   Set command to run in poststart hooks. Can be specified multiple times.
   The multiple commands will be run in order before the container process
   gets launched but after the container environment and main process has been
   created.
 
-**--hooks-poststart-env**=[]
-  Set environment variables for commands in poststart hooks, format is CMD:ENV. e.g. --hooks-poststart-env=/bin/test:key=value
-  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+  --hooks-poststart-add '{"path":"/bin/test","args":["a1","b2"],"timeout":5}'
 
-**--hooks-poststart-timeout**=[]
-  Set timeout for commands in poststart hooks, format is CMD:TIMEOUT. e.g. --hooks-poststart-timeout=/bin/test:5
-  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+  When same path specified over once, the last one make sense. So, you can
+  take advantage of this to modify existing poststart hooks.
 
-**--hooks-poststop**=CMD[:ARGS...]
+**--hooks-poststart-remove-all**=true|false
+  Remove all poststart hooks. The default is *false*.
+  When specifed with --hooks-poststart-add, will be applied first and then add
+  new poststart hooks.
+
+**--hooks-poststop-add**=[]
   Set command to run in poststop hooks. Can be specified multiple times.
   The multiple commands will be run in order after the container process
   is stopped.
 
-**--hook-poststop-env**=[]
-  Set environment variables for commands in poststop hooks, format is CMD:ENV. e.g. --hooks-poststop-env=/bin/test:key=value
-  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+  --hooks-poststop-add '{"path":"/bin/test","env":["a=b","c=d"],"timeout":5}'
 
-**--hooks-poststop-timeout**=[]
-  Set timeout for commands in poststop hooks, format is CMD:TIMEOUT. e.g. --hooks-poststop-timeout=/bin/test:5
-  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+  When same path specified over once, the last one make sense. So, you can
+  take advantage of this to modify existing poststop hooks.
 
-**--hooks-prestart**=CMD[:ARGS...]
+**--hooks-poststop-remove-all**=true|false
+  Remove all poststop hooks. The default is *false*.
+  When specifed with --hooks-postop-add, will be applied first and then add
+  new poststop hooks.
+
+**--hooks-prestart-add**=[]
   Set command to run in prestart hooks. Can be specified multiple times.
   The multiple commands will be run in order after the container process
   has been created but before it executes the user-configured code.
 
-**--hooks-prestart-env**=[]
-  Set environment variables for commands in prestart hooks, format is CMD:ENV. e.g. --hooks-prestart-env=/bin/test:key=value
-  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+  --hooks-prestart-add '{"path":"/bin/test"}'
 
-**--hooks-prestart-timeout**=[]
-  Set timeout for commands in prestart hooks, format is CMD:TIMEOUT. e.g. --hooks-prestart-timeout=/bin/test:5
-  This option can be specified multiple times. When same CMD specified over once, the last one make sense.
+  When same path specified over once, the last one make sense. So, you can
+  take advantage of this to modify existing prestart hooks.
+
+**--hooks-prestart-remove-all**=true|false
+  Remove all prestart hooks. The default is *false*.
+  When specifed with --hooks-prestart-add, will be applied first and then add
+  new prestart hooks.
 
 **--label**=[]
   Add annotations to the configuration e.g. key=value.

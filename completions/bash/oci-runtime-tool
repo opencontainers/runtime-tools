@@ -305,15 +305,9 @@ _oci-runtime-tool_generate() {
 		--args
 		--env
 		--env-file
-		--hooks-poststart
-		--hooks-poststart-env
-		--hooks-poststart-timeout
-		--hooks-poststop
-		--hooks-poststop-env
-		--hooks-poststop-timeout
-		--hooks-prestart
-		--hooks-prestart-env
-		--hooks-prestart-timeout
+		--hooks-poststart-add
+		--hooks-poststop-add
+		--hooks-prestart-add
 		--hostname
 		--label
 		--linux-apparmor
@@ -387,6 +381,9 @@ _oci-runtime-tool_generate() {
 
 	local boolean_options="
 		--help -h
+		--hooks-poststart-remove-all
+		--hooks-poststop-remove-all
+		--hooks-prestart-remove-all
 		--linux-device-remove-all
 		--linux-disable-oom-kill
 		--linux-namespace-remove-all
@@ -415,7 +412,7 @@ _oci-runtime-tool_generate() {
 			return
 			;;
 
-		--hooks-poststart|--hooks-poststop|--hooks-prestart)
+		--hooks-poststart-add|--hooks-poststop-add|--hooks-prestart-add)
 			COMPREPLY=( $( compgen -W "$( __oci-runtime-tool_hooks )" -- "$cur" ) )
 			__oci-runtime-tool_nospace
 			return
