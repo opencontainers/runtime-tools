@@ -199,7 +199,7 @@ read the configuration from `config.json`.
   so that the host's namespace will be used by the container instead of
   creating or joining another namespace.
 
-**--linux-namespace-remove-all**
+**--linux-namespace-remove-all**=true|false
   Removes all namespaces from the set of namespaces configured for a container,
   such that the container will effectively run on the host.
 
@@ -230,7 +230,7 @@ read the configuration from `config.json`.
 
 **--linux-rootfs-propagation**=PROPOGATIONMODE
   Mount propagation for root filesystem.
-  Values are "shared, rshared, private, rprivate, slave, rslave"
+  Values are "shared, private, slave, unbindable"
 
 **--linux-seccomp-allow**=SYSCALL
   Specifies syscalls to be added to the ALLOW list.
@@ -254,13 +254,13 @@ read the configuration from `config.json`.
 **--linux-seccomp-kill**=SYSCALL
   Specifies syscalls to create seccomp rule to respond with KILL.
 
-**--linux-seccomp-only**
+**--linux-seccomp-only**==true|false
   Option to only export the seccomp section of output
 
-**--linux-seccomp-remove**
+**--linux-seccomp-remove**=[]
   Specifies syscall restrictions to remove from the configuration.
 
-**--linux-seccomp-remove-all**
+**--linux-seccomp-remove-all**==true|false
   Option to remove all syscall restrictions.
 
 **--linux-seccomp-trace**=SYSCALL
@@ -285,7 +285,7 @@ read the configuration from `config.json`.
   Add sysctl settings e.g net.ipv4.forward=1, only allowed if the syctl is
   namespaced.
 
-**--linux-uidmappings**
+**--linux-uidmappings**=[]
 
   Add UIDMappings e.g HostUID:ContainerID:Size.  Implies **--user=**.
 
