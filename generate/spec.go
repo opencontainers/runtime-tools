@@ -80,6 +80,13 @@ func (g *Generator) initSpecLinuxResources() {
 	}
 }
 
+func (g *Generator) initSpecLinuxResourcesBlockIO() {
+	g.initSpecLinuxResources()
+	if g.spec.Linux.Resources.BlockIO == nil {
+		g.spec.Linux.Resources.BlockIO = &rspec.LinuxBlockIO{}
+	}
+}
+
 func (g *Generator) initSpecLinuxResourcesCPU() {
 	g.initSpecLinuxResources()
 	if g.spec.Linux.Resources.CPU == nil {

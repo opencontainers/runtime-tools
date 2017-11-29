@@ -94,11 +94,47 @@ read the configuration from `config.json`.
 **--linux-apparmor**=PROFILE
   Specifies the apparmor profile for the container
 
+**--linux-blkio-leaf-weight**=WEIGHT
+  Block IO (realtive leaf weight) accepts a weight value from 10 to 100.
+
+**--linux-blkio-leaf-weight-device**=[]
+  Block IO (realtive device leaf weight, format: MAJOR:MINOR:WEIGHT).
+  This option can be specified multiple times. If a device was specified more than once, the last WEIGHT makes sense.
+  The special *WEIGHT*  -1  removes existing setting for device MAJOR:MINOR.
+
+**--linux-blkio-read-bps-device**=[]
+  Limit read rate (bytes per second) from a device, format is MAJOR:MINOR:LIMIT
+  e.g. --linux-blkio-read-bps-device=8:0:100
+  This option can be specified multiple times. If a device was specified more than once, the last LIMIT makes sense.
+  The special *LIMIT*  -1  removes existing setting for device MAJOR:MINOR.
+
+**--linux-blkio-read-iops-device**=[]
+  Limit read rate (IO per second) from a device, format is MAJOR:MINOR:LIMIT
+  e.g. --linux-blkio-read-iops-device=8:0:1000
+  This option can be specified multiple times. If a device was specified more than once, the last LIMIT makes sense.
+  The special *LIMIT*  -1  removes existing setting for device MAJOR:MINOR.
+
+**--linux-blkio-weight**=WEIGHT
+  Block IO (realtive weight) accepts a weight value from 10 to 100.
+
+**--linux-blkio-weight-device**=[]
+  Block IO (realtive device weight, format: MAJOR:MINOR:WEIGHT).
+  This option can be specified multiple times. If a device was specified more than once, the last WEIGHT makes sense.
+  The special *WEIGHT*  -1  removes existing setting for device MAJOR:MINOR.
+
+**--linux-blkio-write-bps-device**=[]
+  Limit write rate (bytes per second) to a device, format is MAJOR:MINOR:LIMIT
+  e.g. --linux-blkio-write-bps-device=8:0:100
+  This option can be specified multiple times. If a device was specified more than once, the last LIMIT makes sense.
+  The special *LIMIT*  -1  removes existing setting for device MAJOR:MINOR.
+
+**--linux-blkio-write-iops-device**=[]
+  Limit write rate (IO per second) to a device, format is MAJOR:MINOR:LIMIT
+  e.g. --linux-blkio-write-iops-device=8:0:1000
+  This option can be specified multiple times. If a device was specified more than once, the last LIMIT makes sense.
+  The special *LIMIT*  -1  removes existing setting for device MAJOR:MINOR.
 **--linux-cgroups-path**=""
   Specifies the path to the cgroups relative to the cgroups mount point.
-
-**--linux-cpu-shares**=CPUSHARES
-  Specifies a relative share of CPU time available to the tasks in a cgroup.
 
 **--linux-cpu-period**=CPUPERIOD
   Specifies a period of time in microseconds for how regularly a cgroup's access to CPU resources should be reallocated (CFS scheduler only).
@@ -108,6 +144,9 @@ read the configuration from `config.json`.
 
 **--linux-cpus**=CPUS
   Sets the CPUs to use within the cpuset (default is to use any CPU available).
+
+**--linux-cpu-shares**=CPUSHARES
+  Specifies a relative share of CPU time available to the tasks in a cgroup.
 
 **--linux-device-add**=*TYPE:MAJOR:MINOR:PATH[:OPTIONS...]*
   Add a device file in container. e.g. --device=c:10:229:/dev/fuse:fileMode=438:uid=0:gid=0

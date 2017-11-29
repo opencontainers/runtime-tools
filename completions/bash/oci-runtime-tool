@@ -311,6 +311,14 @@ _oci-runtime-tool_generate() {
 		--hostname
 		--label
 		--linux-apparmor
+		--linux-blkio-leaf-weight
+		--linux-blkio-leaf-weight-device
+		--linux-blkio-read-bps-device
+		--linux-blkio-read-iops-device
+		--linux-blkio-weight
+		--linux-blkio-weight-device
+		--linux-blkio-write-bps-device
+		--linux-blkio-write-iops-device
 		--linux-cgroups-path
 		--linux-cpu-period
 		--linux-cpu-quota
