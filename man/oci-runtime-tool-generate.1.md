@@ -283,9 +283,6 @@ read the configuration from `config.json`.
 
   Add UIDMappings e.g HostUID:ContainerID:Size.  Implies **--user=**.
 
-**--mount-cgroups**=[rw|ro|no]
-  Mount cgroups. The default is *no*.
-
 **--mounts-add**=[]
   Configures additional mounts inside container.
   This option can be specified multiple times.

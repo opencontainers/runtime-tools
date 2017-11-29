@@ -896,29 +896,6 @@ func (g *Generator) ClearMounts() {
 	g.spec.Mounts = []rspec.Mount{}
 }
 
-// AddCgroupsMount adds a cgroup mount into g.spec.Mounts.
-func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
-	switch mountCgroupOption {
-	case "ro":
-	case "rw":
-	case "no":
-		return nil
-	default:
-		return fmt.Errorf("--mount-cgroups should be one of (ro,rw,no)")
-	}
-
-	mnt := rspec.Mount{
-		Destination: "/sys/fs/cgroup",
-		Type:        "cgroup",
-		Source:      "cgroup",
-		Options:     []string{"nosuid", "noexec", "nodev", "relatime", mountCgroupOption},
-	}
-	g.initSpec()
-	g.spec.Mounts = append(g.spec.Mounts, mnt)
-
-	return nil
-}
-
 // SetupPrivileged sets up the privilege-related fields inside g.spec.
 func (g *Generator) SetupPrivileged(privileged bool) {
 	if privileged { // Add all capabilities in privileged mode.

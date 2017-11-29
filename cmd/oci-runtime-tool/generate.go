@@ -80,7 +80,6 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "linux-selinux-label", Usage: "process selinux label"},
 	cli.StringSliceFlag{Name: "linux-sysctl", Usage: "add sysctl settings e.g net.ipv4.forward=1"},
 	cli.StringSliceFlag{Name: "linux-uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
-	cli.StringFlag{Name: "mount-cgroups", Value: "no", Usage: "mount cgroups (rw,ro,no)"},
 	cli.StringSliceFlag{Name: "mounts-add", Usage: "configures additional mounts inside container"},
 	cli.BoolFlag{Name: "mounts-remove-all", Usage: "remove all mounts inside container"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
@@ -413,11 +412,6 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	// Add default user namespace.
 	if len(uidMaps) > 0 || len(gidMaps) > 0 {
 		g.AddOrReplaceLinuxNamespace("user", "")
-	}
-
-	mountCgroupOption := context.String("mount-cgroups")
-	if err := g.AddCgroupsMount(mountCgroupOption); err != nil {
-		return err
 	}
 
 	if context.IsSet("mounts-remove-all") {

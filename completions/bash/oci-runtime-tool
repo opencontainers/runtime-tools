@@ -360,7 +360,6 @@ _oci-runtime-tool_generate() {
 		--linux-selinux-label
 		--linux-sysctl
 		--linux-uidmappings
-		--mount-cgroups
 		--mounts-add
 		--output
 		--process-cap-add-ambient
@@ -433,11 +432,6 @@ _oci-runtime-tool_generate() {
 
 		--linux-seccomp-default)
 			__oci-runtime-tool_complete_seccomp_actions
-			return
-			;;
-
-		--mount-cgroups)
-			COMPREPLY=( $( compgen -W "no ro rw" -- "$cur" ) )
 			return
 			;;
 
