@@ -812,69 +812,26 @@ func (g *Generator) AddPostStartHook(hookObject string) error {
 	return nil
 }
 
-// AddTmpfsMount adds a tmpfs mount into g.spec.Mounts.
-func (g *Generator) AddTmpfsMount(dest string, options []string) {
-	mnt := rspec.Mount{
-		Destination: dest,
-		Type:        "tmpfs",
-		Source:      "tmpfs",
-		Options:     options,
-	}
-
+// AddMounts adds a mount into g.spec.Mounts.
+func (g *Generator) AddMounts(mountObject string) error {
 	g.initSpec()
-	g.spec.Mounts = append(g.spec.Mounts, mnt)
-}
 
-// AddCgroupsMount adds a cgroup mount into g.spec.Mounts.
-func (g *Generator) AddCgroupsMount(mountCgroupOption string) error {
-	switch mountCgroupOption {
-	case "ro":
-	case "rw":
-	case "no":
-		return nil
-	default:
-		return fmt.Errorf("--mount-cgroups should be one of (ro,rw,no)")
+	mnt := rspec.Mount{}
+	err := json.Unmarshal([]byte(mountObject), &mnt)
+	if err != nil {
+		return err
 	}
-
-	mnt := rspec.Mount{
-		Destination: "/sys/fs/cgroup",
-		Type:        "cgroup",
-		Source:      "cgroup",
-		Options:     []string{"nosuid", "noexec", "nodev", "relatime", mountCgroupOption},
-	}
-	g.initSpec()
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
 
 	return nil
 }
 
-// AddBindMount adds a bind mount into g.spec.Mounts.
-func (g *Generator) AddBindMount(source, dest string, options []string) {
-	if len(options) == 0 {
-		options = []string{"rw"}
+// ClearMounts clear g.spec.Mounts
+func (g *Generator) ClearMounts() {
+	if g.spec == nil {
+		return
 	}
-
-	// We have to make sure that there is a bind option set, otherwise it won't
-	// be an actual bindmount.
-	foundBindOption := false
-	for _, opt := range options {
-		if opt == "bind" || opt == "rbind" {
-			foundBindOption = true
-			break
-		}
-	}
-	if !foundBindOption {
-		options = append(options, "bind")
-	}
-
-	mnt := rspec.Mount{
-		Destination: dest,
-		Type:        "bind",
-		Source:      source,
-		Options:     options,
-	}
-	g.initSpec()
-	g.spec.Mounts = append(g.spec.Mounts, mnt)
+	g.spec.Mounts = []rspec.Mount{}
 }
 
 // SetupPrivileged sets up the privilege-related fields inside g.spec.

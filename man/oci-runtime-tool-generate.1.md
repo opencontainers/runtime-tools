@@ -289,18 +289,20 @@ read the configuration from `config.json`.
 
   Add UIDMappings e.g HostUID:ContainerID:Size.  Implies **--user=**.
 
-**--mount-bind**=*[[HOST-DIR:CONTAINER-DIR][:OPTIONS...]]*
-  Bind mount directories src:dest:(rw,ro) If you specify, ` --mount-bind
-  /HOST-DIR:/CONTAINER-DIR`, runc bind mounts `/HOST-DIR` in the host
-  to `/CONTAINER-DIR` in the OCI container. The `OPTIONS` are a colon
-  delimited list and can be any mount option support by the runtime such
-  as [rw|ro|rbind|bind|...]. The `HOST_DIR` and `CONTAINER-DIR` must be
-  absolute paths such as `/src/docs`.  You can set the `ro` or `rw`
-  options to a bind-mount to mount it read-only or read-write mode,
-  respectively. By default, bind-mounts are mounted read-write.
+**--mounts-add**=[]
+  Configures additional mounts inside container.
+  This option can be specified multiple times.
+  For example,
+  A. Add tmpfs into container.
+    --mounts-add '{"destination": "/tmp","type": "tmpfs","source": "tmpfs","options": ["nosuid","strictatime","mode=755","size=65536k"]}'
+  B. Bind host directory into containeri.
+    --mounts-add '{"destination": "/data","type": "bind","source": "/volumes/testing","options": ["rbind","rw"]}'
+  C. mount for windows platform
+    --mount-add '{"destination": "C:\\folder-inside-container","source": "C:\\folder-on-host","options": ["ro"]}'
 
-**--mount-cgroups**=[rw|ro|no]
-  Mount cgroups. The default is *no*.
+**--mounts-remove-all**=true|false
+  Remove all mounts inside the container. The default is *false*.
+  When specified with --mount-add, this option will be parsed first.
 
 **--output**=PATH
   Instead of writing the configuration JSON to stdout, write it to a
@@ -398,14 +400,6 @@ read the configuration from `config.json`.
   Additional options will only adjust the relevant portions of your template.
   Templates are not validated for correctness, so the user should ensure that they are correct.
 
-**--tmpfs**=[] Create a tmpfs mount
-  Mount a temporary filesystem (`tmpfs`) mount into a container, for example:
-
-    $ oci-runtime-tool generate -d --tmpfs /tmp:rw,size=787448k,mode=1777 my_image
-
-    This command mounts a `tmpfs` at `/tmp` within the container.  The supported mount options are the same as the Linux default `mount` flags. If you do not specify any options, the systems uses the following options:
-    `rw,noexec,nosuid,nodev,size=65536k`.
-
 # EXAMPLES
 
 ## Generating container in read-only mode
@@ -419,14 +413,14 @@ This protects the containers image from modification. Read only containers may
 still need to write temporary data.  The best way to handle this is to mount
 tmpfs directories on /generate and /tmp.
 
-    $ oci-runtime-tool generate --rootfs-readonly --tmpfs /generate --tmpfs /tmp --tmpfs /run  --rootfs-path /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --rootfs-readonly --mounts-add '{"destination": "/tmp","type": "tmpfs","source": "tmpfs","options": ["nosuid","strictatime","mode=755","size=65536k"]}' --mounts-add '{"destination": "/run","type": "tmpfs","source": "tmpfs","options": ["nosuid","strictatime","mode=755","size=65536k"]}' --rootfs-path /var/lib/containers/fedora --args bash
 
 ## Exposing log messages from the container to the host's log
 
 If you want messages that are logged in your container to show up in the host's
 syslog/journal then you should bind mount the /dev/log directory as follows.
 
-    $ oci-runtime-tool generate --mount-bind /dev/log:/dev/log  --rootfs-path /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --mounts-add '{"destination": "/dev/log","type": "bind","source": "/dev/log","options": ["rbind","rw"]}' --rootfs-path /var/lib/containers/fedora --args bash
 
 From inside the container you can test this by sending a message to the log.
 
@@ -446,13 +440,13 @@ To mount a host directory as a container volume, specify the absolute path to
 the directory and the absolute path for the container directory separated by a
 colon:
 
-    $ oci-runtime-tool generate --mount-bind /var/db:/data1  --rootfs-path /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --mounts-add '{"destination": "/var/db","type": "bind","source": "/data1","options": ["rbind","rw"]}' --rootfs-path /var/lib/containers/fedora --args bash
 
 ## Using SELinux
 
 You can use SELinux to add security to the container.  You must specify the process label to run the init process inside of the container using `--linux-selinux-label`.
 
-    $ oci-runtime-tool generate --mount-bind /var/db:/data1  --linux-selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --linux-mount-label system_u:object_r:svirt_sandbo x_file_t:s0:c1,c2 --rootfs-path /var/lib/containers/fedora --args bash
+    $ oci-runtime-tool generate --mounts-add '{"destination": "/var/db","type": "bind","source": "/data1","options": ["rbind","rw"]}' --linux-selinux-label system_u:system_r:svirt_lxc_net_t:s0:c1,c2 --linux-mount-label system_u:object_r:svirt_sandbo x_file_t:s0:c1,c2 --rootfs-path /var/lib/containers/fedora --args bash
 
 Not in the above example we used a type of svirt_lxc_net_t and an MCS Label of s0:c1,c2.  If you want to guarantee separation between containers, you need to make sure that each container gets launched with a different MCS Label pair.
 
