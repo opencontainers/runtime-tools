@@ -481,6 +481,9 @@ read the configuration from `config.json`.
 **--windows-ignore-flushes-during-boot**=true|false
   Whether to ignore flushes during boot.
 
+**--windows-layer-folders**=[]
+  Specifies a list of layer folders the container image relies on.
+
 # EXAMPLES
 
 ## Generating container in read-only mode

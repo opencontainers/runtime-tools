@@ -1502,3 +1502,9 @@ func (g *Generator) SetWinodwsIgnoreFlushesDuringBoot(ignore bool) {
 	g.initSpecWindows()
 	g.spec.Windows.IgnoreFlushesDuringBoot = ignore
 }
+
+// AddWindowsLayerFolders adds layer folders into  g.spec.Windows.LayerFolders.
+func (g *Generator) AddWindowsLayerFolders(folder string) {
+	g.initSpecWindows()
+	g.spec.Windows.LayerFolders = append(g.spec.Windows.LayerFolders, folder)
+}

@@ -392,6 +392,7 @@ _oci-runtime-tool_generate() {
 		 --solaris-milestone
 		--template
 		--windows-hyperv-utilityVMPath
+		--windows-layer-folders
 	"
 
 	local boolean_options="

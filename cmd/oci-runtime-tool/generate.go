@@ -124,6 +124,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringFlag{Name: "windows-hyperv-utilityVMPath", Usage: "specifies the path to the image used for the utility VM"},
 	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
+	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
 }
 
 var generateCommand = cli.Command{
@@ -827,6 +828,13 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("windows-ignore-flushes-during-boot") {
 		g.SetWinodwsIgnoreFlushesDuringBoot(context.Bool("windows-ignore-flushes-during-boot"))
+	}
+
+	if context.IsSet("windows-layer-folders") {
+		folders := context.StringSlice("windows-layer-folders")
+		for _, folder := range folders {
+			g.AddWindowsLayerFolders(folder)
+		}
 	}
 
 	err := addSeccomp(context, g)
