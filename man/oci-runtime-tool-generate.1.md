@@ -488,6 +488,10 @@ read the configuration from `config.json`.
   Specifies network for container.
   e.g. --windows-network='{"endpointList": ["7a010682-17e0-4455-a838-02e5d9655fe6"],"allowUnqualifiedDNSQuery": true,"DNSSearchList": ["a.com"],"networkSharedContainerName": "containerName"}'
 
+**--windows-resources-cpu**=""
+  Specifies cpu for container.
+  e.g. --windows-resources-cpu '{"count":100, "maximum": 5000}'
+
 # EXAMPLES
 
 ## Generating container in read-only mode

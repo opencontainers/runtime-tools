@@ -1512,11 +1512,23 @@ func (g *Generator) AddWindowsLayerFolders(folder string) {
 // SetWindowsNetwork sets network for g.spec.Windows.Network
 func (g *Generator) SetWindowsNetwork(network string) error {
 	g.initSpecWindows()
-	tmpNetwork := rspec.WindowsNetwork{}
-	err := json.Unmarshal([]byte(network), &tmpNetwork)
+	tmpNetwork := &rspec.WindowsNetwork{}
+	err := json.Unmarshal([]byte(network), tmpNetwork)
 	if err != nil {
 		return err
 	}
-	g.spec.Windows.Network = &tmpNetwork
+	g.spec.Windows.Network = tmpNetwork
+	return nil
+}
+
+// SetWindowsResourcesCPU sets cpu for g.spec.Windows.Resources.CPU
+func (g *Generator) SetWindowsResourcesCPU(cpu string) error {
+	g.initSpecWindowsResources()
+	tmpCPU := &rspec.WindowsCPUResources{}
+	err := json.Unmarshal([]byte(cpu), tmpCPU)
+	if err != nil {
+		return err
+	}
+	g.spec.Windows.Resources.CPU = tmpCPU
 	return nil
 }

@@ -126,6 +126,7 @@ var generateFlags = []cli.Flag{
 	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
 	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
 	cli.StringFlag{Name: "windows-network", Usage: "specifies network for container"},
+	cli.StringFlag{Name: "windows-resources-cpu", Usage: "specifies CPU for container"},
 }
 
 var generateCommand = cli.Command{
@@ -841,6 +842,14 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("windows-network") {
 		network := context.String("windows-network")
 		err := g.SetWindowsNetwork(network)
+		if err != nil {
+			return err
+		}
+	}
+
+	if context.IsSet("windows-resources-cpu") {
+		cpu := context.String("windows-resources-cpu")
+		err := g.SetWindowsResourcesCPU(cpu)
 		if err != nil {
 			return err
 		}

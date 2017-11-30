@@ -156,3 +156,10 @@ func (g *Generator) initSpecWindowsHyperV() {
 		g.spec.Windows.HyperV = &rspec.WindowsHyperV{}
 	}
 }
+
+func (g *Generator) initSpecWindowsResources() {
+	g.initSpecWindows()
+	if g.spec.Windows.Resources == nil {
+		g.spec.Windows.Resources = &rspec.WindowsResources{}
+	}
+}
