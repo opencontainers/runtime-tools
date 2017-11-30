@@ -1510,27 +1510,15 @@ func (g *Generator) AddWindowsLayerFolders(folder string) {
 }
 
 // SetWindowsNetwork sets g.spec.Windows.Network.
-func (g *Generator) SetWindowsNetwork(network string) error {
+func (g *Generator) SetWindowsNetwork(network rspec.WindowsNetwork) {
 	g.initSpecWindows()
-	tmpNetwork := &rspec.WindowsNetwork{}
-	err := json.Unmarshal([]byte(network), tmpNetwork)
-	if err != nil {
-		return err
-	}
-	g.spec.Windows.Network = tmpNetwork
-	return nil
+	g.spec.Windows.Network = &network
 }
 
 // SetWindowsResourcesCPU sets g.spec.Windows.Resources.CPU.
-func (g *Generator) SetWindowsResourcesCPU(cpu string) error {
+func (g *Generator) SetWindowsResourcesCPU(cpu rspec.WindowsCPUResources) {
 	g.initSpecWindowsResources()
-	tmpCPU := &rspec.WindowsCPUResources{}
-	err := json.Unmarshal([]byte(cpu), tmpCPU)
-	if err != nil {
-		return err
-	}
-	g.spec.Windows.Resources.CPU = tmpCPU
-	return nil
+	g.spec.Windows.Resources.CPU = &cpu
 }
 
 // SetWindowsResourcesMemoryLimit sets g.spec.Windows.Resources.Memory.Limit.
@@ -1540,13 +1528,13 @@ func (g *Generator) SetWindowsResourcesMemoryLimit(limit uint64) {
 }
 
 // SetWindowsResourcesStorage sets g.spec.Windows.Resources.Storage.
-func (g *Generator) SetWindowsResourcesStorage(storage string) error {
+func (g *Generator) SetWindowsResourcesStorage(storage rspec.WindowsStorageResources) {
 	g.initSpecWindowsResources()
-	tmpStorage := &rspec.WindowsStorageResources{}
-	err := json.Unmarshal([]byte(storage), tmpStorage)
-	if err != nil {
-		return err
-	}
-	g.spec.Windows.Resources.Storage = tmpStorage
-	return nil
+	g.spec.Windows.Resources.Storage = &storage
+}
+
+// SetWinodwsServicing sets g.spec.Winodws.Servicing.
+func (g *Generator) SetWinodwsServicing(servicing bool) {
+	g.initSpecWindows()
+	g.spec.Windows.Servicing = servicing
 }

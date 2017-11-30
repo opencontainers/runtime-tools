@@ -499,6 +499,9 @@ read the configuration from `config.json`.
   Specifies storage for container.
   e.g. --windows-resources-storage '{"iops": 50, "bps": 20}'
 
+**--windows-servicing**=true|false
+  Whether to servicing operations
+
 # EXAMPLES
 
 ## Generating container in read-only mode

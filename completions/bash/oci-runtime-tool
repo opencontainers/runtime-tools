@@ -417,6 +417,7 @@ _oci-runtime-tool_generate() {
 		--process-terminal
 		--rootfs-readonly
 		--windows-ignore-flushes-during-boot
+		--windows-servicing
 	"
 
 	local all_options="$options_with_args $boolean_options"

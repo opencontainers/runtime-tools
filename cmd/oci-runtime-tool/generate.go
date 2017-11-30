@@ -129,6 +129,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "windows-resources-cpu", Usage: "specifies CPU for container"},
 	cli.Uint64Flag{Name: "windows-resources-memory-limit", Usage: "specifies limit of memory"},
 	cli.StringFlag{Name: "windows-resources-storage", Usage: "specifies storage for container"},
+	cli.BoolFlag{Name: "windows-servicing", Usage: "servicing operations"},
 }
 
 var generateCommand = cli.Command{
@@ -843,18 +844,20 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("windows-network") {
 		network := context.String("windows-network")
-		err := g.SetWindowsNetwork(network)
-		if err != nil {
+		tmpNetwork := rspec.WindowsNetwork{}
+		if err := json.Unmarshal([]byte(network), &tmpNetwork); err != nil {
 			return err
 		}
+		g.SetWindowsNetwork(tmpNetwork)
 	}
 
 	if context.IsSet("windows-resources-cpu") {
 		cpu := context.String("windows-resources-cpu")
-		err := g.SetWindowsResourcesCPU(cpu)
-		if err != nil {
+		tmpCPU := rspec.WindowsCPUResources{}
+		if err := json.Unmarshal([]byte(cpu), &tmpCPU); err != nil {
 			return err
 		}
+		g.SetWindowsResourcesCPU(tmpCPU)
 	}
 
 	if context.IsSet("windows-resources-memory-limit") {
@@ -864,10 +867,15 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("windows-resources-storage") {
 		storage := context.String("windows-resources-storage")
-		err := g.SetWindowsResourcesStorage(storage)
-		if err != nil {
+		tmpStorage := rspec.WindowsStorageResources{}
+		if err := json.Unmarshal([]byte(storage), &tmpStorage); err != nil {
 			return err
 		}
+		g.SetWindowsResourcesStorage(tmpStorage)
+	}
+
+	if context.IsSet("windows-servicing") {
+		g.SetWinodwsServicing(context.Bool("windows-servicing"))
 	}
 
 	err := addSeccomp(context, g)
