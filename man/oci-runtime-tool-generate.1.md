@@ -495,6 +495,10 @@ read the configuration from `config.json`.
 **--windows-resources-memory-limit**=MEMORYLIMIT
   Set limit of memory.
 
+**--windows-resources-storage**=""
+  Specifies storage for container.
+  e.g. --windows-resources-storage '{"iops": 50, "bps": 20}'
+
 # EXAMPLES
 
 ## Generating container in read-only mode

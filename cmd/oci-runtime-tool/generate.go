@@ -128,6 +128,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "windows-network", Usage: "specifies network for container"},
 	cli.StringFlag{Name: "windows-resources-cpu", Usage: "specifies CPU for container"},
 	cli.Uint64Flag{Name: "windows-resources-memory-limit", Usage: "specifies limit of memory"},
+	cli.StringFlag{Name: "windows-resources-storage", Usage: "specifies storage for container"},
 }
 
 var generateCommand = cli.Command{
@@ -859,6 +860,14 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("windows-resources-memory-limit") {
 		limit := context.Uint64("windows-resources-memory-limit")
 		g.SetWindowsResourcesMemoryLimit(limit)
+	}
+
+	if context.IsSet("windows-resources-storage") {
+		storage := context.String("windows-resources-storage")
+		err := g.SetWindowsResourcesStorage(storage)
+		if err != nil {
+			return err
+		}
 	}
 
 	err := addSeccomp(context, g)

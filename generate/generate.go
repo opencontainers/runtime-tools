@@ -1538,3 +1538,15 @@ func (g *Generator) SetWindowsResourcesMemoryLimit(limit uint64) {
 	g.initSpecWindowsResourcesMemory()
 	g.spec.Windows.Resources.Memory.Limit = &limit
 }
+
+// SetWindowsResourcesStorage sets g.spec.Windows.Resources.Storage.
+func (g *Generator) SetWindowsResourcesStorage(storage string) error {
+	g.initSpecWindowsResources()
+	tmpStorage := &rspec.WindowsStorageResources{}
+	err := json.Unmarshal([]byte(storage), tmpStorage)
+	if err != nil {
+		return err
+	}
+	g.spec.Windows.Resources.Storage = tmpStorage
+	return nil
+}
