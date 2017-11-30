@@ -21,6 +21,7 @@
 package tap // import "github.com/mndrix/tap-go"
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -150,4 +151,16 @@ func (t *T) Diagnostic(message string) {
 // which may span multiple lines.
 func (t *T) Diagnosticf(format string, a ...interface{}) {
 	t.printf("# "+escapeNewlines(format)+"\n", a...)
+}
+
+// YAML generates a YAML block from the message.
+func (t *T) YAML(message interface{}) error {
+	bytes, err := json.MarshalIndent(message, "  ", "  ")
+	if err != nil {
+		return err
+	}
+	t.printf("  ---\n  ")
+	t.printf(string(bytes))
+	t.printf("\n  ...\n")
+	return nil
 }

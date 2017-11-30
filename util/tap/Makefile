@@ -1,4 +1,4 @@
-TESTS = auto check diagnostic failing known skip todo writer
+TESTS = auto check diagnostic failing known skip todo writer yaml
 GOPATH = $(CURDIR)/gopath
 
 .PHONY: $(TESTS)
