@@ -79,7 +79,7 @@ func runtimeInsideValidate(g *generate.Generator, f preFunc) error {
 	if err != nil {
 		return err
 	}
-	err = fileutils.CopyFile("../runtimetest", filepath.Join(r.BundleDir, "runtimetest"))
+	err = fileutils.CopyFile("../runtimetest", filepath.Join(bundleDir, "runtimetest"))
 	if err != nil {
 		return err
 	}
