@@ -484,6 +484,10 @@ read the configuration from `config.json`.
 **--windows-layer-folders**=[]
   Specifies a list of layer folders the container image relies on.
 
+**--windows-network**=""
+  Specifies network for container.
+  e.g. --windows-network='{"endpointList": ["7a010682-17e0-4455-a838-02e5d9655fe6"],"allowUnqualifiedDNSQuery": true,"DNSSearchList": ["a.com"],"networkSharedContainerName": "containerName"}'
+
 # EXAMPLES
 
 ## Generating container in read-only mode

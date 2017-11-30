@@ -1508,3 +1508,15 @@ func (g *Generator) AddWindowsLayerFolders(folder string) {
 	g.initSpecWindows()
 	g.spec.Windows.LayerFolders = append(g.spec.Windows.LayerFolders, folder)
 }
+
+// SetWindowsNetwork sets network for g.spec.Windows.Network
+func (g *Generator) SetWindowsNetwork(network string) error {
+	g.initSpecWindows()
+	tmpNetwork := rspec.WindowsNetwork{}
+	err := json.Unmarshal([]byte(network), &tmpNetwork)
+	if err != nil {
+		return err
+	}
+	g.spec.Windows.Network = &tmpNetwork
+	return nil
+}

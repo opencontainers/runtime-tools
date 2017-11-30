@@ -393,6 +393,7 @@ _oci-runtime-tool_generate() {
 		--template
 		--windows-hyperv-utilityVMPath
 		--windows-layer-folders
+		--windows-network
 	"
 
 	local boolean_options="

@@ -125,6 +125,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "windows-hyperv-utilityVMPath", Usage: "specifies the path to the image used for the utility VM"},
 	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
 	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
+	cli.StringFlag{Name: "windows-network", Usage: "specifies network for container"},
 }
 
 var generateCommand = cli.Command{
@@ -834,6 +835,14 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		folders := context.StringSlice("windows-layer-folders")
 		for _, folder := range folders {
 			g.AddWindowsLayerFolders(folder)
+		}
+	}
+
+	if context.IsSet("windows-network") {
+		network := context.String("windows-network")
+		err := g.SetWindowsNetwork(network)
+		if err != nil {
+			return err
 		}
 	}
 
