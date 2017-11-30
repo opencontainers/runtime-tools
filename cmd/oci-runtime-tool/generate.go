@@ -122,6 +122,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "solaris-max-shm-memory", Usage: "Specifies the maximum amount of shared memory"},
 	cli.StringFlag{Name: "solaris-milestone", Usage: "Specifies the SMF FMRI"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
+	cli.StringFlag{Name: "windows-hyperv-utilityVMPath", Usage: "specifies the path to the image used for the utility VM"},
 }
 
 var generateCommand = cli.Command{
@@ -817,6 +818,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("solaris-milestone") {
 		g.SetSolarisMilestone(context.String("solaris-milestone"))
+	}
+
+	if context.IsSet("windows-hyperv-utilityVMPath") {
+		g.SetWindowsHypervUntilityVMPath(context.String("windows-hyperv-utilityVMPath"))
 	}
 
 	err := addSeccomp(context, g)

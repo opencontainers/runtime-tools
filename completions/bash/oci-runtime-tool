@@ -391,6 +391,7 @@ _oci-runtime-tool_generate() {
 		--solaris-max-shm-memory
 		 --solaris-milestone
 		--template
+		--windows-hyperv-utilityVMPath
 	"
 
 	local boolean_options="

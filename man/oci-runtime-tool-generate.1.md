@@ -475,6 +475,9 @@ read the configuration from `config.json`.
   Additional options will only adjust the relevant portions of your template.
   Templates are not validated for correctness, so the user should ensure that they are correct.
 
+**--windows-hyperv-utilityVMPath**=PATH
+  Specifies the path to the image used for the utility VM.
+
 # EXAMPLES
 
 ## Generating container in read-only mode

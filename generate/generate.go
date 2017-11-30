@@ -1490,3 +1490,9 @@ func (g *Generator) SetSolarisMilestone(milestone string) {
 	g.initSpecSolaris()
 	g.spec.Solaris.Milestone = milestone
 }
+
+// SetWindowsHypervUntilityVMPath sets path for g.spec.Windows.HyperV.UtilityVMPath
+func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
+	g.initSpecWindowsHyperV()
+	g.spec.Windows.HyperV.UtilityVMPath = path
+}

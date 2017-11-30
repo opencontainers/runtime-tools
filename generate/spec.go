@@ -142,3 +142,17 @@ func (g *Generator) initSpecSolarisCappedMemory() {
 		g.spec.Solaris.CappedMemory = &rspec.SolarisCappedMemory{}
 	}
 }
+
+func (g *Generator) initSpecWindows() {
+	g.initSpec()
+	if g.spec.Windows == nil {
+		g.spec.Windows = &rspec.Windows{}
+	}
+}
+
+func (g *Generator) initSpecWindowsHyperV() {
+	g.initSpecWindows()
+	if g.spec.Windows.HyperV == nil {
+		g.spec.Windows.HyperV = &rspec.WindowsHyperV{}
+	}
+}
