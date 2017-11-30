@@ -163,3 +163,10 @@ func (g *Generator) initSpecWindowsResources() {
 		g.spec.Windows.Resources = &rspec.WindowsResources{}
 	}
 }
+
+func (g *Generator) initSpecWindowsResourcesMemory() {
+	g.initSpecWindowsResources()
+	if g.spec.Windows.Resources.Memory == nil {
+		g.spec.Windows.Resources.Memory = &rspec.WindowsMemoryResources{}
+	}
+}

@@ -395,6 +395,7 @@ _oci-runtime-tool_generate() {
 		--windows-layer-folders
 		--windows-network
 		--windows-resources-cpu
+		--windows-resources-memory-limit
 	"
 
 	local boolean_options="

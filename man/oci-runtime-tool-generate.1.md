@@ -492,6 +492,9 @@ read the configuration from `config.json`.
   Specifies cpu for container.
   e.g. --windows-resources-cpu '{"count":100, "maximum": 5000}'
 
+**--windows-resources-memory-limit**=MEMORYLIMIT
+  Set limit of memory.
+
 # EXAMPLES
 
 ## Generating container in read-only mode

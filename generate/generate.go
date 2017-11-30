@@ -1509,7 +1509,7 @@ func (g *Generator) AddWindowsLayerFolders(folder string) {
 	g.spec.Windows.LayerFolders = append(g.spec.Windows.LayerFolders, folder)
 }
 
-// SetWindowsNetwork sets network for g.spec.Windows.Network
+// SetWindowsNetwork sets g.spec.Windows.Network.
 func (g *Generator) SetWindowsNetwork(network string) error {
 	g.initSpecWindows()
 	tmpNetwork := &rspec.WindowsNetwork{}
@@ -1521,7 +1521,7 @@ func (g *Generator) SetWindowsNetwork(network string) error {
 	return nil
 }
 
-// SetWindowsResourcesCPU sets cpu for g.spec.Windows.Resources.CPU
+// SetWindowsResourcesCPU sets g.spec.Windows.Resources.CPU.
 func (g *Generator) SetWindowsResourcesCPU(cpu string) error {
 	g.initSpecWindowsResources()
 	tmpCPU := &rspec.WindowsCPUResources{}
@@ -1531,4 +1531,10 @@ func (g *Generator) SetWindowsResourcesCPU(cpu string) error {
 	}
 	g.spec.Windows.Resources.CPU = tmpCPU
 	return nil
+}
+
+// SetWindowsResourcesMemoryLimit sets g.spec.Windows.Resources.Memory.Limit.
+func (g *Generator) SetWindowsResourcesMemoryLimit(limit uint64) {
+	g.initSpecWindowsResourcesMemory()
+	g.spec.Windows.Resources.Memory.Limit = &limit
 }

@@ -127,6 +127,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
 	cli.StringFlag{Name: "windows-network", Usage: "specifies network for container"},
 	cli.StringFlag{Name: "windows-resources-cpu", Usage: "specifies CPU for container"},
+	cli.Uint64Flag{Name: "windows-resources-memory-limit", Usage: "specifies limit of memory"},
 }
 
 var generateCommand = cli.Command{
@@ -853,6 +854,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if context.IsSet("windows-resources-memory-limit") {
+		limit := context.Uint64("windows-resources-memory-limit")
+		g.SetWindowsResourcesMemoryLimit(limit)
 	}
 
 	err := addSeccomp(context, g)
