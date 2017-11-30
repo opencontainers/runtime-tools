@@ -1,5 +1,6 @@
 PREFIX ?= $(DESTDIR)/usr
 BINDIR ?= $(DESTDIR)/usr/bin
+TAP ?= tap
 
 BUILDTAGS=
 RUNTIME ?= runc
@@ -39,7 +40,7 @@ clean:
 	rm -f oci-runtime-tool runtimetest *.1 $(VALIDATION_TESTS)
 
 localvalidation:
-	RUNTIME=$(RUNTIME) prove $(VALIDATION_TESTS)
+	RUNTIME=$(RUNTIME) $(TAP) $(VALIDATION_TESTS)
 
 .PHONY: validation-executables
 validation-executables: $(VALIDATION_TESTS)
