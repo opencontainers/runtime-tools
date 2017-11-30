@@ -123,6 +123,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "solaris-milestone", Usage: "Specifies the SMF FMRI"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringFlag{Name: "windows-hyperv-utilityVMPath", Usage: "specifies the path to the image used for the utility VM"},
+	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
 }
 
 var generateCommand = cli.Command{
@@ -822,6 +823,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("windows-hyperv-utilityVMPath") {
 		g.SetWindowsHypervUntilityVMPath(context.String("windows-hyperv-utilityVMPath"))
+	}
+
+	if context.IsSet("windows-ignore-flushes-during-boot") {
+		g.SetWinodwsIgnoreFlushesDuringBoot(context.Bool("windows-ignore-flushes-during-boot"))
 	}
 
 	err := addSeccomp(context, g)

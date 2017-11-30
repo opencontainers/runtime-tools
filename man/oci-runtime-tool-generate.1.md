@@ -478,6 +478,9 @@ read the configuration from `config.json`.
 **--windows-hyperv-utilityVMPath**=PATH
   Specifies the path to the image used for the utility VM.
 
+**--windows-ignore-flushes-during-boot**=true|false
+  Whether to ignore flushes during boot.
+
 # EXAMPLES
 
 ## Generating container in read-only mode
