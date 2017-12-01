@@ -302,6 +302,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	g.SetupPrivileged(context.Bool("privileged"))
 
+	if context.Bool("process-cap-drop-all") {
+		g.ClearProcessCapabilities()
+	}
+
 	if context.IsSet("process-cap-add-ambient") {
 		addCaps := context.StringSlice("process-cap-add-ambient")
 		for _, cap := range addCaps {
@@ -345,10 +349,6 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 				return err
 			}
 		}
-	}
-
-	if context.Bool("process-cap-drop-all") {
-		g.ClearProcessCapabilities()
 	}
 
 	if context.IsSet("process-cap-drop-ambient") {
@@ -704,6 +704,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
+	if context.Bool("linux-namespace-remove-all") {
+		g.ClearLinuxNamespaces()
+	}
+
 	if context.IsSet("linux-namespace-add") {
 		namespaces := context.StringSlice("linux-namespace-add")
 		for _, ns := range namespaces {
@@ -726,8 +730,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.Bool("linux-namespace-remove-all") {
-		g.ClearLinuxNamespaces()
+	if context.Bool("process-rlimits-remove-all") {
+		g.ClearProcessRlimits()
 	}
 
 	if context.IsSet("process-rlimits-add") {
@@ -751,8 +755,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
-	if context.Bool("process-rlimits-remove-all") {
-		g.ClearProcessRlimits()
+	if context.Bool("linux-device-remove-all") {
+		g.ClearLinuxDevices()
 	}
 
 	if context.IsSet("linux-device-add") {
@@ -774,10 +778,6 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 				return err
 			}
 		}
-	}
-
-	if context.Bool("linux-device-remove-all") {
-		g.ClearLinuxDevices()
 	}
 
 	err := addSeccomp(context, g)
@@ -1047,6 +1047,12 @@ func parseLinuxResourcesDeviceAccess(device string, g *generate.Generator) (rspe
 }
 
 func addSeccomp(context *cli.Context, g *generate.Generator) error {
+	if context.Bool("linux-seccomp-remove-all") {
+		err := g.RemoveAllSeccompRules()
+		if err != nil {
+			return err
+		}
+	}
 
 	// Set the DefaultAction of seccomp
 	if context.IsSet("linux-seccomp-default") {
@@ -1118,12 +1124,6 @@ func addSeccomp(context *cli.Context, g *generate.Generator) error {
 		}
 	}
 
-	if context.Bool("linux-seccomp-remove-all") {
-		err := g.RemoveAllSeccompRules()
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
