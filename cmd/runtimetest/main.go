@@ -895,46 +895,43 @@ func run(context *cli.Context) error {
 		complianceLevel = rfc2119.Must
 		logrus.Warningf("%s, using 'MUST' by default.", err.Error())
 	}
-	var validationErrors error
-	for _, v := range defaultValidations {
-		err := v.test(spec)
-		t.Ok(err == nil, v.description)
-		if err != nil {
-			if e, ok := err.(*specerror.Error); ok && e.Err.Level < complianceLevel {
-				continue
-			}
-			validationErrors = multierror.Append(validationErrors, err)
-		}
-	}
 
-	if platform == "linux" || platform == "solaris" {
-		for _, v := range posixValidations {
-			err := v.test(spec)
-			t.Ok(err == nil, v.description)
-			if err != nil {
-				if e, ok := err.(*specerror.Error); ok && e.Err.Level < complianceLevel {
-					continue
-				}
-				validationErrors = multierror.Append(validationErrors, err)
-			}
-		}
-	}
-
+	validations := defaultValidations
 	if platform == "linux" {
-		for _, v := range linuxValidations {
-			err := v.test(spec)
-			t.Ok(err == nil, v.description)
-			if err != nil {
-				if e, ok := err.(*specerror.Error); ok && e.Err.Level < complianceLevel {
-					continue
+		validations = append(validations, posixValidations...)
+		validations = append(validations, linuxValidations...)
+	} else if platform == "solaris" {
+		validations = append(validations, posixValidations...)
+	}
+
+	for _, v := range validations {
+		err := v.test(spec)
+		if err == nil {
+			t.Pass(v.description)
+		} else {
+			merr, ok := err.(*multierror.Error)
+			if ok {
+				for _, err = range merr.Errors {
+					if e, ok := err.(*rfc2119.Error); ok {
+						t.Ok(e.Level < complianceLevel, v.description)
+					} else {
+						t.Fail(v.description)
+					}
+					t.Diagnostic(err.Error())
 				}
-				validationErrors = multierror.Append(validationErrors, err)
+			} else {
+				if e, ok := err.(*rfc2119.Error); ok {
+					t.Ok(e.Level < complianceLevel, v.description)
+				} else {
+					t.Fail(v.description)
+				}
+				t.Diagnostic(err.Error())
 			}
 		}
 	}
 	t.AutoPlan()
 
-	return validationErrors
+	return nil
 }
 
 func main() {

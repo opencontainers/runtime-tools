@@ -1,12 +1,14 @@
 PREFIX ?= $(DESTDIR)/usr
 BINDIR ?= $(DESTDIR)/usr/bin
+TAP ?= tap
 
 BUILDTAGS=
 RUNTIME ?= runc
 COMMIT=$(shell git rev-parse HEAD 2> /dev/null || true)
 VERSION := ${shell cat ./VERSION}
+VALIDATION_TESTS ?= $(patsubst %.go,%.t,$(wildcard validation/*.go))
 
-all: tool runtimetest
+all: tool runtimetest validation-executables
 
 tool:
 	go build -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION}" -o oci-runtime-tool ./cmd/oci-runtime-tool
@@ -35,10 +37,18 @@ uninstall:
 	rm -f $(PREFIX)/share/bash-completion/completions/oci-runtime-tool
 
 clean:
-	rm -f oci-runtime-tool runtimetest *.1
+	rm -f oci-runtime-tool runtimetest *.1 $(VALIDATION_TESTS)
 
-localvalidation: runtimetest
-	RUNTIME=$(RUNTIME) go test -tags "$(BUILDTAGS)" ${TESTFLAGS} -v github.com/opencontainers/runtime-tools/validation
+localvalidation:
+	RUNTIME=$(RUNTIME) $(TAP) $(VALIDATION_TESTS)
+
+.PHONY: validation-executables
+validation-executables: $(VALIDATION_TESTS)
+
+.PRECIOUS: $(VALIDATION_TESTS)
+.PHONY: $(VALIDATION_TESTS)
+$(VALIDATION_TESTS): %.t: %.go
+	go build -tags "$(BUILDTAGS)" ${TESTFLAGS} -o $@ $<
 
 .PHONY: test .gofmt .govet .golint
 
