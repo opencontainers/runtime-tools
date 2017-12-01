@@ -51,6 +51,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "linux-gidmappings", Usage: "add GIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "linux-hugepage-limits-add", Usage: "add hugepage resource limits"},
 	cli.StringSliceFlag{Name: "linux-hugepage-limits-drop", Usage: "drop hugepage resource limits"},
+	cli.StringFlag{Name: "linux-intelRdt-l3CacheSchema", Usage: "specifies the schema for L3 cache id and capacity bitmask"},
 	cli.StringSliceFlag{Name: "linux-masked-paths", Usage: "specifies paths can not be read inside container"},
 	cli.Uint64Flag{Name: "linux-mem-kernel-limit", Usage: "kernel memory limit (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-kernel-tcp", Usage: "kernel memory limit for tcp (in bytes)"},
@@ -650,6 +651,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		for _, v := range pageList {
 			g.DropLinuxResourcesHugepageLimit(v)
 		}
+	}
+
+	if context.IsSet("linux-intelRdt-l3CacheSchema") {
+		g.SetLinuxIntelRdtL3CacheSchema(context.String("linux-intelRdt-l3CacheSchema"))
 	}
 
 	if context.IsSet("linux-mems") {

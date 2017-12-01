@@ -191,6 +191,9 @@ read the configuration from `config.json`.
   Drop hugepage rsource limits. Just need to specify PAGESIZE. e.g. --linux-hugepage-limits-drop=4MB
   This option can be specified multiple times.
 
+**--linux-intelRdt-l3CacheSchema**=""
+  Specifies the schema for L3 cache id and capacity bitmask.
+
 **--linux-masked-paths**=[]
   Specifies paths can not be read inside container. e.g. --linux-masked-paths=/proc/kcore
   This option can be specified multiple times.
