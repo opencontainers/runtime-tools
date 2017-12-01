@@ -24,14 +24,3 @@ func main() {
 	got := buf.String()
 	t.Ok(got == expected, "diagnostics gave expected output")
 }
-
-const expected = `TAP version 13
-1..2
-ok 1 - test for anchoring the YAML block
-  ---
-  {
-    "code": 3,
-    "message": "testing YAML blocks"
-  }
-  ...
-`
