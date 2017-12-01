@@ -59,6 +59,13 @@ func (g *Generator) initSpecLinux() {
 	}
 }
 
+func (g *Generator) initSpecLinuxIntelRdt() {
+	g.initSpecLinux()
+	if g.spec.Linux.IntelRdt == nil {
+		g.spec.Linux.IntelRdt = &rspec.LinuxIntelRdt{}
+	}
+}
+
 func (g *Generator) initSpecLinuxSysctl() {
 	g.initSpecLinux()
 	if g.spec.Linux.Sysctl == nil {

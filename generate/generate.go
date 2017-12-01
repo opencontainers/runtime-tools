@@ -492,6 +492,12 @@ func (g *Generator) SetLinuxCgroupsPath(path string) {
 	g.spec.Linux.CgroupsPath = path
 }
 
+// SetLinuxIntelRdtL3CacheSchema sets g.spec.Linux.IntelRdt.L3CacheSchema
+func (g *Generator) SetLinuxIntelRdtL3CacheSchema(schema string) {
+	g.initSpecLinuxIntelRdt()
+	g.spec.Linux.IntelRdt.L3CacheSchema = schema
+}
+
 // SetLinuxMountLabel sets g.spec.Linux.MountLabel.
 func (g *Generator) SetLinuxMountLabel(label string) {
 	g.initSpecLinux()
