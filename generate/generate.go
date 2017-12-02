@@ -1486,3 +1486,9 @@ func (g *Generator) SetSolarisLimitPriv(limitPriv string) {
 	g.initSpecSolaris()
 	g.spec.Solaris.LimitPriv = limitPriv
 }
+
+// SetSolarisMaxShmMemory sets g.spec.Solaris.MaxShmMemory
+func (g *Generator) SetSolarisMaxShmMemory(memory string) {
+	g.initSpecSolaris()
+	g.spec.Solaris.MaxShmMemory = memory
+}

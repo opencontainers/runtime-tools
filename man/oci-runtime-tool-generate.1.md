@@ -464,6 +464,9 @@ read the configuration from `config.json`.
 **--solaris-limitpriv**=""
   Sets privilege limit.
 
+**--solaris-max-shm-memory**=""
+  Sets the maximum amount of shared memory.
+
 **--template**=PATH
   Override the default template with your own.
   Additional options will only adjust the relevant portions of your template.

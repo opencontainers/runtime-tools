@@ -388,6 +388,7 @@ _oci-runtime-tool_generate() {
 		--solaris-capped-memory-physical
 		--solaris-capped-memory-swap
 		--solaris-limitpriv1
+		--solaris-max-shm-memory
 		--template
 	"
 

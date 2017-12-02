@@ -119,6 +119,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "solaris-capped-memory-physical", Usage: "Specifies the physical caps on the memory"},
 	cli.StringFlag{Name: "solaris-capped-memory-swap", Usage: "Specifies the swap caps on the memory"},
 	cli.StringFlag{Name: "solaris-limitpriv", Usage: "privilege limit"},
+	cli.StringFlag{Name: "solaris-max-shm-memory", Usage: "Specifies the maximum amount of shared memory"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 }
 
@@ -813,6 +814,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("solaris-limitpriv") {
 		g.SetSolarisLimitPriv(context.String("solaris-limitpriv"))
+	}
+
+	if context.IsSet("solaris-max-shm-memory") {
+		g.SetSolarisMaxShmMemory(context.String("solaris-max-shm-memory"))
 	}
 
 	err := addSeccomp(context, g)
