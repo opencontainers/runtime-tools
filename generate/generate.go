@@ -1469,14 +1469,20 @@ func (g *Generator) SetSolarisCappedCPUNcpus(ncpus string) {
 	g.spec.Solaris.CappedCPU.Ncpus = ncpus
 }
 
-// SetSolarisCappedMemoryPhysical sets g.spec.SolarisCappedMemory.Physical
+// SetSolarisCappedMemoryPhysical sets g.spec.Solaris.CappedMemory.Physical
 func (g *Generator) SetSolarisCappedMemoryPhysical(physical string) {
 	g.initSpecSolarisCappedMemory()
 	g.spec.Solaris.CappedMemory.Physical = physical
 }
 
-// SetSolarisCappedMemorySwap sets g.spec.SolarisCappedMemory.Swap
+// SetSolarisCappedMemorySwap sets g.spec.Solaris.CappedMemory.Swap
 func (g *Generator) SetSolarisCappedMemorySwap(swap string) {
 	g.initSpecSolarisCappedMemory()
 	g.spec.Solaris.CappedMemory.Swap = swap
+}
+
+// SetSolarisLimitPriv sets g.spec.Solaris.LimitPriv
+func (g *Generator) SetSolarisLimitPriv(limitPriv string) {
+	g.initSpecSolaris()
+	g.spec.Solaris.LimitPriv = limitPriv
 }

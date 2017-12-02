@@ -461,6 +461,9 @@ read the configuration from `config.json`.
 **--solaris-capped-memory-swap**=""
   Specifies the swap caps on the memory.
 
+**--solaris-limitpriv**=""
+  Sets privilege limit.
+
 **--template**=PATH
   Override the default template with your own.
   Additional options will only adjust the relevant portions of your template.

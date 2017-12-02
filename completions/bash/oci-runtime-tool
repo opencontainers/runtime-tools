@@ -387,6 +387,7 @@ _oci-runtime-tool_generate() {
 		--solaris-capped-cpu-ncpus
 		--solaris-capped-memory-physical
 		--solaris-capped-memory-swap
+		--solaris-limitpriv1
 		--template
 	"
 
