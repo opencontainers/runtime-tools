@@ -128,3 +128,10 @@ func (g *Generator) initSpecSolaris() {
 		g.spec.Solaris = &rspec.Solaris{}
 	}
 }
+
+func (g *Generator) initSpecSolarisCappedCPU() {
+	g.initSpecSolaris()
+	if g.spec.Solaris.CappedCPU == nil {
+		g.spec.Solaris.CappedCPU = &rspec.SolarisCappedCPU{}
+	}
+}

@@ -451,6 +451,10 @@ read the configuration from `config.json`.
   Represents the automatic creation of a network resource for an application container
   e.g. --solaris-anet '{"allowedAddress": "172.17.0.2/16","configureAllowedAddress": "true","linkname": "net0"}'
 
+**--solaris-capped-cpu-ncpus**=""
+  Specifies the percentage of CPU usage.
+  An ncpu value of 1 means 100% of a CPU, a value of 1.25 means 125%, .75 mean 75%, and so forth.
+
 **--template**=PATH
   Override the default template with your own.
   Additional options will only adjust the relevant portions of your template.

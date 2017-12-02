@@ -115,6 +115,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
 	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
 	cli.StringSliceFlag{Name: "solaris-anet", Usage: "set up networking for Solaris application containers"},
+	cli.StringFlag{Name: "solaris-capped-cpu-ncpus", Usage: "Specifies the percentage of CPU usage"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 }
 
@@ -793,6 +794,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 				return err
 			}
 		}
+	}
+
+	if context.IsSet("solaris-capped-cpu-ncpus") {
+		g.SetSolarisCappedCPUNcpus(context.String("solaris-capped-cpu-ncpus"))
 	}
 
 	err := addSeccomp(context, g)

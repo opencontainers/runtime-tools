@@ -1462,3 +1462,9 @@ func (g *Generator) AddSolarisAnet(anet string) error {
 	g.spec.Solaris.Anet = append(g.spec.Solaris.Anet, tmpAnet)
 	return nil
 }
+
+// SetSolarisCappedCPUNcpus sets g.spec.Solaris.CappedCPU.Ncpus
+func (g *Generator) SetSolarisCappedCPUNcpus(ncpus string) {
+	g.initSpecSolarisCappedCPU()
+	g.spec.Solaris.CappedCPU.Ncpus = ncpus
+}
