@@ -447,6 +447,10 @@ read the configuration from `config.json`.
 
   By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--rootfs-readonly` flag the container will have its root filesystem mounted as read only prohibiting any writes.
 
+**--solaris-anet**=[]
+  Represents the automatic creation of a network resource for an application container
+  e.g. --solaris-anet '{"allowedAddress": "172.17.0.2/16","configureAllowedAddress": "true","linkname": "net0"}'
+
 **--template**=PATH
   Override the default template with your own.
   Additional options will only adjust the relevant portions of your template.

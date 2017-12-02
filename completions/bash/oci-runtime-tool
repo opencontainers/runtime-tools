@@ -383,6 +383,7 @@ _oci-runtime-tool_generate() {
 		--process-rlimits-remove
 		--process-uid
 		--rootfs-path
+		--solaris-anet
 		--template
 	"
 

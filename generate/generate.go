@@ -1450,3 +1450,15 @@ func dropBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64,
 
 	return throttleDevices
 }
+
+// AddSolarisAnet adds network into g.spec.Solaris.Anet
+func (g *Generator) AddSolarisAnet(anet string) error {
+	g.initSpecSolaris()
+	tmpAnet := rspec.SolarisAnet{}
+	err := json.Unmarshal([]byte(anet), &tmpAnet)
+	if err != nil {
+		return err
+	}
+	g.spec.Solaris.Anet = append(g.spec.Solaris.Anet, tmpAnet)
+	return nil
+}

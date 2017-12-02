@@ -121,3 +121,10 @@ func (g *Generator) initSpecLinuxResourcesPids() {
 		g.spec.Linux.Resources.Pids = &rspec.LinuxPids{}
 	}
 }
+
+func (g *Generator) initSpecSolaris() {
+	g.initSpec()
+	if g.spec.Solaris == nil {
+		g.spec.Solaris = &rspec.Solaris{}
+	}
+}

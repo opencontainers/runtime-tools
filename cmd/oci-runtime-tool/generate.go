@@ -114,6 +114,7 @@ var generateFlags = []cli.Flag{
 	cli.IntFlag{Name: "process-uid", Usage: "uid for the process"},
 	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
 	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
+	cli.StringSliceFlag{Name: "solaris-anet", Usage: "set up networking for Solaris application containers"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 }
 
@@ -778,6 +779,16 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		devices := context.StringSlice("linux-device-remove")
 		for _, device := range devices {
 			err := g.RemoveDevice(device)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("solaris-anet") {
+		anets := context.StringSlice("solaris-anet")
+		for _, anet := range anets {
+			err := g.AddSolarisAnet(anet)
 			if err != nil {
 				return err
 			}
