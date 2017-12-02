@@ -1452,15 +1452,9 @@ func dropBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64,
 }
 
 // AddSolarisAnet adds network into g.spec.Solaris.Anet
-func (g *Generator) AddSolarisAnet(anet string) error {
+func (g *Generator) AddSolarisAnet(anet rspec.SolarisAnet) {
 	g.initSpecSolaris()
-	tmpAnet := rspec.SolarisAnet{}
-	err := json.Unmarshal([]byte(anet), &tmpAnet)
-	if err != nil {
-		return err
-	}
-	g.spec.Solaris.Anet = append(g.spec.Solaris.Anet, tmpAnet)
-	return nil
+	g.spec.Solaris.Anet = append(g.spec.Solaris.Anet, anet)
 }
 
 // SetSolarisCappedCPUNcpus sets g.spec.Solaris.CappedCPU.Ncpus
@@ -1491,4 +1485,10 @@ func (g *Generator) SetSolarisLimitPriv(limitPriv string) {
 func (g *Generator) SetSolarisMaxShmMemory(memory string) {
 	g.initSpecSolaris()
 	g.spec.Solaris.MaxShmMemory = memory
+}
+
+// SetSolarisMilestone sets g.spec.Solaris.Milestone
+func (g *Generator) SetSolarisMilestone(milestone string) {
+	g.initSpecSolaris()
+	g.spec.Solaris.Milestone = milestone
 }

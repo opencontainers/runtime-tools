@@ -120,6 +120,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "solaris-capped-memory-swap", Usage: "Specifies the swap caps on the memory"},
 	cli.StringFlag{Name: "solaris-limitpriv", Usage: "privilege limit"},
 	cli.StringFlag{Name: "solaris-max-shm-memory", Usage: "Specifies the maximum amount of shared memory"},
+	cli.StringFlag{Name: "solaris-milestone", Usage: "Specifies the SMF FMRI"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 }
 
@@ -793,10 +794,12 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("solaris-anet") {
 		anets := context.StringSlice("solaris-anet")
 		for _, anet := range anets {
-			err := g.AddSolarisAnet(anet)
-			if err != nil {
+			tmpAnet := rspec.SolarisAnet{}
+			if err := json.Unmarshal([]byte(anet), &tmpAnet); err != nil {
 				return err
 			}
+
+			g.AddSolarisAnet(tmpAnet)
 		}
 	}
 
@@ -818,6 +821,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("solaris-max-shm-memory") {
 		g.SetSolarisMaxShmMemory(context.String("solaris-max-shm-memory"))
+	}
+
+	if context.IsSet("solaris-milestone") {
+		g.SetSolarisMilestone(context.String("solaris-milestone"))
 	}
 
 	err := addSeccomp(context, g)

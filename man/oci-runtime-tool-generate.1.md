@@ -467,6 +467,9 @@ read the configuration from `config.json`.
 **--solaris-max-shm-memory**=""
   Sets the maximum amount of shared memory.
 
+**--solaris-milestone**=""
+  Sets the SMF FMRI.
+
 **--template**=PATH
   Override the default template with your own.
   Additional options will only adjust the relevant portions of your template.
