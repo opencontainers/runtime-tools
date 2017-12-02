@@ -615,10 +615,6 @@ func (v *Validator) CheckLinux() (errs error) {
 
 	if (len(v.spec.Linux.UIDMappings) > 0 || len(v.spec.Linux.GIDMappings) > 0) && !nsTypeList[rspec.UserNamespace].newExist {
 		errs = multierror.Append(errs, errors.New("the UID/GID mappings requires a new User namespace to be specified as well"))
-	} else if len(v.spec.Linux.UIDMappings) > 5 {
-		errs = multierror.Append(errs, errors.New("only 5 UID mappings are allowed (linux kernel restriction)"))
-	} else if len(v.spec.Linux.GIDMappings) > 5 {
-		errs = multierror.Append(errs, errors.New("only 5 GID mappings are allowed (linux kernel restriction)"))
 	}
 
 	for k := range v.spec.Linux.Sysctl {
