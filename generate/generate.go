@@ -1468,3 +1468,9 @@ func (g *Generator) SetSolarisCappedCPUNcpus(ncpus string) {
 	g.initSpecSolarisCappedCPU()
 	g.spec.Solaris.CappedCPU.Ncpus = ncpus
 }
+
+// SetSolarisCappedMemoryPhysical sets g.spec.SolarisCappedMemory.Physical
+func (g *Generator) SetSolarisCappedMemoryPhysical(physical string) {
+	g.initSpecSolarisCappedMemory()
+	g.spec.Solaris.CappedMemory.Physical = physical
+}

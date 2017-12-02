@@ -385,6 +385,7 @@ _oci-runtime-tool_generate() {
 		--rootfs-path
 		--solaris-anet
 		--solaris-capped-cpu-ncpus
+		--solaris-capped-memory-physical
 		--template
 	"
 
