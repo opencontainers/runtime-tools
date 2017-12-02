@@ -1474,3 +1474,9 @@ func (g *Generator) SetSolarisCappedMemoryPhysical(physical string) {
 	g.initSpecSolarisCappedMemory()
 	g.spec.Solaris.CappedMemory.Physical = physical
 }
+
+// SetSolarisCappedMemorySwap sets g.spec.SolarisCappedMemory.Swap
+func (g *Generator) SetSolarisCappedMemorySwap(swap string) {
+	g.initSpecSolarisCappedMemory()
+	g.spec.Solaris.CappedMemory.Swap = swap
+}

@@ -117,6 +117,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "solaris-anet", Usage: "set up networking for Solaris application containers"},
 	cli.StringFlag{Name: "solaris-capped-cpu-ncpus", Usage: "Specifies the percentage of CPU usage"},
 	cli.StringFlag{Name: "solaris-capped-memory-physical", Usage: "Specifies the physical caps on the memory"},
+	cli.StringFlag{Name: "solaris-capped-memory-swap", Usage: "Specifies the swap caps on the memory"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 }
 
@@ -803,6 +804,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("solaris-capped-memory-physical") {
 		g.SetSolarisCappedMemoryPhysical(context.String("solaris-capped-memory-physical"))
+	}
+
+	if context.IsSet("solaris-capped-memory-swap") {
+		g.SetSolarisCappedMemorySwap(context.String("solaris-capped-memory-swap"))
 	}
 
 	err := addSeccomp(context, g)

@@ -458,6 +458,9 @@ read the configuration from `config.json`.
 **--solaris-capped-memory-physical**=""
   Specifies the physical caps on the memory.
 
+**--solaris-capped-memory-swap**=""
+  Specifies the swap caps on the memory.
+
 **--template**=PATH
   Override the default template with your own.
   Additional options will only adjust the relevant portions of your template.
