@@ -12,6 +12,7 @@ import (
 
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
+	"github.com/satori/go.uuid"
 )
 
 // Runtime represents the basic requirement of a container runtime
@@ -63,12 +64,13 @@ func (r *Runtime) Create() (stderr []byte, err error) {
 	//	}
 	cmd := exec.Command(r.RuntimeCommand, args...)
 	cmd.Dir = r.BundleDir
-	r.stdout, err = os.OpenFile(filepath.Join(r.BundleDir, fmt.Sprintf("stdout-%s", r.ID)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	id := uuid.NewV4().String()
+	r.stdout, err = os.OpenFile(filepath.Join(r.BundleDir, fmt.Sprintf("stdout-%s", id)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
 	if err != nil {
 		return []byte(""), err
 	}
 	cmd.Stdout = r.stdout
-	r.stderr, err = os.OpenFile(filepath.Join(r.BundleDir, fmt.Sprintf("stderr-%s", r.ID)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	r.stderr, err = os.OpenFile(filepath.Join(r.BundleDir, fmt.Sprintf("stderr-%s", id)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
 	if err != nil {
 		return []byte(""), err
 	}
