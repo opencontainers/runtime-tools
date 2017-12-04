@@ -63,7 +63,7 @@ func main() {
 
 		if err == nil {
 			state, _ := r.State()
-			t.Ok(state.ID == c.id, "")
+			t.Ok(state.ID == c.id, "'state' MUST return the state of a container")
 			t.YAML(map[string]string{
 				"container ID": c.id,
 				"state ID":     state.ID,
