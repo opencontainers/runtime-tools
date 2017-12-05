@@ -333,3 +333,84 @@ func TestCheckProcess(t *testing.T) {
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckProcess: %v %d", err, c.expected))
 	}
 }
+
+func TestCheckLinux(t *testing.T) {
+	cases := []struct {
+		val      rspec.Spec
+		expected specerror.Code
+	}{
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Namespaces: []rspec.LinuxNamespace{
+						{
+							Type: "pid",
+						},
+						{
+							Type: "network",
+						},
+					},
+				},
+			},
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Namespaces: []rspec.LinuxNamespace{
+						{
+							Type: "pid",
+						},
+						{
+							Type: "pid",
+						},
+					},
+				},
+			},
+			expected: specerror.NSErrorOnDup,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					MaskedPaths: []string{"/proc/kcore"},
+				},
+			},
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					MaskedPaths: []string{"proc"},
+				},
+			},
+			expected: specerror.MaskedPathsAbs,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					ReadonlyPaths: []string{"/proc/sys"},
+				},
+			},
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					ReadonlyPaths: []string{"proc"},
+				},
+			},
+			expected: specerror.ReadonlyPathsAbs,
+		},
+	}
+	for _, c := range cases {
+		v := NewValidator(&c.val, ".", false, "linux")
+		err := v.CheckLinux()
+		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckLinux: %v %d", err, c.expected))
+	}
+}
