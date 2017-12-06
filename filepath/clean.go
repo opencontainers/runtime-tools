@@ -46,7 +46,7 @@ func Clean(os, path string) string {
 	}
 
 	cleaned := strings.Join(elements, string(sep))
-	if abs {
+	if abs && os == "linux" {
 		cleaned = fmt.Sprintf("%c%s", sep, cleaned)
 	}
 	if cleaned == path {
