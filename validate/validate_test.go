@@ -414,3 +414,41 @@ func TestCheckLinux(t *testing.T) {
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckLinux: %v %d", err, c.expected))
 	}
 }
+
+func TestCheckPlatform(t *testing.T) {
+	cases := []struct {
+		val      rspec.Spec
+		platform string
+		expected specerror.Code
+	}{
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+			},
+			platform: "linux",
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+			},
+			platform: "windows",
+			expected: specerror.PlatformSpecConfOnWindowsSet,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Windows: &rspec.Windows{
+					LayerFolders: []string{"C:\\Layers\\layer1"},
+				},
+			},
+			platform: "windows",
+			expected: specerror.NonError,
+		},
+	}
+	for _, c := range cases {
+		v := NewValidator(&c.val, ".", false, c.platform)
+		err := v.CheckPlatform()
+		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckPlatform: %v %d", err, c.expected))
+	}
+}
