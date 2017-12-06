@@ -11,14 +11,14 @@ func main() {
 	page := "1GB"
 	var limit uint64 = 56892210544640
 	g := util.GetDefaultGenerator()
-	g.SetLinuxCgroupsPath("/test")
+	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.AddLinuxResourcesHugepageLimit(page, limit)
-	err := util.RuntimeOutsideValidate(g, func(path string) error {
+	err := util.RuntimeOutsideValidate(g, cgroups.AbsCgroupPath, func(pid int, path string) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err
 		}
-		lhd, err := cg.GetHugepageLimitData(path)
+		lhd, err := cg.GetHugepageLimitData(pid, path)
 		if err != nil {
 			return err
 		}

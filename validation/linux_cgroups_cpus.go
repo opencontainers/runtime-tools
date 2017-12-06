@@ -13,18 +13,18 @@ func main() {
 	var quota int64 = 50000
 	var cpus, mems string = "0-1", "0"
 	g := util.GetDefaultGenerator()
-	g.SetLinuxCgroupsPath("/test")
+	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.SetLinuxResourcesCPUShares(shares)
 	g.SetLinuxResourcesCPUQuota(quota)
 	g.SetLinuxResourcesCPUPeriod(period)
 	g.SetLinuxResourcesCPUCpus(cpus)
 	g.SetLinuxResourcesCPUMems(mems)
-	err := util.RuntimeOutsideValidate(g, func(path string) error {
+	err := util.RuntimeOutsideValidate(g, cgroups.AbsCgroupPath, func(pid int, path string) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err
 		}
-		lcd, err := cg.GetCPUData(path)
+		lcd, err := cg.GetCPUData(pid, path)
 		if err != nil {
 			return err
 		}

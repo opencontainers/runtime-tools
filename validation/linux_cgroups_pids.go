@@ -10,14 +10,14 @@ import (
 func main() {
 	var limit int64 = 1000
 	g := util.GetDefaultGenerator()
-	g.SetLinuxCgroupsPath("/test")
+	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.SetLinuxResourcesPidsLimit(limit)
-	err := util.RuntimeOutsideValidate(g, func(path string) error {
+	err := util.RuntimeOutsideValidate(g, cgroups.AbsCgroupPath, func(pid int, path string) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err
 		}
-		lpd, err := cg.GetPidsData(path)
+		lpd, err := cg.GetPidsData(pid, path)
 		if err != nil {
 			return err
 		}

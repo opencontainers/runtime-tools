@@ -13,7 +13,7 @@ func main() {
 	var major, minor int64 = 8, 0
 	var rate uint64 = 102400
 	g := util.GetDefaultGenerator()
-	g.SetLinuxCgroupsPath("/test")
+	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.SetLinuxResourcesBlockIOWeight(weight)
 	g.SetLinuxResourcesBlockIOLeafWeight(leafWeight)
 	g.AddLinuxResourcesBlockIOWeightDevice(major, minor, weight)
@@ -22,12 +22,12 @@ func main() {
 	g.AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleWriteIOPSDevice(major, minor, rate)
-	err := util.RuntimeOutsideValidate(g, func(path string) error {
+	err := util.RuntimeOutsideValidate(g, cgroups.AbsCgroupPath, func(pid int, path string) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err
 		}
-		lbd, err := cg.GetBlockIOData(path)
+		lbd, err := cg.GetBlockIOData(pid, path)
 		if err != nil {
 			return err
 		}

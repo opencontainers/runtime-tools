@@ -30,12 +30,22 @@ func getDeviceID(id string) (int64, int64, error) {
 }
 
 // GetBlockIOData gets cgroup blockio data
-func (cg *CgroupV1) GetBlockIOData(cgPath string) (*rspec.LinuxBlockIO, error) {
+func (cg *CgroupV1) GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO, error) {
 	lb := &rspec.LinuxBlockIO{}
 	names := []string{"weight", "leaf_weight", "weight_device", "leaf_weight_device", "throttle.read_bps_device", "throttle.write_bps_device", "throttle.read_iops_device", "throttle.write_iops_device"}
 	for i, name := range names {
 		fileName := strings.Join([]string{"blkio", name}, ".")
 		filePath := filepath.Join(cg.MountPath, "blkio", cgPath, fileName)
+		if !filepath.IsAbs(cgPath) {
+			subPath, err := GetSubsystemPath(pid, "blkio")
+			if err != nil {
+				return nil, err
+			}
+			if !strings.Contains(subPath, RelCgroupPath) {
+				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "blkio")
+			}
+			filePath = filepath.Join(cg.MountPath, "blkio", subPath, fileName)
+		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			return nil, err
@@ -182,12 +192,22 @@ func (cg *CgroupV1) GetBlockIOData(cgPath string) (*rspec.LinuxBlockIO, error) {
 }
 
 // GetCPUData gets cgroup cpus data
-func (cg *CgroupV1) GetCPUData(cgPath string) (*rspec.LinuxCPU, error) {
+func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) {
 	lc := &rspec.LinuxCPU{}
 	names := []string{"shares", "cfs_quota_us", "cfs_period_us"}
 	for i, name := range names {
 		fileName := strings.Join([]string{"cpu", name}, ".")
 		filePath := filepath.Join(cg.MountPath, "cpu", cgPath, fileName)
+		if !filepath.IsAbs(cgPath) {
+			subPath, err := GetSubsystemPath(pid, "cpu")
+			if err != nil {
+				return nil, err
+			}
+			if !strings.Contains(subPath, RelCgroupPath) {
+				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "cpu")
+			}
+			filePath = filepath.Join(cg.MountPath, "cpu", subPath, fileName)
+		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			return nil, err
@@ -241,6 +261,16 @@ func (cg *CgroupV1) GetCPUData(cgPath string) (*rspec.LinuxCPU, error) {
 	for i, name := range names {
 		fileName := strings.Join([]string{"cpuset", name}, ".")
 		filePath := filepath.Join(cg.MountPath, "cpuset", cgPath, fileName)
+		if !filepath.IsAbs(cgPath) {
+			subPath, err := GetSubsystemPath(pid, "cpuset")
+			if err != nil {
+				return nil, err
+			}
+			if !strings.Contains(subPath, RelCgroupPath) {
+				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "cpuset")
+			}
+			filePath = filepath.Join(cg.MountPath, "cpuset", subPath, fileName)
+		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			return nil, err
@@ -257,7 +287,7 @@ func (cg *CgroupV1) GetCPUData(cgPath string) (*rspec.LinuxCPU, error) {
 }
 
 // GetDevicesData gets cgroup devices data
-func (cg *CgroupV1) GetDevicesData(cgPath string) ([]rspec.LinuxDeviceCgroup, error) {
+func (cg *CgroupV1) GetDevicesData(pid int, cgPath string) ([]rspec.LinuxDeviceCgroup, error) {
 	ld := []rspec.LinuxDeviceCgroup{}
 
 	return ld, nil
@@ -318,7 +348,7 @@ func getHugePageSize() ([]string, error) {
 }
 
 // GetHugepageLimitData gets cgroup hugetlb data
-func (cg *CgroupV1) GetHugepageLimitData(cgPath string) ([]rspec.LinuxHugepageLimit, error) {
+func (cg *CgroupV1) GetHugepageLimitData(pid int, cgPath string) ([]rspec.LinuxHugepageLimit, error) {
 	lh := []rspec.LinuxHugepageLimit{}
 	pageSizes, err := getHugePageSize()
 	if err != nil {
@@ -327,6 +357,16 @@ func (cg *CgroupV1) GetHugepageLimitData(cgPath string) ([]rspec.LinuxHugepageLi
 	for _, pageSize := range pageSizes {
 		maxUsage := strings.Join([]string{"hugetlb", pageSize, "limit_in_bytes"}, ".")
 		filePath := filepath.Join(cg.MountPath, "hugetlb", cgPath, maxUsage)
+		if !filepath.IsAbs(cgPath) {
+			subPath, err := GetSubsystemPath(pid, "hugetlb")
+			if err != nil {
+				return lh, err
+			}
+			if !strings.Contains(subPath, RelCgroupPath) {
+				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "hugetlb")
+			}
+			filePath = filepath.Join(cg.MountPath, "hugetlb", subPath, maxUsage)
+		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			return lh, err
@@ -345,12 +385,22 @@ func (cg *CgroupV1) GetHugepageLimitData(cgPath string) ([]rspec.LinuxHugepageLi
 }
 
 // GetMemoryData gets cgroup memory data
-func (cg *CgroupV1) GetMemoryData(cgPath string) (*rspec.LinuxMemory, error) {
+func (cg *CgroupV1) GetMemoryData(pid int, cgPath string) (*rspec.LinuxMemory, error) {
 	lm := &rspec.LinuxMemory{}
 	names := []string{"limit_in_bytes", "soft_limit_in_bytes", "memsw.limit_in_bytes", "kmem.limit_in_bytes", "kmem.tcp.limit_in_bytes", "swappiness", "oom_control"}
 	for i, name := range names {
 		fileName := strings.Join([]string{"memory", name}, ".")
 		filePath := filepath.Join(cg.MountPath, "memory", cgPath, fileName)
+		if !filepath.IsAbs(cgPath) {
+			subPath, err := GetSubsystemPath(pid, "memory")
+			if err != nil {
+				return nil, err
+			}
+			if !strings.Contains(subPath, RelCgroupPath) {
+				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "memory")
+			}
+			filePath = filepath.Join(cg.MountPath, "memory", subPath, fileName)
+		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			return nil, err
@@ -417,10 +467,20 @@ func (cg *CgroupV1) GetMemoryData(cgPath string) (*rspec.LinuxMemory, error) {
 }
 
 // GetNetworkData gets cgroup network data
-func (cg *CgroupV1) GetNetworkData(cgPath string) (*rspec.LinuxNetwork, error) {
+func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork, error) {
 	ln := &rspec.LinuxNetwork{}
 	fileName := strings.Join([]string{"net_cls", "classid"}, ".")
 	filePath := filepath.Join(cg.MountPath, "net_cls", cgPath, fileName)
+	if !filepath.IsAbs(cgPath) {
+		subPath, err := GetSubsystemPath(pid, "net_cls")
+		if err != nil {
+			return nil, err
+		}
+		if !strings.Contains(subPath, RelCgroupPath) {
+			return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "net_cls")
+		}
+		filePath = filepath.Join(cg.MountPath, "net_cls", subPath, fileName)
+	}
 	contents, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return nil, err
@@ -434,6 +494,16 @@ func (cg *CgroupV1) GetNetworkData(cgPath string) (*rspec.LinuxNetwork, error) {
 
 	fileName = strings.Join([]string{"net_prio", "ifpriomap"}, ".")
 	filePath = filepath.Join(cg.MountPath, "net_prio", cgPath, fileName)
+	if !filepath.IsAbs(cgPath) {
+		subPath, err := GetSubsystemPath(pid, "net_prio")
+		if err != nil {
+			return nil, err
+		}
+		if !strings.Contains(subPath, RelCgroupPath) {
+			return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "net_prio")
+		}
+		filePath = filepath.Join(cg.MountPath, "net_prio", subPath, fileName)
+	}
 	contents, err = ioutil.ReadFile(filePath)
 	if err != nil {
 		return nil, err
@@ -455,10 +525,20 @@ func (cg *CgroupV1) GetNetworkData(cgPath string) (*rspec.LinuxNetwork, error) {
 }
 
 // GetPidsData gets cgroup pids data
-func (cg *CgroupV1) GetPidsData(cgPath string) (*rspec.LinuxPids, error) {
+func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error) {
 	lp := &rspec.LinuxPids{}
 	fileName := strings.Join([]string{"pids", "max"}, ".")
 	filePath := filepath.Join(cg.MountPath, "pids", cgPath, fileName)
+	if !filepath.IsAbs(cgPath) {
+		subPath, err := GetSubsystemPath(pid, "pids")
+		if err != nil {
+			return nil, err
+		}
+		if !strings.Contains(subPath, RelCgroupPath) {
+			return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "pids")
+		}
+		filePath = filepath.Join(cg.MountPath, "pids", subPath, fileName)
+	}
 	contents, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return nil, err

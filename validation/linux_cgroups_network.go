@@ -11,14 +11,14 @@ func main() {
 	var id, prio uint32 = 255, 10
 	ifName := "lo"
 	g := util.GetDefaultGenerator()
-	g.SetLinuxCgroupsPath("/test")
+	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.SetLinuxResourcesNetworkClassID(id)
-	err := util.RuntimeOutsideValidate(g, func(path string) error {
+	err := util.RuntimeOutsideValidate(g, cgroups.AbsCgroupPath, func(pid int, path string) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err
 		}
-		lnd, err := cg.GetNetworkData(path)
+		lnd, err := cg.GetNetworkData(pid, path)
 		if err != nil {
 			return err
 		}
