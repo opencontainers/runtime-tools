@@ -452,3 +452,42 @@ func TestCheckPlatform(t *testing.T) {
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckPlatform: %v %d", err, c.expected))
 	}
 }
+
+func TestCheckHooks(t *testing.T) {
+	cases := []struct {
+		val      rspec.Spec
+		expected specerror.Code
+	}{
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Hooks: &rspec.Hooks{
+					Prestart: []rspec.Hook{
+						{
+							Path: "/usr/bin/fix-mounts",
+						},
+					},
+				},
+			},
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Hooks: &rspec.Hooks{
+					Prestart: []rspec.Hook{
+						{
+							Path: "usr",
+						},
+					},
+				},
+			},
+			expected: specerror.PosixHooksPathAbs,
+		},
+	}
+	for _, c := range cases {
+		v := NewValidator(&c.val, ".", false, "linux")
+		err := v.CheckHooks()
+		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckHooks: %v %d", err, c.expected))
+	}
+}
