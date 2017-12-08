@@ -73,6 +73,66 @@ func TestClean(t *testing.T) {
 			path:     "a/..",
 			expected: ".",
 		},
+		{
+			os:       "windows",
+			path:     "c:\\",
+			expected: "c:\\",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\\\",
+			expected: "c:\\",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\a",
+			expected: "c:\\a",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\a\\",
+			expected: "c:\\a",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\\\a",
+			expected: "c:\\a",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\..",
+			expected: "c:\\",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\..\\a",
+			expected: "c:\\a",
+		},
+		{
+			os:       "windows",
+			path:     ".",
+			expected: ".",
+		},
+		{
+			os:       "windows",
+			path:     ".\\c",
+			expected: "c",
+		},
+		{
+			os:       "windows",
+			path:     "..\\.\\a",
+			expected: "..\\a",
+		},
+		{
+			os:       "windows",
+			path:     "a\\..\\b",
+			expected: "b",
+		},
+		{
+			os:       "windows",
+			path:     "a\\..",
+			expected: ".",
+		},
 	} {
 		t.Run(
 			fmt.Sprintf("Clean(%q,%q)", test.os, test.path),

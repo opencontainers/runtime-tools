@@ -68,6 +68,60 @@ func TestAbs(t *testing.T) {
 			cwd:      "/cwd",
 			expected: "/b",
 		},
+		{
+			os:       "windows",
+			path:     "c:\\",
+			cwd:      "/cwd",
+			expected: "c:\\",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\a",
+			cwd:      "c:\\cwd",
+			expected: "c:\\a",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\a\\",
+			cwd:      "c:\\cwd",
+			expected: "c:\\a",
+		},
+		{
+			os:       "windows",
+			path:     "c:\\\\a",
+			cwd:      "c:\\cwd",
+			expected: "c:\\a",
+		},
+		{
+			os:       "windows",
+			path:     ".",
+			cwd:      "c:\\cwd",
+			expected: "c:\\cwd",
+		},
+		{
+			os:       "windows",
+			path:     ".\\c",
+			cwd:      "c:\\a\\b",
+			expected: "c:\\a\\b\\c",
+		},
+		{
+			os:       "windows",
+			path:     ".\\\\c",
+			cwd:      "c:\\a\\b",
+			expected: "c:\\a\\b\\c",
+		},
+		{
+			os:       "windows",
+			path:     "..\\a",
+			cwd:      "c:\\cwd",
+			expected: "c:\\a",
+		},
+		{
+			os:       "windows",
+			path:     "..\\..\\b",
+			cwd:      "c:\\cwd",
+			expected: "c:\\b",
+		},
 	} {
 		t.Run(
 			fmt.Sprintf("Abs(%q,%q,%q)", test.os, test.path, test.cwd),
