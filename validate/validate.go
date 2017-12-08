@@ -264,6 +264,10 @@ func (v *Validator) CheckSemVer() (errs error) {
 func (v *Validator) CheckHooks() (errs error) {
 	logrus.Debugf("check hooks")
 
+	if v.platform == "windows" {
+		return
+	}
+
 	if v.spec.Hooks != nil {
 		errs = multierror.Append(errs, v.checkEventHooks("prestart", v.spec.Hooks.Prestart, v.HostSpecific))
 		errs = multierror.Append(errs, v.checkEventHooks("poststart", v.spec.Hooks.Poststart, v.HostSpecific))
