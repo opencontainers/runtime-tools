@@ -39,8 +39,8 @@ func Clean(os, path string) string {
 	// Eliminate .. elements that begin a rooted path:
 	// that is, replace "/.." by "/" at the beginning of a path,
 	// assuming Separator is '/'.
-	if abs && len(elements) > 0 {
-		for elements[0] == ".." {
+	if abs {
+		for len(elements) > 0 && elements[0] == ".." {
 			elements = elements[1:]
 		}
 	}

@@ -38,6 +38,16 @@ func TestClean(t *testing.T) {
 		},
 		{
 			os:       "linux",
+			path:     "/..",
+			expected: "/",
+		},
+		{
+			os:       "linux",
+			path:     "/../a",
+			expected: "/a",
+		},
+		{
+			os:       "linux",
 			path:     ".",
 			expected: ".",
 		},
