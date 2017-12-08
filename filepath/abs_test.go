@@ -2,6 +2,8 @@ package filepath
 
 import (
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -74,7 +76,7 @@ func TestAbs(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else if abs != test.expected {
-					t.Errorf("unexpected result: %q (expected %q)\n", abs, test.expected)
+					t.Errorf("unexpected result: %q (expected %q)", abs, test.expected)
 				}
 			},
 		)
@@ -163,7 +165,13 @@ func TestIsAbs(t *testing.T) {
 			func(t *testing.T) {
 				abs := IsAbs(test.os, test.path)
 				if abs != test.expected {
-					t.Errorf("unexpected result: %t (expected %t)\n", abs, test.expected)
+					t.Errorf("unexpected result: %t (expected %t)", abs, test.expected)
+				}
+				if runtime.GOOS == test.os {
+					stdAbs := filepath.IsAbs(test.path)
+					if abs != stdAbs {
+						t.Errorf("non-standard result: %t (%t is standard)", abs, stdAbs)
+					}
 				}
 			},
 		)
