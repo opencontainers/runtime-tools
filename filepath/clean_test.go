@@ -2,6 +2,8 @@ package filepath
 
 import (
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -77,7 +79,13 @@ func TestClean(t *testing.T) {
 			func(t *testing.T) {
 				clean := Clean(test.os, test.path)
 				if clean != test.expected {
-					t.Errorf("unexpected result: %q (expected %q)\n", clean, test.expected)
+					t.Errorf("unexpected result: %q (expected %q)", clean, test.expected)
+				}
+				if runtime.GOOS == test.os {
+					stdClean := filepath.Clean(test.path)
+					if clean != stdClean {
+						t.Errorf("non-standard result: %q (%q is standard)", clean, stdClean)
+					}
 				}
 			},
 		)
