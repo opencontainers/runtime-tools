@@ -356,12 +356,13 @@ func (v *Validator) CheckProcess() (errs error) {
 		}
 	}
 
-	if v.spec.Process.Capabilities != nil {
-		errs = multierror.Append(errs, v.CheckCapabilities())
-	}
 	errs = multierror.Append(errs, v.CheckRlimits())
 
 	if v.platform == "linux" {
+		if v.spec.Process.Capabilities != nil {
+			errs = multierror.Append(errs, v.CheckCapabilities())
+		}
+
 		if len(process.ApparmorProfile) > 0 {
 			profilePath := filepath.Join(v.bundlePath, v.spec.Root.Path, "/etc/apparmor.d", process.ApparmorProfile)
 			_, err := os.Stat(profilePath)
@@ -377,59 +378,55 @@ func (v *Validator) CheckProcess() (errs error) {
 // CheckCapabilities checks v.spec.Process.Capabilities
 func (v *Validator) CheckCapabilities() (errs error) {
 	process := v.spec.Process
-	if v.platform == "linux" {
-		var effective, permitted, inheritable, ambient bool
-		caps := make(map[string][]string)
+	var effective, permitted, inheritable, ambient bool
+	caps := make(map[string][]string)
 
-		for _, cap := range process.Capabilities.Bounding {
-			caps[cap] = append(caps[cap], "bounding")
-		}
-		for _, cap := range process.Capabilities.Effective {
-			caps[cap] = append(caps[cap], "effective")
-		}
-		for _, cap := range process.Capabilities.Inheritable {
-			caps[cap] = append(caps[cap], "inheritable")
-		}
-		for _, cap := range process.Capabilities.Permitted {
-			caps[cap] = append(caps[cap], "permitted")
-		}
-		for _, cap := range process.Capabilities.Ambient {
-			caps[cap] = append(caps[cap], "ambient")
+	for _, cap := range process.Capabilities.Bounding {
+		caps[cap] = append(caps[cap], "bounding")
+	}
+	for _, cap := range process.Capabilities.Effective {
+		caps[cap] = append(caps[cap], "effective")
+	}
+	for _, cap := range process.Capabilities.Inheritable {
+		caps[cap] = append(caps[cap], "inheritable")
+	}
+	for _, cap := range process.Capabilities.Permitted {
+		caps[cap] = append(caps[cap], "permitted")
+	}
+	for _, cap := range process.Capabilities.Ambient {
+		caps[cap] = append(caps[cap], "ambient")
+	}
+
+	for capability, owns := range caps {
+		if err := CapValid(capability, v.HostSpecific); err != nil {
+			errs = multierror.Append(errs, fmt.Errorf("capability %q is not valid, man capabilities(7)", capability))
 		}
 
-		for capability, owns := range caps {
-			if err := CapValid(capability, v.HostSpecific); err != nil {
-				errs = multierror.Append(errs, fmt.Errorf("capability %q is not valid, man capabilities(7)", capability))
+		effective, permitted, ambient, inheritable = false, false, false, false
+		for _, set := range owns {
+			if set == "effective" {
+				effective = true
+				continue
 			}
-
-			effective, permitted, ambient, inheritable = false, false, false, false
-			for _, set := range owns {
-				if set == "effective" {
-					effective = true
-					continue
-				}
-				if set == "inheritable" {
-					inheritable = true
-					continue
-				}
-				if set == "permitted" {
-					permitted = true
-					continue
-				}
-				if set == "ambient" {
-					ambient = true
-					continue
-				}
+			if set == "inheritable" {
+				inheritable = true
+				continue
 			}
-			if effective && !permitted {
-				errs = multierror.Append(errs, fmt.Errorf("effective capability %q is not allowed, as it's not permitted", capability))
+			if set == "permitted" {
+				permitted = true
+				continue
 			}
-			if ambient && !(permitted && inheritable) {
-				errs = multierror.Append(errs, fmt.Errorf("ambient capability %q is not allowed, as it's not permitted and inheribate", capability))
+			if set == "ambient" {
+				ambient = true
+				continue
 			}
 		}
-	} else {
-		logrus.Warnf("process.capabilities validation not yet implemented for OS %q", v.platform)
+		if effective && !permitted {
+			errs = multierror.Append(errs, fmt.Errorf("effective capability %q is not allowed, as it's not permitted", capability))
+		}
+		if ambient && !(permitted && inheritable) {
+			errs = multierror.Append(errs, fmt.Errorf("ambient capability %q is not allowed, as it's not permitted and inheribate", capability))
+		}
 	}
 
 	return
