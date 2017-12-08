@@ -49,6 +49,13 @@ func Clean(os, path string) string {
 	if abs {
 		cleaned = fmt.Sprintf("%c%s", sep, cleaned)
 	}
+
+	// If the result of this process is an empty string, Clean returns
+	// the string ".".
+	if len(cleaned) == 0 {
+		cleaned = "."
+	}
+
 	if cleaned == path {
 		return path
 	}

@@ -56,6 +56,11 @@ func TestClean(t *testing.T) {
 			path:     "a/../b",
 			expected: "b",
 		},
+		{
+			os:       "linux",
+			path:     "a/..",
+			expected: ".",
+		},
 	} {
 		t.Run(
 			fmt.Sprintf("Clean(%q,%q)", test.os, test.path),
