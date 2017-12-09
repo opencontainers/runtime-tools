@@ -117,8 +117,10 @@ func (v *Validator) CheckAll() error {
 	errs = multierror.Append(errs, v.CheckSemVer())
 	errs = multierror.Append(errs, v.CheckMounts())
 	errs = multierror.Append(errs, v.CheckProcess())
-	errs = multierror.Append(errs, v.CheckHooks())
 	errs = multierror.Append(errs, v.CheckLinux())
+	if v.platform == "linux" || v.platform == "solaris" {
+		errs = multierror.Append(errs, v.CheckHooks())
+	}
 
 	return errs.ErrorOrNil()
 }
@@ -264,7 +266,8 @@ func (v *Validator) CheckSemVer() (errs error) {
 func (v *Validator) CheckHooks() (errs error) {
 	logrus.Debugf("check hooks")
 
-	if v.platform == "windows" {
+	if v.platform != "linux" && v.platform != "solaris" {
+		errs = multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support hooks", v.platform))
 		return
 	}
 
@@ -360,7 +363,9 @@ func (v *Validator) CheckProcess() (errs error) {
 		}
 	}
 
-	errs = multierror.Append(errs, v.CheckRlimits())
+	if v.platform == "linux" || v.platform == "solaris" {
+		errs = multierror.Append(errs, v.CheckRlimits())
+	}
 
 	if v.platform == "linux" {
 		if v.spec.Process.Capabilities != nil {
@@ -381,6 +386,11 @@ func (v *Validator) CheckProcess() (errs error) {
 
 // CheckCapabilities checks v.spec.Process.Capabilities
 func (v *Validator) CheckCapabilities() (errs error) {
+	if v.platform != "linux" {
+		errs = multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support process.capabilities", v.platform))
+		return
+	}
+
 	process := v.spec.Process
 	var effective, permitted, inheritable, ambient bool
 	caps := make(map[string][]string)
@@ -438,7 +448,8 @@ func (v *Validator) CheckCapabilities() (errs error) {
 
 // CheckRlimits checks v.spec.Process.Rlimits
 func (v *Validator) CheckRlimits() (errs error) {
-	if v.platform == "windows" {
+	if v.platform != "linux" && v.platform != "solaris" {
+		errs = multierror.Append(errs, fmt.Errorf("For %q platform, the configuration structure does not support process.rlimits", v.platform))
 		return
 	}
 
