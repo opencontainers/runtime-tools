@@ -10,6 +10,9 @@ import (
 const (
 	// DefaultFilesystems represents "The following filesystems SHOULD be made available in each container's filesystem:"
 	DefaultFilesystems Code = 0xc001 + iota
+
+	// NSTypeValueError represents "The following namespace types are supported:"
+	NSTypeValueError
 	// NSPathAbs represents "This value MUST be an absolute path in the runtime mount namespace."
 	NSPathAbs
 	// NSProcInPath represents "The runtime MUST place the container process in the namespace associated with that `path`."
@@ -105,6 +108,7 @@ var (
 
 func init() {
 	register(DefaultFilesystems, rfc2119.Should, defaultFilesystemsRef)
+	register(NSTypeValueError, rfc2119.Should, namespacesRef)
 	register(NSPathAbs, rfc2119.Must, namespacesRef)
 	register(NSProcInPath, rfc2119.Must, namespacesRef)
 	register(NSPathMatchTypeError, rfc2119.Must, namespacesRef)

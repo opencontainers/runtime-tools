@@ -597,8 +597,8 @@ func (v *Validator) CheckLinux() (errs error) {
 
 	for index := 0; index < len(v.spec.Linux.Namespaces); index++ {
 		ns := v.spec.Linux.Namespaces[index]
-		if !v.namespaceValid(ns) {
-			errs = multierror.Append(errs, fmt.Errorf("namespace %v is invalid", ns))
+		if err := v.namespaceValid(ns); err != nil {
+			errs = multierror.Append(errs, err)
 		}
 
 		tmpItem := nsTypeList[ns.Type]
@@ -936,7 +936,7 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 	return
 }
 
-func (v *Validator) namespaceValid(ns rspec.LinuxNamespace) bool {
+func (v *Validator) namespaceValid(ns rspec.LinuxNamespace) error {
 	switch ns.Type {
 	case rspec.PIDNamespace:
 	case rspec.NetworkNamespace:
@@ -946,14 +946,14 @@ func (v *Validator) namespaceValid(ns rspec.LinuxNamespace) bool {
 	case rspec.UserNamespace:
 	case rspec.CgroupNamespace:
 	default:
-		return false
+		return specerror.NewError(specerror.NSTypeValueError, fmt.Errorf("namespace type %s may not be valid", ns.Type), rspec.Version)
 	}
 
 	if ns.Path != "" && !osFilepath.IsAbs(v.platform, ns.Path) {
-		return false
+		return specerror.NewError(specerror.NSPathAbs, fmt.Errorf("path %v of namespace %v is not absolute path", ns.Path, ns), rspec.Version)
 	}
 
-	return true
+	return nil
 }
 
 func deviceValid(d rspec.LinuxDevice) bool {
