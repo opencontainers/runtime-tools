@@ -534,7 +534,10 @@ func (g *Generator) AddLinuxResourcesBlockIOLeafWeightDevice(major int64, minor 
 
 // DropLinuxResourcesBlockIOLeafWeightDevice drops a item form g.spec.Linux.Resources.BlockIO.WeightDevice.LeafWeight
 func (g *Generator) DropLinuxResourcesBlockIOLeafWeightDevice(major int64, minor int64) {
-	g.initSpecLinuxResourcesBlockIO()
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil || g.spec.Linux.Resources.BlockIO == nil {
+		return
+	}
+
 	for i, weightDevice := range g.spec.Linux.Resources.BlockIO.WeightDevice {
 		if weightDevice.Major == major && weightDevice.Minor == minor {
 			if weightDevice.Weight != nil {
@@ -575,7 +578,10 @@ func (g *Generator) AddLinuxResourcesBlockIOWeightDevice(major int64, minor int6
 
 // DropLinuxResourcesBlockIOWeightDevice drops a item form g.spec.Linux.Resources.BlockIO.WeightDevice.Weight
 func (g *Generator) DropLinuxResourcesBlockIOWeightDevice(major int64, minor int64) {
-	g.initSpecLinuxResourcesBlockIO()
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil || g.spec.Linux.Resources.BlockIO == nil {
+		return
+	}
+
 	for i, weightDevice := range g.spec.Linux.Resources.BlockIO.WeightDevice {
 		if weightDevice.Major == major && weightDevice.Minor == minor {
 			if weightDevice.LeafWeight != nil {
@@ -601,7 +607,10 @@ func (g *Generator) AddLinuxResourcesBlockIOThrottleReadBpsDevice(major int64, m
 
 // DropLinuxResourcesBlockIOThrottleReadBpsDevice drops a item from g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice.
 func (g *Generator) DropLinuxResourcesBlockIOThrottleReadBpsDevice(major int64, minor int64) {
-	g.initSpecLinuxResourcesBlockIO()
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil || g.spec.Linux.Resources.BlockIO == nil {
+		return
+	}
+
 	throttleDevices := dropBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice, major, minor)
 	g.spec.Linux.Resources.BlockIO.ThrottleReadBpsDevice = throttleDevices
 }
@@ -615,7 +624,10 @@ func (g *Generator) AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major int64, 
 
 // DropLinuxResourcesBlockIOThrottleReadIOPSDevice drops a item from g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice.
 func (g *Generator) DropLinuxResourcesBlockIOThrottleReadIOPSDevice(major int64, minor int64) {
-	g.initSpecLinuxResourcesBlockIO()
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil || g.spec.Linux.Resources.BlockIO == nil {
+		return
+	}
+
 	throttleDevices := dropBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice, major, minor)
 	g.spec.Linux.Resources.BlockIO.ThrottleReadIOPSDevice = throttleDevices
 }
@@ -629,7 +641,10 @@ func (g *Generator) AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major int64, 
 
 // DropLinuxResourcesBlockIOThrottleWriteBpsDevice drops a item from g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice.
 func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteBpsDevice(major int64, minor int64) {
-	g.initSpecLinuxResourcesBlockIO()
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil || g.spec.Linux.Resources.BlockIO == nil {
+		return
+	}
+
 	throttleDevices := dropBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice, major, minor)
 	g.spec.Linux.Resources.BlockIO.ThrottleWriteBpsDevice = throttleDevices
 }
@@ -643,7 +658,10 @@ func (g *Generator) AddLinuxResourcesBlockIOThrottleWriteIOPSDevice(major int64,
 
 // DropLinuxResourcesBlockIOThrottleWriteIOPSDevice drops a item from g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice.
 func (g *Generator) DropLinuxResourcesBlockIOThrottleWriteIOPSDevice(major int64, minor int64) {
-	g.initSpecLinuxResourcesBlockIO()
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil || g.spec.Linux.Resources.BlockIO == nil {
+		return
+	}
+
 	throttleDevices := dropBlockIOThrottleDevice(g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice, major, minor)
 	g.spec.Linux.Resources.BlockIO.ThrottleWriteIOPSDevice = throttleDevices
 }
@@ -709,7 +727,10 @@ func (g *Generator) AddLinuxResourcesHugepageLimit(pageSize string, limit uint64
 
 // DropLinuxResourcesHugepageLimit drops a hugepage limit from g.spec.Linux.Resources.HugepageLimits.
 func (g *Generator) DropLinuxResourcesHugepageLimit(pageSize string) error {
-	g.initSpecLinuxResources()
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil {
+		return nil
+	}
+
 	for i, pageLimit := range g.spec.Linux.Resources.HugepageLimits {
 		if pageLimit.Pagesize == pageSize {
 			g.spec.Linux.Resources.HugepageLimits = append(g.spec.Linux.Resources.HugepageLimits[:i], g.spec.Linux.Resources.HugepageLimits[i+1:]...)
@@ -785,7 +806,10 @@ func (g *Generator) AddLinuxResourcesNetworkPriorities(name string, prio uint32)
 
 // DropLinuxResourcesNetworkPriorities drops one item from g.spec.Linux.Resources.Network.Priorities.
 func (g *Generator) DropLinuxResourcesNetworkPriorities(name string) {
-	g.initSpecLinuxResourcesNetwork()
+	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil || g.spec.Linux.Resources.Network == nil {
+		return
+	}
+
 	for i, netPriority := range g.spec.Linux.Resources.Network.Priorities {
 		if netPriority.Name == name {
 			g.spec.Linux.Resources.Network.Priorities = append(g.spec.Linux.Resources.Network.Priorities[:i], g.spec.Linux.Resources.Network.Priorities[i+1:]...)
