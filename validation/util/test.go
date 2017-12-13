@@ -168,7 +168,7 @@ func RuntimeOutsideValidate(g *generate.Generator, f AfterFunc) error {
 	r.SetID(uuid.NewV4().String())
 	stderr, err := r.Create()
 	if err != nil {
-		os.Stderr.WriteString("failed to start the container\n")
+		os.Stderr.WriteString("failed to create the container\n")
 		os.Stderr.Write(stderr)
 		return err
 	}
