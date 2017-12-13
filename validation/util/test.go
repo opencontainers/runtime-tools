@@ -24,6 +24,9 @@ var (
 // but before creating the container.
 type PreFunc func(string) error
 
+// AfterFunc validate container's outside environment after created
+type AfterFunc func(int, string) error
+
 func init() {
 	runtimeInEnv := os.Getenv("RUNTIME")
 	if runtimeInEnv != "" {
@@ -136,5 +139,47 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 	}
 
 	os.Stdout.Write(stdout)
+	return nil
+}
+
+// RuntimeOutsideValidate validate runtime outside a container.
+func RuntimeOutsideValidate(g *generate.Generator, cgroupPath string, f AfterFunc) error {
+	bundleDir, err := PrepareBundle()
+	if err != nil {
+		return err
+	}
+
+	r, err := NewRuntime(RuntimeCommand, bundleDir)
+	if err != nil {
+		os.RemoveAll(bundleDir)
+		return err
+	}
+	defer r.Clean(true, true)
+	err = r.SetConfig(g)
+	if err != nil {
+		return err
+	}
+	err = fileutils.CopyFile("runtimetest", filepath.Join(r.BundleDir, "runtimetest"))
+	if err != nil {
+		return err
+	}
+
+	r.SetID(uuid.NewV4().String())
+	stderr, err := r.Create()
+	if err != nil {
+		os.Stderr.WriteString("failed to start the container\n")
+		os.Stderr.Write(stderr)
+		return err
+	}
+
+	if f != nil {
+		state, err := r.State()
+		if err != nil {
+			return err
+		}
+		if err := f(state.Pid, cgroupPath); err != nil {
+			return err
+		}
+	}
 	return nil
 }
