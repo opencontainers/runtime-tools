@@ -609,8 +609,8 @@ func (v *Validator) CheckLinux() (errs error) {
 
 	for index := 0; index < len(v.spec.Linux.Namespaces); index++ {
 		ns := v.spec.Linux.Namespaces[index]
-		if !v.namespaceValid(ns) {
-			errs = multierror.Append(errs, fmt.Errorf("namespace %v is invalid", ns))
+		if ns.Path != "" && !osFilepath.IsAbs(v.platform, ns.Path) {
+			errs = multierror.Append(errs, specerror.NewError(specerror.NSPathAbs, fmt.Errorf("namespace.path %q is not an absolute path", ns.Path), rspec.Version))
 		}
 
 		tmpItem := nsTypeList[ns.Type]
@@ -746,10 +746,6 @@ func (v *Validator) CheckLinux() (errs error) {
 		errs = multierror.Append(errs, v.CheckLinuxResources())
 	}
 
-	if v.spec.Linux.Seccomp != nil {
-		errs = multierror.Append(errs, v.CheckSeccomp())
-	}
-
 	for _, maskedPath := range v.spec.Linux.MaskedPaths {
 		if !strings.HasPrefix(maskedPath, "/") {
 			errs = multierror.Append(errs,
@@ -821,47 +817,6 @@ func (v *Validator) CheckLinuxResources() (errs error) {
 				errs = multierror.Append(errs, fmt.Errorf("access %s is invalid", r.Devices[index].Access))
 				return
 			}
-		}
-	}
-
-	return
-}
-
-// CheckSeccomp checkc v.spec.Linux.Seccomp
-func (v *Validator) CheckSeccomp() (errs error) {
-	logrus.Debugf("check linux seccomp")
-
-	s := v.spec.Linux.Seccomp
-	if !seccompActionValid(s.DefaultAction) {
-		errs = multierror.Append(errs, fmt.Errorf("seccomp defaultAction %q is invalid", s.DefaultAction))
-	}
-	for index := 0; index < len(s.Syscalls); index++ {
-		if !syscallValid(s.Syscalls[index]) {
-			errs = multierror.Append(errs, fmt.Errorf("syscall %v is invalid", s.Syscalls[index]))
-		}
-	}
-	for index := 0; index < len(s.Architectures); index++ {
-		switch s.Architectures[index] {
-		case rspec.ArchX86:
-		case rspec.ArchX86_64:
-		case rspec.ArchX32:
-		case rspec.ArchARM:
-		case rspec.ArchAARCH64:
-		case rspec.ArchMIPS:
-		case rspec.ArchMIPS64:
-		case rspec.ArchMIPS64N32:
-		case rspec.ArchMIPSEL:
-		case rspec.ArchMIPSEL64:
-		case rspec.ArchMIPSEL64N32:
-		case rspec.ArchPPC:
-		case rspec.ArchPPC64:
-		case rspec.ArchPPC64LE:
-		case rspec.ArchS390:
-		case rspec.ArchS390X:
-		case rspec.ArchPARISC:
-		case rspec.ArchPARISC64:
-		default:
-			errs = multierror.Append(errs, fmt.Errorf("seccomp architecture %q is invalid", s.Architectures[index]))
 		}
 	}
 
@@ -944,26 +899,6 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 	return
 }
 
-func (v *Validator) namespaceValid(ns rspec.LinuxNamespace) bool {
-	switch ns.Type {
-	case rspec.PIDNamespace:
-	case rspec.NetworkNamespace:
-	case rspec.MountNamespace:
-	case rspec.IPCNamespace:
-	case rspec.UTSNamespace:
-	case rspec.UserNamespace:
-	case rspec.CgroupNamespace:
-	default:
-		return false
-	}
-
-	if ns.Path != "" && !osFilepath.IsAbs(v.platform, ns.Path) {
-		return false
-	}
-
-	return true
-}
-
 func deviceValid(d rspec.LinuxDevice) bool {
 	switch d.Type {
 	case "b", "c", "u":
@@ -976,40 +911,6 @@ func deviceValid(d rspec.LinuxDevice) bool {
 		}
 	default:
 		return false
-	}
-	return true
-}
-
-func seccompActionValid(secc rspec.LinuxSeccompAction) bool {
-	switch secc {
-	case rspec.ActKill:
-	case rspec.ActTrap:
-	case rspec.ActErrno:
-	case rspec.ActTrace:
-	case rspec.ActAllow:
-	default:
-		return false
-	}
-	return true
-}
-
-func syscallValid(s rspec.LinuxSyscall) bool {
-	if !seccompActionValid(s.Action) {
-		return false
-	}
-	for index := 0; index < len(s.Args); index++ {
-		arg := s.Args[index]
-		switch arg.Op {
-		case rspec.OpNotEqual:
-		case rspec.OpLessThan:
-		case rspec.OpLessEqual:
-		case rspec.OpEqualTo:
-		case rspec.OpGreaterEqual:
-		case rspec.OpGreaterThan:
-		case rspec.OpMaskedEqual:
-		default:
-			return false
-		}
 	}
 	return true
 }
