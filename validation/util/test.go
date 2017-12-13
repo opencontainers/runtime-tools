@@ -11,6 +11,7 @@ import (
 
 	"github.com/mndrix/tap-go"
 	"github.com/mrunalp/fileutils"
+	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/satori/go.uuid"
 )
@@ -25,7 +26,7 @@ var (
 type PreFunc func(string) error
 
 // AfterFunc validate container's outside environment after created
-type AfterFunc func(int, string) error
+type AfterFunc func(config *rspec.Spec, state *rspec.State) error
 
 func init() {
 	runtimeInEnv := os.Getenv("RUNTIME")
@@ -143,7 +144,7 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 }
 
 // RuntimeOutsideValidate validate runtime outside a container.
-func RuntimeOutsideValidate(g *generate.Generator, cgroupPath string, f AfterFunc) error {
+func RuntimeOutsideValidate(g *generate.Generator, f AfterFunc) error {
 	bundleDir, err := PrepareBundle()
 	if err != nil {
 		return err
@@ -177,7 +178,7 @@ func RuntimeOutsideValidate(g *generate.Generator, cgroupPath string, f AfterFun
 		if err != nil {
 			return err
 		}
-		if err := f(state.Pid, cgroupPath); err != nil {
+		if err := f(g.Spec(), &state); err != nil {
 			return err
 		}
 	}

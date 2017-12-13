@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
@@ -22,12 +23,12 @@ func main() {
 	g.AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleWriteIOPSDevice(major, minor, rate)
-	err := util.RuntimeOutsideValidate(g, cgroups.RelCgroupPath, func(pid int, path string) error {
+	err := util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err
 		}
-		lbd, err := cg.GetBlockIOData(pid, path)
+		lbd, err := cg.GetBlockIOData(state.Pid, config.Linux.CgroupsPath)
 		if err != nil {
 			return err
 		}

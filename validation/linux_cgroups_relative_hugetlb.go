@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
@@ -13,12 +14,12 @@ func main() {
 	g := util.GetDefaultGenerator()
 	g.SetLinuxCgroupsPath(cgroups.RelCgroupPath)
 	g.AddLinuxResourcesHugepageLimit(page, limit)
-	err := util.RuntimeOutsideValidate(g, cgroups.RelCgroupPath, func(pid int, path string) error {
+	err := util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err
 		}
-		lhd, err := cg.GetHugepageLimitData(pid, path)
+		lhd, err := cg.GetHugepageLimitData(state.Pid, config.Linux.CgroupsPath)
 		if err != nil {
 			return err
 		}

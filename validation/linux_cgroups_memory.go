@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
@@ -19,12 +20,12 @@ func main() {
 	g.SetLinuxResourcesMemoryKernelTCP(limit)
 	g.SetLinuxResourcesMemorySwappiness(swappiness)
 	g.SetLinuxResourcesMemoryDisableOOMKiller(true)
-	err := util.RuntimeOutsideValidate(g, cgroups.AbsCgroupPath, func(pid int, path string) error {
+	err := util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err
 		}
-		lm, err := cg.GetMemoryData(pid, path)
+		lm, err := cg.GetMemoryData(state.Pid, config.Linux.CgroupsPath)
 		if err != nil {
 			return err
 		}
