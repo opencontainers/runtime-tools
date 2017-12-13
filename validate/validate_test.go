@@ -23,13 +23,16 @@ func TestNewValidator(t *testing.T) {
 		val      Validator
 		expected Validator
 	}{
-		{Validator{testSpec, testBundle, true, testPlatform}, Validator{testSpec, testBundle, true, runtime.GOOS}},
 		{Validator{testSpec, testBundle, true, runtime.GOOS}, Validator{testSpec, testBundle, true, runtime.GOOS}},
 		{Validator{testSpec, testBundle, false, testPlatform}, Validator{testSpec, testBundle, false, testPlatform}},
 	}
 
 	for _, c := range cases {
-		assert.Equal(t, c.expected, NewValidator(c.val.spec, c.val.bundlePath, c.val.HostSpecific, c.val.platform))
+		v, err := NewValidator(c.val.spec, c.val.bundlePath, c.val.HostSpecific, c.val.platform)
+		if err != nil {
+			t.Errorf("unexpected NewValidator error: %+v", err)
+		}
+		assert.Equal(t, c.expected, v)
 	}
 }
 
@@ -165,8 +168,11 @@ func TestCheckRoot(t *testing.T) {
 		{rspec.Spec{Root: &rspec.Root{Readonly: true}}, "windows", specerror.RootReadonlyOnWindowsFalse},
 	}
 	for _, c := range cases {
-		v := NewValidator(&c.val, tmpBundle, false, c.platform)
-		err := v.CheckRoot()
+		v, err := NewValidator(&c.val, tmpBundle, false, c.platform)
+		if err != nil {
+			t.Errorf("unexpected NewValidator error: %+v", err)
+		}
+		err = v.CheckRoot()
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("Fail to check Root: %v %d", err, c.expected))
 	}
 }
@@ -183,8 +189,11 @@ func TestCheckSemVer(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		v := NewValidator(&rspec.Spec{Version: c.val}, "", false, "linux")
-		err := v.CheckSemVer()
+		v, err := NewValidator(&rspec.Spec{Version: c.val}, "", false, "linux")
+		if err != nil {
+			t.Errorf("unexpected NewValidator error: %+v", err)
+		}
+		err = v.CheckSemVer()
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), "Fail to check SemVer "+c.val)
 	}
 }
@@ -328,8 +337,11 @@ func TestCheckProcess(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		v := NewValidator(&c.val, ".", false, c.platform)
-		err := v.CheckProcess()
+		v, err := NewValidator(&c.val, ".", false, c.platform)
+		if err != nil {
+			t.Errorf("unexpected NewValidator error: %+v", err)
+		}
+		err = v.CheckProcess()
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckProcess: %v %d", err, c.expected))
 	}
 }
@@ -409,8 +421,11 @@ func TestCheckLinux(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		v := NewValidator(&c.val, ".", false, "linux")
-		err := v.CheckLinux()
+		v, err := NewValidator(&c.val, ".", false, "linux")
+		if err != nil {
+			t.Errorf("unexpected NewValidator error: %+v", err)
+		}
+		err = v.CheckLinux()
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckLinux: %v %d", err, c.expected))
 	}
 }
@@ -447,8 +462,11 @@ func TestCheckPlatform(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		v := NewValidator(&c.val, ".", false, c.platform)
-		err := v.CheckPlatform()
+		v, err := NewValidator(&c.val, ".", false, c.platform)
+		if err != nil {
+			t.Errorf("unexpected NewValidator error: %+v", err)
+		}
+		err = v.CheckPlatform()
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckPlatform: %v %d", err, c.expected))
 	}
 }
@@ -486,8 +504,11 @@ func TestCheckHooks(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		v := NewValidator(&c.val, ".", false, "linux")
-		err := v.CheckHooks()
+		v, err := NewValidator(&c.val, ".", false, "linux")
+		if err != nil {
+			t.Errorf("unexpected NewValidator error: %+v", err)
+		}
+		err = v.CheckHooks()
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckHooks: %v %d", err, c.expected))
 	}
 }

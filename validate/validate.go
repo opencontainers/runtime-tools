@@ -66,23 +66,20 @@ type Validator struct {
 }
 
 // NewValidator creates a Validator
-func NewValidator(spec *rspec.Spec, bundlePath string, hostSpecific bool, platform string) Validator {
+func NewValidator(spec *rspec.Spec, bundlePath string, hostSpecific bool, platform string) (Validator, error) {
 	if hostSpecific && platform != runtime.GOOS {
-		platform = runtime.GOOS
+		return Validator{}, fmt.Errorf("When hostSpecific is set, platform must be same as the host platform")
 	}
 	return Validator{
 		spec:         spec,
 		bundlePath:   bundlePath,
 		HostSpecific: hostSpecific,
 		platform:     platform,
-	}
+	}, nil
 }
 
 // NewValidatorFromPath creates a Validator with specified bundle path
 func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string) (Validator, error) {
-	if hostSpecific && platform != runtime.GOOS {
-		platform = runtime.GOOS
-	}
 	if bundlePath == "" {
 		return Validator{}, fmt.Errorf("bundle path shouldn't be empty")
 	}
@@ -104,7 +101,7 @@ func NewValidatorFromPath(bundlePath string, hostSpecific bool, platform string)
 		return Validator{}, err
 	}
 
-	return NewValidator(&spec, bundlePath, hostSpecific, platform), nil
+	return NewValidator(&spec, bundlePath, hostSpecific, platform)
 }
 
 // CheckAll checks all parts of runtime bundle
