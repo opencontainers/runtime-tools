@@ -988,6 +988,25 @@ func (g *Generator) AddMount(mnt rspec.Mount) {
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
 }
 
+// RemoveMount removes a mount point on the dest directory
+func (g *Generator) RemoveMount(dest string) {
+	g.initSpec()
+
+	for index, mount := range g.spec.Mounts {
+		if mount.Destination == dest {
+			g.spec.Mounts = append(g.spec.Mounts[:index], g.spec.Mounts[index+1:]...)
+			return
+		}
+	}
+}
+
+// Mounts returns the list of mounts
+func (g *Generator) Mounts() []rspec.Mount {
+	g.initSpec()
+
+	return g.spec.Mounts
+}
+
 // ClearMounts clear g.spec.Mounts
 func (g *Generator) ClearMounts() {
 	if g.spec == nil {

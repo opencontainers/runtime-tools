@@ -88,6 +88,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "linux-sysctl", Usage: "add sysctl settings e.g net.ipv4.forward=1"},
 	cli.StringSliceFlag{Name: "linux-uidmappings", Usage: "add UIDMappings e.g HostID:ContainerID:Size"},
 	cli.StringSliceFlag{Name: "mounts-add", Usage: "configures additional mounts inside container"},
+	cli.StringSliceFlag{Name: "mounts-remove", Usage: "remove destination mountpoints from inside container"},
 	cli.BoolFlag{Name: "mounts-remove-all", Usage: "remove all mounts inside container"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
@@ -430,6 +431,13 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("mounts-remove-all") {
 		g.ClearMounts()
+	}
+
+	if context.IsSet("mounts-remove") {
+		mounts := context.StringSlice("mounts-remove")
+		for _, mount := range mounts {
+			g.RemoveMount(mount)
+		}
 	}
 
 	if context.IsSet("mounts-add") {

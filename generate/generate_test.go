@@ -54,3 +54,12 @@ func TestGenerateValid(t *testing.T) {
 		}
 	}
 }
+
+func TestRemoveMount(t *testing.T) {
+	g := generate.New()
+	size := len(g.Mounts())
+	g.RemoveMount("/dev/shm")
+	if size-1 != len(g.Mounts()) {
+		t.Errorf("Unable to remove /dev/shm from mounts")
+	}
+}

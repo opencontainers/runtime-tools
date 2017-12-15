@@ -348,6 +348,10 @@ read the configuration from `config.json`.
   C. mount for windows platform
     --mount-add '{"destination": "C:\\folder-inside-container","source": "C:\\folder-on-host","options": ["ro"]}'
 
+**--mounts-remove**=[]
+  Remove mounts to destination path from inside container.
+  This option can be specified multiple times.
+
 **--mounts-remove-all**=true|false
   Remove all mounts inside the container. The default is *false*.
   When specified with --mount-add, this option will be parsed first.
