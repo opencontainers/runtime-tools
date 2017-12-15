@@ -891,11 +891,15 @@ func (g *Generator) SetLinuxRootPropagation(rp string) error {
 	switch rp {
 	case "":
 	case "private":
+	case "rprivate":
 	case "slave":
+	case "rslave":
 	case "shared":
+	case "rshared":
 	case "unbindable":
+	case "runbindable":
 	default:
-		return fmt.Errorf("rootfs-propagation must be empty or one of private|slave|shared|unbindable")
+		return fmt.Errorf("rootfs-propagation %q must be empty or one of (r)private|(r)slave|(r)shared|(r)unbindable", rp)
 	}
 	g.initSpecLinux()
 	g.spec.Linux.RootfsPropagation = rp
