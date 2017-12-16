@@ -980,15 +980,10 @@ func (g *Generator) AddPostStartHook(hookObject string) error {
 	return nil
 }
 
-// AddMounts adds a mount into g.spec.Mounts.
-func (g *Generator) AddMounts(mountObject string) error {
+// AddMount adds a mount into g.spec.Mounts.
+func (g *Generator) AddMount(mnt rspec.Mount) error {
 	g.initSpec()
 
-	mnt := rspec.Mount{}
-	err := json.Unmarshal([]byte(mountObject), &mnt)
-	if err != nil {
-		return err
-	}
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
 
 	return nil
