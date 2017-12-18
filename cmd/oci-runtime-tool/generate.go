@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -427,8 +428,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("mounts-add") {
 		mounts := context.StringSlice("mounts-add")
 		for _, mount := range mounts {
-			err := g.AddMounts(mount)
-			if err != nil {
+			mnt := rspec.Mount{}
+			if err := json.Unmarshal([]byte(mount), &mnt); err != nil {
+				return err
+			}
+			if err := g.AddMount(mnt); err != nil {
 				return err
 			}
 		}
