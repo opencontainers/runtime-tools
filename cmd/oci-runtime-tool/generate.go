@@ -432,9 +432,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if err := json.Unmarshal([]byte(mount), &mnt); err != nil {
 				return err
 			}
-			if err := g.AddMount(mnt); err != nil {
-				return err
-			}
+			g.AddMount(mnt)
 		}
 	}
 
@@ -752,10 +750,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("process-rlimits-remove") {
 		rlimits := context.StringSlice("process-rlimits-remove")
 		for _, rlimit := range rlimits {
-			err := g.RemoveProcessRlimits(rlimit)
-			if err != nil {
-				return err
-			}
+			g.RemoveProcessRlimits(rlimit)
 		}
 	}
 
@@ -777,10 +772,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("linux-device-remove") {
 		devices := context.StringSlice("linux-device-remove")
 		for _, device := range devices {
-			err := g.RemoveDevice(device)
-			if err != nil {
-				return err
-			}
+			g.RemoveDevice(device)
 		}
 	}
 

@@ -440,17 +440,16 @@ func (g *Generator) AddProcessRlimits(rType string, rHard uint64, rSoft uint64) 
 }
 
 // RemoveProcessRlimits removes a rlimit from g.spec.Process.Rlimits.
-func (g *Generator) RemoveProcessRlimits(rType string) error {
+func (g *Generator) RemoveProcessRlimits(rType string) {
 	if g.spec == nil || g.spec.Process == nil {
-		return nil
+		return
 	}
 	for i, rlimit := range g.spec.Process.Rlimits {
 		if rlimit.Type == rType {
 			g.spec.Process.Rlimits = append(g.spec.Process.Rlimits[:i], g.spec.Process.Rlimits[i+1:]...)
-			return nil
+			return
 		}
 	}
-	return nil
 }
 
 // ClearProcessRlimits clear g.spec.Process.Rlimits.
@@ -726,19 +725,17 @@ func (g *Generator) AddLinuxResourcesHugepageLimit(pageSize string, limit uint64
 }
 
 // DropLinuxResourcesHugepageLimit drops a hugepage limit from g.spec.Linux.Resources.HugepageLimits.
-func (g *Generator) DropLinuxResourcesHugepageLimit(pageSize string) error {
+func (g *Generator) DropLinuxResourcesHugepageLimit(pageSize string) {
 	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Resources == nil {
-		return nil
+		return
 	}
 
 	for i, pageLimit := range g.spec.Linux.Resources.HugepageLimits {
 		if pageLimit.Pagesize == pageSize {
 			g.spec.Linux.Resources.HugepageLimits = append(g.spec.Linux.Resources.HugepageLimits[:i], g.spec.Linux.Resources.HugepageLimits[i+1:]...)
-			return nil
+			return
 		}
 	}
-
-	return nil
 }
 
 // SetLinuxResourcesMemoryLimit sets g.spec.Linux.Resources.Memory.Limit.
@@ -985,12 +982,10 @@ func (g *Generator) AddPostStartHook(hookObject string) error {
 }
 
 // AddMount adds a mount into g.spec.Mounts.
-func (g *Generator) AddMount(mnt rspec.Mount) error {
+func (g *Generator) AddMount(mnt rspec.Mount) {
 	g.initSpec()
 
 	g.spec.Mounts = append(g.spec.Mounts, mnt)
-
-	return nil
 }
 
 // ClearMounts clear g.spec.Mounts
@@ -1318,18 +1313,17 @@ func (g *Generator) AddDevice(device rspec.LinuxDevice) {
 }
 
 // RemoveDevice remove a device from g.spec.Linux.Devices
-func (g *Generator) RemoveDevice(path string) error {
+func (g *Generator) RemoveDevice(path string) {
 	if g.spec == nil || g.spec.Linux == nil || g.spec.Linux.Devices == nil {
-		return nil
+		return
 	}
 
 	for i, device := range g.spec.Linux.Devices {
 		if device.Path == path {
 			g.spec.Linux.Devices = append(g.spec.Linux.Devices[:i], g.spec.Linux.Devices[i+1:]...)
-			return nil
+			return
 		}
 	}
-	return nil
 }
 
 // ClearLinuxDevices clears g.spec.Linux.Devices
