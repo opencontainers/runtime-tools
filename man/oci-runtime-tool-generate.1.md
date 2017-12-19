@@ -447,6 +447,29 @@ read the configuration from `config.json`.
 
   By default a container will have its root filesystem writable allowing processes to write files anywhere.  By specifying the `--rootfs-readonly` flag the container will have its root filesystem mounted as read only prohibiting any writes.
 
+**--solaris-anet**=[]
+  Represents the automatic creation of a network resource for an application container
+  e.g. --solaris-anet '{"allowedAddress": "172.17.0.2/16","configureAllowedAddress": "true","linkname": "net0"}'
+
+**--solaris-capped-cpu-ncpus**=""
+  Specifies the percentage of CPU usage.
+  An ncpu value of 1 means 100% of a CPU, a value of 1.25 means 125%, .75 mean 75%, and so forth.
+
+**--solaris-capped-memory-physical**=""
+  Specifies the physical caps on the memory.
+
+**--solaris-capped-memory-swap**=""
+  Specifies the swap caps on the memory.
+
+**--solaris-limitpriv**=""
+  Sets privilege limit.
+
+**--solaris-max-shm-memory**=""
+  Sets the maximum amount of shared memory.
+
+**--solaris-milestone**=""
+  Sets the SMF FMRI.
+
 **--template**=PATH
   Override the default template with your own.
   Additional options will only adjust the relevant portions of your template.

@@ -383,6 +383,13 @@ _oci-runtime-tool_generate() {
 		--process-rlimits-remove
 		--process-uid
 		--rootfs-path
+		--solaris-anet
+		--solaris-capped-cpu-ncpus
+		--solaris-capped-memory-physical
+		--solaris-capped-memory-swap
+		--solaris-limitpriv1
+		--solaris-max-shm-memory
+		 --solaris-milestone
 		--template
 	"
 

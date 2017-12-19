@@ -114,6 +114,13 @@ var generateFlags = []cli.Flag{
 	cli.IntFlag{Name: "process-uid", Usage: "uid for the process"},
 	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
 	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
+	cli.StringSliceFlag{Name: "solaris-anet", Usage: "set up networking for Solaris application containers"},
+	cli.StringFlag{Name: "solaris-capped-cpu-ncpus", Usage: "Specifies the percentage of CPU usage"},
+	cli.StringFlag{Name: "solaris-capped-memory-physical", Usage: "Specifies the physical caps on the memory"},
+	cli.StringFlag{Name: "solaris-capped-memory-swap", Usage: "Specifies the swap caps on the memory"},
+	cli.StringFlag{Name: "solaris-limitpriv", Usage: "privilege limit"},
+	cli.StringFlag{Name: "solaris-max-shm-memory", Usage: "Specifies the maximum amount of shared memory"},
+	cli.StringFlag{Name: "solaris-milestone", Usage: "Specifies the SMF FMRI"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 }
 
@@ -774,6 +781,42 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		for _, device := range devices {
 			g.RemoveDevice(device)
 		}
+	}
+
+	if context.IsSet("solaris-anet") {
+		anets := context.StringSlice("solaris-anet")
+		for _, anet := range anets {
+			tmpAnet := rspec.SolarisAnet{}
+			if err := json.Unmarshal([]byte(anet), &tmpAnet); err != nil {
+				return err
+			}
+
+			g.AddSolarisAnet(tmpAnet)
+		}
+	}
+
+	if context.IsSet("solaris-capped-cpu-ncpus") {
+		g.SetSolarisCappedCPUNcpus(context.String("solaris-capped-cpu-ncpus"))
+	}
+
+	if context.IsSet("solaris-capped-memory-physical") {
+		g.SetSolarisCappedMemoryPhysical(context.String("solaris-capped-memory-physical"))
+	}
+
+	if context.IsSet("solaris-capped-memory-swap") {
+		g.SetSolarisCappedMemorySwap(context.String("solaris-capped-memory-swap"))
+	}
+
+	if context.IsSet("solaris-limitpriv") {
+		g.SetSolarisLimitPriv(context.String("solaris-limitpriv"))
+	}
+
+	if context.IsSet("solaris-max-shm-memory") {
+		g.SetSolarisMaxShmMemory(context.String("solaris-max-shm-memory"))
+	}
+
+	if context.IsSet("solaris-milestone") {
+		g.SetSolarisMilestone(context.String("solaris-milestone"))
 	}
 
 	err := addSeccomp(context, g)

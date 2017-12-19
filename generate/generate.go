@@ -1448,3 +1448,45 @@ func dropBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64,
 
 	return throttleDevices
 }
+
+// AddSolarisAnet adds network into g.spec.Solaris.Anet
+func (g *Generator) AddSolarisAnet(anet rspec.SolarisAnet) {
+	g.initSpecSolaris()
+	g.spec.Solaris.Anet = append(g.spec.Solaris.Anet, anet)
+}
+
+// SetSolarisCappedCPUNcpus sets g.spec.Solaris.CappedCPU.Ncpus
+func (g *Generator) SetSolarisCappedCPUNcpus(ncpus string) {
+	g.initSpecSolarisCappedCPU()
+	g.spec.Solaris.CappedCPU.Ncpus = ncpus
+}
+
+// SetSolarisCappedMemoryPhysical sets g.spec.Solaris.CappedMemory.Physical
+func (g *Generator) SetSolarisCappedMemoryPhysical(physical string) {
+	g.initSpecSolarisCappedMemory()
+	g.spec.Solaris.CappedMemory.Physical = physical
+}
+
+// SetSolarisCappedMemorySwap sets g.spec.Solaris.CappedMemory.Swap
+func (g *Generator) SetSolarisCappedMemorySwap(swap string) {
+	g.initSpecSolarisCappedMemory()
+	g.spec.Solaris.CappedMemory.Swap = swap
+}
+
+// SetSolarisLimitPriv sets g.spec.Solaris.LimitPriv
+func (g *Generator) SetSolarisLimitPriv(limitPriv string) {
+	g.initSpecSolaris()
+	g.spec.Solaris.LimitPriv = limitPriv
+}
+
+// SetSolarisMaxShmMemory sets g.spec.Solaris.MaxShmMemory
+func (g *Generator) SetSolarisMaxShmMemory(memory string) {
+	g.initSpecSolaris()
+	g.spec.Solaris.MaxShmMemory = memory
+}
+
+// SetSolarisMilestone sets g.spec.Solaris.Milestone
+func (g *Generator) SetSolarisMilestone(milestone string) {
+	g.initSpecSolaris()
+	g.spec.Solaris.Milestone = milestone
+}

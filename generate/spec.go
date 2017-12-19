@@ -121,3 +121,24 @@ func (g *Generator) initSpecLinuxResourcesPids() {
 		g.spec.Linux.Resources.Pids = &rspec.LinuxPids{}
 	}
 }
+
+func (g *Generator) initSpecSolaris() {
+	g.initSpec()
+	if g.spec.Solaris == nil {
+		g.spec.Solaris = &rspec.Solaris{}
+	}
+}
+
+func (g *Generator) initSpecSolarisCappedCPU() {
+	g.initSpecSolaris()
+	if g.spec.Solaris.CappedCPU == nil {
+		g.spec.Solaris.CappedCPU = &rspec.SolarisCappedCPU{}
+	}
+}
+
+func (g *Generator) initSpecSolarisCappedMemory() {
+	g.initSpecSolaris()
+	if g.spec.Solaris.CappedMemory == nil {
+		g.spec.Solaris.CappedMemory = &rspec.SolarisCappedMemory{}
+	}
+}
