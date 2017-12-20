@@ -364,6 +364,7 @@ _oci-runtime-tool_generate() {
 		--linux-sysctl
 		--linux-uidmappings
 		--mounts-add
+		--mounts-remove
 		--output
 		--process-cap-add-ambient
 		--process-cap-add-bounding
