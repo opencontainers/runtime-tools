@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
-
+	"github.com/mndrix/tap-go"
+	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
@@ -19,30 +19,42 @@ func main() {
 	g.SetLinuxResourcesCPUPeriod(period)
 	g.SetLinuxResourcesCPUCpus(cpus)
 	g.SetLinuxResourcesCPUMems(mems)
-	err := util.RuntimeOutsideValidate(g, cgroups.RelCgroupPath, func(pid int, path string) error {
+	err := util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
+		t := tap.New()
+		t.Header(0)
+
 		cg, err := cgroups.FindCgroup()
+		t.Ok((err == nil), "find cpus cgroup")
 		if err != nil {
-			return err
+			t.Diagnostic(err.Error())
+			t.AutoPlan()
+			return nil
 		}
-		lcd, err := cg.GetCPUData(pid, path)
+
+		lcd, err := cg.GetCPUData(state.Pid, config.Linux.CgroupsPath)
+		t.Ok((err == nil), "get cpus cgroup data")
 		if err != nil {
-			return err
+			t.Diagnostic(err.Error())
+			t.AutoPlan()
+			return nil
 		}
-		if *lcd.Shares != shares {
-			return fmt.Errorf("cpus shares limit is not set correctly, expect: %d, actual: %d", shares, lcd.Shares)
-		}
-		if *lcd.Quota != quota {
-			return fmt.Errorf("cpus quota is not set correctly, expect: %d, actual: %d", quota, lcd.Quota)
-		}
-		if *lcd.Period != period {
-			return fmt.Errorf("cpus period is not set correctly, expect: %d, actual: %d", period, lcd.Period)
-		}
-		if lcd.Cpus != cpus {
-			return fmt.Errorf("cpus cpus is not set correctly, expect: %s, actual: %s", cpus, lcd.Cpus)
-		}
-		if lcd.Mems != mems {
-			return fmt.Errorf("cpus mems is not set correctly, expect: %s, actual: %s", mems, lcd.Mems)
-		}
+
+		t.Ok(*lcd.Shares == shares, "cpus shares limit is set correctly")
+		t.Diagnosticf("expect: %d, actual: %d", shares, lcd.Shares)
+
+		t.Ok(*lcd.Quota == quota, "cpus quota is set correctly")
+		t.Diagnosticf("expect: %d, actual: %d", quota, lcd.Quota)
+
+		t.Ok(*lcd.Period == period, "cpus period is set correctly")
+		t.Diagnosticf("expect: %d, actual: %d", period, lcd.Period)
+
+		t.Ok(lcd.Cpus == cpus, "cpus cpus is set correctly")
+		t.Diagnosticf("expect: %s, actual: %s", cpus, lcd.Cpus)
+
+		t.Ok(lcd.Mems == mems, "cpus mems is set correctly")
+		t.Diagnosticf("expect: %s, actual: %s", mems, lcd.Mems)
+
+		t.AutoPlan()
 		return nil
 	})
 
