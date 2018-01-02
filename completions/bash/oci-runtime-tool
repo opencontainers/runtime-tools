@@ -392,6 +392,12 @@ _oci-runtime-tool_generate() {
 		--solaris-max-shm-memory
 		 --solaris-milestone
 		--template
+		--windows-hyperv-utilityVMPath
+		--windows-layer-folders
+		--windows-network
+		--windows-resources-cpu
+		--windows-resources-memory-limit
+		--windows-resources-storage
 	"
 
 	local boolean_options="
@@ -411,6 +417,8 @@ _oci-runtime-tool_generate() {
 		--process-rlimits-remove-all
 		--process-terminal
 		--rootfs-readonly
+		--windows-ignore-flushes-during-boot
+		--windows-servicing
 	"
 
 	local all_options="$options_with_args $boolean_options"

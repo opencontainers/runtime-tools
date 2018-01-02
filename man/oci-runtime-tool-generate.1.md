@@ -479,6 +479,33 @@ read the configuration from `config.json`.
   Additional options will only adjust the relevant portions of your template.
   Templates are not validated for correctness, so the user should ensure that they are correct.
 
+**--windows-hyperv-utilityVMPath**=PATH
+  Specifies the path to the image used for the utility VM.
+
+**--windows-ignore-flushes-during-boot**=true|false
+  Whether to ignore flushes during boot.
+
+**--windows-layer-folders**=[]
+  Specifies a list of layer folders the container image relies on.
+
+**--windows-network**=""
+  Specifies network for container.
+  e.g. --windows-network='{"endpointList": ["7a010682-17e0-4455-a838-02e5d9655fe6"],"allowUnqualifiedDNSQuery": true,"DNSSearchList": ["a.com"],"networkSharedContainerName": "containerName"}'
+
+**--windows-resources-cpu**=""
+  Specifies cpu for container.
+  e.g. --windows-resources-cpu '{"count":100, "maximum": 5000}'
+
+**--windows-resources-memory-limit**=MEMORYLIMIT
+  Set limit of memory.
+
+**--windows-resources-storage**=""
+  Specifies storage for container.
+  e.g. --windows-resources-storage '{"iops": 50, "bps": 20}'
+
+**--windows-servicing**=true|false
+  Whether to servicing operations
+
 # EXAMPLES
 
 ## Generating container in read-only mode

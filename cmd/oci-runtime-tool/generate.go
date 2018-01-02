@@ -123,6 +123,14 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "solaris-max-shm-memory", Usage: "Specifies the maximum amount of shared memory"},
 	cli.StringFlag{Name: "solaris-milestone", Usage: "Specifies the SMF FMRI"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
+	cli.StringFlag{Name: "windows-hyperv-utilityVMPath", Usage: "specifies the path to the image used for the utility VM"},
+	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
+	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
+	cli.StringFlag{Name: "windows-network", Usage: "specifies network for container"},
+	cli.StringFlag{Name: "windows-resources-cpu", Usage: "specifies CPU for container"},
+	cli.Uint64Flag{Name: "windows-resources-memory-limit", Usage: "specifies limit of memory"},
+	cli.StringFlag{Name: "windows-resources-storage", Usage: "specifies storage for container"},
+	cli.BoolFlag{Name: "windows-servicing", Usage: "servicing operations"},
 }
 
 var generateCommand = cli.Command{
@@ -825,6 +833,57 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("solaris-milestone") {
 		g.SetSolarisMilestone(context.String("solaris-milestone"))
+	}
+
+	if context.IsSet("windows-hyperv-utilityVMPath") {
+		g.SetWindowsHypervUntilityVMPath(context.String("windows-hyperv-utilityVMPath"))
+	}
+
+	if context.IsSet("windows-ignore-flushes-during-boot") {
+		g.SetWinodwsIgnoreFlushesDuringBoot(context.Bool("windows-ignore-flushes-during-boot"))
+	}
+
+	if context.IsSet("windows-layer-folders") {
+		folders := context.StringSlice("windows-layer-folders")
+		for _, folder := range folders {
+			g.AddWindowsLayerFolders(folder)
+		}
+	}
+
+	if context.IsSet("windows-network") {
+		network := context.String("windows-network")
+		tmpNetwork := rspec.WindowsNetwork{}
+		if err := json.Unmarshal([]byte(network), &tmpNetwork); err != nil {
+			return err
+		}
+		g.SetWindowsNetwork(tmpNetwork)
+	}
+
+	if context.IsSet("windows-resources-cpu") {
+		cpu := context.String("windows-resources-cpu")
+		tmpCPU := rspec.WindowsCPUResources{}
+		if err := json.Unmarshal([]byte(cpu), &tmpCPU); err != nil {
+			return err
+		}
+		g.SetWindowsResourcesCPU(tmpCPU)
+	}
+
+	if context.IsSet("windows-resources-memory-limit") {
+		limit := context.Uint64("windows-resources-memory-limit")
+		g.SetWindowsResourcesMemoryLimit(limit)
+	}
+
+	if context.IsSet("windows-resources-storage") {
+		storage := context.String("windows-resources-storage")
+		tmpStorage := rspec.WindowsStorageResources{}
+		if err := json.Unmarshal([]byte(storage), &tmpStorage); err != nil {
+			return err
+		}
+		g.SetWindowsResourcesStorage(tmpStorage)
+	}
+
+	if context.IsSet("windows-servicing") {
+		g.SetWinodwsServicing(context.Bool("windows-servicing"))
 	}
 
 	err := addSeccomp(context, g)

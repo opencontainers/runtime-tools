@@ -1509,3 +1509,51 @@ func (g *Generator) SetSolarisMilestone(milestone string) {
 	g.initSpecSolaris()
 	g.spec.Solaris.Milestone = milestone
 }
+
+// SetWindowsHypervUntilityVMPath sets g.spec.Windows.HyperV.UtilityVMPath.
+func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
+	g.initSpecWindowsHyperV()
+	g.spec.Windows.HyperV.UtilityVMPath = path
+}
+
+// SetWinodwsIgnoreFlushesDuringBoot sets g.spec.Winodws.IgnoreFlushesDuringBoot.
+func (g *Generator) SetWinodwsIgnoreFlushesDuringBoot(ignore bool) {
+	g.initSpecWindows()
+	g.spec.Windows.IgnoreFlushesDuringBoot = ignore
+}
+
+// AddWindowsLayerFolders adds layer folders into  g.spec.Windows.LayerFolders.
+func (g *Generator) AddWindowsLayerFolders(folder string) {
+	g.initSpecWindows()
+	g.spec.Windows.LayerFolders = append(g.spec.Windows.LayerFolders, folder)
+}
+
+// SetWindowsNetwork sets g.spec.Windows.Network.
+func (g *Generator) SetWindowsNetwork(network rspec.WindowsNetwork) {
+	g.initSpecWindows()
+	g.spec.Windows.Network = &network
+}
+
+// SetWindowsResourcesCPU sets g.spec.Windows.Resources.CPU.
+func (g *Generator) SetWindowsResourcesCPU(cpu rspec.WindowsCPUResources) {
+	g.initSpecWindowsResources()
+	g.spec.Windows.Resources.CPU = &cpu
+}
+
+// SetWindowsResourcesMemoryLimit sets g.spec.Windows.Resources.Memory.Limit.
+func (g *Generator) SetWindowsResourcesMemoryLimit(limit uint64) {
+	g.initSpecWindowsResourcesMemory()
+	g.spec.Windows.Resources.Memory.Limit = &limit
+}
+
+// SetWindowsResourcesStorage sets g.spec.Windows.Resources.Storage.
+func (g *Generator) SetWindowsResourcesStorage(storage rspec.WindowsStorageResources) {
+	g.initSpecWindowsResources()
+	g.spec.Windows.Resources.Storage = &storage
+}
+
+// SetWinodwsServicing sets g.spec.Winodws.Servicing.
+func (g *Generator) SetWinodwsServicing(servicing bool) {
+	g.initSpecWindows()
+	g.spec.Windows.Servicing = servicing
+}
