@@ -576,6 +576,30 @@ func validateMaskedPaths(spec *rspec.Spec) error {
 	return nil
 }
 
+func validateSeccomp(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.Seccomp == nil {
+		return nil
+	}
+	t := tap.New()
+	for _, sys := range spec.Linux.Seccomp.Syscalls {
+		if sys.Action == "SCMP_ACT_ERRNO" {
+			for _, name := range sys.Names {
+				if name == "getcwd" {
+					_, err := os.Getwd()
+					if err == nil {
+						t.Diagnostic("getcwd did not return an error")
+					}
+				} else {
+					t.Skip(1, fmt.Sprintf("%s syscall returns errno", name))
+				}
+			}
+		} else {
+			t.Skip(1, fmt.Sprintf("syscall action %s", sys.Action))
+		}
+	}
+	return nil
+}
+
 func validateROPaths(spec *rspec.Spec) error {
 	if spec.Linux == nil {
 		return nil
@@ -863,6 +887,10 @@ func run(context *cli.Context) error {
 		{
 			test:        validateOOMScoreAdj,
 			description: "oom score adj",
+		},
+		{
+			test:        validateSeccomp,
+			description: "seccomp",
 		},
 		{
 			test:        validateROPaths,
