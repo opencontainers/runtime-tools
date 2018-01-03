@@ -104,6 +104,144 @@ func TestJSONSchema(t *testing.T) {
 			},
 			error: "process: process is required",
 		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Namespaces: []rspec.LinuxNamespace{
+						{
+							Type: "pid",
+						},
+					},
+				},
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Namespaces: []rspec.LinuxNamespace{
+						{
+							Type: "test",
+						},
+					},
+				},
+			},
+			error: "2 errors occurred:\n\n* linux.namespaces.0: Must validate at least one schema (anyOf)\n* linux.namespaces.0.type: linux.namespaces.0.type must be one of the following: \"mount\", \"pid\", \"network\", \"uts\", \"ipc\", \"user\", \"cgroup\"",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Seccomp: &rspec.LinuxSeccomp{
+						DefaultAction: "SCMP_ACT_ALLOW",
+						Architectures: []rspec.Arch{
+							"SCMP_ARCH_X86",
+							"SCMP_ARCH_X32",
+						},
+					},
+				},
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Seccomp: &rspec.LinuxSeccomp{
+						DefaultAction: "SCMP_ACT_ALLOW",
+						Architectures: []rspec.Arch{
+							"SCMP_ARCH_X86",
+							"SCMP_ARCH",
+						},
+					},
+				},
+			},
+			error: "linux.seccomp.architectures.1: linux.seccomp.architectures.1 must be one of the following: \"SCMP_ARCH_X86\", \"SCMP_ARCH_X86_64\", \"SCMP_ARCH_X32\", \"SCMP_ARCH_ARM\", \"SCMP_ARCH_AARCH64\", \"SCMP_ARCH_MIPS\", \"SCMP_ARCH_MIPS64\", \"SCMP_ARCH_MIPS64N32\", \"SCMP_ARCH_MIPSEL\", \"SCMP_ARCH_MIPSEL64\", \"SCMP_ARCH_MIPSEL64N32\", \"SCMP_ARCH_PPC\", \"SCMP_ARCH_PPC64\", \"SCMP_ARCH_PPC64LE\", \"SCMP_ARCH_S390\", \"SCMP_ARCH_S390X\", \"SCMP_ARCH_PARISC\", \"SCMP_ARCH_PARISC64\"",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Seccomp: &rspec.LinuxSeccomp{
+						DefaultAction: "SCMP_ACT_ALLOW",
+						Syscalls: []rspec.LinuxSyscall{
+							{
+								Names:  []string{"getcwd"},
+								Action: "SCMP_ACT_KILL",
+							},
+						},
+					},
+				},
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Seccomp: &rspec.LinuxSeccomp{
+						DefaultAction: "SCMP_ACT_ALLOW",
+						Syscalls: []rspec.LinuxSyscall{
+							{
+								Names:  []string{"getcwd"},
+								Action: "SCMP_ACT",
+							},
+						},
+					},
+				},
+			},
+			error: "linux.seccomp.syscalls.0.action: linux.seccomp.syscalls.0.action must be one of the following: \"SCMP_ACT_KILL\", \"SCMP_ACT_TRAP\", \"SCMP_ACT_ERRNO\", \"SCMP_ACT_TRACE\", \"SCMP_ACT_ALLOW\"",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Seccomp: &rspec.LinuxSeccomp{
+						DefaultAction: "SCMP_ACT_ALLOW",
+						Syscalls: []rspec.LinuxSyscall{
+							{
+								Names:  []string{"getcwd"},
+								Action: "SCMP_ACT_KILL",
+								Args: []rspec.LinuxSeccompArg{
+									{
+										Index: 0,
+										Value: 2080,
+										Op:    "SCMP_CMP_NE",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Seccomp: &rspec.LinuxSeccomp{
+						DefaultAction: "SCMP_ACT_ALLOW",
+						Syscalls: []rspec.LinuxSyscall{
+							{
+								Names:  []string{"getcwd"},
+								Action: "SCMP_ACT_KILL",
+								Args: []rspec.LinuxSeccompArg{
+									{
+										Index: 0,
+										Value: 2080,
+										Op:    "SCMP_CMP",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			error: "linux.seccomp.syscalls.0.args.0.op: linux.seccomp.syscalls.0.args.0.op must be one of the following: \"SCMP_CMP_NE\", \"SCMP_CMP_LT\", \"SCMP_CMP_LE\", \"SCMP_CMP_EQ\", \"SCMP_CMP_GE\", \"SCMP_CMP_GT\", \"SCMP_CMP_MASKED_EQ\"",
+		},
 	} {
 		t.Run(tt.error, func(t *testing.T) {
 			v := &Validator{spec: tt.config}
