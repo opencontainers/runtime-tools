@@ -466,8 +466,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("hooks-poststart-add") {
 		postStartHooks := context.StringSlice("hooks-poststart-add")
 		for _, hook := range postStartHooks {
-			err := g.AddPostStartHook(hook)
-			if err != nil {
+			tmpHook := rspec.Hook{}
+			if err := json.Unmarshal([]byte(hook), &tmpHook); err != nil {
+				return err
+			}
+			if err := g.AddPostStartHook(tmpHook); err != nil {
 				return err
 			}
 		}
@@ -480,8 +483,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("hooks-poststop-add") {
 		postStopHooks := context.StringSlice("hooks-poststop-add")
 		for _, hook := range postStopHooks {
-			err := g.AddPostStopHook(hook)
-			if err != nil {
+			tmpHook := rspec.Hook{}
+			if err := json.Unmarshal([]byte(hook), &tmpHook); err != nil {
+				return err
+			}
+			if err := g.AddPostStopHook(tmpHook); err != nil {
 				return err
 			}
 		}
@@ -494,8 +500,11 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	if context.IsSet("hooks-prestart-add") {
 		preStartHooks := context.StringSlice("hooks-prestart-add")
 		for _, hook := range preStartHooks {
-			err := g.AddPreStartHook(hook)
-			if err != nil {
+			tmpHook := rspec.Hook{}
+			if err := json.Unmarshal([]byte(hook), &tmpHook); err != nil {
+				return err
+			}
+			if err := g.AddPreStartHook(tmpHook); err != nil {
 				return err
 			}
 		}
