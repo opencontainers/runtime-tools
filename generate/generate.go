@@ -912,20 +912,15 @@ func (g *Generator) ClearPreStartHooks() {
 }
 
 // AddPreStartHook add a prestart hook into g.spec.Hooks.Prestart.
-func (g *Generator) AddPreStartHook(hookObject string) error {
+func (g *Generator) AddPreStartHook(preStartHook rspec.Hook) error {
 	g.initSpecHooks()
-	tmpHook := rspec.Hook{}
-	err := json.Unmarshal([]byte(hookObject), &tmpHook)
-	if err != nil {
-		return err
-	}
 	for i, hook := range g.spec.Hooks.Prestart {
-		if hook.Path == tmpHook.Path {
-			g.spec.Hooks.Prestart[i] = tmpHook
+		if hook.Path == preStartHook.Path {
+			g.spec.Hooks.Prestart[i] = preStartHook
 			return nil
 		}
 	}
-	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, tmpHook)
+	g.spec.Hooks.Prestart = append(g.spec.Hooks.Prestart, preStartHook)
 	return nil
 }
 
@@ -938,20 +933,15 @@ func (g *Generator) ClearPostStopHooks() {
 }
 
 // AddPostStopHook adds a poststop hook into g.spec.Hooks.Poststop.
-func (g *Generator) AddPostStopHook(hookObject string) error {
+func (g *Generator) AddPostStopHook(postStopHook rspec.Hook) error {
 	g.initSpecHooks()
-	tmpHook := rspec.Hook{}
-	err := json.Unmarshal([]byte(hookObject), &tmpHook)
-	if err != nil {
-		return err
-	}
 	for i, hook := range g.spec.Hooks.Poststop {
-		if hook.Path == tmpHook.Path {
-			g.spec.Hooks.Poststop[i] = tmpHook
+		if hook.Path == postStopHook.Path {
+			g.spec.Hooks.Poststop[i] = postStopHook
 			return nil
 		}
 	}
-	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, tmpHook)
+	g.spec.Hooks.Poststop = append(g.spec.Hooks.Poststop, postStopHook)
 	return nil
 }
 
@@ -964,20 +954,15 @@ func (g *Generator) ClearPostStartHooks() {
 }
 
 // AddPostStartHook adds a poststart hook into g.spec.Hooks.Poststart.
-func (g *Generator) AddPostStartHook(hookObject string) error {
+func (g *Generator) AddPostStartHook(postStartHook rspec.Hook) error {
 	g.initSpecHooks()
-	tmpHook := rspec.Hook{}
-	err := json.Unmarshal([]byte(hookObject), &tmpHook)
-	if err != nil {
-		return err
-	}
 	for i, hook := range g.spec.Hooks.Poststart {
-		if hook.Path == tmpHook.Path {
-			g.spec.Hooks.Poststart[i] = tmpHook
+		if hook.Path == postStartHook.Path {
+			g.spec.Hooks.Poststart[i] = postStartHook
 			return nil
 		}
 	}
-	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, tmpHook)
+	g.spec.Hooks.Poststart = append(g.spec.Hooks.Poststart, postStartHook)
 	return nil
 }
 
