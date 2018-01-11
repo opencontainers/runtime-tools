@@ -9,7 +9,7 @@ import (
 
 func main() {
 	if "windows" == runtime.GOOS {
-		util.Skip("non-Windows root.readonly test", runtime.GOOS)
+		util.Skip("non-Windows root.readonly test", map[string]string{"OS": runtime.GOOS})
 		os.Exit(0)
 	}
 

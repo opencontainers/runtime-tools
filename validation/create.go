@@ -50,18 +50,24 @@ func main() {
 		r.SetID(c.id)
 		stderr, err := r.Create()
 		t.Ok((err == nil) == c.errExpected, c.err.(*specerror.Error).Err.Err.Error())
-		t.Diagnostic(c.err.(*specerror.Error).Err.Reference)
+		diagnostic := map[string]string{
+			"reference": c.err.(*specerror.Error).Err.Reference,
+		}
 		if err != nil {
-			t.Diagnostic(err.Error())
+			diagnostic["error"] = err.Error()
 		}
 		if len(stderr) > 0 {
-			t.Diagnostic(string(stderr))
+			diagnostic["stderr"] = string(stderr)
 		}
+		t.YAML(diagnostic)
 
 		if err == nil {
 			state, _ := r.State()
-			t.Ok(state.ID == c.id, "")
-			t.Diagnosticf("container PID: %d, state ID: %d", c.id, state.ID)
+			t.Ok(state.ID == c.id, "'state' MUST return the state of a container")
+			t.YAML(map[string]string{
+				"container ID": c.id,
+				"state ID":     state.ID,
+			})
 		}
 	}
 

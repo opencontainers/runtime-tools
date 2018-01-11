@@ -945,7 +945,7 @@ func run(context *cli.Context) error {
 					} else {
 						t.Fail(v.description)
 					}
-					t.Diagnostic(err.Error())
+					t.YAML(map[string]string{"error": err.Error()})
 				}
 			} else {
 				if e, ok := err.(*rfc2119.Error); ok {
@@ -953,7 +953,7 @@ func run(context *cli.Context) error {
 				} else {
 					t.Fail(v.description)
 				}
-				t.Diagnostic(err.Error())
+				t.YAML(map[string]string{"error": err.Error()})
 			}
 		}
 	}

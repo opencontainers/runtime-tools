@@ -26,7 +26,7 @@
 		},
 		{
 			"ImportPath": "github.com/mndrix/tap-go",
-			"Rev": "56cca451570bb0366b29f30e1aeb5cf9736a1e18"
+			"Rev": "629fa407e90bbf3781e448e8e9b8931523ec823c"
 		},
 		{
 			"ImportPath": "github.com/mrunalp/fileutils",

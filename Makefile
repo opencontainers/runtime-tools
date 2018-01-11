@@ -40,6 +40,14 @@ clean:
 	rm -f oci-runtime-tool runtimetest *.1 $(VALIDATION_TESTS)
 
 localvalidation:
+	@for EXECUTABLE in runtimetest $(VALIDATION_TESTS); \
+	do \
+		if test ! -x "$${EXECUTABLE}"; \
+		then \
+			echo "missing test executable $${EXECUTABLE}; run 'make runtimetest validation-executables'" >&2; \
+			exit 1; \
+		fi; \
+	done
 	RUNTIME=$(RUNTIME) $(TAP) $(VALIDATION_TESTS)
 
 .PHONY: validation-executables
