@@ -202,72 +202,49 @@ func validateCapabilities(spec *rspec.Spec) error {
 		return err
 	}
 
-	expectedCaps1 := make(map[string]bool)
-	expectedCaps2 := make(map[string]bool)
-	expectedCaps3 := make(map[string]bool)
-	expectedCaps4 := make(map[string]bool)
-	expectedCaps5 := make(map[string]bool)
-	for _, ec := range spec.Process.Capabilities.Bounding {
-		expectedCaps1[ec] = true
-	}
-	for _, ec := range spec.Process.Capabilities.Effective {
-		expectedCaps2[ec] = true
-	}
-	for _, ec := range spec.Process.Capabilities.Inheritable {
-		expectedCaps3[ec] = true
-	}
-	for _, ec := range spec.Process.Capabilities.Permitted {
-		expectedCaps4[ec] = true
-	}
-	for _, ec := range spec.Process.Capabilities.Ambient {
-		expectedCaps5[ec] = true
-	}
-
-	for _, cap := range capability.List() {
-		if cap > last {
-			continue
+	for _, capType := range []struct {
+		capType capability.CapType
+		config  []string
+	}{
+		{
+			capType: capability.BOUNDING,
+			config:  spec.Process.Capabilities.Bounding,
+		},
+		{
+			capType: capability.EFFECTIVE,
+			config:  spec.Process.Capabilities.Effective,
+		},
+		{
+			capType: capability.INHERITABLE,
+			config:  spec.Process.Capabilities.Inheritable,
+		},
+		{
+			capType: capability.PERMITTED,
+			config:  spec.Process.Capabilities.Permitted,
+		},
+		{
+			capType: capability.AMBIENT,
+			config:  spec.Process.Capabilities.Ambient,
+		},
+	} {
+		expectedCaps := make(map[string]bool)
+		for _, ec := range capType.config {
+			expectedCaps[ec] = true
 		}
 
-		capKey := fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String()))
-		expectedSet := expectedCaps1[capKey]
-		actuallySet := processCaps.Get(capability.BOUNDING, cap)
-		if expectedSet != actuallySet {
-			if expectedSet {
-				return fmt.Errorf("Expected bounding capability %v not set for process", cap.String())
+		for _, cap := range capability.List() {
+			if cap > last {
+				continue
 			}
-			return fmt.Errorf("Unexpected bounding capability %v set for process", cap.String())
-		}
-		expectedSet = expectedCaps2[capKey]
-		actuallySet = processCaps.Get(capability.EFFECTIVE, cap)
-		if expectedSet != actuallySet {
-			if expectedSet {
-				return fmt.Errorf("Expected effective capability %v not set for process", cap.String())
+
+			capKey := fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String()))
+			expectedSet := expectedCaps[capKey]
+			actuallySet := processCaps.Get(capType.capType, cap)
+			if expectedSet && !actuallySet {
+				return fmt.Errorf("expected %s capability %v not set", capType.capType, capKey)
+			} else if !expectedSet && actuallySet {
+				return fmt.Errorf("unexpected %s capability %v set", capType.capType, capKey)
 			}
-			return fmt.Errorf("Unexpected effective capability %v set for process", cap.String())
-		}
-		expectedSet = expectedCaps3[capKey]
-		actuallySet = processCaps.Get(capability.INHERITABLE, cap)
-		if expectedSet != actuallySet {
-			if expectedSet {
-				return fmt.Errorf("Expected inheritable capability %v not set for process", cap.String())
-			}
-			return fmt.Errorf("Unexpected inheritable capability %v set for process", cap.String())
-		}
-		expectedSet = expectedCaps4[capKey]
-		actuallySet = processCaps.Get(capability.PERMITTED, cap)
-		if expectedSet != actuallySet {
-			if expectedSet {
-				return fmt.Errorf("Expected permitted capability %v not set for process", cap.String())
-			}
-			return fmt.Errorf("Unexpected permitted capability %v set for process", cap.String())
-		}
-		expectedSet = expectedCaps5[capKey]
-		actuallySet = processCaps.Get(capability.AMBIENT, cap)
-		if expectedSet != actuallySet {
-			if expectedSet {
-				return fmt.Errorf("Expected ambient capability %v not set for process", cap.String())
-			}
-			return fmt.Errorf("Unexpected ambient capability %v set for process", cap.String())
 		}
 	}
 
