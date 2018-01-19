@@ -1,3 +1,55 @@
+# v0.4.0
+
+## Additions
+
+* specerror: Redefine error code as int64 (#501).
+* validate: Improve the test of the configuration file (#504, #534, #537, #541).
+* runtimetest: Add rootfs propagation test (#511).
+* runtimetest: Add posixValidations (#510).
+* runtimetest: Add host platform validation (#507).
+* Makefile: Add version file (#417).
+* validation: Complete Container Inside Test (#521).
+* generate: Support json value for hooks (#525).
+* generate: Support adding additional mounts for container (#279).
+* generate: Support blkio related options (#235).
+* cmd/runtimetest/main: Use TAP diagnostics for errors (#439).
+* generate: Add linux-intelRdt-l3CacheSchema option (#529).
+* filepath/clean: Add Windows support (#539).
+* validate: Add validation when host-specific is set (#495).
+* runtimetest: Add validation of cgroups (#93).
+* generate: Generator solaris application container configuration (#532).
+* generate: Add interface to remove mounts. (#544).
+* validation/linux_cgroups_*: Generate TAP output (and outside-validation cleanup) (#542).
+* generate: Windows-specific container configuration generate (#528).
+* runtimetest: Add validateSeccomp (#514).
+* validation: Add mount validation (#547).
+* ...: Transition from tap Diagnostic(...) to YAML(...) (#533).
+
+## Minor fixes and documentaion
+
+* runtimetest: Fix error return (#505).
+* runtimetest: Move validateRlimits to defaultValidations (#506).
+* runtimetest: Make validateRlimits silent on Windows (#509).
+* runtimetest: Raise ConfigInRootBundleDir for missing config.json (#508).
+* generate: Change process-tty to process-terminal (#517).
+* generate: Fixed seccompSet (#513).
+* runtimetest: Remove debug info (#518).
+* generate: Fix error return (#520).
+* validate: Fix nil deference (#522).
+* generate: Fix DropProcessCapability... (#519).
+* runtimetest: Fix nil dereference (#523).
+* man: Small fixs (#526).
+* validation: Fix idmappings test (#530).
+* generate: Solve conflicting options problem (#441).
+* generate: Use non-null validation instead of initialization (#540).
+* validate: Modify the non-conforming validation (#538).
+* validate: Fix id mappings (#531).
+* validate: Remove duplicate verification (#535).
+* generate: AddMounts should be AddMount you are only adding a single Mount (#545).
+* generate: Recursive propagation flags should be legal to use (#543).
+* generate: Modify the function return value (#546).
+* generate: Hooks should be passed in as rspec.Hook, not as a string. (#549).
+
 # v0.3.0
 
 ## Additions
