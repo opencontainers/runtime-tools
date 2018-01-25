@@ -18,6 +18,7 @@ import (
 type Runtime struct {
 	RuntimeCommand string
 	BundleDir      string
+	PidFile        string
 	ID             string
 	stdout         *os.File
 	stderr         *os.File
@@ -63,7 +64,9 @@ func (r *Runtime) Create() (stderr []byte, err error) {
 	if r.ID != "" {
 		args = append(args, r.ID)
 	}
-
+	if r.PidFile != "" {
+		args = append(args, "--pid-file", r.PidFile)
+	}
 	if r.BundleDir != "" {
 		args = append(args, "--bundle", r.BundleDir)
 	}
@@ -146,15 +149,24 @@ func (r *Runtime) State() (rspecs.State, error) {
 }
 
 // Delete a container
-func (r *Runtime) Delete() error {
+func (r *Runtime) Delete() ([]byte, error) {
 	var args []string
+	var stderr []byte
 	args = append(args, "delete")
 	if r.ID != "" {
 		args = append(args, r.ID)
 	}
 
 	cmd := exec.Command(r.RuntimeCommand, args...)
-	return cmd.Run()
+	stdout, err := cmd.Output()
+	if e, ok := err.(*exec.ExitError); ok {
+		stderr = e.Stderr
+	}
+	if err != nil && len(stderr) == 0 {
+		stderr = stdout
+	}
+
+	return stderr, err
 }
 
 // Clean deletes the container.  If removeBundle is set, the bundle
@@ -162,7 +174,7 @@ func (r *Runtime) Delete() error {
 // forceRemoveBundle is true, after the deletion attempt regardless of
 // whether it was successful or not.
 func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) error {
-	err := r.Delete()
+	_, err := r.Delete()
 
 	if removeBundle && (err == nil || forceRemoveBundle) {
 		err2 := os.RemoveAll(r.bundleDir())
