@@ -183,11 +183,6 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 		return err
 	}
 
-	// FIXME: why do we need this?  Without a sleep here, I get:
-	//   failed to start the container
-	//   container "..." does not exist
-	time.Sleep(1 * time.Second)
-
 	err = r.Start()
 	if err != nil {
 		os.Stderr.WriteString("failed to start the container\n")

@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
 
 	tap "github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/validation/util"
@@ -46,9 +45,6 @@ func main() {
 				return errors.New("Wrong pid in the pidfile")
 			}
 			return nil
-		},
-		PreDelete: func(r *util.Runtime) error {
-			return util.WaitingForStatus(*r, util.LifecycleStatusCreated, time.Second*10, time.Second*1)
 		},
 	}
 
