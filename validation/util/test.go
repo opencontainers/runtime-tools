@@ -174,10 +174,12 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 	}
 
 	r.SetID(uuid.NewV4().String())
-	stderr, err := r.Create()
+	err = r.Create()
 	if err != nil {
 		os.Stderr.WriteString("failed to create the container\n")
-		os.Stderr.Write(stderr)
+		if e, ok := err.(*exec.ExitError); ok && len(e.Stderr) > 0 {
+			os.Stderr.Write(e.Stderr)
+		}
 		return err
 	}
 
@@ -186,10 +188,12 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 	//   container "..." does not exist
 	time.Sleep(1 * time.Second)
 
-	stderr, err = r.Start()
+	err = r.Start()
 	if err != nil {
 		os.Stderr.WriteString("failed to start the container\n")
-		os.Stderr.Write(stderr)
+		if e, ok := err.(*exec.ExitError); ok && len(e.Stderr) > 0 {
+			os.Stderr.Write(e.Stderr)
+		}
 		return err
 	}
 
@@ -233,10 +237,12 @@ func RuntimeOutsideValidate(g *generate.Generator, f AfterFunc) error {
 	}
 
 	r.SetID(uuid.NewV4().String())
-	stderr, err := r.Create()
+	err = r.Create()
 	if err != nil {
 		os.Stderr.WriteString("failed to create the container\n")
-		os.Stderr.Write(stderr)
+		if e, ok := err.(*exec.ExitError); ok && len(e.Stderr) > 0 {
+			os.Stderr.Write(e.Stderr)
+		}
 		return err
 	}
 
@@ -277,10 +283,12 @@ func RuntimeLifecycleValidate(g *generate.Generator, config LifecycleConfig) err
 	}
 
 	if config.Actions&LifecycleActionCreate != 0 {
-		stderr, err := r.Create()
+		err := r.Create()
 		if err != nil {
 			os.Stderr.WriteString("failed to create the container\n")
-			os.Stderr.Write(stderr)
+			if e, ok := err.(*exec.ExitError); ok && len(e.Stderr) > 0 {
+				os.Stderr.Write(e.Stderr)
+			}
 			return err
 		}
 	}
@@ -292,10 +300,12 @@ func RuntimeLifecycleValidate(g *generate.Generator, config LifecycleConfig) err
 	}
 
 	if config.Actions&LifecycleActionStart != 0 {
-		stderr, err := r.Start()
+		err := r.Start()
 		if err != nil {
 			os.Stderr.WriteString("failed to start the container\n")
-			os.Stderr.Write(stderr)
+			if e, ok := err.(*exec.ExitError); ok && len(e.Stderr) > 0 {
+				os.Stderr.Write(e.Stderr)
+			}
 			return err
 		}
 	}
@@ -307,10 +317,12 @@ func RuntimeLifecycleValidate(g *generate.Generator, config LifecycleConfig) err
 	}
 
 	if config.Actions&LifecycleActionDelete != 0 {
-		stderr, err := r.Delete()
+		err := r.Delete()
 		if err != nil {
 			os.Stderr.WriteString("failed to delete the container\n")
-			os.Stderr.Write(stderr)
+			if e, ok := err.(*exec.ExitError); ok && len(e.Stderr) > 0 {
+				os.Stderr.Write(e.Stderr)
+			}
 			return err
 		}
 	}
