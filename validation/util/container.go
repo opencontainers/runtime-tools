@@ -58,7 +58,7 @@ func (r *Runtime) SetID(id string) {
 }
 
 // Create a container
-func (r *Runtime) Create() (stderr []byte, err error) {
+func (r *Runtime) Create() (err error) {
 	var args []string
 	args = append(args, "create")
 	if r.ID != "" {
@@ -74,25 +74,29 @@ func (r *Runtime) Create() (stderr []byte, err error) {
 	id := uuid.NewV4().String()
 	r.stdout, err = os.OpenFile(filepath.Join(r.bundleDir(), fmt.Sprintf("stdout-%s", id)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
 	if err != nil {
-		return []byte(""), err
+		return err
 	}
 	cmd.Stdout = r.stdout
 	r.stderr, err = os.OpenFile(filepath.Join(r.bundleDir(), fmt.Sprintf("stderr-%s", id)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
 	if err != nil {
-		return []byte(""), err
+		return err
 	}
 	cmd.Stderr = r.stderr
 
 	err = cmd.Run()
 	if err == nil {
-		return []byte(""), err
+		return err
 	}
 
-	stdout, stderr, _ := r.ReadStandardStreams()
-	if len(stderr) == 0 {
-		stderr = stdout
+	if e, ok := err.(*exec.ExitError); ok {
+		stdout, stderr, _ := r.ReadStandardStreams()
+		if len(stderr) == 0 {
+			stderr = stdout
+		}
+		e.Stderr = stderr
+		return e
 	}
-	return stderr, err
+	return err
 }
 
 // ReadStandardStreams collects content from the stdout and stderr buffers.
@@ -111,7 +115,7 @@ func (r *Runtime) ReadStandardStreams() (stdout []byte, stderr []byte, err error
 }
 
 // Start a container
-func (r *Runtime) Start() (stderr []byte, err error) {
+func (r *Runtime) Start() (err error) {
 	var args []string
 	args = append(args, "start")
 	if r.ID != "" {
@@ -119,15 +123,7 @@ func (r *Runtime) Start() (stderr []byte, err error) {
 	}
 
 	cmd := exec.Command(r.RuntimeCommand, args...)
-	stdout, err := cmd.Output()
-	if e, ok := err.(*exec.ExitError); ok {
-		stderr = e.Stderr
-	}
-	if err != nil && len(stderr) == 0 {
-		stderr = stdout
-	}
-
-	return stderr, err
+	return execWithStderrFallbackToStdout(cmd)
 }
 
 // State a container information
@@ -140,6 +136,12 @@ func (r *Runtime) State() (rspecs.State, error) {
 
 	out, err := exec.Command(r.RuntimeCommand, args...).Output()
 	if err != nil {
+		if e, ok := err.(*exec.ExitError); ok {
+			if len(e.Stderr) == 0 {
+				e.Stderr = out
+				return rspecs.State{}, e
+			}
+		}
 		return rspecs.State{}, err
 	}
 
@@ -149,24 +151,15 @@ func (r *Runtime) State() (rspecs.State, error) {
 }
 
 // Delete a container
-func (r *Runtime) Delete() ([]byte, error) {
+func (r *Runtime) Delete() (err error) {
 	var args []string
-	var stderr []byte
 	args = append(args, "delete")
 	if r.ID != "" {
 		args = append(args, r.ID)
 	}
 
 	cmd := exec.Command(r.RuntimeCommand, args...)
-	stdout, err := cmd.Output()
-	if e, ok := err.(*exec.ExitError); ok {
-		stderr = e.Stderr
-	}
-	if err != nil && len(stderr) == 0 {
-		stderr = stdout
-	}
-
-	return stderr, err
+	return execWithStderrFallbackToStdout(cmd)
 }
 
 // Clean deletes the container.  If removeBundle is set, the bundle
@@ -174,7 +167,7 @@ func (r *Runtime) Delete() ([]byte, error) {
 // forceRemoveBundle is true, after the deletion attempt regardless of
 // whether it was successful or not.
 func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) error {
-	_, err := r.Delete()
+	err := r.Delete()
 
 	if removeBundle && (err == nil || forceRemoveBundle) {
 		err2 := os.RemoveAll(r.bundleDir())
@@ -183,5 +176,20 @@ func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) error {
 		}
 	}
 
+	return err
+}
+
+func execWithStderrFallbackToStdout(cmd *exec.Cmd) (err error) {
+	stdout, err := cmd.Output()
+	if err == nil {
+		return err
+	}
+
+	if e, ok := err.(*exec.ExitError); ok {
+		if len(e.Stderr) == 0 {
+			e.Stderr = stdout
+			return e
+		}
+	}
 	return err
 }

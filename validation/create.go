@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os/exec"
 
 	"github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
@@ -48,7 +49,7 @@ func main() {
 
 	for _, c := range cases {
 		r.SetID(c.id)
-		stderr, err := r.Create()
+		err := r.Create()
 		t.Ok((err == nil) == c.errExpected, c.err.(*specerror.Error).Err.Err.Error())
 		diagnostic := map[string]string{
 			"reference": c.err.(*specerror.Error).Err.Reference,
@@ -56,18 +57,33 @@ func main() {
 		if err != nil {
 			diagnostic["error"] = err.Error()
 		}
-		if len(stderr) > 0 {
-			diagnostic["stderr"] = string(stderr)
+		if e, ok := err.(*exec.ExitError); ok {
+			if len(e.Stderr) > 0 {
+				diagnostic["stderr"] = string(e.Stderr)
+			}
 		}
 		t.YAML(diagnostic)
 
 		if err == nil {
-			state, _ := r.State()
-			t.Ok(state.ID == c.id, "'state' MUST return the state of a container")
-			t.YAML(map[string]string{
-				"container ID": c.id,
-				"state ID":     state.ID,
-			})
+			state, err := r.State()
+			if err == nil {
+				t.Ok(state.ID == c.id, "'state' MUST return the state of a container")
+				t.YAML(map[string]string{
+					"container ID": c.id,
+					"state ID":     state.ID,
+				})
+			} else {
+				t.Skip(1, "'state' MUST return the state of a container")
+				diagnostic = map[string]string{
+					"error": err.Error(),
+				}
+				if e, ok := err.(*exec.ExitError); ok {
+					if len(e.Stderr) > 0 {
+						diagnostic["stderr"] = string(e.Stderr)
+					}
+				}
+				t.YAML(diagnostic)
+			}
 		}
 	}
 
