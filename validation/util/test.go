@@ -194,8 +194,10 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 		return err
 	}
 
-	// FIXME: wait until the container exits and collect its exit code.
-	time.Sleep(1 * time.Second)
+	err = WaitingForStatus(r, LifecycleStatusStopped, 10*time.Second, 1*time.Second)
+	if err != nil {
+		return err
+	}
 
 	stdout, stderr, err := r.ReadStandardStreams()
 	if err != nil {
