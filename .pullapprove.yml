@@ -9,7 +9,7 @@ always_pending:
   explanation: 'Work in progress...'
 
 group_defaults:
-  required: 2
+  required: 1
   approve_by_comment:
     enabled: true
     approve_regex: '^LGTM'
