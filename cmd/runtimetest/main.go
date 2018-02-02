@@ -507,13 +507,10 @@ func validateDefaultSymlinks(spec *rspec.Spec) error {
 }
 
 func validateDefaultDevices(spec *rspec.Spec) error {
-	if spec.Process == nil {
-		return nil
-	}
-
-	if spec.Process.Terminal {
+	if spec.Process != nil && spec.Process.Terminal {
 		defaultDevices = append(defaultDevices, "/dev/console")
 	}
+
 	for _, device := range defaultDevices {
 		fi, err := os.Stat(device)
 		if err != nil {
