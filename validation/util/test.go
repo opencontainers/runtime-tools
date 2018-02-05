@@ -26,6 +26,8 @@ var (
 type LifecycleAction int
 
 const (
+	// LifecycleActionNone does nothing
+	LifecycleActionNone = 0
 	// LifecycleActionCreate creates a container
 	LifecycleActionCreate = 1 << iota
 	// LifecycleActionStart starts a container
@@ -192,8 +194,10 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 		return err
 	}
 
-	// FIXME: wait until the container exits and collect its exit code.
-	time.Sleep(1 * time.Second)
+	err = WaitingForStatus(r, LifecycleStatusStopped, 10*time.Second, 1*time.Second)
+	if err != nil {
+		return err
+	}
 
 	stdout, stderr, err := r.ReadStandardStreams()
 	if err != nil {
@@ -259,17 +263,15 @@ func RuntimeLifecycleValidate(g *generate.Generator, config LifecycleConfig) err
 	if err != nil {
 		return err
 	}
+	defer os.RemoveAll(bundleDir)
 	r, err := NewRuntime(RuntimeCommand, bundleDir)
 	if err != nil {
-		os.RemoveAll(bundleDir)
 		return err
 	}
-	defer r.Clean(true, true)
 	err = r.SetConfig(g)
 	if err != nil {
 		return err
 	}
-	r.SetID(uuid.NewV4().String())
 
 	if config.PreCreate != nil {
 		if err := config.PreCreate(&r); err != nil {
@@ -285,6 +287,17 @@ func RuntimeLifecycleValidate(g *generate.Generator, config LifecycleConfig) err
 				os.Stderr.Write(e.Stderr)
 			}
 			return err
+		}
+		if config.Actions&LifecycleActionDelete != 0 {
+			defer func() {
+				// runtime error or the container is already deleted
+				if _, err := r.State(); err != nil {
+					return
+				}
+				if err := WaitingForStatus(r, LifecycleStatusCreated|LifecycleStatusStopped, time.Second*10, time.Second*1); err != nil {
+					r.Delete()
+				}
+			}()
 		}
 	}
 

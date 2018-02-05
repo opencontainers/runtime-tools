@@ -1,14 +1,16 @@
 package main
 
 import (
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 
 	tap "github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/validation/util"
+	uuid "github.com/satori/go.uuid"
 )
 
 func main() {
@@ -25,6 +27,7 @@ func main() {
 	config := util.LifecycleConfig{
 		Actions: util.LifecycleActionCreate | util.LifecycleActionDelete,
 		PreCreate: func(r *util.Runtime) error {
+			r.SetID(uuid.NewV4().String())
 			r.PidFile = tempPidFile
 			return nil
 		},
@@ -42,7 +45,7 @@ func main() {
 				return err
 			}
 			if state.Pid != pid {
-				return errors.New("Wrong pid in the pidfile")
+				return fmt.Errorf("wrong pid %d, expected %d", pid, state.Pid)
 			}
 			return nil
 		},
@@ -51,8 +54,17 @@ func main() {
 	g := util.GetDefaultGenerator()
 	g.SetProcessArgs([]string{"true"})
 	err = util.RuntimeLifecycleValidate(g, config)
+	t.Ok(err == nil, "create with '--pid-file' option works")
 	if err != nil {
-		util.Fatal(err)
+		diagnostic := map[string]string{
+			"error": err.Error(),
+		}
+		if e, ok := err.(*exec.ExitError); ok {
+			if len(e.Stderr) > 0 {
+				diagnostic["stderr"] = string(e.Stderr)
+			}
+		}
+		t.YAML(diagnostic)
 	}
 
 	t.AutoPlan()

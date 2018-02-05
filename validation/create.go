@@ -56,10 +56,10 @@ func main() {
 		}
 		if err != nil {
 			diagnostic["error"] = err.Error()
-		}
-		if e, ok := err.(*exec.ExitError); ok {
-			if len(e.Stderr) > 0 {
-				diagnostic["stderr"] = string(e.Stderr)
+			if e, ok := err.(*exec.ExitError); ok {
+				if len(e.Stderr) > 0 {
+					diagnostic["stderr"] = string(e.Stderr)
+				}
 			}
 		}
 		t.YAML(diagnostic)
