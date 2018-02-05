@@ -24,7 +24,10 @@ func main() {
 	defer os.RemoveAll(tempDir)
 	tempPidFile := filepath.Join(tempDir, "pidfile")
 
+	g := util.GetDefaultGenerator()
+	g.SetProcessArgs([]string{"true"})
 	config := util.LifecycleConfig{
+		Config:  g,
 		Actions: util.LifecycleActionCreate | util.LifecycleActionDelete,
 		PreCreate: func(r *util.Runtime) error {
 			r.SetID(uuid.NewV4().String())
@@ -51,9 +54,7 @@ func main() {
 		},
 	}
 
-	g := util.GetDefaultGenerator()
-	g.SetProcessArgs([]string{"true"})
-	err = util.RuntimeLifecycleValidate(g, config)
+	err = util.RuntimeLifecycleValidate(config)
 	t.Ok(err == nil, "create with '--pid-file' option works")
 	if err != nil {
 		diagnostic := map[string]string{

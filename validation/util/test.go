@@ -58,9 +58,13 @@ var lifecycleStatusMap = map[string]LifecycleStatus{
 }
 
 // LifecycleConfig includes
-// 1. Actions to define the default running lifecycles.
-// 2. Four phases for user to add his/her own operations.
+// 1. Config to set the 'config.json'
+// 2. BundleDir to set the bundle directory
+// 3. Actions to define the default running lifecycles
+// 4. Four phases for user to add his/her own operations
 type LifecycleConfig struct {
+	Config     *generate.Generator
+	BundleDir  string
 	Actions    LifecycleAction
 	PreCreate  func(runtime *Runtime) error
 	PostCreate func(runtime *Runtime) error
@@ -258,19 +262,27 @@ func RuntimeOutsideValidate(g *generate.Generator, f AfterFunc) error {
 }
 
 // RuntimeLifecycleValidate validates runtime lifecycle.
-func RuntimeLifecycleValidate(g *generate.Generator, config LifecycleConfig) error {
-	bundleDir, err := PrepareBundle()
-	if err != nil {
-		return err
+func RuntimeLifecycleValidate(config LifecycleConfig) error {
+	var bundleDir string
+	var err error
+
+	if config.BundleDir == "" {
+		bundleDir, err = PrepareBundle()
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(bundleDir)
+	} else {
+		bundleDir = config.BundleDir
 	}
-	defer os.RemoveAll(bundleDir)
+
 	r, err := NewRuntime(RuntimeCommand, bundleDir)
 	if err != nil {
 		return err
 	}
 
-	if g != nil {
-		if err := r.SetConfig(g); err != nil {
+	if config.Config != nil {
+		if err := r.SetConfig(config.Config); err != nil {
 			return err
 		}
 	}
