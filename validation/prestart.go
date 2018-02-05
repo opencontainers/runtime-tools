@@ -19,14 +19,12 @@ func main() {
 	t := tap.New()
 	t.Header(0)
 
-	g := util.GetDefaultGenerator()
-
 	var output string
 	config := util.LifecycleConfig{
 		Actions: util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete,
 		PreCreate: func(r *util.Runtime) error {
 			r.SetID(uuid.NewV4().String())
-
+			g := util.GetDefaultGenerator()
 			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
 			prestart := rspec.Hook{
 				Path: fmt.Sprintf("%s/%s/bin/sh", r.BundleDir, g.Spec().Root.Path),
@@ -74,7 +72,7 @@ func main() {
 		},
 	}
 
-	err := util.RuntimeLifecycleValidate(g, config)
+	err := util.RuntimeLifecycleValidate(nil, config)
 	if err != nil {
 		diagnostic := map[string]string{
 			"error": err.Error(),

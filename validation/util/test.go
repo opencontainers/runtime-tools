@@ -268,9 +268,11 @@ func RuntimeLifecycleValidate(g *generate.Generator, config LifecycleConfig) err
 	if err != nil {
 		return err
 	}
-	err = r.SetConfig(g)
-	if err != nil {
-		return err
+
+	if g != nil {
+		if err := r.SetConfig(g); err != nil {
+			return err
+		}
 	}
 
 	if config.PreCreate != nil {
