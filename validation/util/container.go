@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -49,6 +50,9 @@ func (r *Runtime) bundleDir() (bundleDir string) {
 
 // SetConfig creates a 'config.json' by the generator
 func (r *Runtime) SetConfig(g *generate.Generator) error {
+	if g == nil {
+		return errors.New("cannot set a nil config")
+	}
 	return g.SaveToFile(filepath.Join(r.bundleDir(), "config.json"), generate.ExportOptions{})
 }
 
