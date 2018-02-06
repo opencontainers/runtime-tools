@@ -485,6 +485,12 @@ func TestCheckProcess(t *testing.T) {
 }
 
 func TestCheckLinux(t *testing.T) {
+	weightDevices := []rspec.LinuxWeightDevice{
+		rspec.LinuxWeightDevice{},
+	}
+	weightDevices[0].Major = 5
+	weightDevices[0].Minor = 0
+
 	cases := []struct {
 		val      rspec.Spec
 		expected specerror.Code
@@ -556,6 +562,19 @@ func TestCheckLinux(t *testing.T) {
 				},
 			},
 			expected: specerror.ReadonlyPathsAbs,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Resources: &rspec.LinuxResources{
+						BlockIO: &rspec.LinuxBlockIO{
+							WeightDevice: weightDevices,
+						},
+					},
+				},
+			},
+			expected: specerror.BlkIOWeightOrLeafWeightExist,
 		},
 	}
 	for _, c := range cases {
