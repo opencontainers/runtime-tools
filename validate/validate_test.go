@@ -449,6 +449,29 @@ func TestCheckProcess(t *testing.T) {
 							Hard: 512,
 							Soft: 512,
 						},
+						{
+							Type: "RLIMIT_DOES_NOT_EXIST",
+							Hard: 512,
+							Soft: 512,
+						},
+					},
+				},
+			},
+			platform: "linux",
+			expected: specerror.PosixProcRlimitsErrorOnDup,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args: []string{"sh"},
+					Cwd:  "/",
+					Rlimits: []rspec.POSIXRlimit{
+						{
+							Type: "RLIMIT_DOES_NOT_EXIST",
+							Hard: 512,
+							Soft: 512,
+						},
 					},
 				},
 			},
@@ -496,6 +519,7 @@ func TestCheckLinux(t *testing.T) {
 					Namespaces: []rspec.LinuxNamespace{
 						{
 							Type: "pid",
+							Path: "/proc/test",
 						},
 						{
 							Type: "network",
@@ -504,6 +528,20 @@ func TestCheckLinux(t *testing.T) {
 				},
 			},
 			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Linux: &rspec.Linux{
+					Namespaces: []rspec.LinuxNamespace{
+						{
+							Type: "pid",
+							Path: "proc",
+						},
+					},
+				},
+			},
+			expected: specerror.NSPathAbs,
 		},
 		{
 			val: rspec.Spec{
