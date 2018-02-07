@@ -130,9 +130,13 @@ __oci-runtime-tool_complete_compliance_level() {
 __oci-runtime-tool_complete_propagations() {
 	COMPREPLY=( $( compgen -W "
 		private
+		rprivate
 		shared
+		rshared
 		slave
+		rslave
 		unbindable
+		runbindable
 	" -- "$cur" ) )
 }
 

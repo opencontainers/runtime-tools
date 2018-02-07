@@ -276,7 +276,7 @@ read the configuration from `config.json`.
 
 **--linux-rootfs-propagation**=PROPOGATIONMODE
   Mount propagation for root filesystem.
-  Values are "shared, private, slave, unbindable"
+  Values are "(r)shared, (r)private, (r)slave, (r)unbindable"
 
 **--linux-seccomp-allow**=SYSCALL
   Specifies syscalls to be added to the ALLOW list.
