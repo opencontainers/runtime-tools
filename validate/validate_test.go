@@ -688,3 +688,54 @@ func TestCheckHooks(t *testing.T) {
 		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckHooks: %v %d", err, c.expected))
 	}
 }
+
+func TestCheckMandatoryFields(t *testing.T) {
+	for _, tt := range []struct {
+		config *rspec.Spec
+		error  string
+	}{
+		{
+			config: &rspec.Spec{},
+			error:  "1 error occurred:\n\n* 'Spec.Version' should not be empty",
+		},
+		{
+			config: nil,
+			error:  "1 error occurred:\n\n* Spec can't be nil",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+			},
+			error: "",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.0",
+				Root:    &rspec.Root{},
+			},
+			error: "1 error occurred:\n\n* 'Root.Path' should not be empty",
+		},
+	} {
+		t.Run(tt.error, func(t *testing.T) {
+			var errs *multierror.Error
+			v := &Validator{spec: tt.config}
+			errs = multierror.Append(errs, v.CheckMandatoryFields())
+			if tt.error == "" {
+				if errs.ErrorOrNil() == nil {
+					return
+				}
+				t.Fatalf("expected no error, but got: %s", errs.Error())
+			}
+			if errs.ErrorOrNil() == nil {
+				t.Fatal("failed to raise the expected error")
+			}
+
+			for _, err := range errs.Errors {
+				if err.Error() == tt.error {
+					return
+				}
+			}
+			assert.Equal(t, tt.error, errs.Error())
+		})
+	}
+}

@@ -990,5 +990,9 @@ func checkMandatory(obj interface{}) (errs error) {
 func (v *Validator) CheckMandatoryFields() error {
 	logrus.Debugf("check mandatory fields")
 
+	if v.spec == nil {
+		return fmt.Errorf("Spec can't be nil")
+	}
+
 	return checkMandatory(v.spec)
 }
