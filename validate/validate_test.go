@@ -661,6 +661,10 @@ func TestCheckMandatoryFields(t *testing.T) {
 			error:  "1 error occurred:\n\n* 'Spec.Version' should not be empty",
 		},
 		{
+			config: nil,
+			error:  "1 error occurred:\n\n* Spec can't be nil",
+		},
+		{
 			config: &rspec.Spec{
 				Version: "1.0.0",
 			},
