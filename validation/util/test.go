@@ -14,6 +14,7 @@ import (
 	"github.com/mrunalp/fileutils"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
+	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/satori/go.uuid"
 )
 
@@ -100,6 +101,24 @@ func Skip(message string, diagnostic interface{}) {
 	if diagnostic != nil {
 		t.YAML(diagnostic)
 	}
+}
+
+// SpecErrorOK generates TAP output indicating whether a spec code test passed or failed.
+func SpecErrorOK(t *tap.T, expected bool, specErr error, detailedErr error) {
+	t.Ok(expected, specErr.(*specerror.Error).Err.Err.Error())
+	diagnostic := map[string]string{
+		"reference": specErr.(*specerror.Error).Err.Reference,
+	}
+
+	if detailedErr != nil {
+		diagnostic["error"] = detailedErr.Error()
+		if e, ok := detailedErr.(*exec.ExitError); ok {
+			if len(e.Stderr) > 0 {
+				diagnostic["stderr"] = string(e.Stderr)
+			}
+		}
+	}
+	t.YAML(diagnostic)
 }
 
 // PrepareBundle creates a test bundle in a temporary directory.

@@ -1,0 +1,104 @@
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/mndrix/tap-go"
+	rspecs "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-tools/specerror"
+	"github.com/opencontainers/runtime-tools/validation/util"
+	uuid "github.com/satori/go.uuid"
+)
+
+func main() {
+	t := tap.New()
+	t.Header(0)
+
+	bundleDir, err := util.PrepareBundle()
+	if err != nil {
+		util.Fatal(err)
+	}
+	defer os.RemoveAll(bundleDir)
+
+	containerID := uuid.NewV4().String()
+
+	r, err := util.NewRuntime(util.RuntimeCommand, bundleDir)
+	if err != nil {
+		util.Fatal(err)
+	}
+	g := util.GetDefaultGenerator()
+	g.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("echo 'process called' >> %s", "/output")})
+	r.SetConfig(g)
+	output := filepath.Join(bundleDir, g.Spec().Root.Path, "output")
+
+	// start without id
+	err = r.Start()
+	util.SpecErrorOK(t, err != nil, specerror.NewError(specerror.StartWithoutIDGenError, fmt.Errorf("start` operation MUST generate an error if it is not provided the container ID"), rspecs.Version), err)
+
+	// set id for the remaining tests
+	r.SetID(containerID)
+
+	// start a not `created` container - case one: non-exist container
+	err = r.Start()
+	util.SpecErrorOK(t, err != nil, specerror.NewError(specerror.StartNotCreatedGenError, fmt.Errorf("attempting to `start` a container that is not `created` MUST generate an error"), rspecs.Version), err)
+
+	err = r.Create()
+	if err != nil {
+		util.Fatal(err)
+	}
+	// start a `created` container
+	err = r.Start()
+	if err != nil {
+		util.SpecErrorOK(t, false, specerror.NewError(specerror.StartProcImplement, fmt.Errorf("`start` operation MUST run the user-specified program as specified by `process`"), rspecs.Version), err)
+	} else {
+		err := util.WaitingForStatus(r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
+		if err != nil {
+			util.Fatal(err)
+		}
+		outputData, outputErr := ioutil.ReadFile(output)
+		// check the output
+		util.SpecErrorOK(t, outputErr == nil && string(outputData) == "process called\n", specerror.NewError(specerror.StartProcImplement, fmt.Errorf("`start` operation MUST run the user-specified program as specified by `process`"), rspecs.Version), outputErr)
+	}
+
+	// start a not `created` container - case two: exist and `stopped`
+	err = r.Start()
+	// must generate an error
+	util.SpecErrorOK(t, err != nil, specerror.NewError(specerror.StartNotCreatedGenError, fmt.Errorf("attempting to `start` a container that is not `created` MUST generate an error"), rspecs.Version), err)
+
+	err = util.WaitingForStatus(r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
+	if err != nil {
+		util.Fatal(err)
+	}
+
+	outputData, outputErr := ioutil.ReadFile(output)
+	// must have no effect, it will not be something like 'process called\nprocess called\n'
+	util.SpecErrorOK(t, outputErr == nil && string(outputData) == "process called\n", specerror.NewError(specerror.StartNotCreatedHaveNoEffect, fmt.Errorf("attempting to `start` a container that is not `created` MUST have no effect on the container"), rspecs.Version), outputErr)
+
+	err = r.Delete()
+	if err != nil {
+		util.Fatal(err)
+	}
+
+	g.Spec().Process = nil
+	r.SetConfig(g)
+	err = r.Create()
+	if err != nil {
+		util.Fatal(err)
+	}
+
+	err = r.Start()
+	util.SpecErrorOK(t, err == nil, specerror.NewError(specerror.StartWithProcUnsetGenError, fmt.Errorf("`start` operation MUST generate an error if `process` was not set"), rspecs.Version), err)
+	err = util.WaitingForStatus(r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
+	if err == nil {
+		err = r.Delete()
+	}
+	if err != nil {
+		util.Fatal(err)
+	}
+
+	t.AutoPlan()
+}
