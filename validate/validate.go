@@ -142,6 +142,8 @@ func JSONSchemaURL(version string) (url string, err error) {
 // runtime-spec JSON Schema, using the version of the schema that
 // matches the configuration's declared version.
 func (v *Validator) CheckJSONSchema() (errs error) {
+	logrus.Debugf("check JSON schema")
+
 	url, err := JSONSchemaURL(v.spec.Version)
 	if err != nil {
 		errs = multierror.Append(errs, err)
