@@ -32,6 +32,7 @@ func main() {
 
 	for _, c := range cases {
 		config := util.LifecycleConfig{
+			Config:  g,
 			Actions: c.action,
 			PreCreate: func(r *util.Runtime) error {
 				r.SetID(c.id)
@@ -42,7 +43,7 @@ func main() {
 				return err
 			},
 		}
-		err := util.RuntimeLifecycleValidate(g, config)
+		err := util.RuntimeLifecycleValidate(config)
 		t.Ok((err == nil) == c.errExpected, c.err.(*specerror.Error).Err.Err.Error())
 		diagnostic := map[string]string{
 			"reference": c.err.(*specerror.Error).Err.Reference,

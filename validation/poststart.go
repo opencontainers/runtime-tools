@@ -28,7 +28,7 @@ func main() {
 			g := util.GetDefaultGenerator()
 			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
 			poststart := rspec.Hook{
-				Path: fmt.Sprintf("%s/%s/bin/sh", r.BundleDir, g.Spec().Root.Path),
+				Path: filepath.Join(r.BundleDir, g.Spec().Root.Path, "/bin/sh"),
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'post-start called' >> %s", output),
 				},
@@ -73,7 +73,7 @@ func main() {
 		},
 	}
 
-	err := util.RuntimeLifecycleValidate(nil, config)
+	err := util.RuntimeLifecycleValidate(config)
 	if err != nil {
 		diagnostic := map[string]string{
 			"error": err.Error(),
