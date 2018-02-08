@@ -44,6 +44,16 @@ func main() {
 			},
 		}
 		err := util.RuntimeLifecycleValidate(config)
+		// DefaultStateJSONPattern might returns
+		if e, ok := err.(*specerror.Error); ok {
+			diagnostic := map[string]string{
+				"reference": e.Err.Reference,
+				"error":     e.Err.Error(),
+			}
+			t.YAML(diagnostic)
+			continue
+		}
+
 		t.Ok((err == nil) == c.errExpected, c.err.(*specerror.Error).Err.Err.Error())
 		diagnostic := map[string]string{
 			"reference": c.err.(*specerror.Error).Err.Reference,

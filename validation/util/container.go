@@ -12,6 +12,7 @@ import (
 
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
+	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/satori/go.uuid"
 )
 
@@ -151,6 +152,9 @@ func (r *Runtime) State() (rspecs.State, error) {
 
 	var state rspecs.State
 	err = json.Unmarshal(out, &state)
+	if err != nil {
+		return rspecs.State{}, specerror.NewError(specerror.DefaultStateJSONPattern, fmt.Errorf("when serialized in JSON, the format MUST adhere to the default pattern"), rspecs.Version)
+	}
 	return state, err
 }
 
