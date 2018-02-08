@@ -733,7 +733,7 @@ func (v *Validator) CheckLinux() (errs error) {
 		}
 
 		if _, exists := devTypeList[devID]; exists {
-			logrus.Warnf("type:%s, major:%d and minor:%d for linux devices is duplicated", device.Type, device.Major, device.Minor)
+			logrus.Warnf("%v", specerror.NewError(specerror.DevicesErrorOnDup, fmt.Errorf("type:%s, major:%d and minor:%d for linux devices is duplicated", device.Type, device.Major, device.Minor), rspec.Version))
 		} else {
 			devTypeList[devID] = true
 		}
