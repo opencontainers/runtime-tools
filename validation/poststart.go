@@ -27,14 +27,15 @@ func main() {
 			r.SetID(uuid.NewV4().String())
 			g := util.GetDefaultGenerator()
 			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
-			poststart := rspec.Hook{
+			err := g.AddPostStartHook(rspec.Hook{
 				Path: filepath.Join(r.BundleDir, g.Spec().Root.Path, "/bin/sh"),
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'post-start called' >> %s", output),
 				},
+			})
+			if err != nil {
+				return err
 			}
-
-			g.AddPostStartHook(poststart)
 			g.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("echo 'process called' >> %s", "/output")})
 			r.SetConfig(g)
 			return nil
