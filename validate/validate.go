@@ -819,6 +819,18 @@ func (v *Validator) CheckLinuxResources() (errs error) {
 		}
 	}
 
+	if r.BlockIO != nil && r.BlockIO.WeightDevice != nil {
+		for i, weightDevice := range r.BlockIO.WeightDevice {
+			if weightDevice.Weight == nil && weightDevice.LeafWeight == nil {
+				errs = multierror.Append(errs,
+					specerror.NewError(
+						specerror.BlkIOWeightOrLeafWeightExist,
+						fmt.Errorf("linux.resources.blockIO.weightDevice[%d] specifies neither weight nor leafWeight", i),
+						rspec.Version))
+			}
+		}
+	}
+
 	return
 }
 
