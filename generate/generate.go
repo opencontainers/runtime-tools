@@ -1207,7 +1207,7 @@ func (g *Generator) DropProcessCapabilityPermitted(c string) error {
 	cp := strings.ToUpper(c)
 	for i, cap := range g.spec.Process.Capabilities.Permitted {
 		if strings.ToUpper(cap) == cp {
-			g.spec.Process.Capabilities.Ambient = removeFunc(g.spec.Process.Capabilities.Ambient, i)
+			g.spec.Process.Capabilities.Permitted = removeFunc(g.spec.Process.Capabilities.Permitted, i)
 		}
 	}
 
