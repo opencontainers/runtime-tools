@@ -26,6 +26,9 @@ type Runtime struct {
 	stderr         *os.File
 }
 
+// DefaultSignal represents the default signal sends to a container
+const DefaultSignal = "TERM"
+
 // NewRuntime create a runtime by command and the bundle directory
 func NewRuntime(runtimeCommand string, bundleDir string) (Runtime, error) {
 	var r Runtime
@@ -156,6 +159,25 @@ func (r *Runtime) State() (rspecs.State, error) {
 		return rspecs.State{}, specerror.NewError(specerror.DefaultStateJSONPattern, fmt.Errorf("when serialized in JSON, the format MUST adhere to the default pattern"), rspecs.Version)
 	}
 	return state, err
+}
+
+// Kill a container
+func (r *Runtime) Kill(sig string) (err error) {
+	var args []string
+	args = append(args, "kill")
+	if r.ID != "" {
+		args = append(args, r.ID)
+	}
+	if sig != "" {
+		// TODO: runc does not support this
+		//	args = append(args, "--signal", sig)
+		args = append(args, sig)
+	} else {
+		args = append(args, DefaultSignal)
+	}
+
+	cmd := exec.Command(r.RuntimeCommand, args...)
+	return execWithStderrFallbackToStdout(cmd)
 }
 
 // Delete a container

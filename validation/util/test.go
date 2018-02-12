@@ -327,8 +327,12 @@ func RuntimeLifecycleValidate(config LifecycleConfig) error {
 				if _, err := r.State(); err != nil {
 					return
 				}
-				if err := WaitingForStatus(r, LifecycleStatusCreated|LifecycleStatusStopped, time.Second*10, time.Second*1); err != nil {
+				err := WaitingForStatus(r, LifecycleStatusCreated|LifecycleStatusStopped, time.Second*10, time.Second*1)
+				if err == nil {
 					r.Delete()
+				} else {
+					os.Stderr.WriteString("failed to delete the container\n")
+					os.Stderr.WriteString(err.Error())
 				}
 			}()
 		}
