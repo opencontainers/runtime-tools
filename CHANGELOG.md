@@ -1,3 +1,23 @@
+# v0.5.0
+## Additions
+
+* validation: add tests when prestart/poststart/poststop hooks fail (#569).
+* validate_test: add TestCheckMandatoryFields (#554).
+* validation: add lifecycle validation (#558).
+* validation: add 'state' test; using WaitingForStatus in insideValidation (#562).
+* Relax LGTM requirement (#559, #566).
+* validation: Fixes #556 (#557).
+
+## Minor fixes and documentaion
+
+* validate_test: Complement test (#568).
+* man: Modify the legal value of the rootfs-propagation (#548).
+* generate: don't overwrite hook which has a same path (#571).
+* validation: nil config support in lifecycle validate (#567).
+* runtimetest: cmd/runtimetest/main: Run validateDefaultDevices even with process unset (#553).
+* validation: Remove runc 'create' exit timing crutches (#563).
+* validation/util/container: Use ExitError for stderr (#564).
+
 # v0.4.0
 
 ## Additions
