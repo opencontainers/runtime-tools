@@ -114,6 +114,7 @@ func (v *Validator) CheckAll() error {
 	errs = multierror.Append(errs, v.CheckMounts())
 	errs = multierror.Append(errs, v.CheckProcess())
 	errs = multierror.Append(errs, v.CheckLinux())
+	errs = multierror.Append(errs, v.CheckAnnotations())
 	if v.platform == "linux" || v.platform == "solaris" {
 		errs = multierror.Append(errs, v.CheckHooks())
 	}
@@ -649,6 +650,32 @@ func (v *Validator) CheckLinuxResources() (errs error) {
 						fmt.Errorf("linux.resources.blockIO.weightDevice[%d] specifies neither weight nor leafWeight", i),
 						rspec.Version))
 			}
+		}
+	}
+
+	return
+}
+
+// CheckAnnotations checks v.spec.Annotations
+func (v *Validator) CheckAnnotations() (errs error) {
+	logrus.Debugf("check annotations")
+
+	reversedDomain := regexp.MustCompile(`^[A-Za-z]{2,6}(\.[A-Za-z0-9-]{1,63})+$`)
+	for key := range v.spec.Annotations {
+		if strings.HasPrefix(key, "org.opencontainers") {
+			errs = multierror.Append(errs,
+				specerror.NewError(
+					specerror.AnnotationsKeyReservedNS,
+					fmt.Errorf("key %s is reserved", key),
+					rspec.Version))
+		}
+
+		if !reversedDomain.MatchString(key) {
+			errs = multierror.Append(errs,
+				specerror.NewError(
+					specerror.AnnotationsKeyReversedDomain,
+					fmt.Errorf("key %s SHOULD be named using a reverse domain notation", key),
+					rspec.Version))
 		}
 	}
 
