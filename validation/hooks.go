@@ -81,8 +81,7 @@ func main() {
 				return err
 			}
 			g.SetProcessArgs([]string{"true"})
-			r.SetConfig(g)
-			return nil
+			return r.SetConfig(g)
 		},
 		PreDelete: func(r *util.Runtime) error {
 			util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second)

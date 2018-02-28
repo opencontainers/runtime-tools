@@ -32,7 +32,10 @@ func main() {
 	}
 	g := util.GetDefaultGenerator()
 	g.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("echo 'process called' >> %s", "/output")})
-	r.SetConfig(g)
+	err = r.SetConfig(g)
+	if err != nil {
+		util.Fatal(err)
+	}
 	output := filepath.Join(bundleDir, g.Spec().Root.Path, "output")
 
 	// start without id
@@ -84,7 +87,10 @@ func main() {
 	}
 
 	g.Spec().Process = nil
-	r.SetConfig(g)
+	err = r.SetConfig(g)
+	if err != nil {
+		util.Fatal(err)
+	}
 	err = r.Create()
 	if err != nil {
 		util.Fatal(err)
