@@ -279,10 +279,10 @@ func validateRlimits(spec *rspec.Spec) error {
 		}
 
 		if rlimit.Cur != r.Soft {
-			return fmt.Errorf("%v rlimit soft expected: %v, actual: %v", r.Type, r.Soft, rlimit.Cur)
+			return specerror.NewError(specerror.PosixProcRlimitsSoftMatchCur, fmt.Errorf("%v rlimit soft expected: %v, actual: %v", r.Type, r.Soft, rlimit.Cur), rspec.Version)
 		}
 		if rlimit.Max != r.Hard {
-			return fmt.Errorf("%v rlimit hard expected: %v, actual: %v", r.Type, r.Hard, rlimit.Max)
+			return specerror.NewError(specerror.PosixProcRlimitsHardMatchMax, fmt.Errorf("%v rlimit hard expected: %v, actual: %v", r.Type, r.Hard, rlimit.Max), rspec.Version)
 		}
 	}
 	return nil
