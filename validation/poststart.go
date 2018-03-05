@@ -37,8 +37,7 @@ func main() {
 				return err
 			}
 			g.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("echo 'process called' >> %s", "/output")})
-			r.SetConfig(g)
-			return nil
+			return r.SetConfig(g)
 		},
 		PostCreate: func(r *util.Runtime) error {
 			outputData, err := ioutil.ReadFile(output)
