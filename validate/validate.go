@@ -666,7 +666,7 @@ func (v *Validator) CheckAnnotations() (errs error) {
 			errs = multierror.Append(errs,
 				specerror.NewError(
 					specerror.AnnotationsKeyReservedNS,
-					fmt.Errorf("key %s is reserved", key),
+					fmt.Errorf("key %q is reserved", key),
 					rspec.Version))
 		}
 
@@ -674,7 +674,7 @@ func (v *Validator) CheckAnnotations() (errs error) {
 			errs = multierror.Append(errs,
 				specerror.NewError(
 					specerror.AnnotationsKeyReversedDomain,
-					fmt.Errorf("key %s SHOULD be named using a reverse domain notation", key),
+					fmt.Errorf("key %q SHOULD be named using a reverse domain notation", key),
 					rspec.Version))
 		}
 	}

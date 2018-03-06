@@ -64,8 +64,7 @@ func main() {
 			Actions:   c.action,
 			PreCreate: func(r *util.Runtime) error {
 				r.SetID(containerID)
-				saveConfig(configFile, c.eSpec)
-				return nil
+				return saveConfig(configFile, c.eSpec)
 			},
 			PreDelete: func(r *util.Runtime) error {
 				util.WaitingForStatus(*r, util.LifecycleStatusCreated|util.LifecycleStatusStopped, time.Second*10, time.Second*1)
