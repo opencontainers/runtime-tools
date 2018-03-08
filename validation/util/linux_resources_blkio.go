@@ -43,7 +43,7 @@ func ValidateLinuxResourcesBlockIO(config *rspec.Spec, state *rspec.State) error
 				t.Ok(*wd.Weight == *device.Weight, fmt.Sprintf("blkio weight for %d:%d is set correctly", device.Major, device.Minor))
 				t.Diagnosticf("expect: %d, actual: %d", *device.Weight, *wd.Weight)
 
-				t.Ok(*wd.LeafWeight != *device.LeafWeight, fmt.Sprintf("blkio leafWeight for %d:%d is set correctly", device.Major, device.Minor))
+				t.Ok(*wd.LeafWeight == *device.LeafWeight, fmt.Sprintf("blkio leafWeight for %d:%d is set correctly", device.Major, device.Minor))
 				t.Diagnosticf("expect: %d, actual: %d", *device.LeafWeight, *wd.LeafWeight)
 			}
 		}
