@@ -38,7 +38,7 @@ then
 	then
 		die "could not calculate STAGE3_ARCH from ${STAGE3}"
 	fi
-	DATE=$(echo "${STAGE3}" | sed -n "s/stage3-${STAGE3_ARCH}-\([0-9]*\)[.]tar[.].*/\1/p")
+	DATE=$(echo "${STAGE3}" | sed -n "s/stage3-${STAGE3_ARCH}-\([0-9TZ]*\)[.]tar[.].*/\1/p")
 	if test -z "${DATE}"
 	then
 		die "could not calculate DATE from ${STAGE3}"
@@ -72,7 +72,7 @@ then
 	LATEST=$(wget -O - "${BASE_ARCH_URL}latest-stage3.txt")
 	if test -z "${DATE}"
 	then
-		DATE=$(echo "${LATEST}" | sed -n "s|/stage3-${STAGE3_ARCH}-[0-9]*[.]tar.*||p")
+		DATE=$(echo "${LATEST}" | sed -n "s|/stage3-${STAGE3_ARCH}-[0-9TZ]*[.]tar.*||p")
 		if test -z "${DATE}"
 		then
 			die "could not calculate DATE from ${BASE_ARCH_URL}latest-stage3.txt"
