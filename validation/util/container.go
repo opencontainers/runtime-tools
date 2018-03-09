@@ -69,14 +69,14 @@ func (r *Runtime) SetID(id string) {
 func (r *Runtime) Create() (err error) {
 	var args []string
 	args = append(args, "create")
-	if r.ID != "" {
-		args = append(args, r.ID)
-	}
 	if r.PidFile != "" {
 		args = append(args, "--pid-file", r.PidFile)
 	}
 	if r.BundleDir != "" {
 		args = append(args, "--bundle", r.BundleDir)
+	}
+	if r.ID != "" {
+		args = append(args, r.ID)
 	}
 	cmd := exec.Command(r.RuntimeCommand, args...)
 	id := uuid.NewV4().String()
