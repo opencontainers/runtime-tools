@@ -20,7 +20,7 @@ rootfs/%/bin/busybox: downloads/stage3-%-current.tar.bz2 rootfs-files
 
 .PRECIOUS: rootfs/%/bin/echo
 rootfs/%/bin/echo: rootfs/%/bin/busybox
-	sudo sh -c 'COMMANDS=$$($< --list) || exit 1; for COMMAND in $${COMMANDS}; do \
+	sudo sh -c 'COMMANDS=$$($< --list | grep -v "^busybox$$") || exit 1; for COMMAND in $${COMMANDS}; do \
 		test -L "rootfs/$*/bin/$${COMMAND}" || ln -rs $< "rootfs/$*/bin/$${COMMAND}" || exit; \
 	done'
 
