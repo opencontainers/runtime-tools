@@ -2,7 +2,7 @@
 #
 # Download the current Gentoo stage3
 #
-# Copyright (C) 2014-2015 W. Trevor King <wking@tremily.us>
+# Copyright (C) 2014-2018 W. Trevor King <wking@tremily.us>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+die()
+{
+	echo "$1"
+	exit 1
+}
+
 MIRROR="${MIRROR:-http://distfiles.gentoo.org/}"
-STAGE3_ARCH="${STAGE3_ARCH:-amd64}"
+if test -n "${STAGE3}"
+then
+	if test -n "${STAGE3_ARCH}"
+	then
+		die 'if you set STAGE3, you do not need to set STAGE3_ARCH'
+	fi
+	if test -n "${DATE}"
+	then
+		die 'if you set STAGE3, you do not need to set DATE'
+	fi
+	STAGE3_ARCH=$(echo "${STAGE3}" | sed -n 's/stage3-\([^-]*\)-.*/\1/p')
+	if test -z "${STAGE3_ARCH}"
+	then
+		die "could not calculate STAGE3_ARCH from ${STAGE3}"
+	fi
+	DATE=$(echo "${STAGE3}" | sed -n "s/stage3-${STAGE3_ARCH}-\([0-9]*\)[.]tar[.].*/\1/p")
+	if test -z "${DATE}"
+	then
+		die "could not calculate DATE from ${STAGE3}"
+	fi
+else
+	STAGE3_ARCH="${STAGE3_ARCH:-amd64}"
+fi
 
 if test -z "${BASE_ARCH}"
 then
@@ -38,18 +66,24 @@ then
 fi
 
 BASE_ARCH_URL="${BASE_ARCH_URL:-${MIRROR}releases/${BASE_ARCH}/autobuilds/}"
-LATEST=$(wget -O - "${BASE_ARCH_URL}latest-stage3.txt")
-DATE=$(echo "${LATEST}" | sed -n "s|/stage3-${STAGE3_ARCH}-[0-9]*[.]tar[.]bz2.*||p")
+
+if test -z "${STAGE3}"
+then
+	LATEST=$(wget -O - "${BASE_ARCH_URL}latest-stage3.txt")
+	if test -z "${DATE}"
+	then
+		DATE=$(echo "${LATEST}" | sed -n "s|/stage3-${STAGE3_ARCH}-[0-9]*[.]tar.*||p")
+		if test -z "${DATE}"
+		then
+			die "could not calculate DATE from ${BASE_ARCH_URL}latest-stage3.txt"
+		fi
+	fi
+	STAGE3="${STAGE3:-stage3-${STAGE3_ARCH}-${DATE}.tar.bz2}"
+fi
+
 ARCH_URL="${ARCH_URL:-${BASE_ARCH_URL}${DATE}/}"
-STAGE3="${STAGE3:-stage3-${STAGE3_ARCH}-${DATE}.tar.bz2}"
 STAGE3_CONTENTS="${STAGE3_CONTENTS:-${STAGE3}.CONTENTS}"
 STAGE3_DIGESTS="${STAGE3_DIGESTS:-${STAGE3}.DIGESTS.asc}"
-
-die()
-{
-	echo "$1"
-	exit 1
-}
 
 for FILE in "${STAGE3}" "${STAGE3_CONTENTS}" "${STAGE3_DIGESTS}"; do
 	if [ ! -f "downloads/${FILE}" ]; then
