@@ -632,11 +632,13 @@ func getIDMappings(path string) ([]rspec.LinuxIDMapping, error) {
 
 		idMap := strings.Fields(strings.TrimSpace(s.Text()))
 		if len(idMap) == 3 {
-			hostID, err := strconv.ParseUint(idMap[0], 0, 32)
+			// "man 7 user_namespaces" explains the format of uid_map and gid_map:
+			// <containerID> <hostID> <mapSize>
+			containerID, err := strconv.ParseUint(idMap[0], 0, 32)
 			if err != nil {
 				return nil, err
 			}
-			containerID, err := strconv.ParseUint(idMap[1], 0, 32)
+			hostID, err := strconv.ParseUint(idMap[1], 0, 32)
 			if err != nil {
 				return nil, err
 			}
