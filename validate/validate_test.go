@@ -759,3 +759,47 @@ func TestCheckMandatoryFields(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckAnnotations(t *testing.T) {
+	cases := []struct {
+		val      rspec.Spec
+		expected specerror.Code
+	}{
+		{
+			val:      rspec.Spec{},
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Annotations: map[string]string{},
+			},
+			expected: specerror.NonError,
+		},
+		{
+			val: rspec.Spec{
+				Annotations: map[string]string{"invalid": ""},
+			},
+			expected: specerror.AnnotationsKeyReversedDomain,
+		},
+		{
+			val: rspec.Spec{
+				Annotations: map[string]string{"org.opencontainers.oci": ""},
+			},
+			expected: specerror.AnnotationsKeyReservedNS,
+		},
+		{
+			val: rspec.Spec{
+				Annotations: map[string]string{"com.example": ""},
+			},
+			expected: specerror.NonError,
+		},
+	}
+	for _, c := range cases {
+		v, err := NewValidator(&c.val, ".", false, "")
+		if err != nil {
+			t.Errorf("unexpected NewValidator error: %+v", err)
+		}
+		err = v.CheckAnnotations()
+		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckAnnotations: %v %d", err, c.expected))
+	}
+}
