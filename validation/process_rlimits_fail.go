@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"runtime"
 
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
@@ -9,6 +11,11 @@ import (
 )
 
 func main() {
+	if "linux" != runtime.GOOS && "solaris" != runtime.GOOS {
+		util.Skip("POSIX-specific process.rlimits test", map[string]string{"OS": runtime.GOOS})
+		os.Exit(0)
+	}
+
 	g := util.GetDefaultGenerator()
 	g.AddProcessRlimits("RLIMIT_TEST", 1024, 1024)
 	err := util.RuntimeInsideValidate(g, nil)
