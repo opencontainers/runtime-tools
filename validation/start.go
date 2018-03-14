@@ -53,6 +53,10 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
+	_, err = os.Stat(output)
+	// check the existence of the output file
+	util.SpecErrorOK(t, err != nil && os.IsNotExist(err), specerror.NewError(specerror.ProcArgsApplyUntilStart, fmt.Errorf("`process.args` MUST NOT be applied until triggered by the start operation"), rspecs.Version), err)
+
 	// start a `created` container
 	err = r.Start()
 	if err != nil {
