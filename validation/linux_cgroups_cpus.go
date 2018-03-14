@@ -30,13 +30,13 @@ func main() {
 			return err
 		}
 		if *lcd.Shares != shares {
-			return fmt.Errorf("cpus shares limit is not set correctly, expect: %d, actual: %d", shares, lcd.Shares)
+			return fmt.Errorf("cpus shares limit is not set correctly, expect: %d, actual: %d", shares, *lcd.Shares)
 		}
 		if *lcd.Quota != quota {
-			return fmt.Errorf("cpus quota is not set correctly, expect: %d, actual: %d", quota, lcd.Quota)
+			return fmt.Errorf("cpus quota is not set correctly, expect: %d, actual: %d", quota, *lcd.Quota)
 		}
 		if *lcd.Period != period {
-			return fmt.Errorf("cpus period is not set correctly, expect: %d, actual: %d", period, lcd.Period)
+			return fmt.Errorf("cpus period is not set correctly, expect: %d, actual: %d", period, *lcd.Period)
 		}
 		if lcd.Cpus != cpus {
 			return fmt.Errorf("cpus cpus is not set correctly, expect: %s, actual: %s", cpus, lcd.Cpus)

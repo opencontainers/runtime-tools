@@ -30,7 +30,7 @@ func ValidateLinuxResourcesNetwork(config *rspec.Spec, state *rspec.State) error
 	}
 
 	t.Ok(*lnd.ClassID == *config.Linux.Resources.Network.ClassID, "network ID set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Network.ClassID, lnd.ClassID)
+	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Network.ClassID, *lnd.ClassID)
 
 	for _, priority := range config.Linux.Resources.Network.Priorities {
 		found := false
