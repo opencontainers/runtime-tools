@@ -747,22 +747,6 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 	return
 }
 
-func deviceValid(d rspec.LinuxDevice) bool {
-	switch d.Type {
-	case "b", "c", "u":
-		if d.Major <= 0 || d.Minor <= 0 {
-			return false
-		}
-	case "p":
-		if d.Major != 0 || d.Minor != 0 {
-			return false
-		}
-	default:
-		return false
-	}
-	return true
-}
-
 func isStruct(t reflect.Type) bool {
 	return t.Kind() == reflect.Struct
 }
