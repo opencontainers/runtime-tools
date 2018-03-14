@@ -328,12 +328,7 @@ func validateRootFS(spec *rspec.Spec) error {
 		if err == nil {
 			return specerror.NewError(specerror.RootReadonlyImplement, fmt.Errorf("rootfs must be readonly"), rspec.Version)
 		}
-	} else {
-		err := testWriteAccess("/")
-		if err != nil {
-			return specerror.NewError(specerror.RootReadonlyImplement, fmt.Errorf("rootfs must not be readonly"), rspec.Version)
-		}
-	}
+	} // no need to check the else case: unwriteable root is not a spec violation
 
 	return nil
 }
