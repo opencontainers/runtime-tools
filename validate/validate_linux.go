@@ -30,6 +30,22 @@ func LastCap() capability.Cap {
 	return last
 }
 
+func deviceValid(d rspec.LinuxDevice) bool {
+	switch d.Type {
+	case "b", "c", "u":
+		if d.Major <= 0 || d.Minor <= 0 {
+			return false
+		}
+	case "p":
+		if d.Major != 0 || d.Minor != 0 {
+			return false
+		}
+	default:
+		return false
+	}
+	return true
+}
+
 // CheckLinux checks v.spec.Linux
 func (v *Validator) CheckLinux() (errs error) {
 	logrus.Debugf("check linux")
