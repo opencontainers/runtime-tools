@@ -30,10 +30,10 @@ func ValidateLinuxResourcesBlockIO(config *rspec.Spec, state *rspec.State) error
 	}
 
 	t.Ok(*lbd.Weight == *config.Linux.Resources.BlockIO.Weight, "blkio weight is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.BlockIO.Weight, lbd.Weight)
+	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.BlockIO.Weight, *lbd.Weight)
 
 	t.Ok(*lbd.LeafWeight == *config.Linux.Resources.BlockIO.LeafWeight, "blkio leafWeight is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.BlockIO.LeafWeight, lbd.LeafWeight)
+	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.BlockIO.LeafWeight, *lbd.LeafWeight)
 
 	for _, device := range config.Linux.Resources.BlockIO.WeightDevice {
 		found := false
