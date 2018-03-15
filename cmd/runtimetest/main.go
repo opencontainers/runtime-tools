@@ -69,7 +69,7 @@ var (
 )
 
 type validation struct {
-	test        func(*rspec.Spec) error
+	test        func(*rspec.Spec, *tap.T) error
 	description string
 }
 
@@ -91,7 +91,7 @@ func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
 	return spec, nil
 }
 
-func validatePosixUser(spec *rspec.Spec) error {
+func validatePosixUser(spec *rspec.Spec, t *tap.T) error {
 	if spec.Process == nil {
 		return nil
 	}
@@ -124,7 +124,7 @@ func validatePosixUser(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateProcess(spec *rspec.Spec) error {
+func validateProcess(spec *rspec.Spec, t *tap.T) error {
 	if spec.Process == nil {
 		return nil
 	}
@@ -152,7 +152,7 @@ func validateProcess(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateLinuxProcess(spec *rspec.Spec) error {
+func validateLinuxProcess(spec *rspec.Spec, t *tap.T) error {
 	if spec.Process == nil {
 		return nil
 	}
@@ -186,7 +186,7 @@ func validateLinuxProcess(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateCapabilities(spec *rspec.Spec) error {
+func validateCapabilities(spec *rspec.Spec, t *tap.T) error {
 	if spec.Process == nil || spec.Process.Capabilities == nil {
 		return nil
 	}
@@ -251,7 +251,7 @@ func validateCapabilities(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateHostname(spec *rspec.Spec) error {
+func validateHostname(spec *rspec.Spec, t *tap.T) error {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
@@ -262,7 +262,7 @@ func validateHostname(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateRlimits(spec *rspec.Spec) error {
+func validateRlimits(spec *rspec.Spec, t *tap.T) error {
 	if spec.Process == nil {
 		return nil
 	}
@@ -288,7 +288,7 @@ func validateRlimits(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateSysctls(spec *rspec.Spec) error {
+func validateSysctls(spec *rspec.Spec, t *tap.T) error {
 	if spec.Linux == nil {
 		return nil
 	}
@@ -318,7 +318,7 @@ func testWriteAccess(path string) error {
 	return nil
 }
 
-func validateRootFS(spec *rspec.Spec) error {
+func validateRootFS(spec *rspec.Spec, t *tap.T) error {
 	if spec.Root == nil {
 		return nil
 	}
@@ -333,7 +333,7 @@ func validateRootFS(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateRootfsPropagation(spec *rspec.Spec) error {
+func validateRootfsPropagation(spec *rspec.Spec, t *tap.T) error {
 	if spec.Linux == nil || spec.Linux.RootfsPropagation == "" {
 		return nil
 	}
@@ -398,7 +398,7 @@ func validateRootfsPropagation(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateDefaultFS(spec *rspec.Spec) error {
+func validateDefaultFS(spec *rspec.Spec, t *tap.T) error {
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
 		specerror.NewError(specerror.DefaultFilesystems, err, spec.Version)
@@ -418,7 +418,7 @@ func validateDefaultFS(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateLinuxDevices(spec *rspec.Spec) error {
+func validateLinuxDevices(spec *rspec.Spec, t *tap.T) error {
 	if spec.Linux == nil {
 		return nil
 	}
@@ -475,7 +475,7 @@ func validateLinuxDevices(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateDefaultSymlinks(spec *rspec.Spec) error {
+func validateDefaultSymlinks(spec *rspec.Spec, t *tap.T) error {
 	for symlink, dest := range defaultSymlinks {
 		fi, err := os.Lstat(symlink)
 		if err != nil {
@@ -501,7 +501,7 @@ func validateDefaultSymlinks(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateDefaultDevices(spec *rspec.Spec) error {
+func validateDefaultDevices(spec *rspec.Spec, t *tap.T) error {
 	if spec.Process != nil && spec.Process.Terminal {
 		defaultDevices = append(defaultDevices, "/dev/console")
 	}
@@ -526,7 +526,7 @@ func validateDefaultDevices(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateMaskedPaths(spec *rspec.Spec) error {
+func validateMaskedPaths(spec *rspec.Spec, t *tap.T) error {
 	if spec.Linux == nil {
 		return nil
 	}
@@ -545,11 +545,10 @@ func validateMaskedPaths(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateSeccomp(spec *rspec.Spec) error {
+func validateSeccomp(spec *rspec.Spec, t *tap.T) error {
 	if spec.Linux == nil || spec.Linux.Seccomp == nil {
 		return nil
 	}
-	t := tap.New()
 	for _, sys := range spec.Linux.Seccomp.Syscalls {
 		if sys.Action == "SCMP_ACT_ERRNO" {
 			for _, name := range sys.Names {
@@ -569,7 +568,7 @@ func validateSeccomp(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateROPaths(spec *rspec.Spec) error {
+func validateROPaths(spec *rspec.Spec, t *tap.T) error {
 	if spec.Linux == nil {
 		return nil
 	}
@@ -583,7 +582,7 @@ func validateROPaths(spec *rspec.Spec) error {
 	return nil
 }
 
-func validateOOMScoreAdj(spec *rspec.Spec) error {
+func validateOOMScoreAdj(spec *rspec.Spec, t *tap.T) error {
 	if spec.Process != nil && spec.Process.OOMScoreAdj != nil {
 		expected := *spec.Process.OOMScoreAdj
 		f, err := os.Open("/proc/self/oom_score_adj")
@@ -674,14 +673,14 @@ func validateIDMappings(mappings []rspec.LinuxIDMapping, path string, property s
 	return nil
 }
 
-func validateUIDMappings(spec *rspec.Spec) error {
+func validateUIDMappings(spec *rspec.Spec, t *tap.T) error {
 	if spec.Linux == nil {
 		return nil
 	}
 	return validateIDMappings(spec.Linux.UIDMappings, "/proc/self/uid_map", "linux.uidMappings")
 }
 
-func validateGIDMappings(spec *rspec.Spec) error {
+func validateGIDMappings(spec *rspec.Spec, t *tap.T) error {
 	if spec.Linux == nil {
 		return nil
 	}
@@ -710,7 +709,7 @@ func mountMatch(configMount rspec.Mount, sysMount *mount.Info) error {
 	return nil
 }
 
-func validatePosixMounts(spec *rspec.Spec) error {
+func validatePosixMounts(spec *rspec.Spec, t *tap.T) error {
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
 		return err
@@ -904,7 +903,7 @@ func run(context *cli.Context) error {
 	}
 
 	for _, v := range validations {
-		err := v.test(spec)
+		err := v.test(spec, t)
 		if err == nil {
 			t.Pass(v.description)
 		} else {
