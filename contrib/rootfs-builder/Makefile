@@ -15,7 +15,7 @@ rootfs/%/bin/busybox: downloads/stage3-%-current.tar rootfs-files
 	sudo rm -rf rootfs/$*
 	sudo mkdir -p rootfs/$*
 	sudo tar -xvf downloads/stage3-$*-current.tar -C rootfs/$* \
-		--no-recursion --wildcards $$(< rootfs-files)
+		--no-recursion --wildcards $$(cat rootfs-files)
 	sudo touch $@
 
 .PRECIOUS: rootfs/%/bin/echo
