@@ -7,7 +7,8 @@ import (
 func main() {
 	g := util.GetDefaultGenerator()
 	g.AddOrReplaceLinuxNamespace("user", "")
-	g.AddLinuxUIDMapping(uint32(1000), uint32(0), uint32(3200))
+	g.AddLinuxUIDMapping(uint32(1000), uint32(0), uint32(2000))
+	g.AddLinuxGIDMapping(uint32(1000), uint32(0), uint32(3000))
 	err := util.RuntimeInsideValidate(g, nil)
 	if err != nil {
 		util.Fatal(err)
