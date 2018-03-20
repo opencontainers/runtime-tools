@@ -6,7 +6,7 @@ In order to be tested for [compliance][], runtimes MUST support at least one of 
 
 * Version 1.0.1 of the [OCI Runtime Command Line Interface](command-line-interface.md).
 
-## Running the runtime validation suite from source
+## Running the runtime validation suite
 
 The runtime validation suite uses [node-tap][], which is packaged for some distributions (for example, it is in [Debian's `node-tap` package][debian-node-tap]).
 If your distribution does not package node-tap, you can install [npm][] (for example, from [Gentoo's `nodejs` package][gentoo-nodejs]) and use it:
@@ -14,6 +14,16 @@ If your distribution does not package node-tap, you can install [npm][] (for exa
 ```console
 $ npm install tap
 ```
+### From a release
+
+Check if your release has pre-compiled tests on the [release page][releases] page.
+
+```
+$ tar xf runtime-tools-v0.6.0.tar.gz
+$ RUNTIME=runc tap ./runtime-tools-v0.6.0/validation/*.t
+```
+
+### From source
 
 Build the validation executables:
 
@@ -367,3 +377,4 @@ Result: PASS
 [npm]: https://www.npmjs.com/
 [prove]: http://search.cpan.org/~leont/Test-Harness-3.39/bin/prove
 [tap-consumers]: https://testanything.org/consumers.html
+[releases]: https://github.com/opencontainers/runtime-tools/releases
