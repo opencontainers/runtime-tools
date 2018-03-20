@@ -43,7 +43,7 @@ func main() {
 		// kill a created
 		{stoppedConfig, containerID, util.LifecycleActionCreate | util.LifecycleActionDelete, true, specerror.NewError(specerror.KillSignalImplement, fmt.Errorf("`kill` operation MUST send the specified signal to the container process"), rspecs.Version)},
 		// kill a stopped
-		{stoppedConfig, containerID, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, false, specerror.NewError(specerror.KillSignalImplement, fmt.Errorf("`kill` operation MUST send the specified signal to the container process"), rspecs.Version)},
+		{stoppedConfig, containerID, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, false, specerror.NewError(specerror.KillNonCreateRunGenError, fmt.Errorf("attempting to send a signal to a container that is neither `created` nor `running` MUST generate an error"), rspecs.Version)},
 		// kill a running
 		{runningConfig, containerID, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, true, specerror.NewError(specerror.KillSignalImplement, fmt.Errorf("`kill` operation MUST send the specified signal to the container process"), rspecs.Version)},
 	}
