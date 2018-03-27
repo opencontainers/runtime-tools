@@ -113,6 +113,7 @@ var generateFlags = []cli.Flag{
 	cli.BoolFlag{Name: "process-rlimits-remove-all", Usage: "remove all resource limits for processes inside the container. "},
 	cli.BoolFlag{Name: "process-terminal", Usage: "specifies whether a terminal is attached to the process"},
 	cli.IntFlag{Name: "process-uid", Usage: "uid for the process"},
+	cli.StringFlag{Name: "process-username", Usage: "username for the process"},
 	cli.StringFlag{Name: "rootfs-path", Value: "rootfs", Usage: "path to the root filesystem"},
 	cli.BoolFlag{Name: "rootfs-readonly", Usage: "make the container's rootfs readonly"},
 	cli.StringSliceFlag{Name: "solaris-anet", Usage: "set up networking for Solaris application containers"},
@@ -208,6 +209,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("process-uid") {
 		g.SetProcessUID(uint32(context.Int("process-uid")))
+	}
+
+	if context.IsSet("process-username") {
+		g.SetProcessUsername(context.String("process-username"))
 	}
 
 	if context.IsSet("process-gid") {

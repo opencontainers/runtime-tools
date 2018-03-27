@@ -387,6 +387,7 @@ _oci-runtime-tool_generate() {
 		--process-rlimits-add
 		--process-rlimits-remove
 		--process-uid
+		--process-username
 		--rootfs-path
 		--solaris-anet
 		--solaris-capped-cpu-ncpus
