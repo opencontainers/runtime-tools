@@ -441,6 +441,9 @@ read the configuration from `config.json`.
 **--process-uid**=UID
   Sets the UID used within the container.
 
+**--process-username**=""
+  Sets the username used within the container.
+
 **--rootfs-path**=ROOTFSPATH
   Path to the rootfs, which can be an absolute path or relative to bundle path.
   e.g the absolute path of rootfs is /to/bundle/rootfs, bundle path is /to/bundle,

@@ -361,6 +361,12 @@ func (g *Generator) SetProcessUID(uid uint32) {
 	g.spec.Process.User.UID = uid
 }
 
+// SetProcessUsername sets g.spec.Process.User.Username.
+func (g *Generator) SetProcessUsername(username string) {
+	g.initSpecProcess()
+	g.spec.Process.User.Username = username
+}
+
 // SetProcessGID sets g.spec.Process.User.GID.
 func (g *Generator) SetProcessGID(gid uint32) {
 	g.initSpecProcess()
