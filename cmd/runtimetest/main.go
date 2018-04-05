@@ -383,7 +383,7 @@ func validateRootfsPropagation(spec *rspec.Spec, t *tap.T) error {
 		}
 		return fmt.Errorf("rootfs should be %s, but not", spec.Linux.RootfsPropagation)
 	case "unbindable":
-		if err := unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
+		if err := unix.Mount("/", targetDir, "", unix.MS_UNBINDABLE|unix.MS_REC, ""); err != nil {
 			if err == syscall.EINVAL {
 				return nil
 			}
