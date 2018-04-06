@@ -1,6 +1,6 @@
 # OCI Runtime Command Line Interface
 
-This file defines the OCI Runtime Command Line Interface version 1.0.0.
+This file defines the OCI Runtime Command Line Interface version 1.0.1.
 It is one of potentially several [runtime APIs supported by the runtime compliance test suite](runtime-compliance-testing.md#supported-apis).
 
 ## Notation
@@ -30,6 +30,9 @@ That executable MUST support commands with the following template:
 ```
 $ funC [global-options] <COMMAND> [command-specific-options] <command-specific-arguments>
 ```
+
+The runtime MUST support the entire API defined in this specification.
+Runtimes MAY also support additional options and commands as extensions to this API, but callers interested in OCI-runtime portability SHOULD NOT rely on those extensions.
 
 ## Global options
 
