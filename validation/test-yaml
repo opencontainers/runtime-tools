@@ -1,7 +1,0 @@
-#!/bin/sh
-cat <<EOF
-TAP version 13
-1..2
-not ok 1 - failing
-ok 2 # SKIP: skipping
-EOF
