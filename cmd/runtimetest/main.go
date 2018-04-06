@@ -426,6 +426,9 @@ func testFileReadAccess(path string) (readable bool, err error) {
 	if err == nil {
 		return true, nil
 	} else if err == io.EOF {
+		// Our validation/ tests only use non-empty files for read-access
+		// tests. So if we get an EOF on the first read, the runtime did
+		// successfully block readability.
 		return false, nil
 	}
 	return false, err
