@@ -782,7 +782,7 @@ func (c *complianceTester) validateDefaultSymlinks(spec *rspec.Spec) error {
 			continue
 		}
 
-		isSymlink := fi.Mode()&os.ModeSymlink == os.ModeSymlink
+		isSymlink := fi.Mode()&os.ModeType == os.ModeSymlink
 		rfcError, err = c.Ok(
 			isSymlink,
 			specerror.DefaultRuntimeLinuxSymlinks,
