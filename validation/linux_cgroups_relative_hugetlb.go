@@ -8,8 +8,9 @@ import (
 )
 
 func main() {
-	page := "1GB"
-	var limit uint64 = 56892210544640
+	page := "2MB"
+	var pageSize uint64 = 2 * 1024 * 1024 // 2MB in bytes
+	limit := 100 * pageSize
 	g := util.GetDefaultGenerator()
 	g.SetLinuxCgroupsPath(cgroups.RelCgroupPath)
 	g.AddLinuxResourcesHugepageLimit(page, limit)
