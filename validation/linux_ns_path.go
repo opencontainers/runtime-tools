@@ -12,6 +12,21 @@ import (
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
+func getRuntimeToolsNamespace(ns string) string {
+	// Deal with exceptional cases of "net" and "mnt", because those strings
+	// cannot be recognized by mapStrToNamespace(), which actually expects
+	// "network" and "mount" respectively.
+	switch ns {
+	case "net":
+		return "network"
+	case "mnt":
+		return "mount"
+	}
+
+	// In other cases, return just the original string
+	return ns
+}
+
 func testNamespacePath(t *tap.T, ns string, unshareOpt string) error {
 	// Calling 'unshare' (part of util-linux) is easier than doing it from
 	// Golang: mnt namespaces cannot be unshared from multithreaded
@@ -59,7 +74,9 @@ func testNamespacePath(t *tap.T, ns string, unshareOpt string) error {
 	}
 
 	g := util.GetDefaultGenerator()
-	g.AddOrReplaceLinuxNamespace(ns, unshareNsPath)
+
+	rtns := getRuntimeToolsNamespace(ns)
+	g.AddOrReplaceLinuxNamespace(rtns, unshareNsPath)
 
 	// The spec is not clear about userns mappings when reusing an
 	// existing userns.
