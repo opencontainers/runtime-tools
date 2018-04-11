@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -14,7 +15,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sirupsen/logrus"
@@ -57,21 +57,75 @@ var (
 		"/dev/stderr": "/proc/self/fd/2",
 	}
 
-	defaultDevices = []string{
-		"/dev/null",
-		"/dev/zero",
-		"/dev/full",
-		"/dev/random",
-		"/dev/urandom",
-		"/dev/tty",
-		"/dev/ptmx",
+	defaultDevices = []rspec.LinuxDevice{
+		{
+			Path:  "/dev/null",
+			Type:  "c",
+			Major: 1,
+			Minor: 3,
+		},
+		{
+			Path:  "/dev/zero",
+			Type:  "c",
+			Major: 1,
+			Minor: 5,
+		},
+		{
+			Path:  "/dev/full",
+			Type:  "c",
+			Major: 1,
+			Minor: 7,
+		},
+		{
+			Path:  "/dev/random",
+			Type:  "c",
+			Major: 1,
+			Minor: 8,
+		},
+		{
+			Path:  "/dev/urandom",
+			Type:  "c",
+			Major: 1,
+			Minor: 9,
+		},
+		{
+			Path:  "/dev/tty",
+			Type:  "c",
+			Major: 5,
+			Minor: 0,
+		},
+		{
+			Path:  "/dev/ptmx",
+			Type:  "c",
+			Major: 5,
+			Minor: 2,
+		},
 	}
 )
 
-type validation struct {
-	test        func(*rspec.Spec, *tap.T) error
-	description string
+type complianceTester struct {
+	harness         *tap.T
+	complianceLevel rfc2119.Level
 }
+
+func (c *complianceTester) Ok(test bool, condition specerror.Code, version string, description string) (rfcError *rfc2119.Error, err error) {
+	err = specerror.NewError(condition, errors.New(description), version)
+	runtimeError, ok := err.(*specerror.Error)
+	if !ok {
+		return nil, fmt.Errorf("cannot convert %v to a runtime-spec error", err)
+	}
+	rfcError = &runtimeError.Err
+	if test {
+		c.harness.Pass(description)
+	} else if runtimeError.Err.Level < c.complianceLevel {
+		c.harness.Skip(1, description)
+	} else {
+		c.harness.Fail(description)
+	}
+	return rfcError, nil
+}
+
+type validator func(config *rspec.Spec) (err error)
 
 func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
 	configPath := filepath.Join(path, specConfig)
@@ -91,19 +145,24 @@ func loadSpecConfig(path string) (spec *rspec.Spec, err error) {
 	return spec, nil
 }
 
-func validatePosixUser(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validatePosixUser(spec *rspec.Spec) error {
 	if spec.Process == nil {
 		return nil
 	}
 
-	uid := os.Getuid()
-	if uint32(uid) != spec.Process.User.UID {
-		return fmt.Errorf("UID expected: %v, actual: %v", spec.Process.User.UID, uid)
-	}
-	gid := os.Getgid()
-	if uint32(gid) != spec.Process.User.GID {
-		return fmt.Errorf("GID expected: %v, actual: %v", spec.Process.User.GID, gid)
-	}
+	uid := uint32(os.Getuid())
+	c.harness.Ok(uid == spec.Process.User.UID, "has expected user ID")
+	c.harness.YAML(map[string]uint32{
+		"expected": spec.Process.User.UID,
+		"actual":   uid,
+	})
+
+	gid := uint32(os.Getgid())
+	c.harness.Ok(gid == spec.Process.User.GID, "has expected group ID")
+	c.harness.YAML(map[string]uint32{
+		"expected": spec.Process.User.GID,
+		"actual":   gid,
+	})
 
 	groups, err := os.Getgroups()
 	if err != nil {
@@ -116,27 +175,30 @@ func validatePosixUser(spec *rspec.Spec, t *tap.T) error {
 	}
 
 	for _, g := range spec.Process.User.AdditionalGids {
-		if !groupsMap[int(g)] {
-			return fmt.Errorf("Groups expected: %v, actual (should be superset): %v", spec.Process.User.AdditionalGids, groups)
-		}
+		c.harness.Ok(groupsMap[int(g)], fmt.Sprintf("has expected additional group ID %v", g))
 	}
 
 	return nil
 }
 
-func validateProcess(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateProcess(spec *rspec.Spec) error {
 	if spec.Process == nil {
+		c.harness.Skip(1, "process not set")
 		return nil
 	}
 
-	if spec.Process.Cwd != "" {
+	if spec.Process.Cwd == "" {
+		c.harness.Skip(1, "process.cwd not set")
+	} else {
 		cwd, err := os.Getwd()
 		if err != nil {
 			return err
 		}
-		if cwd != spec.Process.Cwd {
-			return fmt.Errorf("Cwd expected: %v, actual: %v", spec.Process.Cwd, cwd)
-		}
+		c.harness.Ok(cwd == spec.Process.Cwd, "has expected working directory")
+		c.harness.YAML(map[string]string{
+			"expected": spec.Process.Cwd,
+			"actual":   cwd,
+		})
 	}
 
 	for _, env := range spec.Process.Env {
@@ -144,16 +206,20 @@ func validateProcess(spec *rspec.Spec, t *tap.T) error {
 		key := parts[0]
 		expectedValue := parts[1]
 		actualValue := os.Getenv(key)
-		if actualValue != expectedValue {
-			return fmt.Errorf("Env %v expected: %v, actual: %v", key, expectedValue, actualValue)
-		}
+		c.harness.Ok(expectedValue == actualValue, fmt.Sprintf("has expected environment variable %v", key))
+		c.harness.YAML(map[string]string{
+			"variable": key,
+			"expected": expectedValue,
+			"actual":   actualValue,
+		})
 	}
 
 	return nil
 }
 
-func validateLinuxProcess(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateLinuxProcess(spec *rspec.Spec) error {
 	if spec.Process == nil {
+		c.harness.Skip(1, "process not set")
 		return nil
 	}
 
@@ -163,31 +229,33 @@ func validateLinuxProcess(spec *rspec.Spec, t *tap.T) error {
 	}
 
 	args := bytes.Split(bytes.Trim(cmdlineBytes, "\x00"), []byte("\x00"))
-	if len(args) != len(spec.Process.Args) {
-		return fmt.Errorf("Process arguments expected: %v, actual: %v", len(spec.Process.Args), len(args))
-	}
+	c.harness.Ok(len(args) == len(spec.Process.Args), "has expected number of process arguments")
+	c.harness.YAML(map[string]interface{}{
+		"expected": spec.Process.Args,
+		"actual":   args,
+	})
 	for i, a := range args {
-		if string(a) != spec.Process.Args[i] {
-			return fmt.Errorf("Process arguments expected: %v, actual: %v", string(a), spec.Process.Args[i])
-		}
+		c.harness.Ok(string(a) == spec.Process.Args[i], fmt.Sprintf("has expected process argument %d", i))
+		c.harness.YAML(map[string]interface{}{
+			"index":    i,
+			"expected": spec.Process.Args[i],
+			"actual":   string(a),
+		})
 	}
 
 	ret, _, errno := syscall.Syscall6(syscall.SYS_PRCTL, PrGetNoNewPrivs, 0, 0, 0, 0, 0)
 	if errno != 0 {
 		return errno
 	}
-	if spec.Process.NoNewPrivileges && ret != 1 {
-		return fmt.Errorf("NoNewPrivileges expected: true, actual: false")
-	}
-	if !spec.Process.NoNewPrivileges && ret != 0 {
-		return fmt.Errorf("NoNewPrivileges expected: false, actual: true")
-	}
+	noNewPrivileges := ret == 1
+	c.harness.Ok(spec.Process.NoNewPrivileges == noNewPrivileges, "has expected noNewPrivileges")
 
 	return nil
 }
 
-func validateCapabilities(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateCapabilities(spec *rspec.Spec) error {
 	if spec.Process == nil || spec.Process.Capabilities == nil {
+		c.harness.Skip(1, "process.capabilities not set")
 		return nil
 	}
 
@@ -240,10 +308,10 @@ func validateCapabilities(spec *rspec.Spec, t *tap.T) error {
 			capKey := fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String()))
 			expectedSet := expectedCaps[capKey]
 			actuallySet := processCaps.Get(capType.capType, cap)
-			if expectedSet && !actuallySet {
-				return fmt.Errorf("expected %s capability %v not set", capType.capType, capKey)
-			} else if !expectedSet && actuallySet {
-				return fmt.Errorf("unexpected %s capability %v set", capType.capType, capKey)
+			if expectedSet {
+				c.harness.Ok(actuallySet, fmt.Sprintf("expected %s capability %v set", capType.capType, capKey))
+			} else {
+				c.harness.Ok(!actuallySet, fmt.Sprintf("unexpected %s capability %v not set", capType.capType, capKey))
 			}
 		}
 	}
@@ -251,19 +319,27 @@ func validateCapabilities(spec *rspec.Spec, t *tap.T) error {
 	return nil
 }
 
-func validateHostname(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateHostname(spec *rspec.Spec) error {
+	if spec.Hostname == "" {
+		c.harness.Skip(1, "hostname not set")
+		return nil
+	}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
 	}
-	if spec.Hostname != "" && hostname != spec.Hostname {
-		return fmt.Errorf("Hostname expected: %v, actual: %v", spec.Hostname, hostname)
-	}
+	c.harness.Ok(spec.Hostname == hostname, "has expected hostname")
+	c.harness.YAML(map[string]string{
+		"expected": spec.Hostname,
+		"actual":   hostname,
+	})
 	return nil
 }
 
-func validateRlimits(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateRlimits(spec *rspec.Spec) error {
 	if spec.Process == nil {
+		c.harness.Skip(1, "process.rlimits not set")
 		return nil
 	}
 
@@ -278,20 +354,39 @@ func validateRlimits(spec *rspec.Spec, t *tap.T) error {
 			return err
 		}
 
-		if rlimit.Cur != r.Soft {
-			return specerror.NewError(specerror.PosixProcRlimitsSoftMatchCur, fmt.Errorf("%v rlimit soft expected: %v, actual: %v", r.Type, r.Soft, rlimit.Cur), rspec.Version)
+		rfcError, err := c.Ok(rlimit.Cur == r.Soft, specerror.PosixProcRlimitsSoftMatchCur, spec.Version, fmt.Sprintf("has expected soft %v", r.Type))
+		if err != nil {
+			return err
 		}
-		if rlimit.Max != r.Hard {
-			return specerror.NewError(specerror.PosixProcRlimitsHardMatchMax, fmt.Errorf("%v rlimit hard expected: %v, actual: %v", r.Type, r.Hard, rlimit.Max), rspec.Version)
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"type":      r.Type,
+			"expected":  r.Soft,
+			"actual":    rlimit.Cur,
+		})
+
+		rfcError, err = c.Ok(rlimit.Max == r.Hard, specerror.PosixProcRlimitsHardMatchMax, spec.Version, fmt.Sprintf("has expected hard %v", r.Type))
+		if err != nil {
+			return err
 		}
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"type":      r.Type,
+			"expected":  r.Hard,
+			"actual":    rlimit.Max,
+		})
 	}
 	return nil
 }
 
-func validateSysctls(spec *rspec.Spec, t *tap.T) error {
-	if spec.Linux == nil {
+func (c *complianceTester) validateSysctls(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.Sysctl == nil {
+		c.harness.Skip(1, "linux.sysctl not set")
 		return nil
 	}
+
 	for k, v := range spec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
 		vBytes, err := ioutil.ReadFile(keyPath)
@@ -299,42 +394,106 @@ func validateSysctls(spec *rspec.Spec, t *tap.T) error {
 			return err
 		}
 		value := strings.TrimSpace(string(bytes.Trim(vBytes, "\x00")))
-		if value != v {
-			return fmt.Errorf("Sysctl %v value expected: %v, actual: %v", k, v, value)
-		}
+		c.harness.Ok(value == v, fmt.Sprintf("has expected sysctl %v", k))
+		c.harness.YAML(map[string]string{
+			"sysctl":   k,
+			"expected": v,
+			"actual":   value,
+		})
 	}
 	return nil
 }
 
-func testWriteAccess(path string) error {
+func testReadAccess(path string) (readable bool, err error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+	if fi.Mode()&os.ModeType == 0 {
+		return testFileReadAccess(path)
+	}
+	return false, fmt.Errorf("cannot test read access for %q (mode %d)", path, fi.Mode())
+}
+
+func testFileReadAccess(path string) (readable bool, err error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return false, nil
+	}
+	defer f.Close()
+	b := make([]byte, 1)
+	_, err = f.Read(b)
+	if err == nil {
+		return true, nil
+	} else if err == io.EOF {
+		// Our validation/ tests only use non-empty files for read-access
+		// tests. So if we get an EOF on the first read, the runtime did
+		// successfully block readability.
+		return false, nil
+	}
+	return false, err
+}
+
+func testWriteAccess(path string) (writable bool, err error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+	if fi.IsDir() {
+		return testDirectoryWriteAccess(path)
+	} else if fi.Mode()&os.ModeType == 0 {
+		return testFileWriteAccess(path)
+	}
+	return false, fmt.Errorf("cannot test write access for %q (mode %d)", path, fi.Mode())
+}
+
+func testDirectoryWriteAccess(path string) (writable bool, err error) {
 	tmpfile, err := ioutil.TempFile(path, "Test")
+	if err != nil {
+		return false, nil
+	}
+	tmpfile.Close()
+	return true, os.RemoveAll(filepath.Join(path, tmpfile.Name()))
+}
+
+func testFileWriteAccess(path string) (readable bool, err error) {
+	err = ioutil.WriteFile(path, []byte("a"), 0644)
+	if err == nil {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (c *complianceTester) validateRootFS(spec *rspec.Spec) error {
+	if spec.Root == nil {
+		c.harness.Skip(1, "root not set")
+		return nil
+	}
+
+	writable, err := testDirectoryWriteAccess("/")
 	if err != nil {
 		return err
 	}
 
-	tmpfile.Close()
-	os.RemoveAll(filepath.Join(path, tmpfile.Name()))
-
-	return nil
-}
-
-func validateRootFS(spec *rspec.Spec, t *tap.T) error {
-	if spec.Root == nil {
-		return nil
+	if spec.Root.Readonly {
+		rfcError, err := c.Ok(!writable, specerror.RootReadonlyImplement, spec.Version, "root filesystem is readonly")
+		if err != nil {
+			return err
+		}
+		c.harness.YAML(map[string]string{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+		})
+	} else if !writable {
+		c.harness.Skip(1, "root.readonly is false but the root filesystem is still not writable")
 	}
 
-	if spec.Root.Readonly {
-		err := testWriteAccess("/")
-		if err == nil {
-			return specerror.NewError(specerror.RootReadonlyImplement, fmt.Errorf("rootfs must be readonly"), rspec.Version)
-		}
-	} // no need to check the else case: unwriteable root is not a spec violation
-
 	return nil
 }
 
-func validateRootfsPropagation(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 	if spec.Linux == nil || spec.Linux.RootfsPropagation == "" {
+		c.harness.Skip(1, "linux.rootfsPropagation not set")
 		return nil
 	}
 
@@ -372,36 +531,46 @@ func validateRootfsPropagation(spec *rspec.Spec, t *tap.T) error {
 			return err
 		}
 		defer unix.Unmount(mountDir, unix.MNT_DETACH)
-		if _, err := os.Stat(filepath.Join(targetDir, filepath.Join(mountDir, filepath.Base(tmpfile.Name())))); os.IsNotExist(err) {
-			if spec.Linux.RootfsPropagation == "shared" {
-				return fmt.Errorf("rootfs should be %s, but not", spec.Linux.RootfsPropagation)
-			}
-			return nil
+		targetFile := filepath.Join(targetDir, filepath.Join(mountDir, filepath.Base(tmpfile.Name())))
+		var exposed bool
+		_, err = os.Stat(targetFile)
+		if os.IsNotExist(err) {
+			exposed = false
+		} else if err != nil {
+			return err
+		} else {
+			exposed = true
 		}
 		if spec.Linux.RootfsPropagation == "shared" {
-			return nil
+			c.harness.Ok(exposed, fmt.Sprintf("shared root propogation exposes %q", targetFile))
+		} else {
+			c.harness.Ok(
+				!exposed,
+				fmt.Sprintf("%s root propogation does not expose %q", spec.Linux.RootfsPropagation, targetFile),
+			)
 		}
-		return fmt.Errorf("rootfs should be %s, but not", spec.Linux.RootfsPropagation)
 	case "unbindable":
-		if err := unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
-			if err == syscall.EINVAL {
-				return nil
-			}
+		err = unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, "")
+		if err == syscall.EINVAL {
+			c.harness.Pass("root propagation is unbindable")
+			return nil
+		} else if err != nil {
 			return err
 		}
 		defer unix.Unmount(targetDir, unix.MNT_DETACH)
-		return fmt.Errorf("rootfs expected to be unbindable, but not")
+		c.harness.Fail("root propagation is unbindable")
+		return nil
 	default:
-		logrus.Warnf("unrecognized linux.rootfsPropagation %s", spec.Linux.RootfsPropagation)
+		c.harness.Skip(1, fmt.Sprintf("unrecognized linux.rootfsPropagation %s", spec.Linux.RootfsPropagation))
 	}
 
 	return nil
 }
 
-func validateDefaultFS(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateDefaultFS(spec *rspec.Spec) error {
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
-		specerror.NewError(specerror.DefaultFilesystems, err, spec.Version)
+		return nil
 	}
 
 	mountsMap := make(map[string]string)
@@ -410,201 +579,377 @@ func validateDefaultFS(spec *rspec.Spec, t *tap.T) error {
 	}
 
 	for fs, fstype := range defaultFS {
-		if !(mountsMap[fs] == fstype) {
-			return specerror.NewError(specerror.DefaultFilesystems, fmt.Errorf("%v SHOULD exist and expected type is %v", fs, fstype), rspec.Version)
+		rfcError, err := c.Ok(mountsMap[fs] == fstype, specerror.DefaultFilesystems, spec.Version, fmt.Sprintf("mount %v has expected type", fs))
+		if err != nil {
+			return err
 		}
+		c.harness.YAML(map[string]string{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"mount":     fs,
+			"expected":  fstype,
+			"actual":    mountsMap[fs],
+		})
 	}
 
 	return nil
 }
 
-func validateLinuxDevices(spec *rspec.Spec, t *tap.T) error {
-	if spec.Linux == nil {
+func (c *complianceTester) validateLinuxDevices(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.Devices == nil {
+		c.harness.Skip(1, "linux.devices is not set")
 		return nil
 	}
-	for _, device := range spec.Linux.Devices {
-		fi, err := os.Stat(device.Path)
+
+	for i, device := range spec.Linux.Devices {
+		err := c.validateDevice(
+			&device,
+			specerror.DevicesAvailable,
+			spec.Version,
+			fmt.Sprintf("%q (linux.devices[%d])", device.Path, i))
 		if err != nil {
 			return err
-		}
-		fStat, ok := fi.Sys().(*syscall.Stat_t)
-		if !ok {
-			return specerror.NewError(specerror.DevicesAvailable, fmt.Errorf("cannot determine state for device %s", device.Path), rspec.Version)
-		}
-		var devType string
-		switch fStat.Mode & syscall.S_IFMT {
-		case syscall.S_IFCHR:
-			devType = "c"
-		case syscall.S_IFBLK:
-			devType = "b"
-		case syscall.S_IFIFO:
-			devType = "p"
-		default:
-			devType = "unmatched"
-		}
-		if devType != device.Type || (devType == "c" && device.Type == "u") {
-			return fmt.Errorf("device %v expected type is %v, actual is %v", device.Path, device.Type, devType)
-		}
-		if devType != "p" {
-			dev := fStat.Rdev
-			major := (dev >> 8) & 0xfff
-			minor := (dev & 0xff) | ((dev >> 12) & 0xfff00)
-			if int64(major) != device.Major || int64(minor) != device.Minor {
-				return fmt.Errorf("%v device number expected is %v:%v, actual is %v:%v", device.Path, device.Major, device.Minor, major, minor)
-			}
-		}
-		if device.FileMode != nil {
-			expectedPerm := *device.FileMode & os.ModePerm
-			actualPerm := fi.Mode() & os.ModePerm
-			if expectedPerm != actualPerm {
-				return fmt.Errorf("%v filemode expected is %v, actual is %v", device.Path, expectedPerm, actualPerm)
-			}
-		}
-		if device.UID != nil {
-			if *device.UID != fStat.Uid {
-				return fmt.Errorf("%v uid expected is %v, actual is %v", device.Path, *device.UID, fStat.Uid)
-			}
-		}
-		if device.GID != nil {
-			if *device.GID != fStat.Gid {
-				return fmt.Errorf("%v uid expected is %v, actual is %v", device.Path, *device.GID, fStat.Gid)
-			}
 		}
 	}
 
 	return nil
 }
 
-func validateDefaultSymlinks(spec *rspec.Spec, t *tap.T) error {
-	for symlink, dest := range defaultSymlinks {
-		fi, err := os.Lstat(symlink)
+func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition specerror.Code, version string, description string) (err error) {
+	var exists bool
+	fi, err := os.Stat(device.Path)
+	if os.IsNotExist(err) {
+		exists = false
+	} else if err != nil {
+		return err
+	} else {
+		exists = true
+	}
+	rfcError, err := c.Ok(exists, condition, version, fmt.Sprintf("has a file at %s", description))
+	if err != nil {
+		return err
+	}
+	c.harness.YAML(map[string]string{
+		"level":     rfcError.Level.String(),
+		"reference": rfcError.Reference,
+		"path":      device.Path,
+	})
+	if !exists {
+		return nil
+	}
+
+	fStat, ok := fi.Sys().(*syscall.Stat_t)
+	if !ok {
+		return fmt.Errorf("could not convert to syscall.Stat_t: %v", fi.Sys())
+	}
+	expectedType := device.Type
+	if expectedType == "u" {
+		expectedType = "c"
+	}
+	var devType string
+	switch fStat.Mode & syscall.S_IFMT {
+	case syscall.S_IFCHR:
+		devType = "c"
+	case syscall.S_IFBLK:
+		devType = "b"
+	case syscall.S_IFIFO:
+		devType = "p"
+	default:
+		devType = "unmatched"
+	}
+	rfcError, err = c.Ok(devType == expectedType, condition, version, fmt.Sprintf("%s has the expected type", description))
+	if err != nil {
+		return err
+	}
+	c.harness.YAML(map[string]string{
+		"level":     rfcError.Level.String(),
+		"reference": rfcError.Reference,
+		"path":      device.Path,
+		"expected":  expectedType,
+		"actual":    devType,
+	})
+	if devType != expectedType {
+		return nil
+	}
+
+	if devType != "p" {
+		dev := fStat.Rdev
+		major := (dev >> 8) & 0xfff
+		minor := (dev & 0xff) | ((dev >> 12) & 0xfff00)
+		rfcError, err = c.Ok(int64(major) == device.Major, condition, version, fmt.Sprintf("%s has the expected major ID", description))
 		if err != nil {
 			return err
 		}
-		if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
-			return specerror.NewError(specerror.DefaultRuntimeLinuxSymlinks,
-				fmt.Errorf("%v is not a symbolic link as expected", symlink),
-				rspec.Version)
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"path":      device.Path,
+			"expected":  device.Major,
+			"actual":    major,
+		})
+		rfcError, err = c.Ok(int64(minor) == device.Minor, condition, version, fmt.Sprintf("%s has the expected minor ID", description))
+		if err != nil {
+			return err
 		}
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"path":      device.Path,
+			"expected":  device.Minor,
+			"actual":    minor,
+		})
+	}
+
+	if device.FileMode == nil {
+		c.harness.Skip(1, fmt.Sprintf("%s has unconfigured permissions", description))
+	} else {
+		expectedPerm := *device.FileMode & os.ModePerm
+		actualPerm := fi.Mode() & os.ModePerm
+		rfcError, err = c.Ok(actualPerm == expectedPerm, condition, version, fmt.Sprintf("%s has the expected permissions", description))
+		if err != nil {
+			return err
+		}
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"path":      device.Path,
+			"expected":  expectedPerm,
+			"actual":    actualPerm,
+		})
+	}
+
+	if description == "/dev/console (default device)" {
+		c.harness.Todo().Fail("we need the major/minor from the controlling TTY")
+		return nil
+	}
+
+	if device.UID == nil {
+		c.harness.Skip(1, fmt.Sprintf("%s has an unconfigured user ID", description))
+	} else {
+		rfcError, err = c.Ok(fStat.Uid == *device.UID, condition, version, fmt.Sprintf("%s has the expected user ID", description))
+		if err != nil {
+			return err
+		}
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"path":      device.Path,
+			"expected":  *device.UID,
+			"actual":    fStat.Uid,
+		})
+	}
+
+	if device.GID == nil {
+		c.harness.Skip(1, fmt.Sprintf("%s has an unconfigured group ID", description))
+	} else {
+		rfcError, err = c.Ok(fStat.Gid == *device.GID, condition, version, fmt.Sprintf("%s has the expected group ID", description))
+		if err != nil {
+			return err
+		}
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"path":      device.Path,
+			"expected":  *device.GID,
+			"actual":    fStat.Gid,
+		})
+	}
+
+	return nil
+}
+
+func (c *complianceTester) validateDefaultSymlinks(spec *rspec.Spec) error {
+	for symlink, dest := range defaultSymlinks {
+		var exists bool
+		fi, err := os.Lstat(symlink)
+		if os.IsNotExist(err) {
+			exists = false
+		} else if err != nil {
+			return err
+		} else {
+			exists = true
+		}
+		rfcError, err := c.Ok(exists, specerror.DefaultRuntimeLinuxSymlinks, spec.Version, fmt.Sprintf("has a file at default symlink path %q", symlink))
+		if err != nil {
+			return err
+		}
+		c.harness.YAML(map[string]string{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"path":      symlink,
+		})
+		if !exists {
+			continue
+		}
+
+		isSymlink := fi.Mode()&os.ModeType == os.ModeSymlink
+		rfcError, err = c.Ok(
+			isSymlink,
+			specerror.DefaultRuntimeLinuxSymlinks,
+			spec.Version,
+			fmt.Sprintf("file at default symlink path %q is a symlink", symlink))
+		if err != nil {
+			return err
+		}
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"path":      symlink,
+			"mode":      fi.Mode(),
+		})
+		if !isSymlink {
+			continue
+		}
+
 		realDest, err := os.Readlink(symlink)
 		if err != nil {
 			return err
 		}
-		if realDest != dest {
-			return specerror.NewError(specerror.DefaultRuntimeLinuxSymlinks,
-				fmt.Errorf("link destation of %v expected is %v, actual is %v",
-					symlink, dest, realDest),
-				rspec.Version)
+		rfcError, err = c.Ok(
+			realDest == dest,
+			specerror.DefaultRuntimeLinuxSymlinks,
+			spec.Version,
+			fmt.Sprintf("symlink at default symlink path %q has the expected target", symlink))
+		if err != nil {
+			return err
 		}
+		c.harness.YAML(map[string]string{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"path":      symlink,
+			"expected":  dest,
+			"actual":    realDest,
+		})
 	}
 
 	return nil
 }
 
-func validateDefaultDevices(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateDefaultDevices(spec *rspec.Spec) error {
 	if spec.Process != nil && spec.Process.Terminal {
-		defaultDevices = append(defaultDevices, "/dev/console")
+		defaultDevices = append(defaultDevices, rspec.LinuxDevice{
+			Path: "/dev/console",
+			Type: "c",
+			// FIXME: get the major/minor from the controlling TTY
+		})
 	}
 
 	for _, device := range defaultDevices {
-		fi, err := os.Stat(device)
+		err := c.validateDevice(
+			&device,
+			specerror.DefaultDevices,
+			spec.Version,
+			fmt.Sprintf("%s (default device)", device.Path))
 		if err != nil {
-			if os.IsNotExist(err) {
-				return specerror.NewError(specerror.DefaultDevices,
-					fmt.Errorf("device node %v not found", device),
-					rspec.Version)
-			}
 			return err
-		}
-		if fi.Mode()&os.ModeDevice != os.ModeDevice {
-			return specerror.NewError(specerror.DefaultDevices,
-				fmt.Errorf("file %v is not a device as expected", device),
-				rspec.Version)
 		}
 	}
 
 	return nil
 }
 
-func validateMaskedPaths(spec *rspec.Spec, t *tap.T) error {
-	if spec.Linux == nil {
+func (c *complianceTester) validateMaskedPaths(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.MaskedPaths == nil {
+		c.harness.Skip(1, "linux.maskedPaths not set")
 		return nil
 	}
+
 	for _, maskedPath := range spec.Linux.MaskedPaths {
-		f, err := os.Open(maskedPath)
-		if err != nil {
+		readable, err := testReadAccess(maskedPath)
+		if err != nil && !os.IsNotExist(err) {
 			return err
 		}
-		defer f.Close()
-		b := make([]byte, 1)
-		_, err = f.Read(b)
-		if err != io.EOF {
-			return fmt.Errorf("%v should not be readable", maskedPath)
-		}
+		c.harness.Ok(!readable, fmt.Sprintf("cannot read masked path %q", maskedPath))
 	}
+
 	return nil
 }
 
-func validateSeccomp(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validateSeccomp(spec *rspec.Spec) error {
 	if spec.Linux == nil || spec.Linux.Seccomp == nil {
+		c.harness.Skip(1, "linux.seccomp not set")
 		return nil
 	}
+
 	for _, sys := range spec.Linux.Seccomp.Syscalls {
 		if sys.Action == "SCMP_ACT_ERRNO" {
 			for _, name := range sys.Names {
 				if name == "getcwd" {
 					_, err := os.Getwd()
 					if err == nil {
-						t.Diagnostic("getcwd did not return an error")
+						c.harness.Skip(1, "getcwd did not return an error")
 					}
 				} else {
-					t.Skip(1, fmt.Sprintf("%s syscall returns errno", name))
+					c.harness.Skip(1, fmt.Sprintf("%s syscall returns errno", name))
 				}
 			}
 		} else {
-			t.Skip(1, fmt.Sprintf("syscall action %s", sys.Action))
+			c.harness.Skip(1, fmt.Sprintf("syscall action %s", sys.Action))
 		}
 	}
+
 	return nil
 }
 
-func validateROPaths(spec *rspec.Spec, t *tap.T) error {
-	if spec.Linux == nil {
+func (c *complianceTester) validateROPaths(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.ReadonlyPaths == nil {
+		c.harness.Skip(1, "linux.readonlyPaths not set")
 		return nil
 	}
-	for _, v := range spec.Linux.ReadonlyPaths {
-		err := testWriteAccess(v)
-		if err == nil {
-			return fmt.Errorf("%v should be readonly", v)
-		}
-	}
 
-	return nil
-}
-
-func validateOOMScoreAdj(spec *rspec.Spec, t *tap.T) error {
-	if spec.Process != nil && spec.Process.OOMScoreAdj != nil {
-		expected := *spec.Process.OOMScoreAdj
-		f, err := os.Open("/proc/self/oom_score_adj")
+	for i, path := range spec.Linux.ReadonlyPaths {
+		readable, err := testReadAccess(path)
 		if err != nil {
 			return err
 		}
-		defer f.Close()
-
-		s := bufio.NewScanner(f)
-		for s.Scan() {
-			if err := s.Err(); err != nil {
-				return err
-			}
-			text := strings.TrimSpace(s.Text())
-			actual, err := strconv.Atoi(text)
-			if err != nil {
-				return err
-			}
-			if actual != expected {
-				return specerror.NewError(specerror.LinuxProcOomScoreAdjSet, fmt.Errorf("oomScoreAdj expected: %v, actual: %v", expected, actual), rspec.Version)
-			}
+		if !readable {
+			c.harness.Skip(1, fmt.Sprintf("%q (linux.readonlyPaths[%d]) is not readable", path, i))
 		}
+
+		writable, err := testWriteAccess(path)
+		if err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		c.harness.Ok(!writable, fmt.Sprintf("%q (linux.readonlyPaths[%d]) is not writable", path, i))
+	}
+
+	return nil
+}
+
+func (c *complianceTester) validateOOMScoreAdj(spec *rspec.Spec) error {
+	if spec.Process == nil || spec.Process.OOMScoreAdj == nil {
+		c.harness.Skip(1, "process.oomScoreAdj not set")
+		return nil
+	}
+
+	expected := *spec.Process.OOMScoreAdj
+	f, err := os.Open("/proc/self/oom_score_adj")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		err := s.Err()
+		if err != nil {
+			return err
+		}
+		text := strings.TrimSpace(s.Text())
+		actual, err := strconv.Atoi(text)
+		if err != nil {
+			return err
+		}
+		rfcError, err := c.Ok(actual == expected, specerror.LinuxProcOomScoreAdjSet, spec.Version, fmt.Sprintf("has expected OOM score adjustment"))
+		if err != nil {
+			return err
+		}
+		c.harness.YAML(map[string]interface{}{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"expected":  expected,
+			"actual":    actual,
+		})
 	}
 
 	return nil
@@ -649,14 +994,21 @@ func getIDMappings(path string) ([]rspec.LinuxIDMapping, error) {
 	return idMaps, nil
 }
 
-func validateIDMappings(mappings []rspec.LinuxIDMapping, path string, property string) error {
+func (c *complianceTester) validateIDMappings(mappings []rspec.LinuxIDMapping, path string, property string) error {
+	if len(mappings) == 0 {
+		c.harness.Skip(1, fmt.Sprintf("%s not set", property))
+		return nil
+	}
+
 	idMaps, err := getIDMappings(path)
 	if err != nil {
-		return fmt.Errorf("can not get items: %v", err)
+		return err
 	}
-	if len(mappings) != 0 && len(mappings) != len(idMaps) {
-		return fmt.Errorf("expected %d entries in %v, but acutal is %d", len(mappings), path, len(idMaps))
-	}
+	c.harness.Ok(len(idMaps) == len(mappings), fmt.Sprintf("%s has expected number of mappings", path))
+	c.harness.YAML(map[string]interface{}{
+		"expected": mappings,
+		"actual":   idMaps,
+	})
 	for _, v := range mappings {
 		exist := false
 		for _, cv := range idMaps {
@@ -665,26 +1017,26 @@ func validateIDMappings(mappings []rspec.LinuxIDMapping, path string, property s
 				break
 			}
 		}
-		if !exist {
-			return fmt.Errorf("%v is not applied as expected", property)
-		}
+		c.harness.Ok(exist, fmt.Sprintf("%s has expected mapping %v", path, v))
 	}
 
 	return nil
 }
 
-func validateUIDMappings(spec *rspec.Spec, t *tap.T) error {
-	if spec.Linux == nil {
+func (c *complianceTester) validateUIDMappings(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.UIDMappings == nil {
+		c.harness.Skip(1, "linux.uidMappings not set")
 		return nil
 	}
-	return validateIDMappings(spec.Linux.UIDMappings, "/proc/self/uid_map", "linux.uidMappings")
+	return c.validateIDMappings(spec.Linux.UIDMappings, "/proc/self/uid_map", "linux.uidMappings")
 }
 
-func validateGIDMappings(spec *rspec.Spec, t *tap.T) error {
-	if spec.Linux == nil {
+func (c *complianceTester) validateGIDMappings(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.GIDMappings == nil {
+		c.harness.Skip(1, "linux.gidMappings not set")
 		return nil
 	}
-	return validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
+	return c.validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
 }
 
 func mountMatch(configMount rspec.Mount, sysMount *mount.Info) error {
@@ -709,67 +1061,76 @@ func mountMatch(configMount rspec.Mount, sysMount *mount.Info) error {
 	return nil
 }
 
-func validatePosixMounts(spec *rspec.Spec, t *tap.T) error {
+func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
+	if spec.Mounts == nil {
+		c.harness.Skip(1, "mounts not set")
+		return nil
+	}
+
 	mountInfos, err := mount.GetMounts()
 	if err != nil {
 		return err
 	}
 
 	var mountErrs error
+	var configSys = make(map[int]int)
 	var consumedSys = make(map[int]bool)
 	highestMatchedConfig := -1
-	highestMatchedSystem := -1
 	var j = 0
 	for i, configMount := range spec.Mounts {
 		if configMount.Type == "bind" || configMount.Type == "rbind" {
-			// TODO: add bind or rbind check.
+			c.harness.Todo().Fail("we need an (r)bind spec to test against")
 			continue
 		}
 
-		found := false
+		foundInOrder := false
+		foundOutOfOrder := false
 		for k, sysMount := range mountInfos[j:] {
 			if err := mountMatch(configMount, sysMount); err == nil {
-				found = true
+				foundInOrder = true
 				j += k + 1
+				configSys[i] = j - 1
 				consumedSys[j-1] = true
-				if j > highestMatchedSystem {
-					highestMatchedSystem = j - 1
+				if j > configSys[highestMatchedConfig] {
 					highestMatchedConfig = i
 				}
 				break
 			}
 		}
-		if !found {
+		if err != nil {
+			return err
+		}
+		if !foundInOrder {
 			if j > 0 {
 				for k, sysMount := range mountInfos[:j-1] {
 					if _, ok := consumedSys[k]; ok {
 						continue
 					}
 					if err := mountMatch(configMount, sysMount); err == nil {
-						found = true
+						foundOutOfOrder = true
 						break
 					}
 				}
 			}
-			if found {
-				mountErrs = multierror.Append(
-					mountErrs,
-					specerror.NewError(specerror.MountsInOrder,
-						fmt.Errorf(
-							"mounts[%d] %v mounted before mounts[%d] %v",
-							i,
-							configMount,
-							highestMatchedConfig,
-							spec.Mounts[highestMatchedConfig]),
-						rspec.Version))
-			} else {
-				mountErrs = multierror.Append(
-					mountErrs,
-					specerror.NewError(specerror.MountsInOrder, fmt.Errorf(
-						"mounts[%d] %v does not exist",
-						i,
-						configMount), rspec.Version))
-			}
+		}
+
+		var rfcError *rfc2119.Error
+		if !foundInOrder && !foundOutOfOrder {
+			rfcError, err = c.Ok(false, specerror.MountsInOrder, spec.Version, fmt.Sprintf("mounts[%d] (%s) found", i, configMount.Destination))
+		} else {
+			rfcError, err = c.Ok(foundInOrder, specerror.MountsInOrder, spec.Version, fmt.Sprintf("mounts[%d] (%s) found in order", i, configMount.Destination))
+			c.harness.YAML(map[string]interface{}{
+				"level":       rfcError.Level.String(),
+				"reference":   rfcError.Reference,
+				"config":      configMount,
+				"indexConfig": i,
+				"indexSystem": configSys[i],
+				"earlier": map[string]interface{}{
+					"config":      spec.Mounts[highestMatchedConfig],
+					"indexConfig": highestMatchedConfig,
+					"indexSystem": configSys[highestMatchedConfig],
+				},
+			})
 		}
 	}
 
@@ -795,103 +1156,47 @@ func run(context *cli.Context) error {
 		return err
 	}
 
-	defaultValidations := []validation{
-		{
-			test:        validateRootFS,
-			description: "root filesystem",
-		},
-		{
-			test:        validateHostname,
-			description: "hostname",
-		},
-		{
-			test:        validateProcess,
-			description: "process",
-		},
-	}
-
-	posixValidations := []validation{
-		{
-			test:        validatePosixMounts,
-			description: "mounts",
-		},
-		{
-			test:        validatePosixUser,
-			description: "user",
-		},
-		{
-			test:        validateRlimits,
-			description: "rlimits",
-		},
-	}
-
-	linuxValidations := []validation{
-		{
-			test:        validateCapabilities,
-			description: "capabilities",
-		},
-		{
-			test:        validateDefaultSymlinks,
-			description: "default symlinks",
-		},
-		{
-			test:        validateDefaultFS,
-			description: "default file system",
-		},
-		{
-			test:        validateDefaultDevices,
-			description: "default devices",
-		},
-		{
-			test:        validateLinuxDevices,
-			description: "linux devices",
-		},
-		{
-			test:        validateLinuxProcess,
-			description: "linux process",
-		},
-		{
-			test:        validateMaskedPaths,
-			description: "masked paths",
-		},
-		{
-			test:        validateOOMScoreAdj,
-			description: "oom score adj",
-		},
-		{
-			test:        validateSeccomp,
-			description: "seccomp",
-		},
-		{
-			test:        validateROPaths,
-			description: "read only paths",
-		},
-		{
-			test:        validateRootfsPropagation,
-			description: "rootfs propagation",
-		},
-		{
-			test:        validateSysctls,
-			description: "sysctls",
-		},
-		{
-			test:        validateUIDMappings,
-			description: "uid mappings",
-		},
-		{
-			test:        validateGIDMappings,
-			description: "gid mappings",
-		},
-	}
-
-	t := tap.New()
-	t.Header(0)
-
 	complianceLevelString := context.String("compliance-level")
 	complianceLevel, err := rfc2119.ParseLevel(complianceLevelString)
 	if err != nil {
 		complianceLevel = rfc2119.Must
 		logrus.Warningf("%s, using 'MUST' by default.", err.Error())
+	}
+
+	c := &complianceTester{
+		harness:         tap.New(),
+		complianceLevel: complianceLevel,
+	}
+
+	c.harness.Header(0)
+
+	defaultValidations := []validator{
+		c.validateRootFS,
+		c.validateHostname,
+		c.validateProcess,
+	}
+
+	posixValidations := []validator{
+		c.validatePosixMounts,
+		c.validatePosixUser,
+		c.validateRlimits,
+	}
+
+	linuxValidations := []validator{
+		c.validateCapabilities,
+		c.validateDefaultSymlinks,
+		c.validateDefaultFS,
+		c.validateDefaultDevices,
+		c.validateLinuxDevices,
+		c.validateLinuxProcess,
+		c.validateMaskedPaths,
+		c.validateOOMScoreAdj,
+		c.validateSeccomp,
+		c.validateROPaths,
+		c.validateRootfsPropagation,
+		c.validateSysctls,
+		c.validateUIDMappings,
+		c.validateGIDMappings,
 	}
 
 	validations := defaultValidations
@@ -902,32 +1207,13 @@ func run(context *cli.Context) error {
 		validations = append(validations, posixValidations...)
 	}
 
-	for _, v := range validations {
-		err := v.test(spec, t)
-		if err == nil {
-			t.Pass(v.description)
-		} else {
-			merr, ok := err.(*multierror.Error)
-			if ok {
-				for _, err = range merr.Errors {
-					if e, ok := err.(*rfc2119.Error); ok {
-						t.Ok(e.Level < complianceLevel, v.description)
-					} else {
-						t.Fail(v.description)
-					}
-					t.YAML(map[string]string{"error": err.Error()})
-				}
-			} else {
-				if e, ok := err.(*rfc2119.Error); ok {
-					t.Ok(e.Level < complianceLevel, v.description)
-				} else {
-					t.Fail(v.description)
-				}
-				t.YAML(map[string]string{"error": err.Error()})
-			}
+	for _, validation := range validations {
+		err := validation(spec)
+		if err != nil {
+			return err
 		}
 	}
-	t.AutoPlan()
+	c.harness.AutoPlan()
 
 	return nil
 }

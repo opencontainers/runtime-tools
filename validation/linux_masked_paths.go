@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -9,10 +10,20 @@ import (
 
 func main() {
 	g := util.GetDefaultGenerator()
-	g.AddLinuxMaskedPaths("/masktest")
+	g.AddLinuxMaskedPaths("/masked-dir")
+	g.AddLinuxMaskedPaths("/masked-file")
 	err := util.RuntimeInsideValidate(g, func(path string) error {
-		pathName := filepath.Join(path, "masktest")
-		return os.MkdirAll(pathName, 0700)
+		testDir := filepath.Join(path, "masked-dir")
+		err := os.MkdirAll(testDir, 0777)
+		if err != nil {
+			return err
+		}
+
+		testFile := filepath.Join(path, "masked-file")
+
+		// runtimetest cannot check the readability of empty files, so
+		// write something.
+		return ioutil.WriteFile(testFile, []byte("secrets"), 0777)
 	})
 	if err != nil {
 		util.Fatal(err)
