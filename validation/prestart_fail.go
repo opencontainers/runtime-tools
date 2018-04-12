@@ -22,7 +22,10 @@ func main() {
 	}
 	defer os.RemoveAll(bundleDir)
 
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	prestart := rspec.Hook{
 		Path: filepath.Join(bundleDir, g.Spec().Root.Path, "/bin/false"),
 		Args: []string{"false"},
@@ -57,7 +60,7 @@ func main() {
 	// if outputErr is nil, it means the runtime calls the Process anyway
 	// if stateErr is nil, it means it does not continue lifecycle at step 9
 	if runErr == nil || outputErr == nil || stateErr == nil {
-		err := specerror.NewError(specerror.PrestartHookFailGenError, fmt.Errorf("if any prestart hook fails, the runtime MUST generate an error, stop the container, and continue the lifecycle at step 9"), rspec.Version)
+		err = specerror.NewError(specerror.PrestartHookFailGenError, fmt.Errorf("if any prestart hook fails, the runtime MUST generate an error, stop the container, and continue the lifecycle at step 9"), rspec.Version)
 		diagnostic := map[string]string{
 			"error": err.Error(),
 		}

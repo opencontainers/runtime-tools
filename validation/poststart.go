@@ -25,9 +25,12 @@ func main() {
 		Actions: util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete,
 		PreCreate: func(r *util.Runtime) error {
 			r.SetID(uuid.NewV4().String())
-			g := util.GetDefaultGenerator()
+			g, err := util.GetDefaultGenerator()
+			if err != nil {
+				util.Fatal(err)
+			}
 			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
-			err := g.AddPostStartHook(rspec.Hook{
+			err = g.AddPostStartHook(rspec.Hook{
 				Path: filepath.Join(r.BundleDir, g.Spec().Root.Path, "/bin/sh"),
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'post-start called' >> %s", output),

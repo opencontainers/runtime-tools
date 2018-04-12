@@ -577,6 +577,11 @@ func (v *Validator) CheckPlatform() (errs error) {
 		return
 	}
 
+	if v.HostSpecific && v.platform != runtime.GOOS {
+		errs = multierror.Append(errs, fmt.Errorf("platform %q differs from the host %q, skipping host-specific checks", v.platform, runtime.GOOS))
+		v.HostSpecific = false
+	}
+
 	if v.platform == "windows" {
 		if v.spec.Windows == nil {
 			errs = multierror.Append(errs,

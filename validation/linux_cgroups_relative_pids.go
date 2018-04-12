@@ -7,10 +7,13 @@ import (
 
 func main() {
 	var limit int64 = 1000
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetLinuxCgroupsPath(cgroups.RelCgroupPath)
 	g.SetLinuxResourcesPidsLimit(limit)
-	err := util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesPids)
+	err = util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesPids)
 	if err != nil {
 		util.Fatal(err)
 	}

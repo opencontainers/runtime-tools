@@ -13,9 +13,12 @@ func main() {
 		os.Exit(0)
 	}
 
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetRootReadonly(true)
-	err := util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

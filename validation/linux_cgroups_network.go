@@ -8,11 +8,14 @@ import (
 func main() {
 	var id, prio uint32 = 255, 10
 	ifName := "lo"
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.SetLinuxResourcesNetworkClassID(id)
 	g.AddLinuxResourcesNetworkPriorities(ifName, prio)
-	err := util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesNetwork)
+	err = util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesNetwork)
 	if err != nil {
 		util.Fatal(err)
 	}

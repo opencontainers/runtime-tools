@@ -9,12 +9,15 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.AddLinuxReadonlyPaths("/readonly-dir")
 	g.AddLinuxReadonlyPaths("/readonly-file")
-	err := util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, func(path string) error {
 		testDir := filepath.Join(path, "readonly-dir")
-		err := os.MkdirAll(testDir, 0777)
+		err = os.MkdirAll(testDir, 0777)
 		if err != nil {
 			return err
 		}

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode"
@@ -90,6 +91,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "mounts-add", Usage: "configures additional mounts inside container"},
 	cli.StringSliceFlag{Name: "mounts-remove", Usage: "remove destination mountpoints from inside container"},
 	cli.BoolFlag{Name: "mounts-remove-all", Usage: "remove all mounts inside container"},
+	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
 	cli.StringSliceFlag{Name: "process-cap-add-ambient", Usage: "add Linux ambient capabilities"},
@@ -141,21 +143,23 @@ var generateCommand = cli.Command{
 	Before: before,
 	Action: func(context *cli.Context) error {
 		// Start from the default template.
-		specgen := generate.New()
+		specgen, err := generate.New(context.String("os"))
+		if err != nil {
+			return err
+		}
 
 		var template string
 		if context.IsSet("template") {
 			template = context.String("template")
 		}
 		if template != "" {
-			var err error
 			specgen, err = generate.NewFromFile(template)
 			if err != nil {
 				return err
 			}
 		}
 
-		err := setupSpec(&specgen, context)
+		err = setupSpec(&specgen, context)
 		if err != nil {
 			return err
 		}

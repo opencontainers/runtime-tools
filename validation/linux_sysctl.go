@@ -5,9 +5,12 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.AddLinuxSysctl("net.ipv4.ip_forward", "1")
-	err := util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

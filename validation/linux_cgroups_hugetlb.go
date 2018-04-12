@@ -11,10 +11,13 @@ import (
 func main() {
 	page := "1GB"
 	var limit uint64 = 52985 * 1024 * 1024 * 1024 // multiple of hugepage size
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.AddLinuxResourcesHugepageLimit(page, limit)
-	err := util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
+	err = util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err

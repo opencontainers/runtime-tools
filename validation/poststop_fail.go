@@ -24,7 +24,10 @@ func main() {
 	}
 	defer os.RemoveAll(bundleDir)
 
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	output := filepath.Join(bundleDir, g.Spec().Root.Path, "output")
 	poststop := rspec.Hook{
 		Path: filepath.Join(bundleDir, g.Spec().Root.Path, "/bin/false"),
@@ -59,7 +62,7 @@ func main() {
 	// if runErr is not nil, it means the runtime generates an error
 	// if outputData is not equal to the expected content, it means there is something wrong with the remaining hooks and lifecycle
 	if runErr != nil || string(outputData) != "post-stop called\n" {
-		err := specerror.NewError(specerror.PoststopHookFailGenWarn, fmt.Errorf("if any poststop hook fails, the runtime MUST log a warning, but the remaining hooks and lifecycle continue as if the hook had succeeded"), rspec.Version)
+		err = specerror.NewError(specerror.PoststopHookFailGenWarn, fmt.Errorf("if any poststop hook fails, the runtime MUST log a warning, but the remaining hooks and lifecycle continue as if the hook had succeeded"), rspec.Version)
 		diagnostic := map[string]string{
 			"error": err.Error(),
 		}

@@ -27,7 +27,10 @@ func main() {
 	defer os.RemoveAll(bundleDir)
 
 	containerID := uuid.NewV4().String()
-	sigConfig := util.GetDefaultGenerator()
+	sigConfig, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	rootDir := filepath.Join(bundleDir, sigConfig.Spec().Root.Path)
 	for _, signal := range signals {
 		sigConfig.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("trap 'touch /%s' %s; sleep 10 & wait $!", signal, signal)})
@@ -41,13 +44,13 @@ func main() {
 			},
 			PreDelete: func(r *util.Runtime) error {
 				util.WaitingForStatus(*r, util.LifecycleStatusRunning, time.Second*5, time.Second*1)
-				err := r.Kill(signal)
+				err = r.Kill(signal)
 				// wait before the container been deleted
 				util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*5, time.Second*1)
 				return err
 			},
 		}
-		err := util.RuntimeLifecycleValidate(config)
+		err = util.RuntimeLifecycleValidate(config)
 		if err != nil {
 			util.SpecErrorOK(t, false, specerror.NewError(specerror.KillSignalImplement, fmt.Errorf("`kill` operation MUST send the specified signal to the container process"), rspecs.Version), err)
 		} else {

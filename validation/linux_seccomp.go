@@ -6,14 +6,17 @@ import (
 )
 
 func main() {
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	syscallArgs := seccomp.SyscallOpts{
 		Action:  "errno",
 		Syscall: "getcwd",
 	}
 	g.SetDefaultSeccompAction("allow")
 	g.SetSyscallAction(syscallArgs)
-	err := util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

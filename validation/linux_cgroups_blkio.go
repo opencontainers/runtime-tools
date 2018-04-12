@@ -10,7 +10,10 @@ func main() {
 	var leafWeight uint16 = 300
 	var major, minor int64 = 8, 0
 	var rate uint64 = 102400
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.SetLinuxResourcesBlockIOWeight(weight)
 	g.SetLinuxResourcesBlockIOLeafWeight(leafWeight)
@@ -20,7 +23,7 @@ func main() {
 	g.AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleWriteIOPSDevice(major, minor, rate)
-	err := util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesBlockIO)
+	err = util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesBlockIO)
 	if err != nil {
 		util.Fatal(err)
 	}

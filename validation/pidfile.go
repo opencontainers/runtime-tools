@@ -24,7 +24,10 @@ func main() {
 	defer os.RemoveAll(tempDir)
 	tempPidFile := filepath.Join(tempDir, "pidfile")
 
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetProcessArgs([]string{"true"})
 	config := util.LifecycleConfig{
 		Config:  g,
