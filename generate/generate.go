@@ -370,6 +370,14 @@ func (g *Generator) RemoveAnnotation(key string) {
 	delete(g.Config.Annotations, key)
 }
 
+// RemoveHostname removes g.Config.Hostname, setting it to an empty string.
+func (g *Generator) RemoveHostname() {
+	if g.Config == nil {
+		return
+	}
+	g.Config.Hostname = ""
+}
+
 // SetProcessConsoleSize sets g.Config.Process.ConsoleSize.
 func (g *Generator) SetProcessConsoleSize(width, height uint) {
 	g.initConfigProcessConsoleSize()
