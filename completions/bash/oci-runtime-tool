@@ -369,6 +369,7 @@ _oci-runtime-tool_generate() {
 		--linux-uidmappings
 		--mounts-add
 		--mounts-remove
+		--os
 		--output
 		--process-cap-add-ambient
 		--process-cap-add-bounding
