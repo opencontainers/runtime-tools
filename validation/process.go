@@ -12,6 +12,8 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
+
+	g.SetProcessConsoleSize(10, 80)
 	g.SetProcessCwd("/test")
 	g.AddProcessEnv("testa", "valuea")
 	g.AddProcessEnv("testb", "123")
