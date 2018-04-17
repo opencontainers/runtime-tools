@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"syscall"
 	"time"
 
 	"github.com/mndrix/tap-go"
@@ -32,6 +33,9 @@ func testNamespacePath(t *tap.T, ns string, unshareOpt string) error {
 	// Golang: mnt namespaces cannot be unshared from multithreaded
 	// programs.
 	cmd := exec.Command("unshare", unshareOpt, "--fork", "sleep", "10000")
+	// We shoud set Setpgid to true, to be able to allow the unshare process
+	// as well as its child processes to be killed by a single kill command.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	err := cmd.Start()
 	if err != nil {
 		return fmt.Errorf("cannot run unshare: %s", err)
@@ -41,6 +45,7 @@ func testNamespacePath(t *tap.T, ns string, unshareOpt string) error {
 			cmd.Process.Kill()
 		}
 		cmd.Wait()
+		syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 	}()
 	if cmd.Process == nil {
 		return fmt.Errorf("process failed to start")
