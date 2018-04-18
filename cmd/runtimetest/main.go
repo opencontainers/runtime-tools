@@ -409,10 +409,25 @@ func testReadAccess(path string) (readable bool, err error) {
 	if err != nil {
 		return false, err
 	}
-	if fi.Mode()&os.ModeType == 0 {
-		return testFileReadAccess(path)
+
+	// In case of a directory, we should check its readability in a special way.
+	// In other files, we should not check its Mode explicitly, because the runtime
+	// spec does not mandate the type of masked files. It could be a regular file
+	// or a character file (/dev/null), which is the case for runtimes like runc.
+	if fi.IsDir() {
+		return testDirectoryReadAccess(path)
 	}
-	return false, fmt.Errorf("cannot test read access for %q (mode %d)", path, fi.Mode())
+	return testFileReadAccess(path)
+}
+
+func testDirectoryReadAccess(path string) (readable bool, err error) {
+	if files, err := ioutil.ReadDir(path); err != nil || len(files) == 0 {
+		// err from reading from a directory should not be considered as test failure,
+		// it just means that the test program successfully assessed that
+		// the directory is not readable.
+		return false, nil
+	}
+	return true, nil
 }
 
 func testFileReadAccess(path string) (readable bool, err error) {
@@ -439,12 +454,15 @@ func testWriteAccess(path string) (writable bool, err error) {
 	if err != nil {
 		return false, err
 	}
+
+	// In case of a directory, we should check its readability in a special way.
+	// In other files, we should not check its Mode explicitly, because the runtime
+	// spec does not mandate the type of masked files. It could be a regular file
+	// or a character file (/dev/null), which is the case for runtimes like runc.
 	if fi.IsDir() {
 		return testDirectoryWriteAccess(path)
-	} else if fi.Mode()&os.ModeType == 0 {
-		return testFileWriteAccess(path)
 	}
-	return false, fmt.Errorf("cannot test write access for %q (mode %d)", path, fi.Mode())
+	return testFileWriteAccess(path)
 }
 
 func testDirectoryWriteAccess(path string) (writable bool, err error) {
