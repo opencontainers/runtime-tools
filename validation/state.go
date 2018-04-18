@@ -6,6 +6,7 @@ import (
 
 	"github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
+	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
 	uuid "github.com/satori/go.uuid"
@@ -26,11 +27,11 @@ func main() {
 		id          string
 		action      util.LifecycleAction
 		errExpected bool
-		err         error
+		err         *rfc2119.Error
 	}{
-		{"", util.LifecycleActionNone, false, specerror.NewError(specerror.QueryWithoutIDGenError, fmt.Errorf("state MUST generate an error if it is not provided the ID of a container"), rspecs.Version)},
-		{containerID, util.LifecycleActionNone, false, specerror.NewError(specerror.QueryNonExistGenError, fmt.Errorf("state MUST generate an error if a container that does not exist"), rspecs.Version)},
-		{containerID, util.LifecycleActionCreate | util.LifecycleActionDelete, true, specerror.NewError(specerror.QueryStateImplement, fmt.Errorf("state MUST return the state of a container as specified in the State section"), rspecs.Version)},
+		{"", util.LifecycleActionNone, false, specerror.NewRFCErrorOrPanic(specerror.QueryWithoutIDGenError, fmt.Errorf("state MUST generate an error if it is not provided the ID of a container"), rspecs.Version)},
+		{containerID, util.LifecycleActionNone, false, specerror.NewRFCErrorOrPanic(specerror.QueryNonExistGenError, fmt.Errorf("state MUST generate an error if a container that does not exist"), rspecs.Version)},
+		{containerID, util.LifecycleActionCreate | util.LifecycleActionDelete, true, specerror.NewRFCErrorOrPanic(specerror.QueryStateImplement, fmt.Errorf("state MUST return the state of a container as specified in the State section"), rspecs.Version)},
 	}
 
 	for _, c := range cases {
@@ -57,9 +58,9 @@ func main() {
 			continue
 		}
 
-		t.Ok((err == nil) == c.errExpected, c.err.(*specerror.Error).Err.Err.Error())
+		t.Ok((err == nil) == c.errExpected, c.err.Error())
 		diagnostic := map[string]string{
-			"reference": c.err.(*specerror.Error).Err.Reference,
+			"reference": c.err.Reference,
 		}
 		if err != nil {
 			diagnostic["error"] = err.Error()

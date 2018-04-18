@@ -109,15 +109,13 @@ type complianceTester struct {
 }
 
 func (c *complianceTester) Ok(test bool, condition specerror.Code, version string, description string) (rfcError *rfc2119.Error, err error) {
-	err = specerror.NewError(condition, errors.New(description), version)
-	runtimeError, ok := err.(*specerror.Error)
-	if !ok {
-		return nil, fmt.Errorf("cannot convert %v to a runtime-spec error", err)
+	rfcError, err = specerror.NewRFCError(condition, errors.New(description), version)
+	if err != nil {
+		return nil, err
 	}
-	rfcError = &runtimeError.Err
 	if test {
 		c.harness.Pass(description)
-	} else if runtimeError.Err.Level < c.complianceLevel {
+	} else if rfcError.Level < c.complianceLevel {
 		c.harness.Skip(1, description)
 	} else {
 		c.harness.Fail(description)
