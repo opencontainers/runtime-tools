@@ -36,6 +36,10 @@ var gitCommit = ""
 // VERSION file of the source code.
 var version = ""
 
+// errAccess will be used for defining either a read error or a write error
+// from any type of files.
+var errAccess error
+
 // PrGetNoNewPrivs isn't exposed in Golang so we define it ourselves copying the value from
 // the kernel
 const PrGetNoNewPrivs = 39
@@ -410,22 +414,34 @@ func testReadAccess(path string) (readable bool, err error) {
 		return false, err
 	}
 
-	// In case of a directory, we should check its readability in a special way.
-	// In other files, we should not check its Mode explicitly, because the runtime
-	// spec does not mandate the type of masked files. It could be a regular file
-	// or a character file (/dev/null), which is the case for runtimes like runc.
-	if fi.IsDir() {
+	// Check for readability in case of regular files, character device, or
+	// directory. Although the runtime spec does not mandate the type of
+	// masked files, we should check its Mode explicitly. A masked file
+	// could be represented as a character file (/dev/null), which is the
+	// case for runtimes like runc.
+	switch fi.Mode() & os.ModeType {
+	case 0, os.ModeDevice | os.ModeCharDevice:
+		return testFileReadAccess(path)
+	case os.ModeDir:
 		return testDirectoryReadAccess(path)
 	}
-	return testFileReadAccess(path)
+
+	errAccess = fmt.Errorf("cannot test read access for %q (mode %d)", path, fi.Mode())
+	return false, errAccess
 }
 
 func testDirectoryReadAccess(path string) (readable bool, err error) {
-	if files, err := ioutil.ReadDir(path); err != nil || len(files) == 0 {
-		// err from reading from a directory should not be considered as test failure,
-		// it just means that the test program successfully assessed that
-		// the directory is not readable.
+	files, err := ioutil.ReadDir(path)
+	if err == io.EOF || len(files) == 0 {
+		// Our validation/ tests only use non-empty directories for read-access
+		// tests. So if we get an EOF on the first read, the runtime did
+		// successfully block readability. So it should not be considered as test
+		// failure, it just means that the test program successfully assessed
+		// that the directory is not readable.
 		return false, nil
+	}
+	if err != nil {
+		return false, err
 	}
 	return true, nil
 }
@@ -455,14 +471,19 @@ func testWriteAccess(path string) (writable bool, err error) {
 		return false, err
 	}
 
-	// In case of a directory, we should check its readability in a special way.
-	// In other files, we should not check its Mode explicitly, because the runtime
-	// spec does not mandate the type of masked files. It could be a regular file
-	// or a character file (/dev/null), which is the case for runtimes like runc.
-	if fi.IsDir() {
+	// Check for writability in case of regular files, character device, or
+	// directory. Although the runtime spec does not mandate the type of
+	// masked files, we should check its Mode explicitly. A masked file
+	// could be represented as a character file (/dev/null), which is the
+	// case for runtimes like runc.
+	switch fi.Mode() & os.ModeType {
+	case 0, os.ModeDevice | os.ModeCharDevice:
+		return testFileWriteAccess(path)
+	case os.ModeDir:
 		return testDirectoryWriteAccess(path)
 	}
-	return testFileWriteAccess(path)
+	errAccess = fmt.Errorf("cannot test write access for %q (mode %d)", path, fi.Mode())
+	return false, errAccess
 }
 
 func testDirectoryWriteAccess(path string) (writable bool, err error) {
@@ -874,7 +895,7 @@ func (c *complianceTester) validateMaskedPaths(spec *rspec.Spec) error {
 
 	for _, maskedPath := range spec.Linux.MaskedPaths {
 		readable, err := testReadAccess(maskedPath)
-		if err != nil && !os.IsNotExist(err) {
+		if err != nil && !os.IsNotExist(err) && err != errAccess {
 			return err
 		}
 		c.harness.Ok(!readable, fmt.Sprintf("cannot read masked path %q", maskedPath))
@@ -917,7 +938,7 @@ func (c *complianceTester) validateROPaths(spec *rspec.Spec) error {
 
 	for i, path := range spec.Linux.ReadonlyPaths {
 		readable, err := testReadAccess(path)
-		if err != nil {
+		if err != nil && err != errAccess {
 			return err
 		}
 		if !readable {
@@ -925,7 +946,7 @@ func (c *complianceTester) validateROPaths(spec *rspec.Spec) error {
 		}
 
 		writable, err := testWriteAccess(path)
-		if err != nil && !os.IsNotExist(err) {
+		if err != nil && !os.IsNotExist(err) && err != errAccess {
 			return err
 		}
 		c.harness.Ok(!writable, fmt.Sprintf("%q (linux.readonlyPaths[%d]) is not writable", path, i))
