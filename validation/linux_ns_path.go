@@ -28,6 +28,100 @@ func getRuntimeToolsNamespace(ns string) string {
 	return ns
 }
 
+func waitForState(stateCheckFunc func() error) error {
+	timeout := 3 * time.Second
+	alarm := time.After(timeout)
+	ticker := time.Tick(200 * time.Millisecond)
+	for {
+		select {
+		case <-alarm:
+			return fmt.Errorf("failed to reach expected state within %v", timeout)
+		case <-ticker:
+			if err := stateCheckFunc(); err == nil {
+				return nil
+			}
+		}
+	}
+}
+
+func checkNamespacePath(unsharePid int, ns string) error {
+	testNsPath := fmt.Sprintf("/proc/%d/ns/%s", os.Getpid(), ns)
+	testNsInode, err := os.Readlink(testNsPath)
+	if err != nil {
+		out, err2 := exec.Command("sh", "-c", fmt.Sprintf("ls -la /proc/%d/ns/", os.Getpid())).CombinedOutput()
+		return fmt.Errorf("cannot read namespace link for the test process: %s\n%v\n%v", err, err2, string(out))
+	}
+
+	unshareNsPath := ""
+	unshareNsInode := ""
+
+	doCheckNamespacePath := func() error {
+		specialChildren := ""
+		if ns == "pid" {
+			// Unsharing pidns does not move the process into the new
+			// pidns but the next forked process. 'unshare' is called with
+			// '--fork' so the pidns will be fully created and populated
+			// with a pid 1.
+			//
+			// However, finding out the pid of the child process is not
+			// trivial: it would require to parse
+			// /proc/$pid/task/$tid/children but that only works on kernels
+			// with CONFIG_PROC_CHILDREN (not all distros have that).
+			//
+			// It is easier to look at /proc/$pid/ns/pid_for_children on
+			// the parent process. Available since Linux 4.12.
+			specialChildren = "_for_children"
+		}
+		unshareNsPath = fmt.Sprintf("/proc/%d/ns/%s", unsharePid, ns+specialChildren)
+		unshareNsInode, err = os.Readlink(unshareNsPath)
+		if err != nil {
+			return fmt.Errorf("cannot read namespace link for the unshare process: %s", err)
+		}
+
+		if testNsInode == unshareNsInode {
+			return fmt.Errorf("expected: %q, found: %q", testNsInode, unshareNsInode)
+		}
+
+		return nil
+	}
+
+	// Since it takes some time until unshare switched to the new namespace,
+	// we should make a loop to check for the result up to 3 seconds.
+	if err := waitForState(doCheckNamespacePath); err != nil {
+		return err
+	}
+
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		return fmt.Errorf("cannot get the default generator: %v", err)
+	}
+
+	rtns := getRuntimeToolsNamespace(ns)
+	g.AddOrReplaceLinuxNamespace(rtns, unshareNsPath)
+
+	// The spec is not clear about userns mappings when reusing an
+	// existing userns. Anyway in reality, we should set up uid/gid
+	// mappings, to make userns work in most runtimes.
+	// See https://github.com/opencontainers/runtime-spec/issues/961
+	//         if ns == "user" {
+	//             g.AddLinuxUIDMapping(uint32(1000), uint32(0), uint32(1000))
+	//             g.AddLinuxGIDMapping(uint32(1000), uint32(0), uint32(1000))
+	//         }
+
+	return util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
+		containerNsPath := fmt.Sprintf("/proc/%d/ns/%s", state.Pid, ns)
+		containerNsInode, err := os.Readlink(containerNsPath)
+		if err != nil {
+			out, err2 := exec.Command("sh", "-c", fmt.Sprintf("ls -la /proc/%d/ns/", state.Pid)).CombinedOutput()
+			return fmt.Errorf("cannot read namespace link for the container process: %s\n%v\n%v", err, err2, out)
+		}
+		if containerNsInode != unshareNsInode {
+			return fmt.Errorf("expected: %q, found: %q", unshareNsInode, containerNsInode)
+		}
+		return nil
+	})
+}
+
 func testNamespacePath(t *tap.T, ns string, unshareOpt string) error {
 	// Calling 'unshare' (part of util-linux) is easier than doing it from
 	// Golang: mnt namespaces cannot be unshared from multithreaded
@@ -50,64 +144,8 @@ func testNamespacePath(t *tap.T, ns string, unshareOpt string) error {
 	if cmd.Process == nil {
 		return fmt.Errorf("process failed to start")
 	}
-	unsharePid := cmd.Process.Pid
 
-	// Wait until 'unshare' switched its namespace
-	// TODO: avoid synchronisation with sleeps.
-	time.Sleep(time.Second)
-
-	specialChildren := ""
-	if ns == "pid" {
-		// Unsharing pidns does not move the process into the new
-		// pidns but the next forked process. 'unshare' is called with
-		// '--fork' so the pidns will be fully created and populated
-		// with a pid 1.
-		//
-		// However, finding out the pid of the child process is not
-		// trivial: it would require to parse
-		// /proc/$pid/task/$tid/children but that only works on kernels
-		// with CONFIG_PROC_CHILDREN (not all distros have that).
-		//
-		// It is easier to look at /proc/$pid/ns/pid_for_children on
-		// the parent process. Available since Linux 4.12.
-		specialChildren = "_for_children"
-	}
-	unshareNsPath := fmt.Sprintf("/proc/%d/ns/%s", unsharePid, ns+specialChildren)
-	unshareNsInode, err := os.Readlink(unshareNsPath)
-	if err != nil {
-		return fmt.Errorf("cannot read namespace link for the unshare process: %s", err)
-	}
-
-	g, err := util.GetDefaultGenerator()
-	if err != nil {
-		return fmt.Errorf("cannot get the default generator: %v", err)
-	}
-
-	rtns := getRuntimeToolsNamespace(ns)
-	g.AddOrReplaceLinuxNamespace(rtns, unshareNsPath)
-
-	// The spec is not clear about userns mappings when reusing an
-	// existing userns.
-	// See https://github.com/opencontainers/runtime-spec/issues/961
-	//if ns == "user" {
-	//	g.AddLinuxUIDMapping(uint32(1000), uint32(0), uint32(1000))
-	//	g.AddLinuxGIDMapping(uint32(1000), uint32(0), uint32(1000))
-	//}
-
-	err = util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
-		containerNsPath := fmt.Sprintf("/proc/%d/ns/%s", state.Pid, ns)
-		containerNsInode, err := os.Readlink(containerNsPath)
-		if err != nil {
-			out, err2 := exec.Command("sh", "-c", fmt.Sprintf("ls -la /proc/%d/ns/", state.Pid)).CombinedOutput()
-			return fmt.Errorf("cannot read namespace link for the container process: %s\n%v\n%v", err, err2, out)
-		}
-		if containerNsInode != unshareNsInode {
-			return fmt.Errorf("expected: %q, found: %q", unshareNsInode, containerNsInode)
-		}
-		return nil
-	})
-
-	return err
+	return checkNamespacePath(cmd.Process.Pid, ns)
 }
 
 func main() {
