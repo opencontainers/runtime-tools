@@ -10,6 +10,7 @@ import (
 
 	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
@@ -52,6 +53,8 @@ func checkNamespacePath(unsharePid int, ns string) error {
 		return fmt.Errorf("cannot read namespace link for the test process: %s\n%v\n%v", err, err2, string(out))
 	}
 
+	var errNsPath error
+
 	unshareNsPath := ""
 	unshareNsInode := ""
 
@@ -75,11 +78,13 @@ func checkNamespacePath(unsharePid int, ns string) error {
 		unshareNsPath = fmt.Sprintf("/proc/%d/ns/%s", unsharePid, ns+specialChildren)
 		unshareNsInode, err = os.Readlink(unshareNsPath)
 		if err != nil {
-			return fmt.Errorf("cannot read namespace link for the unshare process: %s", err)
+			errNsPath = fmt.Errorf("cannot read namespace link for the unshare process: %s", err)
+			return errNsPath
 		}
 
 		if testNsInode == unshareNsInode {
-			return fmt.Errorf("expected: %q, found: %q", testNsInode, unshareNsInode)
+			errNsPath = fmt.Errorf("expected: %q, found: %q", testNsInode, unshareNsInode)
+			return errNsPath
 		}
 
 		return nil
@@ -88,7 +93,10 @@ func checkNamespacePath(unsharePid int, ns string) error {
 	// Since it takes some time until unshare switched to the new namespace,
 	// we should make a loop to check for the result up to 3 seconds.
 	if err := waitForState(doCheckNamespacePath); err != nil {
-		return err
+		// we should return errNsPath instead of err, because errNsPath is what
+		// returned from the actual test function doCheckNamespacePath(), not
+		// waitForState().
+		return errNsPath
 	}
 
 	g, err := util.GetDefaultGenerator()
@@ -173,8 +181,13 @@ func main() {
 		err := testNamespacePath(t, c.name, c.unshareOpt)
 		t.Ok(err == nil, fmt.Sprintf("set %s namespace by path", c.name))
 		if err != nil {
+			specErr := specerror.NewError(specerror.NSProcInPath, err, rspec.Version)
 			diagnostic := map[string]string{
-				"error": err.Error(),
+				"actual":         fmt.Sprintf("err == %v", err),
+				"expected":       "err == nil",
+				"namespace type": c.name,
+				"level":          specErr.(*specerror.Error).Err.Level.String(),
+				"reference":      specErr.(*specerror.Error).Err.Reference,
 			}
 			t.YAML(diagnostic)
 		}
