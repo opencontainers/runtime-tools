@@ -12,10 +12,42 @@ import (
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
+func printDiag(t *tap.T, diagActual, diagExpected, diagNsType string, errNs error) {
+	specErr := specerror.NewError(specerror.NSInheritWithoutType,
+		errNs, rspec.Version)
+	diagnostic := map[string]string{
+		"actual":         diagActual,
+		"expected":       diagExpected,
+		"namespace type": diagNsType,
+		"level":          specErr.(*specerror.Error).Err.Level.String(),
+		"reference":      specErr.(*specerror.Error).Err.Reference,
+	}
+	t.YAML(diagnostic)
+}
+
 func testNamespaceInheritType(t *tap.T) error {
+	var errNs error
+	diagActual := ""
+	diagExpected := ""
+	diagNsType := ""
+
+	// To be able to print out diagnostics for all kinds of error cases
+	// at the end of the tests, we make use of defer function. To do that,
+	// each error handling routine should set diagActual, diagExpected,
+	// diagNsType, and errNs, before returning an error.
+	defer func() {
+		if errNs != nil {
+			printDiag(t, diagActual, diagExpected, diagNsType, errNs)
+		}
+	}()
+
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
-		return err
+		errNs = fmt.Errorf("cannot get the default generator: %v", err)
+		diagActual = fmt.Sprintf("err == %v", errNs)
+		diagExpected = "err == nil"
+		// NOTE: we don't have a namespace type
+		return errNs
 	}
 
 	// Obtain a map for host (runtime) namespace, and remove every namespace
@@ -24,14 +56,23 @@ func testNamespaceInheritType(t *tap.T) error {
 	hostNsPath := fmt.Sprintf("/proc/%d/ns", os.Getpid())
 	hostNsInodes := map[string]string{}
 	for _, nsName := range util.ProcNamespaces {
-		nsInode, err := os.Readlink(filepath.Join(hostNsPath, nsName))
+		nsPathAbs := filepath.Join(hostNsPath, nsName)
+		nsInode, err := os.Readlink(nsPathAbs)
 		if err != nil {
-			return err
+			errNs = fmt.Errorf("cannot resolve symlink %q: %v", nsPathAbs, err)
+			diagActual = fmt.Sprintf("err == %v", errNs)
+			diagExpected = "err == nil"
+			diagNsType = nsName
+			return errNs
 		}
 		hostNsInodes[nsName] = nsInode
 
 		if err := g.RemoveLinuxNamespace(util.GetRuntimeToolsNamespace(nsName)); err != nil {
-			return err
+			errNs = fmt.Errorf("cannot remove namespace %s: %v", nsName, err)
+			diagActual = fmt.Sprintf("err == %v", errNs)
+			diagExpected = "err == nil"
+			diagNsType = nsName
+			return errNs
 		}
 	}
 
@@ -42,33 +83,35 @@ func testNamespaceInheritType(t *tap.T) error {
 		containerNsPath := fmt.Sprintf("/proc/%d/ns", state.Pid)
 
 		for _, nsName := range util.ProcNamespaces {
-			nsInode, err := os.Readlink(filepath.Join(containerNsPath, nsName))
+			nsPathAbs := filepath.Join(containerNsPath, nsName)
+			nsInode, err := os.Readlink(nsPathAbs)
 			if err != nil {
-				return err
+				errNs = fmt.Errorf("cannot resolve symlink %q: %v", nsPathAbs, err)
+				diagActual = fmt.Sprintf("err == %v", errNs)
+				diagExpected = "err == nil"
+				diagNsType = nsName
+				return errNs
 			}
 
 			t.Ok(hostNsInodes[nsName] == nsInode, fmt.Sprintf("inherit namespace %s without type", nsName))
 			if hostNsInodes[nsName] != nsInode {
-				specErr := specerror.NewError(specerror.NSInheritWithoutType,
-					fmt.Errorf("namespace %s (inode %s) does not inherit runtime namespace %s", nsName, nsInode, hostNsInodes[nsName]),
-					rspec.Version)
-				diagnostic := map[string]interface{}{
-					"expected":       hostNsInodes[nsName],
-					"actual":         nsInode,
-					"namespace type": nsName,
-					"level":          specErr.(*specerror.Error).Err.Level,
-					"reference":      specErr.(*specerror.Error).Err.Reference,
-				}
-				t.YAML(diagnostic)
-
+				// NOTE: for such inode match cases, we should print out diagnostics
+				// for each case, not only at the end of tests. So we should simply
+				// call once printDiag(), then continue testing next namespaces.
+				// Thus we don't need to set diagActual, diagExpected, diagNsType, etc.
+				printDiag(t, nsInode, hostNsInodes[nsName], nsName,
+					fmt.Errorf("namespace %s (inode %s) does not inherit runtime namespace %s", nsName, nsInode, hostNsInodes[nsName]))
 				continue
 			}
 		}
 
 		return nil
 	})
+	if err != nil {
+		errNs = fmt.Errorf("cannot run validation tests: %v", err)
+	}
 
-	return err
+	return errNs
 }
 
 func main() {
