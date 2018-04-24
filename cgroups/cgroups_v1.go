@@ -41,7 +41,7 @@ func (cg *CgroupV1) GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO,
 			if err != nil {
 				return nil, err
 			}
-			if !strings.Contains(subPath, RelCgroupPath) {
+			if !strings.Contains(subPath, cgPath) {
 				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "blkio")
 			}
 			filePath = filepath.Join(cg.MountPath, "blkio", subPath, fileName)
@@ -203,7 +203,7 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 			if err != nil {
 				return nil, err
 			}
-			if !strings.Contains(subPath, RelCgroupPath) {
+			if !strings.Contains(subPath, cgPath) {
 				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "cpu")
 			}
 			filePath = filepath.Join(cg.MountPath, "cpu", subPath, fileName)
@@ -266,7 +266,7 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 			if err != nil {
 				return nil, err
 			}
-			if !strings.Contains(subPath, RelCgroupPath) {
+			if !strings.Contains(subPath, cgPath) {
 				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "cpuset")
 			}
 			filePath = filepath.Join(cg.MountPath, "cpuset", subPath, fileName)
@@ -362,7 +362,7 @@ func (cg *CgroupV1) GetHugepageLimitData(pid int, cgPath string) ([]rspec.LinuxH
 			if err != nil {
 				return lh, err
 			}
-			if !strings.Contains(subPath, RelCgroupPath) {
+			if !strings.Contains(subPath, cgPath) {
 				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "hugetlb")
 			}
 			filePath = filepath.Join(cg.MountPath, "hugetlb", subPath, maxUsage)
@@ -396,7 +396,7 @@ func (cg *CgroupV1) GetMemoryData(pid int, cgPath string) (*rspec.LinuxMemory, e
 			if err != nil {
 				return nil, err
 			}
-			if !strings.Contains(subPath, RelCgroupPath) {
+			if !strings.Contains(subPath, cgPath) {
 				return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "memory")
 			}
 			filePath = filepath.Join(cg.MountPath, "memory", subPath, fileName)
@@ -476,7 +476,7 @@ func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork,
 		if err != nil {
 			return nil, err
 		}
-		if !strings.Contains(subPath, RelCgroupPath) {
+		if !strings.Contains(subPath, cgPath) {
 			return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "net_cls")
 		}
 		filePath = filepath.Join(cg.MountPath, "net_cls", subPath, fileName)
@@ -499,7 +499,7 @@ func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork,
 		if err != nil {
 			return nil, err
 		}
-		if !strings.Contains(subPath, RelCgroupPath) {
+		if !strings.Contains(subPath, cgPath) {
 			return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "net_prio")
 		}
 		filePath = filepath.Join(cg.MountPath, "net_prio", subPath, fileName)
@@ -534,7 +534,7 @@ func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error
 		if err != nil {
 			return nil, err
 		}
-		if !strings.Contains(subPath, RelCgroupPath) {
+		if !strings.Contains(subPath, cgPath) {
 			return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "pids")
 		}
 		filePath = filepath.Join(cg.MountPath, "pids", subPath, fileName)
