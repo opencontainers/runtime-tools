@@ -181,13 +181,16 @@ func main() {
 		err := testNamespacePath(t, c.name, c.unshareOpt)
 		t.Ok(err == nil, fmt.Sprintf("set %s namespace by path", c.name))
 		if err != nil {
-			specErr := specerror.NewError(specerror.NSProcInPath, err, rspec.Version)
+			rfcError, errRfc := specerror.NewRFCError(specerror.NSProcInPath, err, rspec.Version)
+			if errRfc != nil {
+				continue
+			}
 			diagnostic := map[string]string{
 				"actual":         fmt.Sprintf("err == %v", err),
 				"expected":       "err == nil",
 				"namespace type": c.name,
-				"level":          specErr.(*specerror.Error).Err.Level.String(),
-				"reference":      specErr.(*specerror.Error).Err.Reference,
+				"level":          rfcError.Level.String(),
+				"reference":      rfcError.Reference,
 			}
 			t.YAML(diagnostic)
 		}
