@@ -289,6 +289,52 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 // GetDevicesData gets cgroup devices data
 func (cg *CgroupV1) GetDevicesData(pid int, cgPath string) ([]rspec.LinuxDeviceCgroup, error) {
 	ld := []rspec.LinuxDeviceCgroup{}
+	fileName := strings.Join([]string{"devices", "list"}, ".")
+	filePath := filepath.Join(cg.MountPath, "devices", cgPath, fileName)
+	if !filepath.IsAbs(cgPath) {
+		subPath, err := GetSubsystemPath(pid, "devices")
+		if err != nil {
+			return nil, err
+		}
+		if !strings.Contains(subPath, cgPath) {
+			return nil, fmt.Errorf("cgroup subsystem %s is not mounted as expected", "devices")
+		}
+		filePath = filepath.Join(cg.MountPath, "devices", subPath, fileName)
+	}
+	contents, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	parts := strings.Split(strings.TrimSpace(string(contents)), "\n")
+	for _, part := range parts {
+		elem := strings.Split(part, " ")
+		ele := strings.Split(elem[1], ":")
+		var major, minor int64
+		if ele[0] == "*" {
+			major = 0
+		} else {
+			major, err = strconv.ParseInt(ele[0], 10, 64)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if ele[1] == "*" {
+			minor = 0
+		} else {
+			minor, err = strconv.ParseInt(ele[1], 10, 64)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		device := rspec.LinuxDeviceCgroup{}
+		device.Allow = true
+		device.Type = elem[0]
+		device.Major = &major
+		device.Minor = &minor
+		device.Access = elem[2]
+		ld = append(ld, device)
+	}
 
 	return ld, nil
 }
