@@ -3,12 +3,14 @@ package cgroups
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-tools/specerror"
 )
 
 // CgroupV1 used for cgroupv1 validation
@@ -31,6 +33,15 @@ func getDeviceID(id string) (int64, int64, error) {
 
 // GetBlockIOData gets cgroup blockio data
 func (cg *CgroupV1) GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO, error) {
+	if filepath.IsAbs(cgPath) {
+		path := filepath.Join(cg.MountPath, "blkio", cgPath)
+		if _, err := os.Stat(path); err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsAbsPathRelToMount, fmt.Errorf("In the case of an absolute path, the runtime MUST take the path to be relative to the cgroups mount point"), rspec.Version)
+			}
+			return nil, err
+		}
+	}
 	lb := &rspec.LinuxBlockIO{}
 	names := []string{"weight", "leaf_weight", "weight_device", "leaf_weight_device", "throttle.read_bps_device", "throttle.write_bps_device", "throttle.read_iops_device", "throttle.write_iops_device"}
 	for i, name := range names {
@@ -48,6 +59,10 @@ func (cg *CgroupV1) GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO,
 		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
+			}
+
 			return nil, err
 		}
 		switch i {
@@ -193,6 +208,15 @@ func (cg *CgroupV1) GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO,
 
 // GetCPUData gets cgroup cpus data
 func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) {
+	if filepath.IsAbs(cgPath) {
+		path := filepath.Join(cg.MountPath, "cpu", cgPath)
+		if _, err := os.Stat(path); err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsAbsPathRelToMount, fmt.Errorf("In the case of an absolute path, the runtime MUST take the path to be relative to the cgroups mount point"), rspec.Version)
+			}
+			return nil, err
+		}
+	}
 	lc := &rspec.LinuxCPU{}
 	names := []string{"shares", "cfs_quota_us", "cfs_period_us"}
 	for i, name := range names {
@@ -210,6 +234,10 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
+			}
+
 			return nil, err
 		}
 		switch i {
@@ -349,6 +377,15 @@ func getHugePageSize() ([]string, error) {
 
 // GetHugepageLimitData gets cgroup hugetlb data
 func (cg *CgroupV1) GetHugepageLimitData(pid int, cgPath string) ([]rspec.LinuxHugepageLimit, error) {
+	if filepath.IsAbs(cgPath) {
+		path := filepath.Join(cg.MountPath, "hugetlb", cgPath)
+		if _, err := os.Stat(path); err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsAbsPathRelToMount, fmt.Errorf("In the case of an absolute path, the runtime MUST take the path to be relative to the cgroups mount point"), rspec.Version)
+			}
+			return nil, err
+		}
+	}
 	lh := []rspec.LinuxHugepageLimit{}
 	pageSizes, err := getHugePageSize()
 	if err != nil {
@@ -369,6 +406,10 @@ func (cg *CgroupV1) GetHugepageLimitData(pid int, cgPath string) ([]rspec.LinuxH
 		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
+			}
+
 			return lh, err
 		}
 		res, err := strconv.ParseUint(strings.TrimSpace(string(contents)), 10, 64)
@@ -386,6 +427,15 @@ func (cg *CgroupV1) GetHugepageLimitData(pid int, cgPath string) ([]rspec.LinuxH
 
 // GetMemoryData gets cgroup memory data
 func (cg *CgroupV1) GetMemoryData(pid int, cgPath string) (*rspec.LinuxMemory, error) {
+	if filepath.IsAbs(cgPath) {
+		path := filepath.Join(cg.MountPath, "memory", cgPath)
+		if _, err := os.Stat(path); err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsAbsPathRelToMount, fmt.Errorf("In the case of an absolute path, the runtime MUST take the path to be relative to the cgroups mount point"), rspec.Version)
+			}
+			return nil, err
+		}
+	}
 	lm := &rspec.LinuxMemory{}
 	names := []string{"limit_in_bytes", "soft_limit_in_bytes", "memsw.limit_in_bytes", "kmem.limit_in_bytes", "kmem.tcp.limit_in_bytes", "swappiness", "oom_control"}
 	for i, name := range names {
@@ -403,6 +453,10 @@ func (cg *CgroupV1) GetMemoryData(pid int, cgPath string) (*rspec.LinuxMemory, e
 		}
 		contents, err := ioutil.ReadFile(filePath)
 		if err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
+			}
+
 			return nil, err
 		}
 		switch i {
@@ -468,6 +522,15 @@ func (cg *CgroupV1) GetMemoryData(pid int, cgPath string) (*rspec.LinuxMemory, e
 
 // GetNetworkData gets cgroup network data
 func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork, error) {
+	if filepath.IsAbs(cgPath) {
+		path := filepath.Join(cg.MountPath, "net_cls", cgPath)
+		if _, err := os.Stat(path); err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsAbsPathRelToMount, fmt.Errorf("In the case of an absolute path, the runtime MUST take the path to be relative to the cgroups mount point"), rspec.Version)
+			}
+			return nil, err
+		}
+	}
 	ln := &rspec.LinuxNetwork{}
 	fileName := strings.Join([]string{"net_cls", "classid"}, ".")
 	filePath := filepath.Join(cg.MountPath, "net_cls", cgPath, fileName)
@@ -483,6 +546,10 @@ func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork,
 	}
 	contents, err := ioutil.ReadFile(filePath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
+		}
+
 		return nil, err
 	}
 	res, err := strconv.ParseUint(strings.TrimSpace(string(contents)), 10, 64)
@@ -526,6 +593,15 @@ func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork,
 
 // GetPidsData gets cgroup pids data
 func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error) {
+	if filepath.IsAbs(cgPath) {
+		path := filepath.Join(cg.MountPath, "pids", cgPath)
+		if _, err := os.Stat(path); err != nil {
+			if os.IsNotExist(err) {
+				return nil, specerror.NewError(specerror.CgroupsAbsPathRelToMount, fmt.Errorf("In the case of an absolute path, the runtime MUST take the path to be relative to the cgroups mount point"), rspec.Version)
+			}
+			return nil, err
+		}
+	}
 	lp := &rspec.LinuxPids{}
 	fileName := strings.Join([]string{"pids", "max"}, ".")
 	filePath := filepath.Join(cg.MountPath, "pids", cgPath, fileName)
@@ -545,6 +621,10 @@ func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error
 	}
 	res, err := strconv.ParseInt(strings.TrimSpace(string(contents)), 10, 64)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
+		}
+
 		return nil, err
 	}
 	lp.Limit = res
