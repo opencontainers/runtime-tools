@@ -24,7 +24,10 @@ func main() {
 
 	targetErr := specerror.NewError(specerror.KillNonCreateRunHaveNoEffect, fmt.Errorf("attempting to send a signal to a container that is neither `created` nor `running` MUST have no effect on the container"), rspecs.Version)
 	containerID := uuid.NewV4().String()
-	g := util.GetDefaultGenerator()
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	g.SetProcessArgs([]string{"true"})
 
 	config := util.LifecycleConfig{
