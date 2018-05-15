@@ -1,3 +1,47 @@
+# v0.6.0
+
+## Additions
+
+* add test case for KillNonCreateRunHaveNoEffect (#607).
+* Add cgroupsPath validation (#631).
+* validation: create: don't skip errors on state (#626).
+* validation: add tests for NSNewNSWithoutPath & NSInheritWithoutType (#620).
+* specerror: Add NewRFCError and NewRFCErrorOrPanic (#627).
+* implement specerror (#604, #602, #591, #587, #580, #583, #584, #586).
+* generate: Move Generator.spec to Generator.Config (#266).
+* Respect the host platform (#194).
+* runtimetest: Make TAP output more granular (#308).
+* generate: add process-username option and fix it's validation (#614).
+* validation: add process_user validation (#611).
+* add hooks stdin test (#589).
+* runtimetest: count correctly TAP tests (#594).
+* contrib/rootfs-builder: Support timestamps and xz compression (#598).
+* Add system validation  (#592).
+* validation: run CLI with correct argument order (#600).
+* validation: Add system validation (#590).
+* validate: CheckLinux is platform dependent (#560).
+* validation: Add error judgment to SetConfig (#585).
+* validate: allow non-linux compatibility (#588).
+ 
+## Minor fixes and documentaion
+
+* cgroups_v1: Correction parameters (#629).
+* travis: fix fetch issue of golint (#630).
+* validation: add more values for rlimits test (#623).
+* doc: add developer guidelines (#621).
+* bash: add os (#622).
+* docs/command-line-interface: Require complete runtime coverage (#615).
+* validation/test-yaml: Drop this local experiment (#616).
+* validation: LinuxUIDMapping: fix tests (#597).
+* Fix error messages in validation cgroup tests (#605).
+* contrib/rootfs-builder: Use $(cat rootfs-files) (#606).
+* validate: mv deviceValid to validate_linux (#603).
+* Validate_linux: Modify the returned error (#601).
+* runtimetest: fix root readonly check (#599).
+* runtimetest: fix uid_map parsing (#596).
+* Fix condition in BlockIO test (#595).
+* generate/seccomp: platform independent values (#561).
+ 
 # v0.5.0
 ## Additions
 
