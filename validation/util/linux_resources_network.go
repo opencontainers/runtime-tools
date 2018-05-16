@@ -9,15 +9,11 @@ import (
 )
 
 // ValidateLinuxResourcesNetwork validates linux.resources.network.
-func ValidateLinuxResourcesNetwork(config *rspec.Spec, state *rspec.State) error {
-	t := tap.New()
-	t.Header(0)
-
+func ValidateLinuxResourcesNetwork(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 	cg, err := cgroups.FindCgroup()
 	t.Ok((err == nil), "find network cgroup")
 	if err != nil {
 		t.Diagnostic(err.Error())
-		t.AutoPlan()
 		return nil
 	}
 
@@ -25,7 +21,6 @@ func ValidateLinuxResourcesNetwork(config *rspec.Spec, state *rspec.State) error
 	t.Ok((err == nil), "get network cgroup data")
 	if err != nil {
 		t.Diagnostic(err.Error())
-		t.AutoPlan()
 		return nil
 	}
 
@@ -44,6 +39,5 @@ func ValidateLinuxResourcesNetwork(config *rspec.Spec, state *rspec.State) error
 		t.Ok(found, fmt.Sprintf("network priority for %s found", priority.Name))
 	}
 
-	t.AutoPlan()
 	return nil
 }

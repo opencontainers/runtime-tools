@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
@@ -23,7 +24,7 @@ func main() {
 	g.SetLinuxResourcesCPUPeriod(period)
 	g.SetLinuxResourcesCPUCpus(cpus)
 	g.SetLinuxResourcesCPUMems(mems)
-	err = util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
+	err = util.RuntimeOutsideValidate(g, nil, func(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 		cg, err := cgroups.FindCgroup()
 		if err != nil {
 			return err

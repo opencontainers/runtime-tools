@@ -78,7 +78,7 @@ type LifecycleConfig struct {
 type PreFunc func(string) error
 
 // AfterFunc validate container's outside environment after created
-type AfterFunc func(config *rspec.Spec, state *rspec.State) error
+type AfterFunc func(config *rspec.Spec, t *tap.T, state *rspec.State) error
 
 func init() {
 	runtimeInEnv := os.Getenv("RUNTIME")
@@ -240,7 +240,7 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 }
 
 // RuntimeOutsideValidate validate runtime outside a container.
-func RuntimeOutsideValidate(g *generate.Generator, f AfterFunc) error {
+func RuntimeOutsideValidate(g *generate.Generator, t *tap.T, f AfterFunc) error {
 	bundleDir, err := PrepareBundle()
 	if err != nil {
 		return err
@@ -276,7 +276,7 @@ func RuntimeOutsideValidate(g *generate.Generator, f AfterFunc) error {
 		if err != nil {
 			return err
 		}
-		if err := f(g.Spec(), &state); err != nil {
+		if err := f(g.Spec(), t, &state); err != nil {
 			return err
 		}
 	}

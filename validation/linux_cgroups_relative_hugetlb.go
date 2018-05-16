@@ -10,21 +10,22 @@ import (
 func main() {
 	page := "1GB"
 	var limit uint64 = 56892210544640
+
+	t := tap.New()
+	t.Header(0)
+	defer t.AutoPlan()
+
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		util.Fatal(err)
 	}
 	g.SetLinuxCgroupsPath(cgroups.RelCgroupPath)
 	g.AddLinuxResourcesHugepageLimit(page, limit)
-	err = util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
-		t := tap.New()
-		t.Header(0)
-
+	err = util.RuntimeOutsideValidate(g, t, func(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 		cg, err := cgroups.FindCgroup()
 		t.Ok((err == nil), "find hugetlb cgroup")
 		if err != nil {
 			t.Diagnostic(err.Error())
-			t.AutoPlan()
 			return nil
 		}
 
@@ -32,7 +33,6 @@ func main() {
 		t.Ok((err == nil), "get hugetlb cgroup data")
 		if err != nil {
 			t.Diagnostic(err.Error())
-			t.AutoPlan()
 			return nil
 		}
 
@@ -46,11 +46,10 @@ func main() {
 		}
 		t.Ok(found, "hugepage limit found")
 
-		t.AutoPlan()
 		return nil
 	})
 
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	}
 }

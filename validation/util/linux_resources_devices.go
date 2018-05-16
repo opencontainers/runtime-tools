@@ -10,15 +10,11 @@ import (
 )
 
 // ValidateLinuxResourcesDevices validates linux.resources.devices.
-func ValidateLinuxResourcesDevices(config *rspec.Spec, state *rspec.State) error {
-	t := tap.New()
-	t.Header(0)
-
+func ValidateLinuxResourcesDevices(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 	cg, err := cgroups.FindCgroup()
 	t.Ok((err == nil), "find devices")
 	if err != nil {
 		t.Diagnostic(err.Error())
-		t.AutoPlan()
 		return nil
 	}
 
@@ -26,7 +22,6 @@ func ValidateLinuxResourcesDevices(config *rspec.Spec, state *rspec.State) error
 	t.Ok((err == nil), "get devices data")
 	if err != nil {
 		t.Diagnostic(err.Error())
-		t.AutoPlan()
 		return nil
 	}
 
@@ -42,12 +37,10 @@ func ValidateLinuxResourcesDevices(config *rspec.Spec, state *rspec.State) error
 			if !found {
 				err := specerror.NewError(specerror.DevicesApplyInOrder, fmt.Errorf("The runtime MUST apply entries in the listed order"), rspec.Version)
 				t.Diagnostic(err.Error())
-				t.AutoPlan()
 				return nil
 			}
 		}
 	}
 
-	t.AutoPlan()
 	return nil
 }

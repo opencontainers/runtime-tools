@@ -30,7 +30,7 @@ func waitForState(stateCheckFunc func() error) error {
 	}
 }
 
-func checkNamespacePath(unsharePid int, ns string) error {
+func checkNamespacePath(t *tap.T, unsharePid int, ns string) error {
 	testNsPath := fmt.Sprintf("/proc/%d/ns/%s", os.Getpid(), ns)
 	testNsInode, err := os.Readlink(testNsPath)
 	if err != nil {
@@ -92,7 +92,7 @@ func checkNamespacePath(unsharePid int, ns string) error {
 	rtns := util.GetRuntimeToolsNamespace(ns)
 	g.AddOrReplaceLinuxNamespace(rtns, unshareNsPath)
 
-	return util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
+	return util.RuntimeOutsideValidate(g, t, func(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 		containerNsPath := fmt.Sprintf("/proc/%d/ns/%s", state.Pid, ns)
 		containerNsInode, err := os.Readlink(containerNsPath)
 		if err != nil {
@@ -129,7 +129,7 @@ func testNamespacePath(t *tap.T, ns string, unshareOpt string) error {
 		return fmt.Errorf("process failed to start")
 	}
 
-	return checkNamespacePath(cmd.Process.Pid, ns)
+	return checkNamespacePath(t, cmd.Process.Pid, ns)
 }
 
 func main() {

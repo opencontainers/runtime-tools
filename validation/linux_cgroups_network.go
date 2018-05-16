@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
@@ -8,6 +9,11 @@ import (
 func main() {
 	var id, prio uint32 = 255, 10
 	ifName := "lo"
+
+	t := tap.New()
+	t.Header(0)
+	defer t.AutoPlan()
+
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		util.Fatal(err)
@@ -15,7 +21,7 @@ func main() {
 	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 	g.SetLinuxResourcesNetworkClassID(id)
 	g.AddLinuxResourcesNetworkPriorities(ifName, prio)
-	err = util.RuntimeOutsideValidate(g, util.ValidateLinuxResourcesNetwork)
+	err = util.RuntimeOutsideValidate(g, t, util.ValidateLinuxResourcesNetwork)
 	if err != nil {
 		util.Fatal(err)
 	}

@@ -12,6 +12,11 @@ func main() {
 	var period uint64 = 100000
 	var quota int64 = 50000
 	var cpus, mems string = "0-1", "0"
+
+	t := tap.New()
+	t.Header(0)
+	defer t.AutoPlan()
+
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		util.Fatal(err)
@@ -22,15 +27,11 @@ func main() {
 	g.SetLinuxResourcesCPUPeriod(period)
 	g.SetLinuxResourcesCPUCpus(cpus)
 	g.SetLinuxResourcesCPUMems(mems)
-	err = util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
-		t := tap.New()
-		t.Header(0)
-
+	err = util.RuntimeOutsideValidate(g, t, func(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 		cg, err := cgroups.FindCgroup()
 		t.Ok((err == nil), "find cpus cgroup")
 		if err != nil {
 			t.Diagnostic(err.Error())
-			t.AutoPlan()
 			return nil
 		}
 
@@ -38,7 +39,6 @@ func main() {
 		t.Ok((err == nil), "get cpus cgroup data")
 		if err != nil {
 			t.Diagnostic(err.Error())
-			t.AutoPlan()
 			return nil
 		}
 
@@ -57,11 +57,10 @@ func main() {
 		t.Ok(lcd.Mems == mems, "cpus mems is set correctly")
 		t.Diagnosticf("expect: %s, actual: %s", mems, lcd.Mems)
 
-		t.AutoPlan()
 		return nil
 	})
 
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	}
 }
