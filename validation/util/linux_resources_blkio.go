@@ -29,8 +29,20 @@ func ValidateLinuxResourcesBlockIO(config *rspec.Spec, state *rspec.State) error
 		return nil
 	}
 
+	if lbd.Weight == nil || config.Linux.Resources.BlockIO.Weight == nil {
+		t.Diagnostic(fmt.Sprintf("unable to get weight: lbd.Weight == %v, config.Linux.Resources.BlockIO.Weight == %v", lbd.Weight, config.Linux.Resources.BlockIO.Weight))
+		t.AutoPlan()
+		return nil
+	}
+
 	t.Ok(*lbd.Weight == *config.Linux.Resources.BlockIO.Weight, "blkio weight is set correctly")
 	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.BlockIO.Weight, *lbd.Weight)
+
+	if lbd.LeafWeight == nil || config.Linux.Resources.BlockIO.LeafWeight == nil {
+		t.Diagnostic(fmt.Sprintf("unable to get leafWeight: lbd.LeafWeight == %v, config.Linux.Resources.BlockIO.LeafWeight == %v", lbd.LeafWeight, config.Linux.Resources.BlockIO.LeafWeight))
+		t.AutoPlan()
+		return nil
+	}
 
 	t.Ok(*lbd.LeafWeight == *config.Linux.Resources.BlockIO.LeafWeight, "blkio leafWeight is set correctly")
 	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.BlockIO.LeafWeight, *lbd.LeafWeight)

@@ -32,11 +32,23 @@ func main() {
 		if err != nil {
 			return err
 		}
+
+		if lcd.Shares == nil {
+			return fmt.Errorf("unable to get cpu shares, lcd.Shares == %v", lcd.Shares)
+		}
 		if *lcd.Shares != shares {
 			return fmt.Errorf("cpus shares limit is not set correctly, expect: %d, actual: %d", shares, *lcd.Shares)
 		}
+
+		if lcd.Quota == nil {
+			return fmt.Errorf("unable to get cpu quota, lcd.Quota == %v", lcd.Quota)
+		}
 		if *lcd.Quota != quota {
 			return fmt.Errorf("cpus quota is not set correctly, expect: %d, actual: %d", quota, *lcd.Quota)
+		}
+
+		if lcd.Period == nil {
+			return fmt.Errorf("unable to get cpu period, lcd.Period == %v", lcd.Period)
 		}
 		if *lcd.Period != period {
 			return fmt.Errorf("cpus period is not set correctly, expect: %d, actual: %d", period, *lcd.Period)
