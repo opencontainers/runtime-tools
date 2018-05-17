@@ -8,15 +8,30 @@ import (
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
-func main() {
+func checkMaskedPaths() error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
-		util.Fatal(err)
+		return err
 	}
-	g.AddLinuxMaskedPaths("/masked-dir")
-	g.AddLinuxMaskedPaths("/masked-file")
+
+	maskedDir := "masked-dir"
+	maskedSubDir := "masked-subdir"
+	maskedFile := "masked-file"
+
+	maskedDirTop := filepath.Join("/", maskedDir)
+	maskedFileTop := filepath.Join("/", maskedFile)
+
+	maskedDirSub := filepath.Join(maskedDirTop, maskedSubDir)
+	maskedFileSub := filepath.Join(maskedDirTop, maskedFile)
+	maskedFileSubSub := filepath.Join(maskedDirSub, maskedFile)
+
+	g.AddLinuxMaskedPaths(maskedDirTop)
+	g.AddLinuxMaskedPaths(maskedFileTop)
+	g.AddLinuxMaskedPaths(maskedDirSub)
+	g.AddLinuxMaskedPaths(maskedFileSub)
+	g.AddLinuxMaskedPaths(maskedFileSubSub)
 	err = util.RuntimeInsideValidate(g, func(path string) error {
-		testDir := filepath.Join(path, "masked-dir")
+		testDir := filepath.Join(path, maskedDirSub)
 		err = os.MkdirAll(testDir, 0777)
 		if err != nil {
 			return err
@@ -28,13 +43,26 @@ func main() {
 		}
 		defer os.Remove(tmpfile.Name())
 
-		testFile := filepath.Join(path, "masked-file")
-
 		// runtimetest cannot check the readability of empty files, so
 		// write something.
+		testSubSubFile := filepath.Join(path, maskedFileSubSub)
+		if err := ioutil.WriteFile(testSubSubFile, []byte("secrets"), 0777); err != nil {
+			return err
+		}
+
+		testSubFile := filepath.Join(path, maskedFileSub)
+		if err := ioutil.WriteFile(testSubFile, []byte("secrets"), 0777); err != nil {
+			return err
+		}
+
+		testFile := filepath.Join(path, maskedFile)
 		return ioutil.WriteFile(testFile, []byte("secrets"), 0777)
 	})
-	if err != nil {
+	return err
+}
+
+func main() {
+	if err := checkMaskedPaths(); err != nil {
 		util.Fatal(err)
 	}
 }
