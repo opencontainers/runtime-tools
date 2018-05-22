@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"reflect"
 	"time"
 
+	multierror "github.com/hashicorp/go-multierror"
 	tap "github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
@@ -16,33 +18,61 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func stdinStateCheck(outputDir, hookName string, expectedState rspecs.State) error {
+func stdinStateCheck(outputDir, hookName string, expectedState rspecs.State) (errs *multierror.Error) {
 	var state rspecs.State
 	data, err := ioutil.ReadFile(filepath.Join(outputDir, hookName))
 	if err != nil {
-		return err
+		errs = multierror.Append(errs, err)
+		return
 	}
 	err = json.Unmarshal(data, &state)
 	if err != nil {
-		return err
+		errs = multierror.Append(errs, err)
+		return
 	}
 
 	if state.ID != expectedState.ID {
-		return fmt.Errorf("wrong container ID %q in the stdin of %s hook, expected %q", state.ID, hookName, expectedState.ID)
+		err = fmt.Errorf("wrong container ID %q in the stdin of %s hook, expected %q", state.ID, hookName, expectedState.ID)
+		errs = multierror.Append(errs, err)
 	}
 
 	if state.Bundle != expectedState.Bundle {
-		return fmt.Errorf("wrong bundle directory %q in the stdin of %s hook, expected %q", state.Bundle, hookName, expectedState.Bundle)
+		err = fmt.Errorf("wrong bundle directory %q in the stdin of %s hook, expected %q", state.Bundle, hookName, expectedState.Bundle)
+		errs = multierror.Append(errs, err)
 	}
 
 	if hookName != "poststop" && state.Pid != expectedState.Pid {
-		return fmt.Errorf("wrong container process ID %q in the stdin of %s hook, expected %q", state.Version, hookName, expectedState.Version)
+		err = fmt.Errorf("wrong container process ID %q in the stdin of %s hook, expected %q", state.Version, hookName, expectedState.Version)
+		errs = multierror.Append(errs, err)
 	}
 
 	if !reflect.DeepEqual(state.Annotations, expectedState.Annotations) {
-		return fmt.Errorf("wrong annotations \"%v\" in the stdin of %s hook, expected \"%v\"", state.Annotations, hookName, expectedState.Annotations)
+		err = fmt.Errorf("wrong annotations \"%v\" in the stdin of %s hook, expected \"%v\"", state.Annotations, hookName, expectedState.Annotations)
+		errs = multierror.Append(errs, err)
 	}
-	return nil
+
+	switch hookName {
+	case "prestart":
+		if state.Status != "created" {
+			err = fmt.Errorf("wrong status %q in the stdin of %s hook, expected %q", state.Status, hookName, "created")
+			errs = multierror.Append(errs, err)
+		}
+	case "poststart":
+		if state.Status != "running" {
+			err = fmt.Errorf("wrong status %q in the stdin of %s hook, expected %q", state.Status, hookName, "running")
+			errs = multierror.Append(errs, err)
+		}
+	case "poststop":
+		if state.Status == "" {
+			err = fmt.Errorf("status in the stdin of %s hook should not be empty", hookName)
+			errs = multierror.Append(errs, err)
+		}
+	default:
+		err = fmt.Errorf("internal error, unexpected hook name %q", hookName)
+		errs = multierror.Append(errs, err)
+	}
+
+	return
 }
 
 func main() {
@@ -120,8 +150,8 @@ func main() {
 		Annotations: map[string]string{annotationKey: annotationValue},
 	}
 	for _, file := range []string{"prestart", "poststart", "poststop"} {
-		err = stdinStateCheck(outputDir, file, expectedState)
-		util.SpecErrorOK(t, err == nil, specerror.NewError(specerror.PosixHooksStateToStdin, fmt.Errorf("the state of the container MUST be passed to %q hook over stdin", file), rspecs.Version), err)
+		errs := stdinStateCheck(outputDir, file, expectedState)
+		util.SpecErrorOK(t, errs.ErrorOrNil() == nil, specerror.NewError(specerror.PosixHooksStateToStdin, fmt.Errorf("the state of the container MUST be passed to %q hook over stdin", file), rspecs.Version), errors.New(errs.Error()))
 	}
 
 	t.AutoPlan()
