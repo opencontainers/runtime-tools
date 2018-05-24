@@ -15,6 +15,8 @@ import (
 
 var signals = []string{
 	"TERM",
+	"USR1",
+	"USR2",
 }
 
 func main() {
