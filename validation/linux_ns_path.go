@@ -107,15 +107,6 @@ func checkNamespacePath(unsharePid int, ns string) error {
 	rtns := getRuntimeToolsNamespace(ns)
 	g.AddOrReplaceLinuxNamespace(rtns, unshareNsPath)
 
-	// The spec is not clear about userns mappings when reusing an
-	// existing userns. Anyway in reality, we should set up uid/gid
-	// mappings, to make userns work in most runtimes.
-	// See https://github.com/opencontainers/runtime-spec/issues/961
-	//         if ns == "user" {
-	//             g.AddLinuxUIDMapping(uint32(1000), uint32(0), uint32(1000))
-	//             g.AddLinuxGIDMapping(uint32(1000), uint32(0), uint32(1000))
-	//         }
-
 	return util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
 		containerNsPath := fmt.Sprintf("/proc/%d/ns/%s", state.Pid, ns)
 		containerNsInode, err := os.Readlink(containerNsPath)
@@ -164,12 +155,10 @@ func main() {
 		name       string
 		unshareOpt string
 	}{
-		{"cgroup", "--cgroup"},
 		{"ipc", "--ipc"},
 		{"mnt", "--mount"},
 		{"net", "--net"},
 		{"pid", "--pid"},
-		{"user", "--user"},
 		{"uts", "--uts"},
 	}
 
