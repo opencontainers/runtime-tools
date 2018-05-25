@@ -61,8 +61,36 @@ func checkMaskedPaths() error {
 	return err
 }
 
+func checkMaskedRelPaths() error {
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		return err
+	}
+
+	// Deliberately set a relative path to be masked, and expect an error
+	maskedRelPath := "masked-relpath"
+
+	g.AddLinuxMaskedPaths(maskedRelPath)
+	err = util.RuntimeInsideValidate(g, func(path string) error {
+		testFile := filepath.Join(path, maskedRelPath)
+		if _, err := os.Stat(testFile); err != nil && os.IsNotExist(err) {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil
+	}
+	return fmt.Errorf("expected: err != nil, actual: err == nil")
+}
+
 func main() {
 	if err := checkMaskedPaths(); err != nil {
+		util.Fatal(err)
+	}
+
+	if err := checkMaskedRelPaths(); err != nil {
 		util.Fatal(err)
 	}
 }
