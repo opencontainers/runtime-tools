@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -85,12 +86,50 @@ func checkMaskedRelPaths() error {
 	return fmt.Errorf("expected: err != nil, actual: err == nil")
 }
 
+func checkMaskedSymlinks() error {
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		return err
+	}
+
+	// Deliberately create a masked symlink that points an invalid file,
+	// and expect an error.
+	maskedSymlink := "/masked-symlink"
+
+	g.AddLinuxMaskedPaths(maskedSymlink)
+	err = util.RuntimeInsideValidate(g, func(path string) error {
+		testFile := filepath.Join(path, maskedSymlink)
+		// ln -s .. /masked-symlink ; readlink -f /masked-symlink; ls -L /masked-symlink
+		if err := os.Symlink("../masked-symlink", testFile); err != nil {
+			return err
+		}
+		rPath, errR := os.Readlink(testFile)
+		if errR != nil {
+			return errR
+		}
+		_, errS := os.Stat(rPath)
+		if errS != nil && os.IsNotExist(errS) {
+			return errS
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil
+	}
+	return fmt.Errorf("expected: err != nil, actual: err == nil")
+}
+
 func main() {
 	if err := checkMaskedPaths(); err != nil {
 		util.Fatal(err)
 	}
 
 	if err := checkMaskedRelPaths(); err != nil {
+		util.Fatal(err)
+	}
+
+	if err := checkMaskedSymlinks(); err != nil {
 		util.Fatal(err)
 	}
 }
