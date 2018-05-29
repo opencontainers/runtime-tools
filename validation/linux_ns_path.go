@@ -14,21 +14,6 @@ import (
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
-func getRuntimeToolsNamespace(ns string) string {
-	// Deal with exceptional cases of "net" and "mnt", because those strings
-	// cannot be recognized by mapStrToNamespace(), which actually expects
-	// "network" and "mount" respectively.
-	switch ns {
-	case "net":
-		return "network"
-	case "mnt":
-		return "mount"
-	}
-
-	// In other cases, return just the original string
-	return ns
-}
-
 func waitForState(stateCheckFunc func() error) error {
 	timeout := 3 * time.Second
 	alarm := time.After(timeout)
@@ -104,7 +89,7 @@ func checkNamespacePath(unsharePid int, ns string) error {
 		return fmt.Errorf("cannot get the default generator: %v", err)
 	}
 
-	rtns := getRuntimeToolsNamespace(ns)
+	rtns := util.GetRuntimeToolsNamespace(ns)
 	g.AddOrReplaceLinuxNamespace(rtns, unshareNsPath)
 
 	return util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {

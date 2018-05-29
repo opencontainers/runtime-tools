@@ -12,21 +12,6 @@ import (
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
-func getRuntimeToolsNamespace(ns string) string {
-	// Deal with exceptional cases of "net" and "mnt", because those strings
-	// cannot be recognized by mapStrToNamespace(), which actually expects
-	// "network" and "mount" respectively.
-	switch ns {
-	case "net":
-		return "network"
-	case "mnt":
-		return "mount"
-	}
-
-	// In other cases, return just the original string
-	return ns
-}
-
 func checkNSPathMatchType(t *tap.T, ns, wrongNs string) error {
 	// Deliberately set ns path with a wrong namespace, to check if the runtime
 	// returns error when running with the wrong namespace path.
@@ -37,7 +22,7 @@ func checkNSPathMatchType(t *tap.T, ns, wrongNs string) error {
 		return fmt.Errorf("cannot get default config from generator: %v", err)
 	}
 
-	rtns := getRuntimeToolsNamespace(ns)
+	rtns := util.GetRuntimeToolsNamespace(ns)
 	g.AddOrReplaceLinuxNamespace(rtns, unshareNsPath)
 
 	err = util.RuntimeOutsideValidate(g, nil)
