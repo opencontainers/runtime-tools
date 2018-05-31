@@ -86,6 +86,40 @@ func checkReadonlyRelPaths() error {
 	return fmt.Errorf("expected: err != nil, actual: err == nil")
 }
 
+func checkReadonlySymlinks() error {
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		return err
+	}
+
+	// Deliberately create a read-only symlink that points an invalid file,
+	// and expect an error.
+	readonlySymlink := "/readonly-symlink"
+
+	g.AddLinuxReadonlyPaths(readonlySymlink)
+	err = util.RuntimeInsideValidate(g, func(path string) error {
+		testFile := filepath.Join(path, readonlySymlink)
+		// ln -s .. /readonly-symlink ; readlink -f /readonly-symlink; ls -L /readonly-symlink
+		if err := os.Symlink("../readonly-symlink", testFile); err != nil {
+			return err
+		}
+		rPath, errR := os.Readlink(testFile)
+		if errR != nil {
+			return errR
+		}
+		_, errS := os.Stat(rPath)
+		if errS != nil && os.IsNotExist(errS) {
+			return errS
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil
+	}
+	return fmt.Errorf("expected: err != nil, actual: err == nil")
+}
+
 func main() {
 	if err := checkReadonlyPaths(); err != nil {
 		util.Fatal(err)
@@ -94,4 +128,9 @@ func main() {
 	if err := checkReadonlyRelPaths(); err != nil {
 		util.Fatal(err)
 	}
+
+	if err := checkReadonlySymlinks(); err != nil {
+		util.Fatal(err)
+	}
+
 }
