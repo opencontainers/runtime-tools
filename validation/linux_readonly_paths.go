@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -61,9 +62,36 @@ func checkReadonlyPaths() error {
 	return err
 }
 
+func checkReadonlyRelPaths() error {
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		return err
+	}
+
+	// Deliberately set a relative path to be read-only, and expect an error
+	readonlyRelPath := "readonly-relpath"
+
+	g.AddLinuxReadonlyPaths(readonlyRelPath)
+	err = util.RuntimeInsideValidate(g, func(path string) error {
+		testFile := filepath.Join(path, readonlyRelPath)
+		if _, err := os.Stat(testFile); err != nil && os.IsNotExist(err) {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil
+	}
+	return fmt.Errorf("expected: err != nil, actual: err == nil")
+}
+
 func main() {
 	if err := checkReadonlyPaths(); err != nil {
 		util.Fatal(err)
 	}
 
+	if err := checkReadonlyRelPaths(); err != nil {
+		util.Fatal(err)
+	}
 }
