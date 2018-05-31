@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/opencontainers/runtime-tools/validation/util"
+	"golang.org/x/sys/unix"
 )
 
 func checkReadonlyPaths() error {
@@ -120,6 +121,30 @@ func checkReadonlySymlinks() error {
 	return fmt.Errorf("expected: err != nil, actual: err == nil")
 }
 
+func checkReadonlyDeviceNodes(mode uint32) error {
+	g, err := util.GetDefaultGenerator()
+	if err != nil {
+		return err
+	}
+
+	readonlyDevice := "/readonly-device"
+
+	g.AddLinuxReadonlyPaths(readonlyDevice)
+	return util.RuntimeInsideValidate(g, func(path string) error {
+		testFile := filepath.Join(path, readonlyDevice)
+
+		if err := unix.Mknod(testFile, mode, 0); err != nil {
+			return err
+		}
+
+		if _, err := os.Stat(testFile); err != nil && os.IsNotExist(err) {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func main() {
 	if err := checkReadonlyPaths(); err != nil {
 		util.Fatal(err)
@@ -133,4 +158,17 @@ func main() {
 		util.Fatal(err)
 	}
 
+	// test creation of different type of devices, i.e. block device,
+	// character device, and FIFO.
+	modes := []uint32{
+		unix.S_IFBLK | 0666,
+		unix.S_IFCHR | 0666,
+		unix.S_IFIFO | 0666,
+	}
+
+	for _, m := range modes {
+		if err := checkReadonlyDeviceNodes(m); err != nil {
+			util.Fatal(err)
+		}
+	}
 }
