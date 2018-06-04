@@ -30,7 +30,10 @@ func TestGenerateValid(t *testing.T) {
 		t.Fatal(err)
 	}
 	configPath := filepath.Join(bundle, "config.json")
-	g := generate.New()
+	g, err := generate.New("linux")
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := (&g).SaveToFile(configPath, generate.ExportOptions{Seccomp: false}); err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +59,10 @@ func TestGenerateValid(t *testing.T) {
 }
 
 func TestRemoveMount(t *testing.T) {
-	g := generate.New()
+	g, err := generate.New("linux")
+	if err != nil {
+		t.Fatal(err)
+	}
 	size := len(g.Mounts())
 	g.RemoveMount("/dev/shm")
 	if size-1 != len(g.Mounts()) {
