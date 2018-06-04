@@ -151,7 +151,13 @@ func main() {
 	}
 	for _, file := range []string{"prestart", "poststart", "poststop"} {
 		errs := stdinStateCheck(outputDir, file, expectedState)
-		util.SpecErrorOK(t, errs.ErrorOrNil() == nil, specerror.NewError(specerror.PosixHooksStateToStdin, fmt.Errorf("the state of the container MUST be passed to %q hook over stdin", file), rspecs.Version), errors.New(errs.Error()))
+		var newError error
+		if errs == nil {
+			newError = errors.New("")
+		} else {
+			newError = errors.New(errs.Error())
+		}
+		util.SpecErrorOK(t, errs.ErrorOrNil() == nil, specerror.NewError(specerror.PosixHooksStateToStdin, fmt.Errorf("the state of the container MUST be passed to %q hook over stdin", file), rspecs.Version), newError)
 	}
 
 	t.AutoPlan()
