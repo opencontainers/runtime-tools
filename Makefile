@@ -6,7 +6,7 @@ BUILDTAGS=
 RUNTIME ?= runc
 COMMIT=$(shell git rev-parse HEAD 2> /dev/null || true)
 VERSION := ${shell cat ./VERSION}
-VALIDATION_TESTS ?= $(patsubst %.go,%.t,$(wildcard validation/*.go))
+VALIDATION_TESTS ?= $(patsubst %.go,%.t,$(shell find ./validation/ -name *.go | grep -v util))
 
 all: tool runtimetest validation-executables
 
