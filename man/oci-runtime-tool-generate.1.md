@@ -274,7 +274,7 @@ read the configuration from `config.json`.
 **--linux-realtime-runtime**=REALTIMERUNTIME
   Specifies a period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources.
 
-**--linux-rootfs-propagation**=PROPOGATIONMODE
+**--linux-rootfs-propagation**=PROPAGATIONMODE
   Mount propagation for root filesystem.
   Values are "(r)shared, (r)private, (r)slave, (r)unbindable"
 

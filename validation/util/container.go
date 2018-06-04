@@ -193,7 +193,7 @@ func (r *Runtime) Delete() (err error) {
 }
 
 // Clean deletes the container.  If removeBundle is set, the bundle
-// directory is removed after the container is deleted succesfully or, if
+// directory is removed after the container is deleted successfully or, if
 // forceRemoveBundle is true, after the deletion attempt regardless of
 // whether it was successful or not.
 func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) error {
