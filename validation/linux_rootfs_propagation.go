@@ -22,6 +22,8 @@ func main() {
 
 	cases := []string{
 		"shared",
+		"slave",
+		"private",
 		"unbindable",
 	}
 
