@@ -50,8 +50,12 @@ var (
 		"/dev/shm": "tmpfs",
 	}
 
+	// NOTE: check if /dev/ptmx is a symlink to /dev/pts/ptmx.
+	// os.Readlink() returns only a relative path "pts/ptmx" instead of
+	// an absolute path /dev/pts/ptmx.
 	defaultSymlinks = map[string]string{
 		"/dev/fd":     "/proc/self/fd",
+		"/dev/ptmx":   "pts/ptmx",
 		"/dev/stdin":  "/proc/self/fd/0",
 		"/dev/stdout": "/proc/self/fd/1",
 		"/dev/stderr": "/proc/self/fd/2",
