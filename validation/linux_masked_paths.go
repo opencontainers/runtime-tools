@@ -21,6 +21,12 @@ func main() {
 		if err != nil {
 			return err
 		}
+		// create a temp file to make testDir non-empty
+		tmpfile, err := ioutil.TempFile(testDir, "tmp")
+		if err != nil {
+			return err
+		}
+		defer os.Remove(tmpfile.Name())
 
 		testFile := filepath.Join(path, "masked-file")
 
