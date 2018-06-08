@@ -124,7 +124,7 @@ func main() {
 
 	err := testNamespaceInheritType(t)
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	}
 
 	t.AutoPlan()

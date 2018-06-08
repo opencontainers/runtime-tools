@@ -82,7 +82,7 @@ func main() {
 		err = r.Delete()
 	}
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	}
 
 	t.AutoPlan()

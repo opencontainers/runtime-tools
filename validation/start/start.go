@@ -17,6 +17,7 @@ import (
 func main() {
 	t := tap.New()
 	t.Header(0)
+	defer t.AutoPlan()
 
 	bundleDir, err := util.PrepareBundle()
 	if err != nil {
@@ -54,7 +55,8 @@ func main() {
 
 	err = r.Create()
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
+		return
 	}
 	_, err = os.Stat(output)
 	// check the existence of the output file
@@ -67,7 +69,8 @@ func main() {
 	} else {
 		err = util.WaitingForStatus(r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 		if err != nil {
-			util.Fatal(err)
+			t.Fail(err.Error())
+			return
 		}
 		outputData, outputErr := ioutil.ReadFile(output)
 		// check the output
@@ -81,7 +84,8 @@ func main() {
 
 	err = util.WaitingForStatus(r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
+		return
 	}
 
 	outputData, outputErr := ioutil.ReadFile(output)
@@ -90,7 +94,8 @@ func main() {
 
 	err = r.Delete()
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
+		return
 	}
 
 	g.Spec().Process = nil
@@ -100,7 +105,8 @@ func main() {
 	}
 	err = r.Create()
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
+		return
 	}
 
 	err = r.Start()
@@ -110,8 +116,6 @@ func main() {
 		err = r.Delete()
 	}
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	}
-
-	t.AutoPlan()
 }

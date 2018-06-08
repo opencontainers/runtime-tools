@@ -57,7 +57,7 @@ func main() {
 	}
 	err = util.RuntimeLifecycleValidate(config)
 	if err != nil && err != targetErr {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	} else {
 		util.SpecErrorOK(t, err == nil, targetErr, nil)
 	}

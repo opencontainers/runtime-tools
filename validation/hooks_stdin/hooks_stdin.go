@@ -140,7 +140,7 @@ func main() {
 
 	err = util.RuntimeLifecycleValidate(config)
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	}
 
 	expectedState := rspecs.State{

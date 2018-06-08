@@ -85,7 +85,7 @@ func main() {
 			util.WaitingForStatus(testRuntime, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 			err = testRuntime.Delete()
 			if err != nil {
-				util.Fatal(err)
+				t.Fail(err.Error())
 			}
 		}
 	}

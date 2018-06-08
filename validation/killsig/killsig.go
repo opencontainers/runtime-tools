@@ -31,6 +31,7 @@ func main() {
 	containerID := uuid.NewV4().String()
 	sigConfig, err := util.GetDefaultGenerator()
 	if err != nil {
+		os.RemoveAll(bundleDir)
 		util.Fatal(err)
 	}
 	rootDir := filepath.Join(bundleDir, sigConfig.Spec().Root.Path)

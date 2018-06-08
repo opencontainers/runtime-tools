@@ -40,7 +40,7 @@ func main() {
 
 	for _, h := range hostnames {
 		if err := testHostname(t, h); err != nil {
-			util.Fatal(err)
+			t.Fail(err.Error())
 		}
 	}
 }
