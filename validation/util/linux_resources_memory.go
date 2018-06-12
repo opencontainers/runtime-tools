@@ -7,15 +7,11 @@ import (
 )
 
 // ValidateLinuxResourcesMemory validates linux.resources.memory.
-func ValidateLinuxResourcesMemory(config *rspec.Spec, state *rspec.State) error {
-	t := tap.New()
-	t.Header(0)
-
+func ValidateLinuxResourcesMemory(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 	cg, err := cgroups.FindCgroup()
 	t.Ok((err == nil), "find memory cgroup")
 	if err != nil {
 		t.Diagnostic(err.Error())
-		t.AutoPlan()
 		return nil
 	}
 
@@ -23,7 +19,6 @@ func ValidateLinuxResourcesMemory(config *rspec.Spec, state *rspec.State) error 
 	t.Ok((err == nil), "get memory cgroup data")
 	if err != nil {
 		t.Diagnostic(err.Error())
-		t.AutoPlan()
 		return nil
 	}
 
@@ -48,6 +43,5 @@ func ValidateLinuxResourcesMemory(config *rspec.Spec, state *rspec.State) error 
 	t.Ok(*lm.DisableOOMKiller == *config.Linux.Resources.Memory.DisableOOMKiller, "memory oom is set correctly")
 	t.Diagnosticf("expect: %t, actual: %t", *config.Linux.Resources.Memory.DisableOOMKiller, *lm.DisableOOMKiller)
 
-	t.AutoPlan()
 	return nil
 }

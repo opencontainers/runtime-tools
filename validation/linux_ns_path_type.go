@@ -25,7 +25,7 @@ func checkNSPathMatchType(t *tap.T, ns, wrongNs string) error {
 	rtns := util.GetRuntimeToolsNamespace(ns)
 	g.AddOrReplaceLinuxNamespace(rtns, unshareNsPath)
 
-	err = util.RuntimeOutsideValidate(g, nil)
+	err = util.RuntimeOutsideValidate(g, t, nil)
 
 	t.Ok(err != nil, fmt.Sprintf("got error when setting a wrong namespace path %q with type %s", unshareNsPath, rtns))
 	if err == nil {

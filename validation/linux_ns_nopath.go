@@ -80,7 +80,7 @@ func testNamespaceNoPath(t *tap.T) error {
 	g.AddLinuxUIDMapping(uint32(1000), uint32(0), uint32(1000))
 	g.AddLinuxGIDMapping(uint32(1000), uint32(0), uint32(1000))
 
-	err = util.RuntimeOutsideValidate(g, func(config *rspec.Spec, state *rspec.State) error {
+	err = util.RuntimeOutsideValidate(g, t, func(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 		containerNsPath := fmt.Sprintf("/proc/%d/ns", state.Pid)
 
 		for _, nsName := range util.ProcNamespaces {

@@ -9,15 +9,11 @@ import (
 )
 
 // ValidateLinuxResourcesBlockIO validates linux.resources.blockIO.
-func ValidateLinuxResourcesBlockIO(config *rspec.Spec, state *rspec.State) error {
-	t := tap.New()
-	t.Header(0)
-
+func ValidateLinuxResourcesBlockIO(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 	cg, err := cgroups.FindCgroup()
 	t.Ok((err == nil), "find blkio cgroup")
 	if err != nil {
 		t.Diagnostic(err.Error())
-		t.AutoPlan()
 		return nil
 	}
 
@@ -25,13 +21,11 @@ func ValidateLinuxResourcesBlockIO(config *rspec.Spec, state *rspec.State) error
 	t.Ok((err == nil), "get blkio cgroup data")
 	if err != nil {
 		t.Diagnostic(err.Error())
-		t.AutoPlan()
 		return nil
 	}
 
 	if lbd.Weight == nil || config.Linux.Resources.BlockIO.Weight == nil {
 		t.Diagnostic(fmt.Sprintf("unable to get weight: lbd.Weight == %v, config.Linux.Resources.BlockIO.Weight == %v", lbd.Weight, config.Linux.Resources.BlockIO.Weight))
-		t.AutoPlan()
 		return nil
 	}
 
@@ -40,7 +34,6 @@ func ValidateLinuxResourcesBlockIO(config *rspec.Spec, state *rspec.State) error
 
 	if lbd.LeafWeight == nil || config.Linux.Resources.BlockIO.LeafWeight == nil {
 		t.Diagnostic(fmt.Sprintf("unable to get leafWeight: lbd.LeafWeight == %v, config.Linux.Resources.BlockIO.LeafWeight == %v", lbd.LeafWeight, config.Linux.Resources.BlockIO.LeafWeight))
-		t.AutoPlan()
 		return nil
 	}
 
@@ -110,6 +103,5 @@ func ValidateLinuxResourcesBlockIO(config *rspec.Spec, state *rspec.State) error
 		t.Ok(found, fmt.Sprintf("blkio write iops for %d:%d found", device.Major, device.Minor))
 	}
 
-	t.AutoPlan()
 	return nil
 }
