@@ -125,7 +125,7 @@ func main() {
 
 	err := testNamespaceNoPath(t)
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	}
 
 	t.AutoPlan()
