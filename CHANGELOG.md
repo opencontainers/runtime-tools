@@ -1,3 +1,29 @@
+# v0.7.0
+## Additions
+
+* validation: use t.Fail when checking for main test errors (#645).
+* travis: add go 1.10 (#647).
+* validation: add more test cases for read-only paths tests (#644).
+* validation: add more test cases for masked paths tests (#643).
+* validation: test cgroups with different input values (#637).
+* validation: add more test cases for private & slave propagations (#650).
+* runtimetest: correctly check for a readable directory (#625).
+* validation: add minor checks for ptmx and kill signal (#642).
+* validation: add a new test for NSPathMatchTypeError (#636).
+* validation: add test for NSProcInPath (#628).
+* validation: test validation test with an empty hostname (#640).
+* validation: add cgroup devices validation (#633).
+* check the status of the state passed to hooks over stdin (#608).
+* validation: fix nil deferences in cpu & blkio cgroups tests (#638).
+
+## Minor fixes and documentaion
+
+* validation: fix nil dereference when handling multierror in hooks_stdin (#641).
+* fix generate test in calling generate.New (#648).
+* README: fix broken links to documentation (#646).
+* validation/kill_no_effect: fix bug(#635).
+
+
 # v0.6.0
 
 ## Additions
