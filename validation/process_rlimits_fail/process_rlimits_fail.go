@@ -21,7 +21,7 @@ func main() {
 		util.Fatal(err)
 	}
 	g.AddProcessRlimits("RLIMIT_TEST", 1024, 1024)
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	if err == nil {
 		util.Fatal(specerror.NewError(specerror.PosixProcRlimitsTypeGenError, fmt.Errorf("The runtime MUST generate an error for any values which cannot be mapped to a relevant kernel interface"), rspecs.Version))
 	}

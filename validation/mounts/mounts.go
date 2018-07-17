@@ -22,7 +22,7 @@ func main() {
 		},
 	}
 	g.AddMount(mount)
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

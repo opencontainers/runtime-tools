@@ -32,7 +32,7 @@ func checkReadonlyPaths() error {
 	g.AddLinuxReadonlyPaths(readonlyDirSub)
 	g.AddLinuxReadonlyPaths(readonlyFileSub)
 	g.AddLinuxReadonlyPaths(readonlyFileSubSub)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
 		testDir := filepath.Join(path, readonlyDirSub)
 		err = os.MkdirAll(testDir, 0777)
 		if err != nil {
@@ -73,7 +73,7 @@ func checkReadonlyRelPaths() error {
 	readonlyRelPath := "readonly-relpath"
 
 	g.AddLinuxReadonlyPaths(readonlyRelPath)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
 		testFile := filepath.Join(path, readonlyRelPath)
 		if _, err := os.Stat(testFile); err != nil && os.IsNotExist(err) {
 			return err
@@ -98,7 +98,7 @@ func checkReadonlySymlinks() error {
 	readonlySymlink := "/readonly-symlink"
 
 	g.AddLinuxReadonlyPaths(readonlySymlink)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
 		testFile := filepath.Join(path, readonlySymlink)
 		// ln -s .. /readonly-symlink ; readlink -f /readonly-symlink; ls -L /readonly-symlink
 		if err := os.Symlink("../readonly-symlink", testFile); err != nil {
@@ -130,7 +130,7 @@ func checkReadonlyDeviceNodes(mode uint32) error {
 	readonlyDevice := "/readonly-device"
 
 	g.AddLinuxReadonlyPaths(readonlyDevice)
-	return util.RuntimeInsideValidate(g, func(path string) error {
+	return util.RuntimeInsideValidate(g, nil, func(path string) error {
 		testFile := filepath.Join(path, readonlyDevice)
 
 		if err := unix.Mknod(testFile, mode, 0); err != nil {

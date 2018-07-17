@@ -15,7 +15,7 @@ func testHostname(t *tap.T, hostname string) error {
 	}
 
 	g.SetHostname(hostname)
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	t.Ok(err == nil, "hostname is set correctly")
 	if err != nil {
 		t.Diagnosticf("expect: err == nil, actual: err != nil")

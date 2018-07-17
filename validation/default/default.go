@@ -9,7 +9,7 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

@@ -32,7 +32,7 @@ func checkMaskedPaths() error {
 	g.AddLinuxMaskedPaths(maskedDirSub)
 	g.AddLinuxMaskedPaths(maskedFileSub)
 	g.AddLinuxMaskedPaths(maskedFileSubSub)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
 		testDir := filepath.Join(path, maskedDirSub)
 		err = os.MkdirAll(testDir, 0777)
 		if err != nil {
@@ -73,7 +73,7 @@ func checkMaskedRelPaths() error {
 	maskedRelPath := "masked-relpath"
 
 	g.AddLinuxMaskedPaths(maskedRelPath)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
 		testFile := filepath.Join(path, maskedRelPath)
 		if _, err := os.Stat(testFile); err != nil && os.IsNotExist(err) {
 			return err
@@ -98,7 +98,7 @@ func checkMaskedSymlinks() error {
 	maskedSymlink := "/masked-symlink"
 
 	g.AddLinuxMaskedPaths(maskedSymlink)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
 		testFile := filepath.Join(path, maskedSymlink)
 		// ln -s .. /masked-symlink ; readlink -f /masked-symlink; ls -L /masked-symlink
 		if err := os.Symlink("../masked-symlink", testFile); err != nil {
@@ -130,7 +130,7 @@ func checkMaskedDeviceNodes(mode uint32) error {
 	maskedDevice := "/masked-device"
 
 	g.AddLinuxMaskedPaths(maskedDevice)
-	return util.RuntimeInsideValidate(g, func(path string) error {
+	return util.RuntimeInsideValidate(g, nil, func(path string) error {
 		testFile := filepath.Join(path, maskedDevice)
 
 		if err := unix.Mknod(testFile, mode, 0); err != nil {

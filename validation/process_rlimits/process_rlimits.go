@@ -27,7 +27,7 @@ func main() {
 
 	g.AddProcessRlimits("RLIMIT_CPU", 120, 60)       // seconds
 	g.AddProcessRlimits("RLIMIT_NOFILE", 4000, 3000) // number of files
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

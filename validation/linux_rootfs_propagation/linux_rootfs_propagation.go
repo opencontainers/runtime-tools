@@ -12,7 +12,7 @@ func testLinuxRootPropagation(propMode string) error {
 	}
 	g.SetupPrivileged(true)
 	g.SetLinuxRootPropagation(propMode)
-	return util.RuntimeInsideValidate(g, nil)
+	return util.RuntimeInsideValidate(g, nil, nil)
 }
 
 func main() {
