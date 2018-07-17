@@ -5,14 +5,15 @@ import (
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
-func testLinuxRootPropagation(propMode string) error {
+func testLinuxRootPropagation(t *tap.T, propMode string) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		util.Fatal(err)
 	}
 	g.SetupPrivileged(true)
 	g.SetLinuxRootPropagation(propMode)
-	return util.RuntimeInsideValidate(g, nil, nil)
+	g.AddAnnotation("TestName", "check root propagation")
+	return util.RuntimeInsideValidate(g, t, nil)
 }
 
 func main() {
@@ -28,7 +29,7 @@ func main() {
 	}
 
 	for _, c := range cases {
-		if err := testLinuxRootPropagation(c); err != nil {
+		if err := testLinuxRootPropagation(t, c); err != nil {
 			t.Fail(err.Error())
 		}
 	}

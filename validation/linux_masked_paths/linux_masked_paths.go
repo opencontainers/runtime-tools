@@ -6,11 +6,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/validation/util"
 	"golang.org/x/sys/unix"
 )
 
-func checkMaskedPaths() error {
+func checkMaskedPaths(t *tap.T) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		return err
@@ -32,7 +33,8 @@ func checkMaskedPaths() error {
 	g.AddLinuxMaskedPaths(maskedDirSub)
 	g.AddLinuxMaskedPaths(maskedFileSub)
 	g.AddLinuxMaskedPaths(maskedFileSubSub)
-	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
+	g.AddAnnotation("TestName", "check masked paths")
+	err = util.RuntimeInsideValidate(g, t, func(path string) error {
 		testDir := filepath.Join(path, maskedDirSub)
 		err = os.MkdirAll(testDir, 0777)
 		if err != nil {
@@ -63,7 +65,7 @@ func checkMaskedPaths() error {
 	return err
 }
 
-func checkMaskedRelPaths() error {
+func checkMaskedRelPaths(t *tap.T) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		return err
@@ -73,7 +75,8 @@ func checkMaskedRelPaths() error {
 	maskedRelPath := "masked-relpath"
 
 	g.AddLinuxMaskedPaths(maskedRelPath)
-	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
+	g.AddAnnotation("TestName", "check masked relative paths")
+	err = util.RuntimeInsideValidate(g, t, func(path string) error {
 		testFile := filepath.Join(path, maskedRelPath)
 		if _, err := os.Stat(testFile); err != nil && os.IsNotExist(err) {
 			return err
@@ -87,7 +90,7 @@ func checkMaskedRelPaths() error {
 	return fmt.Errorf("expected: err != nil, actual: err == nil")
 }
 
-func checkMaskedSymlinks() error {
+func checkMaskedSymlinks(t *tap.T) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		return err
@@ -98,7 +101,8 @@ func checkMaskedSymlinks() error {
 	maskedSymlink := "/masked-symlink"
 
 	g.AddLinuxMaskedPaths(maskedSymlink)
-	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
+	g.AddAnnotation("TestName", "check masked symlinks")
+	err = util.RuntimeInsideValidate(g, t, func(path string) error {
 		testFile := filepath.Join(path, maskedSymlink)
 		// ln -s .. /masked-symlink ; readlink -f /masked-symlink; ls -L /masked-symlink
 		if err := os.Symlink("../masked-symlink", testFile); err != nil {
@@ -121,7 +125,7 @@ func checkMaskedSymlinks() error {
 	return fmt.Errorf("expected: err != nil, actual: err == nil")
 }
 
-func checkMaskedDeviceNodes(mode uint32) error {
+func checkMaskedDeviceNodes(t *tap.T, mode uint32) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		return err
@@ -130,7 +134,8 @@ func checkMaskedDeviceNodes(mode uint32) error {
 	maskedDevice := "/masked-device"
 
 	g.AddLinuxMaskedPaths(maskedDevice)
-	return util.RuntimeInsideValidate(g, nil, func(path string) error {
+	g.AddAnnotation("TestName", "check masked device nodes")
+	return util.RuntimeInsideValidate(g, t, func(path string) error {
 		testFile := filepath.Join(path, maskedDevice)
 
 		if err := unix.Mknod(testFile, mode, 0); err != nil {
@@ -146,15 +151,19 @@ func checkMaskedDeviceNodes(mode uint32) error {
 }
 
 func main() {
-	if err := checkMaskedPaths(); err != nil {
+	t := tap.New()
+	t.Header(0)
+	defer t.AutoPlan()
+
+	if err := checkMaskedPaths(t); err != nil {
 		util.Fatal(err)
 	}
 
-	if err := checkMaskedRelPaths(); err != nil {
+	if err := checkMaskedRelPaths(t); err != nil {
 		util.Fatal(err)
 	}
 
-	if err := checkMaskedSymlinks(); err != nil {
+	if err := checkMaskedSymlinks(t); err != nil {
 		util.Fatal(err)
 	}
 
@@ -167,7 +176,7 @@ func main() {
 	}
 
 	for _, m := range modes {
-		if err := checkMaskedDeviceNodes(m); err != nil {
+		if err := checkMaskedDeviceNodes(t, m); err != nil {
 			util.Fatal(err)
 		}
 	}
