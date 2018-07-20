@@ -583,11 +583,11 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 			exposed = true
 		}
 		if spec.Linux.RootfsPropagation == "shared" {
-			c.harness.Ok(exposed, fmt.Sprintf("shared root propogation exposes %q", targetFile))
+			c.harness.Ok(exposed, fmt.Sprintf("shared root propagation exposes %q", targetFile))
 		} else {
 			c.harness.Ok(
 				!exposed,
-				fmt.Sprintf("%s root propogation does not expose %q", spec.Linux.RootfsPropagation, targetFile),
+				fmt.Sprintf("%s root propagation does not expose %q", spec.Linux.RootfsPropagation, targetFile),
 			)
 		}
 	case "unbindable":
