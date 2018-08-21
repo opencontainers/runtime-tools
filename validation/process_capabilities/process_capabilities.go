@@ -18,7 +18,7 @@ func main() {
 		util.Fatal(err)
 	}
 	g.SetupPrivileged(true)
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

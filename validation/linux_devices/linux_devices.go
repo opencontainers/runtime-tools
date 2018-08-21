@@ -51,7 +51,7 @@ func main() {
 	pdev.FileMode = &pmode
 	g.AddDevice(pdev)
 
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

@@ -10,7 +10,7 @@ func main() {
 		util.Fatal(err)
 	}
 	g.AddLinuxSysctl("net.ipv4.ip_forward", "1")
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	if err != nil {
 		util.Fatal(err)
 	}

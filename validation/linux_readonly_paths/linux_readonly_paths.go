@@ -6,11 +6,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/validation/util"
 	"golang.org/x/sys/unix"
 )
 
-func checkReadonlyPaths() error {
+func checkReadonlyPaths(t *tap.T) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		return err
@@ -32,7 +33,8 @@ func checkReadonlyPaths() error {
 	g.AddLinuxReadonlyPaths(readonlyDirSub)
 	g.AddLinuxReadonlyPaths(readonlyFileSub)
 	g.AddLinuxReadonlyPaths(readonlyFileSubSub)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	g.AddAnnotation("TestName", "check read-only paths")
+	err = util.RuntimeInsideValidate(g, t, func(path string) error {
 		testDir := filepath.Join(path, readonlyDirSub)
 		err = os.MkdirAll(testDir, 0777)
 		if err != nil {
@@ -63,7 +65,7 @@ func checkReadonlyPaths() error {
 	return err
 }
 
-func checkReadonlyRelPaths() error {
+func checkReadonlyRelPaths(t *tap.T) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		return err
@@ -73,7 +75,8 @@ func checkReadonlyRelPaths() error {
 	readonlyRelPath := "readonly-relpath"
 
 	g.AddLinuxReadonlyPaths(readonlyRelPath)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	g.AddAnnotation("TestName", "check read-only relative paths")
+	err = util.RuntimeInsideValidate(g, t, func(path string) error {
 		testFile := filepath.Join(path, readonlyRelPath)
 		if _, err := os.Stat(testFile); err != nil && os.IsNotExist(err) {
 			return err
@@ -87,7 +90,7 @@ func checkReadonlyRelPaths() error {
 	return fmt.Errorf("expected: err != nil, actual: err == nil")
 }
 
-func checkReadonlySymlinks() error {
+func checkReadonlySymlinks(t *tap.T) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		return err
@@ -98,7 +101,8 @@ func checkReadonlySymlinks() error {
 	readonlySymlink := "/readonly-symlink"
 
 	g.AddLinuxReadonlyPaths(readonlySymlink)
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	g.AddAnnotation("TestName", "check read-only symlinks")
+	err = util.RuntimeInsideValidate(g, t, func(path string) error {
 		testFile := filepath.Join(path, readonlySymlink)
 		// ln -s .. /readonly-symlink ; readlink -f /readonly-symlink; ls -L /readonly-symlink
 		if err := os.Symlink("../readonly-symlink", testFile); err != nil {
@@ -121,7 +125,7 @@ func checkReadonlySymlinks() error {
 	return fmt.Errorf("expected: err != nil, actual: err == nil")
 }
 
-func checkReadonlyDeviceNodes(mode uint32) error {
+func checkReadonlyDeviceNodes(t *tap.T, mode uint32) error {
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		return err
@@ -130,7 +134,8 @@ func checkReadonlyDeviceNodes(mode uint32) error {
 	readonlyDevice := "/readonly-device"
 
 	g.AddLinuxReadonlyPaths(readonlyDevice)
-	return util.RuntimeInsideValidate(g, func(path string) error {
+	g.AddAnnotation("TestName", "check read-only device nodes")
+	return util.RuntimeInsideValidate(g, t, func(path string) error {
 		testFile := filepath.Join(path, readonlyDevice)
 
 		if err := unix.Mknod(testFile, mode, 0); err != nil {
@@ -146,15 +151,19 @@ func checkReadonlyDeviceNodes(mode uint32) error {
 }
 
 func main() {
-	if err := checkReadonlyPaths(); err != nil {
+	t := tap.New()
+	t.Header(0)
+	defer t.AutoPlan()
+
+	if err := checkReadonlyPaths(t); err != nil {
 		util.Fatal(err)
 	}
 
-	if err := checkReadonlyRelPaths(); err != nil {
+	if err := checkReadonlyRelPaths(t); err != nil {
 		util.Fatal(err)
 	}
 
-	if err := checkReadonlySymlinks(); err != nil {
+	if err := checkReadonlySymlinks(t); err != nil {
 		util.Fatal(err)
 	}
 
@@ -167,7 +176,7 @@ func main() {
 	}
 
 	for _, m := range modes {
-		if err := checkReadonlyDeviceNodes(m); err != nil {
+		if err := checkReadonlyDeviceNodes(t, m); err != nil {
 			util.Fatal(err)
 		}
 	}

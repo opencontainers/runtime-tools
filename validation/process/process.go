@@ -16,7 +16,7 @@ func main() {
 	g.AddProcessEnv("testa", "valuea")
 	g.AddProcessEnv("testb", "123")
 
-	err = util.RuntimeInsideValidate(g, func(path string) error {
+	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
 		pathName := filepath.Join(path, "test")
 		return os.MkdirAll(pathName, 0700)
 	})

@@ -21,7 +21,7 @@ func main() {
 		util.Fatal(err)
 	}
 	g.AddProcessCapabilityBounding("CAP_TEST")
-	err = util.RuntimeInsideValidate(g, nil)
+	err = util.RuntimeInsideValidate(g, nil, nil)
 	if err == nil {
 		util.Fatal(specerror.NewError(specerror.LinuxProcCapError, fmt.Errorf("Any value which cannot be mapped to a relevant kernel interface MUST cause an error"), rspecs.Version))
 	}

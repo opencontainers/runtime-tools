@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/mndrix/tap-go"
@@ -173,8 +174,10 @@ func WaitingForStatus(r Runtime, status LifecycleStatus, retryTimeout time.Durat
 	return errors.New("timeout in waiting for the container status")
 }
 
+var runtimeInsideValidateCalled bool
+
 // RuntimeInsideValidate runs runtimetest inside a container.
-func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
+func RuntimeInsideValidate(g *generate.Generator, t *tap.T, f PreFunc) (err error) {
 	bundleDir, err := PrepareBundle()
 	if err != nil {
 		return err
@@ -235,7 +238,24 @@ func RuntimeInsideValidate(g *generate.Generator, f PreFunc) (err error) {
 		return err
 	}
 
-	os.Stdout.Write(stdout)
+	// Write stdout in the outter TAP
+	if t != nil {
+		diagnostic := map[string]string{
+			"stdout": string(stdout),
+			"stderr": string(stderr),
+		}
+		if err != nil {
+			diagnostic["error"] = fmt.Sprintf("%v", err)
+		}
+		t.YAML(diagnostic)
+		t.Ok(err == nil && !strings.Contains(string(stdout), "not ok"), g.Config.Annotations["TestName"])
+	} else {
+		if runtimeInsideValidateCalled {
+			Fatal(errors.New("RuntimeInsideValidate called several times in the same test without passing TAP"))
+		}
+		runtimeInsideValidateCalled = true
+		os.Stdout.Write(stdout)
+	}
 	return nil
 }
 
