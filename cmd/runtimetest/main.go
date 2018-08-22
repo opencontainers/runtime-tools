@@ -1091,14 +1091,32 @@ func mountMatch(configMount rspec.Mount, sysMount *mount.Info) error {
 		return fmt.Errorf("mount destination expected: %v, actual: %v", configMount.Destination, sys.Destination)
 	}
 
-	if configMount.Type != sys.Type {
+	isBind := false
+	for _, opt := range configMount.Options {
+		if opt == "bind" || opt == "rbind" {
+			isBind = true
+			break
+		}
+	}
+	// Type is an optional field in the spec: only check if it is set
+	if configMount.Type != "" && configMount.Type != sys.Type {
 		return fmt.Errorf("mount %v type expected: %v, actual: %v", configMount.Destination, configMount.Type, sys.Type)
 	}
 
-	if filepath.Clean(configMount.Source) != sys.Source {
-		return fmt.Errorf("mount %v source expected: %v, actual: %v", configMount.Destination, configMount.Source, sys.Source)
+	// For bind mounts, the source is not the block device but the path on the host that is being bind mounted.
+	// sysMount.Root is that path.
+	if isBind {
+		// Source is an optional field in the spec: only check if it is set
+		// We only test the base name here, in case the tests are being run in a chroot environment
+		if configMount.Source != "" && filepath.Base(configMount.Source) != filepath.Base(sysMount.Root) {
+			return fmt.Errorf("mount %v source expected: %v, actual: %v", configMount.Destination, filepath.Base(configMount.Source), filepath.Base(sysMount.Root))
+		}
+	} else {
+		// Source is an optional field in the spec: only check if it is set
+		if configMount.Source != "" && filepath.Clean(configMount.Source) != sys.Source {
+			return fmt.Errorf("mount %v source expected: %v, actual: %v", configMount.Destination, configMount.Source, sys.Source)
+		}
 	}
-
 	return nil
 }
 
