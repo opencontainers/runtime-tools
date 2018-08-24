@@ -14,29 +14,15 @@ If your distribution does not package node-tap, you can install [npm][] (for exa
 ```console
 $ npm install tap
 ```
-### From a release
 
-Check if your release has pre-compiled tests on the [release page][releases] page.
-
-```
-$ tar xf runtime-tools-v0.6.0.tar.gz
-$ RUNTIME=runc tap ./runtime-tools-v0.6.0/validation/*.t
-```
-
-### From source
-
-Build the validation executables:
-
-```console
-$ make runtimetest validation-executables
-```
-
-Runtime validation currently [only supports](docs/runtime-compliance-testing.md) the [OCI Runtime Command Line Interface](doc/command-line-interface.md).
+Runtime validation currently [only supports](runtime-compliance-testing.md) the [OCI Runtime Command Line Interface](command-line-interface.md).
 If we add support for alternative APIs in the future, runtime validation will gain an option to select the desired runtime API.
-For the command line interface, the `RUNTIME` option selects the runtime command (`funC` in the [OCI Runtime Command Line Interface](doc/command-line-interface.md)).
+For the command line interface, the `RUNTIME` option selects the runtime command (`funC` in the [OCI Runtime Command Line Interface](command-line-interface.md)).
+
+Note that we should specify the `TAP` variable to the normal user's tap command, because usually the normal user had a newer version of `tap` installed locally via npm, for example, under `$HOME/node_modules/.bin`.
 
 ```
-$ sudo TAP="$(which tap)" RUNTIME=runc make localvalidation
+$ sudo TAP="$(command -v tap)" RUNTIME=runc make localvalidation
 RUNTIME=runc /home/alban/.nvm/versions/node/v9.7.1/bin/tap validation/pidfile.t validation/linux_cgroups_memory.t validation/linux_rootfs_propagation_shared.t validation/kill.t validation/linux_readonly_paths.t validation/hostname.t validation/hooks_stdin.t validation/create.t validation/poststart.t validation/linux_cgroups_network.t validation/poststop_fail.t validation/prestart_fail.t validation/linux_cgroups_relative_blkio.t validation/default.t validation/poststop.t validation/linux_seccomp.t validation/prestart.t validation/process_rlimits.t validation/linux_masked_paths.t validation/killsig.t validation/process.t validation/linux_cgroups_relative_pids.t validation/hooks.t validation/linux_rootfs_propagation_unbindable.t validation/linux_cgroups_relative_cpus.t validation/misc_props.t validation/linux_sysctl.t validation/process_oom_score_adj.t validation/linux_devices.t validation/process_capabilities_fail.t validation/start.t validation/linux_cgroups_pids.t validation/process_capabilities.t validation/poststart_fail.t validation/linux_cgroups_relative_hugetlb.t validation/mounts.t validation/linux_cgroups_hugetlb.t validation/linux_cgroups_relative_memory.t validation/state.t validation/root_readonly_true.t validation/linux_cgroups_blkio.t validation/delete.t validation/linux_cgroups_relative_network.t validation/process_rlimits_fail.t validation/linux_cgroups_cpus.t validation/linux_uid_mappings.t
 validation/pidfile.t .................................. 1/1 455ms
 validation/linux_cgroups_memory.t ..................... 9/9
@@ -101,7 +87,7 @@ validation/linux_seccomp.t ............................ 0/1
   not ok validation/linux_seccomp.t
     error: >-
       Pre-start hooks MUST be called after the `start` operation is called
-    
+
       Refer to:
       https://github.com/opencontainers/runtime-spec/blob/v1.0.0/config.md#prestart
 
@@ -208,10 +194,10 @@ validation/process_capabilities_fail.t .............. 20/27
 validation/start.t .....exit status 2
 validation/start.t .................................... 6/7
   not ok test count !== plan
-    +++ found                                                           
-    --- wanted                                                          
-    -1                                                                  
-    +6                                                                  
+    +++ found
+    --- wanted
+    -1
+    +6
     results:
       ok: false
       count: 6
@@ -266,7 +252,7 @@ validation/linux_cgroups_blkio.t .................... 15/15
 validation/delete.t ................................... 3/5 22s
   not ok attempting to `delete` a container that is not `stopped` MUST generate an error
     reference: 'https://github.com/opencontainers/runtime-spec/blob/v1.0.0/runtime.md#delete'
-  
+
   not ok attempting to `delete` a container that is not `stopped` MUST have no effect on the container
     error: exit status 1
     reference: 'https://github.com/opencontainers/runtime-spec/blob/v1.0.0/runtime.md#delete'
@@ -294,7 +280,7 @@ validation/linux_uid_mappings.t ..................... 20/26
      syscall action SCMP_ACT_ALLOW
 
 total ............................................. 420/517
-  
+
 
   420 passing (1m)
   88 pending
@@ -340,7 +326,7 @@ ok 26 - gid mappings
 or with the environment variable `VALIDATION_TESTS`:
 
 ```console
-$ sudo make TAP=$(which tap) RUNTIME=runc VALIDATION_TESTS=validation/default.t localvalidation
+$ sudo make TAP=$(command -v tap) RUNTIME=runc VALIDATION_TESTS=validation/default.t localvalidation
 RUNTIME=runc /home/alban/.nvm/versions/node/v9.7.1/bin/tap validation/default.t
 validation/default.t ................................ 20/26
   Skipped: 6
@@ -368,6 +354,22 @@ Files=2, Tests=35,  1 wallclock secs ( 0.03 usr  0.00 sys +  0.12 cusr  0.12 csy
 Result: PASS
 ```
 
+### From a release
+
+Check if your release has pre-compiled tests on the [release page][releases] page.
+
+```console
+$ tar xf runtime-tools-v0.6.0.tar.gz
+$ sudo RUNTIME=runc tap ./runtime-tools-v0.6.0/validation/*.t
+```
+
+### From source
+
+Build the validation executables:
+
+```console
+$ make runtimetest validation-executables
+```
 
 [compliance]: https://github.com/opencontainers/runtime-spec/blob/v1.0.1/spec.md
 [debian-node-tap]: https://packages.debian.org/stretch/node-tap

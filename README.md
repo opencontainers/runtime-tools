@@ -30,11 +30,12 @@ INFO[0000] Bundle validation succeeded.
 
 ## Testing OCI runtimes
 
-Use the [runtime validation suite](doc/runtime-compliance-testing.md).
+Use the [runtime validation suite](docs/runtime-compliance-testing.md).
 
 [bundle]: https://github.com/opencontainers/runtime-spec/blob/master/bundle.md
 [config.json]: https://github.com/opencontainers/runtime-spec/blob/master/config.md
 [runC]: https://github.com/opencontainers/runc
 [runtime-spec]: https://github.com/opencontainers/runtime-spec
+
 [generate.1]: man/oci-runtime-tool-generate.1.md
 [validate.1]: man/oci-runtime-tool-validate.1.md
