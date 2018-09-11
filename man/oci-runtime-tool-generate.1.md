@@ -22,7 +22,7 @@ read the configuration from `config.json`.
 
   --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
 
-**--env**=[]
+**--env, -e**=[]
   Set environment variables e.g. key=value.
   This option allows you to specify arbitrary environment variables
   that are available for the process that will be launched inside of
@@ -87,7 +87,7 @@ read the configuration from `config.json`.
   When specifed with --hooks-prestart-add, will be applied first and then add
   new prestart hooks.
 
-**--label**=[]
+**--label, -l**=[]
   Add annotations to the configuration e.g. key=value.
   Currently, key containing equals sign is not supported.
 

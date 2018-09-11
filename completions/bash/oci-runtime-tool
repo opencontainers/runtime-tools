@@ -308,12 +308,14 @@ _oci-runtime-tool_generate() {
 	local options_with_args="
 		--args
 		--env
+		-e
 		--env-file
 		--hooks-poststart-add
 		--hooks-poststop-add
 		--hooks-prestart-add
 		--hostname
 		--label
+		-l
 		--linux-apparmor
 		--linux-blkio-leaf-weight
 		--linux-blkio-leaf-weight-device

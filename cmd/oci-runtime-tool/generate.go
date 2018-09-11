@@ -20,7 +20,7 @@ import (
 
 var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
-	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
+	cli.StringSliceFlag{Name: "env, e", Usage: "add environment variable e.g. key=value"},
 	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
 	cli.StringSliceFlag{Name: "hooks-poststart-add", Usage: "set command to run in poststart hooks"},
 	cli.BoolFlag{Name: "hooks-poststart-remove-all", Usage: "remove all poststart hooks"},
@@ -29,7 +29,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "hooks-prestart-add", Usage: "set command to run in prestart hooks"},
 	cli.BoolFlag{Name: "hooks-prestart-remove-all", Usage: "remove all prestart hooks"},
 	cli.StringFlag{Name: "hostname", Usage: "hostname value for the container"},
-	cli.StringSliceFlag{Name: "label", Usage: "add annotations to the configuration e.g. key=value"},
+	cli.StringSliceFlag{Name: "label, l", Usage: "add annotations to the configuration e.g. key=value"},
 	cli.StringFlag{Name: "linux-apparmor", Usage: "specifies the the apparmor profile for the container"},
 	cli.IntFlag{Name: "linux-blkio-leaf-weight", Usage: "Block IO (relative leaf weight), the range is from 10 to 1000"},
 	cli.StringSliceFlag{Name: "linux-blkio-leaf-weight-device", Usage: "Block IO (relative device leaf weight), e.g. major:minor:leaf-weight"},
