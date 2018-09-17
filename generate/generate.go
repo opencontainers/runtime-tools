@@ -1537,6 +1537,12 @@ func (g *Generator) SetWindowsNetwork(network rspec.WindowsNetwork) {
 	g.Config.Windows.Network = &network
 }
 
+// SetWindowsNetworkNamespace sets g.Config.Windows.Network.NetworkNamespace
+func (g *Generator) SetWindowsNetworkNamespace(path string) {
+	g.initConfigWindows()
+	g.Config.Windows.Network.NetworkNamespace = path
+}
+
 // SetWindowsResourcesCPU sets g.Config.Windows.Resources.CPU.
 func (g *Generator) SetWindowsResourcesCPU(cpu rspec.WindowsCPUResources) {
 	g.initConfigWindowsResources()
