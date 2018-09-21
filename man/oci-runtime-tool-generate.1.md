@@ -496,7 +496,7 @@ read the configuration from `config.json`.
 
 **--windows-network**=""
   Specifies network for container.
-  e.g. --windows-network='{"endpointList": ["7a010682-17e0-4455-a838-02e5d9655fe6"],"allowUnqualifiedDNSQuery": true,"DNSSearchList": ["a.com"],"networkSharedContainerName": "containerName"}'
+  e.g. --windows-network='{"endpointList": ["7a010682-17e0-4455-a838-02e5d9655fe6"],"allowUnqualifiedDNSQuery": true,"DNSSearchList": ["a.com"],"networkSharedContainerName": "containerName", "networkNamespace" : "15010682-17e0-4455-a838-02e5d9655f00"}'
 
 **--windows-resources-cpu**=""
   Specifies cpu for container.
