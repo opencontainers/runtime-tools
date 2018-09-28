@@ -130,6 +130,7 @@ var generateFlags = []cli.Flag{
 	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
 	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
 	cli.StringFlag{Name: "windows-network", Usage: "specifies network for container"},
+	cli.StringFlag{Name: "windows-network-networkNamespace", Usage: "specifies network namespace for container"},
 	cli.StringFlag{Name: "windows-resources-cpu", Usage: "specifies CPU for container"},
 	cli.Uint64Flag{Name: "windows-resources-memory-limit", Usage: "specifies limit of memory"},
 	cli.StringFlag{Name: "windows-resources-storage", Usage: "specifies storage for container"},
@@ -873,6 +874,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			return err
 		}
 		g.SetWindowsNetwork(tmpNetwork)
+	}
+
+	if context.IsSet("windows-network-networkNamespace") {
+		g.SetWindowsNetworkNamespace(context.String("windows-network-networkNamespace"))
 	}
 
 	if context.IsSet("windows-resources-cpu") {
