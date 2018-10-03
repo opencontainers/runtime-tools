@@ -18,42 +18,66 @@ import (
 // and needs to be fixed immediately (as it will break downstreams that depend
 // on us for a "sane default" and do compliance testing -- such as umoci).
 func TestGenerateValid(t *testing.T) {
-	bundle, err := ioutil.TempDir("", "TestGenerateValid_bundle")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(bundle)
-
-	// Create our toy bundle.
-	rootfsPath := filepath.Join(bundle, "rootfs")
-	if err := os.Mkdir(rootfsPath, 0755); err != nil {
-		t.Fatal(err)
-	}
-	configPath := filepath.Join(bundle, "config.json")
-	g, err := generate.New("linux")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := (&g).SaveToFile(configPath, generate.ExportOptions{Seccomp: false}); err != nil {
-		t.Fatal(err)
+	plat := "linux"
+	if runtime.GOOS == "windows" {
+		plat = "windows"
 	}
 
-	// Validate the bundle.
-	v, err := validate.NewValidatorFromPath(bundle, true, runtime.GOOS)
-	if err != nil {
-		t.Errorf("unexpected NewValidatorFromPath error: %+v", err)
-	}
-	if err := v.CheckAll(); err != nil {
-		levelErrors, err := specerror.SplitLevel(err, rfc2119.Must)
+	isolations := []string{"process", "hyperv"}
+	for _, isolation := range isolations {
+		if plat == "linux" && isolation == "hyperv" {
+			// Combination doesn't make sense.
+			continue
+		}
+
+		bundle, err := ioutil.TempDir("", "TestGenerateValid_bundle")
 		if err != nil {
-			t.Errorf("unexpected non-multierror: %+v", err)
-			return
+			t.Fatal(err)
 		}
-		for _, e := range levelErrors.Warnings {
-			t.Logf("unexpected warning: %v", e)
+		defer os.RemoveAll(bundle)
+
+		// Create our toy bundle.
+		rootfsPath := filepath.Join(bundle, "rootfs")
+		if err := os.Mkdir(rootfsPath, 0755); err != nil {
+			t.Fatal(err)
 		}
-		if err := levelErrors.Error; err != nil {
-			t.Errorf("unexpected MUST error(s): %+v", err)
+		configPath := filepath.Join(bundle, "config.json")
+		g, err := generate.New(plat)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if runtime.GOOS == "windows" {
+			g.AddWindowsLayerFolders("C:\\fakelayer")
+			g.AddWindowsLayerFolders("C:\\fakescratch")
+			if isolation == "process" {
+				// Add the Rootfs section (note: fake volume guid)
+				g.SetRootPath("\\\\?\\Volume{ec84d99e-3f02-11e7-ac6c-00155d7682cf}\\")
+			} else {
+				// Add the Hyper-V section
+				g.SetWindowsHypervUntilityVMPath("")
+			}
+		}
+		if err := (&g).SaveToFile(configPath, generate.ExportOptions{Seccomp: false}); err != nil {
+			t.Fatal(err)
+		}
+
+		// Validate the bundle.
+		v, err := validate.NewValidatorFromPath(bundle, true, runtime.GOOS)
+		if err != nil {
+			t.Errorf("unexpected NewValidatorFromPath error: %+v", err)
+		}
+		if err := v.CheckAll(); err != nil {
+			levelErrors, err := specerror.SplitLevel(err, rfc2119.Must)
+			if err != nil {
+				t.Errorf("unexpected non-multierror: %+v", err)
+				return
+			}
+			for _, e := range levelErrors.Warnings {
+				t.Logf("unexpected warning: %v", e)
+			}
+			if err := levelErrors.Error; err != nil {
+				t.Errorf("unexpected MUST error(s): %+v", err)
+			}
 		}
 	}
 }
