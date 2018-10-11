@@ -151,6 +151,13 @@ func (g *Generator) initConfigWindows() {
 	}
 }
 
+func (g *Generator) initConfigWindowsNetwork() {
+	g.initConfigWindows()
+	if g.Config.Windows.Network == nil {
+		g.Config.Windows.Network = &rspec.WindowsNetwork{}
+	}
+}
+
 func (g *Generator) initConfigWindowsHyperV() {
 	g.initConfigWindows()
 	if g.Config.Windows.HyperV == nil {

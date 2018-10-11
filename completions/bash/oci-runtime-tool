@@ -401,6 +401,7 @@ _oci-runtime-tool_generate() {
 		--windows-hyperv-utilityVMPath
 		--windows-layer-folders
 		--windows-network
+		--windows-network-networkNamespace
 		--windows-resources-cpu
 		--windows-resources-memory-limit
 		--windows-resources-storage
