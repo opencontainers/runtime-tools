@@ -398,6 +398,7 @@ _oci-runtime-tool_generate() {
 		--solaris-max-shm-memory
 		 --solaris-milestone
 		--template
+		--windows-devices
 		--windows-hyperv-utilityVMPath
 		--windows-layer-folders
 		--windows-network

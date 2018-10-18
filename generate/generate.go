@@ -1551,6 +1551,23 @@ func (g *Generator) AddWindowsLayerFolders(folder string) {
 	g.Config.Windows.LayerFolders = append(g.Config.Windows.LayerFolders, folder)
 }
 
+// AddWindowsDevices adds or sets g.Config.Windwos.Devices
+func (g *Generator) AddWindowsDevices(id, idType string) {
+	device := rspec.WindowsDevice{
+		ID:     id,
+		IDType: idType,
+	}
+
+	g.initConfigWindows()
+	for i, device := range g.Config.Windows.Devices {
+		if device.ID == id {
+			g.Config.Windows.Devices[i].IDType = idType
+			return
+		}
+	}
+	g.Config.Windows.Devices = append(g.Config.Windows.Devices, device)
+}
+
 // SetWindowsNetwork sets g.Config.Windows.Network.
 func (g *Generator) SetWindowsNetwork(network rspec.WindowsNetwork) {
 	g.initConfigWindows()

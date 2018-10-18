@@ -126,6 +126,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "solaris-max-shm-memory", Usage: "Specifies the maximum amount of shared memory"},
 	cli.StringFlag{Name: "solaris-milestone", Usage: "Specifies the SMF FMRI"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
+	cli.StringSliceFlag{Name: "windows-devices", Usage: "specifies a list of devices to be mapped into the container"},
 	cli.StringFlag{Name: "windows-hyperv-utilityVMPath", Usage: "specifies the path to the image used for the utility VM"},
 	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
 	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
@@ -867,6 +868,17 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		}
 	}
 
+	if context.IsSet("windows-devices") {
+		devices := context.StringSlice("windows-devices")
+		for _, device := range devices {
+			id, idType, err := parseWindowsDevices(device)
+			if err != nil {
+				return err
+			}
+			g.AddWindowsDevices(id, idType)
+		}
+	}
+
 	if context.IsSet("windows-network") {
 		network := context.String("windows-network")
 		tmpNetwork := rspec.WindowsNetwork{}
@@ -1016,6 +1028,21 @@ func parseNamespace(ns string) (string, string, error) {
 	}
 
 	return nsType, nsPath, nil
+}
+
+func parseWindowsDevices(device string) (string, string, error) {
+	parts := strings.Split(device, ":")
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("invalid windows device value: %s", device)
+	}
+
+	id := parts[0]
+	idType := parts[1]
+	if idType != "class" {
+		return "", "", fmt.Errorf("invalid idType value: %s. Windows only supports a value of class", idType)
+	}
+
+	return id, idType, nil
 }
 
 var deviceType = map[string]bool{
