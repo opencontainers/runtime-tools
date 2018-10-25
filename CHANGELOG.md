@@ -1,3 +1,21 @@
+# v0.8.0
+
+## Additions
+* generate: Add generate.New support for Windows (#667).
+* validation: add resource validation after delete (#654).
+* mountinfo: parse empty strings in source (#652).
+
+## Minor fixes and documentation
+* readme: fix wrong filepath (#665).
+* Makefile: add generate to gotest (#656).
+* MAINTAINERS: remove philips (#659).
+* Vendor in windows runtime-spec changes (#663).
+* /proc should be mounted with nosuid, noexec, nodev to match the host (#664).
+* validation: mounts: fix condition of source & type check (#660).
+* Fix TAP output with multiple RuntimeInsideValidate (#658).
+* fix some misspells (#649).
+
+
 # v0.7.0
 ## Additions
 
@@ -16,7 +34,7 @@
 * check the status of the state passed to hooks over stdin (#608).
 * validation: fix nil deferences in cpu & blkio cgroups tests (#638).
 
-## Minor fixes and documentaion
+## Minor fixes and documentation
 
 * validation: fix nil dereference when handling multierror in hooks_stdin (#641).
 * fix generate test in calling generate.New (#648).
@@ -49,7 +67,7 @@
 * validation: Add error judgment to SetConfig (#585).
 * validate: allow non-linux compatibility (#588).
  
-## Minor fixes and documentaion
+## Minor fixes and documentation
 
 * cgroups_v1: Correction parameters (#629).
 * travis: fix fetch issue of golint (#630).
@@ -78,7 +96,7 @@
 * Relax LGTM requirement (#559, #566).
 * validation: Fixes #556 (#557).
 
-## Minor fixes and documentaion
+## Minor fixes and documentation
 
 * validate_test: Complement test (#568).
 * man: Modify the legal value of the rootfs-propagation (#548).
@@ -115,7 +133,7 @@
 * validation: Add mount validation (#547).
 * ...: Transition from tap Diagnostic(...) to YAML(...) (#533).
 
-## Minor fixes and documentaion
+## Minor fixes and documentation
 
 * runtimetest: Fix error return (#505).
 * runtimetest: Move validateRlimits to defaultValidations (#506).
