@@ -192,3 +192,10 @@ func (g *Generator) initConfigVMHypervisor() {
 		g.Config.VM.Hypervisor = rspec.VMHypervisor{}
 	}
 }
+
+func (g *Generator) initConfigVMKernel() {
+	g.initConfigVM()
+	if &g.Config.VM.Kernel == nil {
+		g.Config.VM.Kernel = rspec.VMKernel{}
+	}
+}

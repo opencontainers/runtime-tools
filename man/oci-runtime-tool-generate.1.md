@@ -491,6 +491,9 @@ read the configuration from `config.json`.
 **--vm-hypervisor-parameters**=""
   Specifies an array of parameters to pass to the hypervisor.
 
+**--vm-kernel-path**=PATH
+  Set path to the kernel used to boot the container virtual machine.
+
 **--windows-devices**=[]
   Specifies devices that MUST be available in the container.
 

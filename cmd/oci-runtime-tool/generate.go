@@ -128,6 +128,7 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
 	cli.StringFlag{Name: "vm-hypervisor-path", Usage: "specifies the path to the hypervisor binary that manages the container virtual machine"},
 	cli.StringFlag{Name: "vm-hypervisor-parameters", Usage: "specifies an array of parameters to pass to the hypervisor"},
+	cli.StringFlag{Name: "vm-kernel-path", Usage: "set path to the kernel used to boot the container virtual machine"},
 	cli.StringSliceFlag{Name: "windows-devices", Usage: "specifies a list of devices to be mapped into the container"},
 	cli.StringFlag{Name: "windows-hyperv-utilityVMPath", Usage: "specifies the path to the image used for the utility VM"},
 	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
@@ -861,6 +862,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("vm-hypervisor-parameters") {
 		g.SetVMHypervisorParameters(context.String("vm-hypervisor-parameters"))
+	}
+
+	if context.IsSet("vm-kernel-path") {
+		g.SetVMKernelPath(context.String("vm-kernel-path"))
 	}
 
 	if context.IsSet("windows-hyperv-utilityVMPath") {
