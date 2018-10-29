@@ -1533,6 +1533,12 @@ func (g *Generator) SetSolarisMilestone(milestone string) {
 	g.Config.Solaris.Milestone = milestone
 }
 
+// SetVMHypervisorPath sets g.Config.VM.Hypervisor.Path
+func (g *Generator) SetVMHypervisorPath(path string) {
+	g.initConfigVMHypervisor()
+	g.Config.VM.Hypervisor.Path = path
+}
+
 // SetWindowsHypervUntilityVMPath sets g.Config.Windows.HyperV.UtilityVMPath.
 func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
 	g.initConfigWindowsHyperV()

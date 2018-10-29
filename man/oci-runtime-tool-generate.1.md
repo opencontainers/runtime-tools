@@ -485,6 +485,9 @@ read the configuration from `config.json`.
   Additional options will only adjust the relevant portions of your template.
   Templates are not validated for correctness, so the user should ensure that they are correct.
 
+**--vm-hypervisor-path**=PATH
+  Specifies the path to the hypervisor binary that manages the container virtual machine.
+
 **--windows-devices**=[]
   Specifies devices that MUST be available in the container.
 
