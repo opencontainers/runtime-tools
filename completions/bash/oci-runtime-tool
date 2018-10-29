@@ -402,6 +402,7 @@ _oci-runtime-tool_generate() {
         --vm-hypervisor-parameters
         --vm-kernel-path
         --vm-kernel-parameters
+        --vm-kernel-initrd
 		--windows-devices
 		--windows-hyperv-utilityVMPath
 		--windows-layer-folders

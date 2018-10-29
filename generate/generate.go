@@ -1557,6 +1557,12 @@ func (g *Generator) SetVMKernelParameters(parameters string) {
 	g.Config.VM.Kernel.Parameters = parameters
 }
 
+// SetVMKernelInitRD sets g.Config.VM.Kernel.InitRD
+func (g *Generator) SetVMKernelInitRD(initrd string) {
+	g.initConfigVMKernel()
+	g.Config.VM.Kernel.InitRD = initrd
+}
+
 // SetWindowsHypervUntilityVMPath sets g.Config.Windows.HyperV.UtilityVMPath.
 func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
 	g.initConfigWindowsHyperV()

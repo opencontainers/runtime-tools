@@ -497,6 +497,9 @@ read the configuration from `config.json`.
 **--vm-kernel-parameters**=""
   Specifies an array of parameters to pass to the kernel.
 
+**--vm-kernel-initrd**=""
+  Set path to an initial ramdisk to be used by the container virtual machine.
+
 **--windows-devices**=[]
   Specifies devices that MUST be available in the container.
 
