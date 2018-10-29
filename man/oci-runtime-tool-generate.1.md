@@ -488,6 +488,9 @@ read the configuration from `config.json`.
 **--vm-hypervisor-path**=PATH
   Specifies the path to the hypervisor binary that manages the container virtual machine.
 
+**--vm-hypervisor-parameters**=""
+  Specifies an array of parameters to pass to the hypervisor.
+
 **--windows-devices**=[]
   Specifies devices that MUST be available in the container.
 

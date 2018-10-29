@@ -399,6 +399,7 @@ _oci-runtime-tool_generate() {
 		 --solaris-milestone
 		--template
         --vm-hypervisor-path
+        --vm-hypervisor-parameters
 		--windows-devices
 		--windows-hyperv-utilityVMPath
 		--windows-layer-folders

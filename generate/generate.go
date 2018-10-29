@@ -1539,6 +1539,12 @@ func (g *Generator) SetVMHypervisorPath(path string) {
 	g.Config.VM.Hypervisor.Path = path
 }
 
+// SetVMHypervisorPath sets g.Config.VM.Hypervisor.Parameters
+func (g *Generator) SetVMHypervisorParameters(parameters string) {
+	g.initConfigVMHypervisor()
+	g.Config.VM.Hypervisor.Parameters = parameters
+}
+
 // SetWindowsHypervUntilityVMPath sets g.Config.Windows.HyperV.UtilityVMPath.
 func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
 	g.initConfigWindowsHyperV()
