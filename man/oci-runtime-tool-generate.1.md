@@ -491,6 +491,9 @@ read the configuration from `config.json`.
 **--vm-hypervisor-path**=PATH
   Specifies the path to the hypervisor binary that manages the container virtual machine.
 
+**--vm-image-format**=""
+  Set the format of the container virtual machine root image.
+
 **--vm-image-path**=PATH
   Set path to the container virtual machine root image.
 

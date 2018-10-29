@@ -1569,6 +1569,12 @@ func (g *Generator) SetVMImagePath(path string) {
 	g.Config.VM.Image.Path = path
 }
 
+// SetVMImageFormat sets g.Config.VM.Image.Format
+func (g *Generator) SetVMImageFormat(format string) {
+	g.initConfigVMImage()
+	g.Config.VM.Image.Format = format
+}
+
 // SetWindowsHypervUntilityVMPath sets g.Config.Windows.HyperV.UtilityVMPath.
 func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
 	g.initConfigWindowsHyperV()

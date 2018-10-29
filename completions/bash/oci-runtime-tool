@@ -396,14 +396,15 @@ _oci-runtime-tool_generate() {
 		--solaris-capped-memory-swap
 		--solaris-limitpriv1
 		--solaris-max-shm-memory
-		 --solaris-milestone
+		--solaris-milestone
 		--template
-        --vm-hypervisor-parameters
-        --vm-hypervisor-path
-        --vm-image-path
-        --vm-kernel-initrd
-        --vm-kernel-parameters
-        --vm-kernel-path
+		--vm-hypervisor-parameters
+		--vm-hypervisor-path
+		--vm-image-format
+		--vm-image-path
+		--vm-kernel-initrd
+		--vm-kernel-parameters
+		--vm-kernel-path
 		--windows-devices
 		--windows-hyperv-utilityVMPath
 		--windows-layer-folders
