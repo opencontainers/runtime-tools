@@ -494,6 +494,9 @@ read the configuration from `config.json`.
 **--vm-kernel-path**=PATH
   Set path to the kernel used to boot the container virtual machine.
 
+**--vm-kernel-parameters**=""
+  Specifies an array of parameters to pass to the kernel.
+
 **--windows-devices**=[]
   Specifies devices that MUST be available in the container.
 
