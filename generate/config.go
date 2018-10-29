@@ -199,3 +199,10 @@ func (g *Generator) initConfigVMKernel() {
 		g.Config.VM.Kernel = rspec.VMKernel{}
 	}
 }
+
+func (g *Generator) initConfigVMImage() {
+	g.initConfigVM()
+	if &g.Config.VM.Image == nil {
+		g.Config.VM.Image = rspec.VMImage{}
+	}
+}

@@ -485,20 +485,23 @@ read the configuration from `config.json`.
   Additional options will only adjust the relevant portions of your template.
   Templates are not validated for correctness, so the user should ensure that they are correct.
 
-**--vm-hypervisor-path**=PATH
-  Specifies the path to the hypervisor binary that manages the container virtual machine.
-
 **--vm-hypervisor-parameters**=""
   Specifies an array of parameters to pass to the hypervisor.
 
-**--vm-kernel-path**=PATH
-  Set path to the kernel used to boot the container virtual machine.
+**--vm-hypervisor-path**=PATH
+  Specifies the path to the hypervisor binary that manages the container virtual machine.
+
+**--vm-image-path**=PATH
+  Set path to the container virtual machine root image.
+
+**--vm-kernel-initrd**=""
+  Set path to an initial ramdisk to be used by the container virtual machine.
 
 **--vm-kernel-parameters**=""
   Specifies an array of parameters to pass to the kernel.
 
-**--vm-kernel-initrd**=""
-  Set path to an initial ramdisk to be used by the container virtual machine.
+**--vm-kernel-path**=PATH
+  Set path to the kernel used to boot the container virtual machine.
 
 **--windows-devices**=[]
   Specifies devices that MUST be available in the container.

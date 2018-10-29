@@ -1563,6 +1563,12 @@ func (g *Generator) SetVMKernelInitRD(initrd string) {
 	g.Config.VM.Kernel.InitRD = initrd
 }
 
+// SetVMImagePath sets g.Config.VM.Image.Path
+func (g *Generator) SetVMImagePath(path string) {
+	g.initConfigVMImage()
+	g.Config.VM.Image.Path = path
+}
+
 // SetWindowsHypervUntilityVMPath sets g.Config.Windows.HyperV.UtilityVMPath.
 func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
 	g.initConfigWindowsHyperV()
