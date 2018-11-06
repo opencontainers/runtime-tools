@@ -861,7 +861,9 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("vm-hypervisor-path") {
-		g.SetVMHypervisorPath(context.String("vm-hypervisor-path"))
+		if err := g.SetVMHypervisorPath(context.String("vm-hypervisor-path")); err != nil {
+			return err
+		}
 	}
 
 	if context.IsSet("vm-hypervisor-parameters") {
@@ -869,7 +871,9 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("vm-kernel-path") {
-		g.SetVMKernelPath(context.String("vm-kernel-path"))
+		if err := g.SetVMKernelPath(context.String("vm-kernel-path")); err != nil {
+			return err
+		}
 	}
 
 	if context.IsSet("vm-kernel-parameters") {
@@ -877,15 +881,21 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("vm-kernel-initrd") {
-		g.SetVMKernelInitRD(context.String("vm-kernel-initrd"))
+		if err := g.SetVMKernelInitRD(context.String("vm-kernel-initrd")); err != nil {
+			return err
+		}
 	}
 
 	if context.IsSet("vm-image-path") {
-		g.SetVMImagePath(context.String("vm-image-path"))
+		if err := g.SetVMImagePath(context.String("vm-image-path")); err != nil {
+			return err
+		}
 	}
 
 	if context.IsSet("vm-image-format") {
-		g.SetVMImageFormat(context.String("vm-image-format"))
+		if err := g.SetVMImageFormat(context.String("vm-image-format")); err != nil {
+			return err
+		}
 	}
 
 	if context.IsSet("windows-hyperv-utilityVMPath") {
@@ -910,7 +920,9 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if err != nil {
 				return err
 			}
-			g.AddWindowsDevices(id, idType)
+			if err := g.AddWindowsDevices(id, idType); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1073,10 +1085,6 @@ func parseWindowsDevices(device string) (string, string, error) {
 
 	id := parts[0]
 	idType := parts[1]
-	if idType != "class" {
-		return "", "", fmt.Errorf("invalid idType value: %s. Windows only supports a value of class", idType)
-	}
-
 	return id, idType, nil
 }
 
