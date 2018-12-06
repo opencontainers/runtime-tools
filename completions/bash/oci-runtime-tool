@@ -371,6 +371,7 @@ _oci-runtime-tool_generate() {
 		--mounts-remove
 		--os
 		--output
+		--process-cap-add
 		--process-cap-add-ambient
 		--process-cap-add-bounding
 		--process-cap-add-effective
