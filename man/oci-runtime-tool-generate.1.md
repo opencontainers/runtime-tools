@@ -402,6 +402,11 @@ read the configuration from `config.json`.
   You can use this command to add multiple capabilities. Each value should be used ',' separated.
   e.g. --process-cap-add-permitted CAP_FOWNER,CAP_FSETID
 
+**--process-cap-drop**=[]
+  Drop Linux capabilities to all 5 capability sets.
+  You can use this command to drop multiple capabilities. Each value should be used ',' separated.
+  e.g. --process-cap-drop CAP_FOWNER,CAP_FSETID
+
 **--process-cap-drop-all**=true|false
   Drop all Linux capabilities
   This option conflicts with other cap options, as --process-cap-*.

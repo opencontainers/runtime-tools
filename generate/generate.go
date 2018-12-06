@@ -1253,6 +1253,42 @@ func (g *Generator) AddProcessCapabilityPermitted(c string) error {
 	return nil
 }
 
+// DropProcessCapability drops a process capability from all 5 capability sets.
+func (g *Generator) DropProcessCapability(c string) error {
+	if g.Config == nil || g.Config.Process == nil || g.Config.Process.Capabilities == nil {
+		return nil
+	}
+
+	cp := strings.ToUpper(c)
+	for i, cap := range g.Config.Process.Capabilities.Ambient {
+		if strings.ToUpper(cap) == cp {
+			g.Config.Process.Capabilities.Ambient = removeFunc(g.Config.Process.Capabilities.Ambient, i)
+		}
+	}
+	for i, cap := range g.Config.Process.Capabilities.Bounding {
+		if strings.ToUpper(cap) == cp {
+			g.Config.Process.Capabilities.Bounding = removeFunc(g.Config.Process.Capabilities.Bounding, i)
+		}
+	}
+	for i, cap := range g.Config.Process.Capabilities.Effective {
+		if strings.ToUpper(cap) == cp {
+			g.Config.Process.Capabilities.Effective = removeFunc(g.Config.Process.Capabilities.Effective, i)
+		}
+	}
+	for i, cap := range g.Config.Process.Capabilities.Inheritable {
+		if strings.ToUpper(cap) == cp {
+			g.Config.Process.Capabilities.Inheritable = removeFunc(g.Config.Process.Capabilities.Inheritable, i)
+		}
+	}
+	for i, cap := range g.Config.Process.Capabilities.Permitted {
+		if strings.ToUpper(cap) == cp {
+			g.Config.Process.Capabilities.Permitted = removeFunc(g.Config.Process.Capabilities.Permitted, i)
+		}
+	}
+
+	return validate.CapValid(cp, false)
+}
+
 // DropProcessCapabilityAmbient drops a process capability from g.Config.Process.Capabilities.Ambient.
 func (g *Generator) DropProcessCapabilityAmbient(c string) error {
 	if g.Config == nil || g.Config.Process == nil || g.Config.Process.Capabilities == nil {

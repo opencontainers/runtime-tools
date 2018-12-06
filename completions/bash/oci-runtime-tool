@@ -377,6 +377,7 @@ _oci-runtime-tool_generate() {
 		--process-cap-add-effective
 		--process-cap-add-inheritable
 		--process-cap-add-permitted
+		--process-cap-drop
 		--process-cap-drop-ambient
 		--process-cap-drop-bounding
 		--process-cap-drop-effective
