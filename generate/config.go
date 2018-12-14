@@ -178,3 +178,31 @@ func (g *Generator) initConfigWindowsResourcesMemory() {
 		g.Config.Windows.Resources.Memory = &rspec.WindowsMemoryResources{}
 	}
 }
+
+func (g *Generator) initConfigVM() {
+	g.initConfig()
+	if g.Config.VM == nil {
+		g.Config.VM = &rspec.VM{}
+	}
+}
+
+func (g *Generator) initConfigVMHypervisor() {
+	g.initConfigVM()
+	if &g.Config.VM.Hypervisor == nil {
+		g.Config.VM.Hypervisor = rspec.VMHypervisor{}
+	}
+}
+
+func (g *Generator) initConfigVMKernel() {
+	g.initConfigVM()
+	if &g.Config.VM.Kernel == nil {
+		g.Config.VM.Kernel = rspec.VMKernel{}
+	}
+}
+
+func (g *Generator) initConfigVMImage() {
+	g.initConfigVM()
+	if &g.Config.VM.Image == nil {
+		g.Config.VM.Image = rspec.VMImage{}
+	}
+}

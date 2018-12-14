@@ -126,6 +126,14 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "solaris-max-shm-memory", Usage: "Specifies the maximum amount of shared memory"},
 	cli.StringFlag{Name: "solaris-milestone", Usage: "Specifies the SMF FMRI"},
 	cli.StringFlag{Name: "template", Usage: "base template to use for creating the configuration"},
+	cli.StringFlag{Name: "vm-hypervisor-parameters", Usage: "specifies an array of parameters to pass to the hypervisor"},
+	cli.StringFlag{Name: "vm-hypervisor-path", Usage: "specifies the path to the hypervisor binary that manages the container virtual machine"},
+	cli.StringFlag{Name: "vm-image-format", Usage: "set the format of the container virtual machine root image"},
+	cli.StringFlag{Name: "vm-image-path", Usage: "set path to the container virtual machine root image"},
+	cli.StringFlag{Name: "vm-kernel-initrd", Usage: "set path to an initial ramdisk to be used by the container virtual machine"},
+	cli.StringFlag{Name: "vm-kernel-parameters", Usage: "specifies an array of parameters to pass to the kernel"},
+	cli.StringFlag{Name: "vm-kernel-path", Usage: "set path to the kernel used to boot the container virtual machine"},
+	cli.StringSliceFlag{Name: "windows-devices", Usage: "specifies a list of devices to be mapped into the container"},
 	cli.StringFlag{Name: "windows-hyperv-utilityVMPath", Usage: "specifies the path to the image used for the utility VM"},
 	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
 	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
@@ -862,6 +870,44 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetSolarisMilestone(context.String("solaris-milestone"))
 	}
 
+	if context.IsSet("vm-hypervisor-path") {
+		if err := g.SetVMHypervisorPath(context.String("vm-hypervisor-path")); err != nil {
+			return err
+		}
+	}
+
+	if context.IsSet("vm-hypervisor-parameters") {
+		g.SetVMHypervisorParameters(context.String("vm-hypervisor-parameters"))
+	}
+
+	if context.IsSet("vm-kernel-path") {
+		if err := g.SetVMKernelPath(context.String("vm-kernel-path")); err != nil {
+			return err
+		}
+	}
+
+	if context.IsSet("vm-kernel-parameters") {
+		g.SetVMKernelParameters(context.String("vm-kernel-parameters"))
+	}
+
+	if context.IsSet("vm-kernel-initrd") {
+		if err := g.SetVMKernelInitRD(context.String("vm-kernel-initrd")); err != nil {
+			return err
+		}
+	}
+
+	if context.IsSet("vm-image-path") {
+		if err := g.SetVMImagePath(context.String("vm-image-path")); err != nil {
+			return err
+		}
+	}
+
+	if context.IsSet("vm-image-format") {
+		if err := g.SetVMImageFormat(context.String("vm-image-format")); err != nil {
+			return err
+		}
+	}
+
 	if context.IsSet("windows-hyperv-utilityVMPath") {
 		g.SetWindowsHypervUntilityVMPath(context.String("windows-hyperv-utilityVMPath"))
 	}
@@ -874,6 +920,19 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		folders := context.StringSlice("windows-layer-folders")
 		for _, folder := range folders {
 			g.AddWindowsLayerFolders(folder)
+		}
+	}
+
+	if context.IsSet("windows-devices") {
+		devices := context.StringSlice("windows-devices")
+		for _, device := range devices {
+			id, idType, err := parseWindowsDevices(device)
+			if err != nil {
+				return err
+			}
+			if err := g.AddWindowsDevices(id, idType); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1026,6 +1085,17 @@ func parseNamespace(ns string) (string, string, error) {
 	}
 
 	return nsType, nsPath, nil
+}
+
+func parseWindowsDevices(device string) (string, string, error) {
+	parts := strings.Split(device, ":")
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("invalid windows device value: %s", device)
+	}
+
+	id := parts[0]
+	idType := parts[1]
+	return id, idType, nil
 }
 
 var deviceType = map[string]bool{

@@ -1533,6 +1533,74 @@ func (g *Generator) SetSolarisMilestone(milestone string) {
 	g.Config.Solaris.Milestone = milestone
 }
 
+// SetVMHypervisorPath sets g.Config.VM.Hypervisor.Path
+func (g *Generator) SetVMHypervisorPath(path string) error {
+	if !strings.HasPrefix(path, "/") {
+		return fmt.Errorf("hypervisorPath %v is not an absolute path", path)
+	}
+	g.initConfigVMHypervisor()
+	g.Config.VM.Hypervisor.Path = path
+	return nil
+}
+
+// SetVMHypervisorParameters sets g.Config.VM.Hypervisor.Parameters
+func (g *Generator) SetVMHypervisorParameters(parameters string) {
+	g.initConfigVMHypervisor()
+	g.Config.VM.Hypervisor.Parameters = parameters
+}
+
+// SetVMKernelPath sets g.Config.VM.Kernel.Path
+func (g *Generator) SetVMKernelPath(path string) error {
+	if !strings.HasPrefix(path, "/") {
+		return fmt.Errorf("kernelPath %v is not an absolute path", path)
+	}
+	g.initConfigVMKernel()
+	g.Config.VM.Kernel.Path = path
+	return nil
+}
+
+// SetVMKernelParameters sets g.Config.VM.Kernel.Parameters
+func (g *Generator) SetVMKernelParameters(parameters string) {
+	g.initConfigVMKernel()
+	g.Config.VM.Kernel.Parameters = parameters
+}
+
+// SetVMKernelInitRD sets g.Config.VM.Kernel.InitRD
+func (g *Generator) SetVMKernelInitRD(initrd string) error {
+	if !strings.HasPrefix(initrd, "/") {
+		return fmt.Errorf("kernelInitrd %v is not an absolute path", initrd)
+	}
+	g.initConfigVMKernel()
+	g.Config.VM.Kernel.InitRD = initrd
+	return nil
+}
+
+// SetVMImagePath sets g.Config.VM.Image.Path
+func (g *Generator) SetVMImagePath(path string) error {
+	if !strings.HasPrefix(path, "/") {
+		return fmt.Errorf("imagePath %v is not an absolute path", path)
+	}
+	g.initConfigVMImage()
+	g.Config.VM.Image.Path = path
+	return nil
+}
+
+// SetVMImageFormat sets g.Config.VM.Image.Format
+func (g *Generator) SetVMImageFormat(format string) error {
+	switch format {
+	case "raw":
+	case "qcow2":
+	case "vdi":
+	case "vmdk":
+	case "vhd":
+	default:
+		return fmt.Errorf("Commonly supported formats are: raw, qcow2, vdi, vmdk, vhd")
+	}
+	g.initConfigVMImage()
+	g.Config.VM.Image.Format = format
+	return nil
+}
+
 // SetWindowsHypervUntilityVMPath sets g.Config.Windows.HyperV.UtilityVMPath.
 func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
 	g.initConfigWindowsHyperV()
@@ -1549,6 +1617,27 @@ func (g *Generator) SetWinodwsIgnoreFlushesDuringBoot(ignore bool) {
 func (g *Generator) AddWindowsLayerFolders(folder string) {
 	g.initConfigWindows()
 	g.Config.Windows.LayerFolders = append(g.Config.Windows.LayerFolders, folder)
+}
+
+// AddWindowsDevices adds or sets g.Config.Windwos.Devices
+func (g *Generator) AddWindowsDevices(id, idType string) error {
+	if idType != "class" {
+		return fmt.Errorf("Invalid idType value: %s. Windows only supports a value of class", idType)
+	}
+	device := rspec.WindowsDevice{
+		ID:     id,
+		IDType: idType,
+	}
+
+	g.initConfigWindows()
+	for i, device := range g.Config.Windows.Devices {
+		if device.ID == id {
+			g.Config.Windows.Devices[i].IDType = idType
+			return nil
+		}
+	}
+	g.Config.Windows.Devices = append(g.Config.Windows.Devices, device)
+	return nil
 }
 
 // SetWindowsNetwork sets g.Config.Windows.Network.
