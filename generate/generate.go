@@ -1643,7 +1643,7 @@ func (g *Generator) SetVMHypervisorPath(path string) error {
 }
 
 // SetVMHypervisorParameters sets g.Config.VM.Hypervisor.Parameters
-func (g *Generator) SetVMHypervisorParameters(parameters string) {
+func (g *Generator) SetVMHypervisorParameters(parameters []string) {
 	g.initConfigVMHypervisor()
 	g.Config.VM.Hypervisor.Parameters = parameters
 }
@@ -1659,7 +1659,7 @@ func (g *Generator) SetVMKernelPath(path string) error {
 }
 
 // SetVMKernelParameters sets g.Config.VM.Kernel.Parameters
-func (g *Generator) SetVMKernelParameters(parameters string) {
+func (g *Generator) SetVMKernelParameters(parameters []string) {
 	g.initConfigVMKernel()
 	g.Config.VM.Kernel.Parameters = parameters
 }
