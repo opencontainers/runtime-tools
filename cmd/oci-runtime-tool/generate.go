@@ -94,17 +94,17 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
-	cli.StringSliceFlag{Name: "process-cap-add-ambient", Usage: "add Linux ambient capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-add-bounding", Usage: "add Linux bounding capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-add-effective", Usage: "add Linux effective capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-add-inheritable", Usage: "add Linux inheritable capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-add-permitted", Usage: "add Linux permitted capabilities"},
+	cli.StringFlag{Name: "process-cap-add-ambient", Usage: "add Linux ambient capabilities"},
+	cli.StringFlag{Name: "process-cap-add-bounding", Usage: "add Linux bounding capabilities"},
+	cli.StringFlag{Name: "process-cap-add-effective", Usage: "add Linux effective capabilities"},
+	cli.StringFlag{Name: "process-cap-add-inheritable", Usage: "add Linux inheritable capabilities"},
+	cli.StringFlag{Name: "process-cap-add-permitted", Usage: "add Linux permitted capabilities"},
 	cli.BoolFlag{Name: "process-cap-drop-all", Usage: "drop all Linux capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-drop-ambient", Usage: "drop Linux ambient capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-drop-bounding", Usage: "drop Linux bounding capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-drop-effective", Usage: "drop Linux effective capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-drop-inheritable", Usage: "drop Linux inheritable capabilities"},
-	cli.StringSliceFlag{Name: "process-cap-drop-permitted", Usage: "drop Linux permitted capabilities"},
+	cli.StringFlag{Name: "process-cap-drop-ambient", Usage: "drop Linux ambient capabilities"},
+	cli.StringFlag{Name: "process-cap-drop-bounding", Usage: "drop Linux bounding capabilities"},
+	cli.StringFlag{Name: "process-cap-drop-effective", Usage: "drop Linux effective capabilities"},
+	cli.StringFlag{Name: "process-cap-drop-inheritable", Usage: "drop Linux inheritable capabilities"},
+	cli.StringFlag{Name: "process-cap-drop-permitted", Usage: "drop Linux permitted capabilities"},
 	cli.StringFlag{Name: "process-consolesize", Usage: "specifies the console size in characters (width:height)"},
 	cli.StringFlag{Name: "process-cwd", Value: "/", Usage: "current working directory for the process"},
 	cli.IntFlag{Name: "process-gid", Usage: "gid for the process"},
@@ -332,90 +332,100 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("process-cap-add-ambient") {
-		addCaps := context.StringSlice("process-cap-add-ambient")
-		for _, cap := range addCaps {
-			if err := g.AddProcessCapabilityAmbient(cap); err != nil {
+		addCaps := context.String("process-cap-add-ambient")
+		parts := strings.Split(addCaps, ",")
+		for _, part := range parts {
+			if err := g.AddProcessCapabilityAmbient(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-add-bounding") {
-		addCaps := context.StringSlice("process-cap-add-bounding")
-		for _, cap := range addCaps {
-			if err := g.AddProcessCapabilityBounding(cap); err != nil {
+		addCaps := context.String("process-cap-add-bounding")
+		parts := strings.Split(addCaps, ",")
+		for _, part := range parts {
+			if err := g.AddProcessCapabilityBounding(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-add-effective") {
-		addCaps := context.StringSlice("process-cap-add-effective")
-		for _, cap := range addCaps {
-			if err := g.AddProcessCapabilityEffective(cap); err != nil {
+		addCaps := context.String("process-cap-add-effective")
+		parts := strings.Split(addCaps, ",")
+		for _, part := range parts {
+			if err := g.AddProcessCapabilityEffective(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-add-inheritable") {
-		addCaps := context.StringSlice("process-cap-add-inheritable")
-		for _, cap := range addCaps {
-			if err := g.AddProcessCapabilityInheritable(cap); err != nil {
+		addCaps := context.String("process-cap-add-inheritable")
+		parts := strings.Split(addCaps, ",")
+		for _, part := range parts {
+			if err := g.AddProcessCapabilityInheritable(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-add-permitted") {
-		addCaps := context.StringSlice("process-cap-add-permitted")
-		for _, cap := range addCaps {
-			if err := g.AddProcessCapabilityPermitted(cap); err != nil {
+		addCaps := context.String("process-cap-add-permitted")
+		parts := strings.Split(addCaps, ",")
+		for _, part := range parts {
+			if err := g.AddProcessCapabilityPermitted(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-drop-ambient") {
-		dropCaps := context.StringSlice("process-cap-drop-ambient")
-		for _, cap := range dropCaps {
-			if err := g.DropProcessCapabilityAmbient(cap); err != nil {
+		dropCaps := context.String("process-cap-drop-ambient")
+		parts := strings.Split(dropCaps, ",")
+		for _, part := range parts {
+			if err := g.DropProcessCapabilityAmbient(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-drop-bounding") {
-		dropCaps := context.StringSlice("process-cap-drop-bounding")
-		for _, cap := range dropCaps {
-			if err := g.DropProcessCapabilityBounding(cap); err != nil {
+		dropCaps := context.String("process-cap-drop-bounding")
+		parts := strings.Split(dropCaps, ",")
+		for _, part := range parts {
+			if err := g.DropProcessCapabilityBounding(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-drop-effective") {
-		dropCaps := context.StringSlice("process-cap-drop-effective")
-		for _, cap := range dropCaps {
-			if err := g.DropProcessCapabilityEffective(cap); err != nil {
+		dropCaps := context.String("process-cap-drop-effective")
+		parts := strings.Split(dropCaps, ",")
+		for _, part := range parts {
+			if err := g.DropProcessCapabilityEffective(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-drop-inheritable") {
-		dropCaps := context.StringSlice("process-cap-drop-inheritable")
-		for _, cap := range dropCaps {
-			if err := g.DropProcessCapabilityInheritable(cap); err != nil {
+		dropCaps := context.String("process-cap-drop-inheritable")
+		parts := strings.Split(dropCaps, ",")
+		for _, part := range parts {
+			if err := g.DropProcessCapabilityInheritable(part); err != nil {
 				return err
 			}
 		}
 	}
 
 	if context.IsSet("process-cap-drop-permitted") {
-		dropCaps := context.StringSlice("process-cap-drop-permitted")
-		for _, cap := range dropCaps {
-			if err := g.DropProcessCapabilityPermitted(cap); err != nil {
+		dropCaps := context.String("process-cap-drop-permitted")
+		parts := strings.Split(dropCaps, ",")
+		for _, part := range parts {
+			if err := g.DropProcessCapabilityPermitted(part); err != nil {
 				return err
 			}
 		}
