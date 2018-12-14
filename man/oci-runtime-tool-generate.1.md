@@ -372,6 +372,11 @@ read the configuration from `config.json`.
 
   When the operator executes **oci-runtime-tool generate --privileged**, OCI will enable access to all devices on the host as well as disable some of the confinement mechanisms like AppArmor, SELinux, and seccomp from blocking access to privileged processes.  This gives the container processes nearly all the same access to the host as processes generating outside of a container on the host.
 
+**--process-cap-add**=[]
+  Add Linux capabilities to all 5 capability sets.
+  You can use this command to add multiple capabilities. Each value should be used ',' separated.
+  e.g. --process-cap-add CAP_FOWNER,CAP_FSETID
+
 **--process-cap-add-ambient**=[]
   Add Linux ambient capabilities.
   You can use this command to add multiple capabilities. Each value should be used ',' separated.
@@ -396,6 +401,11 @@ read the configuration from `config.json`.
   Add Linux permitted capabilities.
   You can use this command to add multiple capabilities. Each value should be used ',' separated.
   e.g. --process-cap-add-permitted CAP_FOWNER,CAP_FSETID
+
+**--process-cap-drop**=[]
+  Drop Linux capabilities to all 5 capability sets.
+  You can use this command to drop multiple capabilities. Each value should be used ',' separated.
+  e.g. --process-cap-drop CAP_FOWNER,CAP_FSETID
 
 **--process-cap-drop-all**=true|false
   Drop all Linux capabilities

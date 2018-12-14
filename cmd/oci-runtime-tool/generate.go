@@ -94,11 +94,13 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
+	cli.StringFlag{Name: "process-cap-add", Usage: "add Linux capabilities to all 5 capability sets"},
 	cli.StringFlag{Name: "process-cap-add-ambient", Usage: "add Linux ambient capabilities"},
 	cli.StringFlag{Name: "process-cap-add-bounding", Usage: "add Linux bounding capabilities"},
 	cli.StringFlag{Name: "process-cap-add-effective", Usage: "add Linux effective capabilities"},
 	cli.StringFlag{Name: "process-cap-add-inheritable", Usage: "add Linux inheritable capabilities"},
 	cli.StringFlag{Name: "process-cap-add-permitted", Usage: "add Linux permitted capabilities"},
+	cli.StringFlag{Name: "process-cap-drop", Usage: "drop Linux capabilities to all 5 capability sets"},
 	cli.BoolFlag{Name: "process-cap-drop-all", Usage: "drop all Linux capabilities"},
 	cli.StringFlag{Name: "process-cap-drop-ambient", Usage: "drop Linux ambient capabilities"},
 	cli.StringFlag{Name: "process-cap-drop-bounding", Usage: "drop Linux bounding capabilities"},
@@ -339,6 +341,16 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.ClearProcessCapabilities()
 	}
 
+	if context.IsSet("process-cap-add") {
+		addCaps := context.String("process-cap-add")
+		parts := strings.Split(addCaps, ",")
+		for _, part := range parts {
+			if err := g.AddProcessCapability(part); err != nil {
+				return err
+			}
+		}
+	}
+
 	if context.IsSet("process-cap-add-ambient") {
 		addCaps := context.String("process-cap-add-ambient")
 		parts := strings.Split(addCaps, ",")
@@ -384,6 +396,16 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		parts := strings.Split(addCaps, ",")
 		for _, part := range parts {
 			if err := g.AddProcessCapabilityPermitted(part); err != nil {
+				return err
+			}
+		}
+	}
+
+	if context.IsSet("process-cap-drop") {
+		addCaps := context.String("process-cap-drop")
+		parts := strings.Split(addCaps, ",")
+		for _, part := range parts {
+			if err := g.DropProcessCapability(part); err != nil {
 				return err
 			}
 		}
