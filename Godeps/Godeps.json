@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/opencontainers/runtime-tools",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v80",
+	"GodepVersion": "v77",
 	"Packages": [
 		"./..."
 	],
@@ -22,7 +22,8 @@
 		},
 		{
 			"ImportPath": "github.com/hashicorp/go-multierror",
-			"Rev": "ed905158d87462226a13fe39ddf685ea65f1c11f"
+			"Comment": "v1.0.0",
+			"Rev": "886a7fbe3eb1c874d46f623bfa70af45f425b3d1"
 		},
 		{
 			"ImportPath": "github.com/mndrix/tap-go",
