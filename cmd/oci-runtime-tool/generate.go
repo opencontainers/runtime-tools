@@ -91,6 +91,7 @@ var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "mounts-add", Usage: "configures additional mounts inside container"},
 	cli.StringSliceFlag{Name: "mounts-remove", Usage: "remove destination mountpoints from inside container"},
 	cli.BoolFlag{Name: "mounts-remove-all", Usage: "remove all mounts inside container"},
+	cli.StringFlag{Name: "oci-version", Usage: "specify the version of the Open Container Initiative runtime specification"},
 	cli.StringFlag{Name: "os", Value: runtime.GOOS, Usage: "operating system the container is created for"},
 	cli.StringFlag{Name: "output", Usage: "output file (defaults to stdout)"},
 	cli.BoolFlag{Name: "privileged", Usage: "enable privileged container settings"},
@@ -201,6 +202,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("hostname") {
 		g.SetHostname(context.String("hostname"))
+	}
+
+	if context.IsSet("oci-version") {
+		g.SetOCIVersion(context.String("oci-version"))
 	}
 
 	if context.IsSet("label") {

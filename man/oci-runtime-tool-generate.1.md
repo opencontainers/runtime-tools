@@ -356,6 +356,9 @@ read the configuration from `config.json`.
   Remove all mounts inside the container. The default is *false*.
   When specified with --mount-add, this option will be parsed first.
 
+**--oci-version**=""
+  Set the version of the Open Container Initiative runtime specification.
+
 **--os**=OS
   Operating system used within the container.
 
