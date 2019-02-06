@@ -552,6 +552,9 @@ read the configuration from `config.json`.
   Specifies network for container.
   e.g. --windows-network='{"endpointList": ["7a010682-17e0-4455-a838-02e5d9655fe6"],"allowUnqualifiedDNSQuery": true,"DNSSearchList": ["a.com"],"networkSharedContainerName": "containerName", "networkNamespace" : "15010682-17e0-4455-a838-02e5d9655f00"}'
 
+**--windows-network-allowunqualifieddnsquery**=true|false
+  Whether to allow unqualified DNS queries
+
 **--windows-network-networkNamespace**=""
   Specified the network namespace for the container
   e.g. --windows-network-networkNamespace '15010682-17e0-4455-a838-02e5d9655f00'
