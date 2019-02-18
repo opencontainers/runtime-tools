@@ -24,6 +24,7 @@ import (
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
+	"github.com/opencontainers/selinux/go-selinux/label"
 
 	"golang.org/x/sys/unix"
 )
@@ -1196,6 +1197,27 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 	return mountErrs
 }
 
+func (c *complianceTester) validateMountLabel(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.MountLabel == "" {
+		c.harness.Skip(1, "linux.mountlabel not set")
+		return nil
+	}
+
+	for _, mount := range spec.Mounts {
+		fileLabel, err := label.FileLabel(mount.Destination)
+		if err != nil {
+			return fmt.Errorf("Failed to get mountLabel of %v", mount.Destination)
+		}
+		c.harness.Ok(spec.Linux.MountLabel == fileLabel, "has expected mountlabel")
+		c.harness.YAML(map[string]string{
+			"expected": spec.Linux.MountLabel,
+			"actual":   fileLabel,
+		})
+	}
+
+	return nil
+}
+
 func run(context *cli.Context) error {
 	logLevelString := context.String("log-level")
 	logLevel, err := logrus.ParseLevel(logLevelString)
@@ -1256,6 +1278,7 @@ func run(context *cli.Context) error {
 		c.validateSysctls,
 		c.validateUIDMappings,
 		c.validateGIDMappings,
+		c.validateMountLabel,
 	}
 
 	validations := defaultValidations

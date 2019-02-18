@@ -44,6 +44,16 @@
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
 		{
+			"ImportPath": "github.com/opencontainers/selinux/go-selinux",
+			"Comment": "v1.1-1-g2d93b96",
+			"Rev": "2d93b96e1a01b26e3378c49a974d11f6783ec185"
+		},
+		{
+			"ImportPath": "github.com/opencontainers/selinux/go-selinux/label",
+			"Comment": "v1.1-1-g2d93b96",
+			"Rev": "2d93b96e1a01b26e3378c49a974d11f6783ec185"
+		},
+		{
 			"ImportPath": "github.com/satori/go.uuid",
 			"Comment": "v1.1.0",
 			"Rev": "879c5887cd475cd7864858769793b2ceb0d44feb"
