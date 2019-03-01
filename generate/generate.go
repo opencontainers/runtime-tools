@@ -368,6 +368,12 @@ func (g *Generator) SetHostname(s string) {
 	g.Config.Hostname = s
 }
 
+// SetOCIVersion sets g.Config.Version.
+func (g *Generator) SetOCIVersion(s string) {
+	g.initConfig()
+	g.Config.Version = s
+}
+
 // ClearAnnotations clears g.Config.Annotations.
 func (g *Generator) ClearAnnotations() {
 	if g.Config == nil {
