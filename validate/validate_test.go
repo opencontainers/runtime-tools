@@ -510,7 +510,7 @@ func TestCheckProcess(t *testing.T) {
 
 func TestCheckLinux(t *testing.T) {
 	weightDevices := []rspec.LinuxWeightDevice{
-		rspec.LinuxWeightDevice{},
+		{},
 	}
 	weightDevices[0].Major = 5
 	weightDevices[0].Minor = 0
