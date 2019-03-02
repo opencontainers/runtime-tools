@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	tap "github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/validation/util"
@@ -31,7 +32,7 @@ func main() {
 	g.SetProcessArgs([]string{"true"})
 	config := util.LifecycleConfig{
 		Config:  g,
-		Actions: util.LifecycleActionCreate | util.LifecycleActionDelete,
+		Actions: util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete,
 		PreCreate: func(r *util.Runtime) error {
 			r.SetID(uuid.NewV4().String())
 			r.PidFile = tempPidFile
@@ -54,6 +55,13 @@ func main() {
 				return fmt.Errorf("wrong pid %d, expected %d", pid, state.Pid)
 			}
 			return nil
+		},
+		PreDelete: func(r *util.Runtime) error {
+			util.WaitingForStatus(*r, util.LifecycleStatusRunning, time.Second*10, time.Second*1)
+			err = r.Kill("KILL")
+			// wait before the container been deleted
+			util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
+			return err
 		},
 	}
 

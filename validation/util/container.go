@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
@@ -197,6 +198,9 @@ func (r *Runtime) Delete() (err error) {
 // forceRemoveBundle is true, after the deletion attempt regardless of
 // whether it was successful or not.
 func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) error {
+	r.Kill("KILL")
+	WaitingForStatus(*r, LifecycleStatusStopped, time.Second*10, time.Second/10)
+
 	err := r.Delete()
 
 	if removeBundle && (err == nil || forceRemoveBundle) {
