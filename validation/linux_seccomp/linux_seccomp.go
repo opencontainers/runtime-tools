@@ -1,11 +1,15 @@
 package main
 
 import (
+	tap "github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/generate/seccomp"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
 func main() {
+	t := tap.New()
+	t.Header(0)
+	defer t.AutoPlan()
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		util.Fatal(err)
@@ -16,8 +20,10 @@ func main() {
 	}
 	g.SetDefaultSeccompAction("allow")
 	g.SetSyscallAction(syscallArgs)
-	err = util.RuntimeInsideValidate(g, nil, nil)
+	err = util.RuntimeInsideValidate(g, t, nil)
+	t.Ok(err == nil, "seccomp action is added correctly")
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(err.Error())
 	}
+
 }
