@@ -1204,6 +1204,16 @@ func (c *complianceTester) validateMountLabel(spec *rspec.Spec) error {
 	}
 
 	for _, mount := range spec.Mounts {
+		isBind := false
+		for _, opt := range mount.Options {
+			if opt == "bind" || opt == "rbind" {
+				isBind = true
+				break
+			}
+		}
+		if !isBind {
+			continue
+		}
 		fileLabel, err := label.FileLabel(mount.Destination)
 		if err != nil {
 			return fmt.Errorf("Failed to get mountLabel of %v", mount.Destination)
