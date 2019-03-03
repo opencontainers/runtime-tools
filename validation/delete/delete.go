@@ -16,6 +16,8 @@ import (
 func main() {
 	t := tap.New()
 	t.Header(0)
+	defer t.AutoPlan()
+
 	bundleDir, err := util.PrepareBundle()
 	if err != nil {
 		util.Fatal(err)
@@ -72,7 +74,7 @@ func main() {
 
 		if c.effectCheck {
 			// waiting for the error of State, just in case the delete operation takes time
-			util.WaitingForStatus(testRuntime, util.LifecycleActionNone, time.Second*10, time.Second*1)
+			util.WaitingForStatus(testRuntime, util.LifecycleActionNone, time.Second*3, time.Second/2)
 			_, err = testRuntime.State()
 			// err == nil means the 'delete' operation does NOT take effect
 			util.SpecErrorOK(t, err == nil, specerror.NewError(specerror.DeleteNonStopHaveNoEffect, fmt.Errorf("attempting to `delete` a container that is not `stopped` MUST have no effect on the container"), rspecs.Version), err)
@@ -89,6 +91,4 @@ func main() {
 			}
 		}
 	}
-
-	t.AutoPlan()
 }
