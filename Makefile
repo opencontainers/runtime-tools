@@ -58,7 +58,10 @@ validation-executables: $(VALIDATION_TESTS)
 $(VALIDATION_TESTS): %.t: %.go
 	go build -tags "$(BUILDTAGS)" ${TESTFLAGS} -o $@ $<
 
-.PHONY: test .gofmt .govet .golint
+print-validation-tests:
+	@echo $(VALIDATION_TESTS)
+
+.PHONY: test .gofmt .govet .golint print-validation-tests
 
 PACKAGES = $(shell go list ./... | grep -v vendor)
 test: .gofmt .govet .golint .gotest
