@@ -141,6 +141,7 @@ var generateFlags = []cli.Flag{
 	cli.BoolFlag{Name: "windows-ignore-flushes-during-boot", Usage: "ignore flushes during boot"},
 	cli.StringSliceFlag{Name: "windows-layer-folders", Usage: "specifies a list of layer folders the container image relies on"},
 	cli.StringFlag{Name: "windows-network", Usage: "specifies network for container"},
+	cli.BoolFlag{Name: "windows-network-allowunqualifieddnsquery", Usage: "specifies networking unqualified DNS query is allowed"},
 	cli.StringFlag{Name: "windows-network-networkNamespace", Usage: "specifies network namespace for container"},
 	cli.StringFlag{Name: "windows-resources-cpu", Usage: "specifies CPU for container"},
 	cli.Uint64Flag{Name: "windows-resources-memory-limit", Usage: "specifies limit of memory"},
@@ -940,7 +941,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("windows-ignore-flushes-during-boot") {
-		g.SetWinodwsIgnoreFlushesDuringBoot(context.Bool("windows-ignore-flushes-during-boot"))
+		g.SetWindowsIgnoreFlushesDuringBoot(context.Bool("windows-ignore-flushes-during-boot"))
 	}
 
 	if context.IsSet("windows-layer-folders") {
@@ -972,6 +973,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetWindowsNetwork(tmpNetwork)
 	}
 
+	if context.IsSet("windows-network-allowunqualifieddnsquery") {
+		g.SetWindowsNetworkAllowUnqualifiedDNSQuery(context.Bool("windows-network-allowunqualifieddnsquery"))
+	}
+
 	if context.IsSet("windows-network-networkNamespace") {
 		g.SetWindowsNetworkNamespace(context.String("windows-network-networkNamespace"))
 	}
@@ -1000,7 +1005,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("windows-servicing") {
-		g.SetWinodwsServicing(context.Bool("windows-servicing"))
+		g.SetWindowsServicing(context.Bool("windows-servicing"))
 	}
 
 	err := addSeccomp(context, g)

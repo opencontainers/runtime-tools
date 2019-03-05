@@ -54,17 +54,8 @@ func New(os string) (generator Generator, err error) {
 				"cmd",
 			},
 			Cwd: `C:\`,
-			ConsoleSize: &rspec.Box{
-				Width:  80,
-				Height: 20,
-			},
 		}
-		config.Windows = &rspec.Windows{
-			IgnoreFlushesDuringBoot: true,
-			Network: &rspec.WindowsNetwork{
-				AllowUnqualifiedDNSQuery: true,
-			},
-		}
+		config.Windows = &rspec.Windows{}
 	} else {
 		config.Root = &rspec.Root{
 			Path:     "rootfs",
@@ -1712,8 +1703,8 @@ func (g *Generator) SetWindowsHypervUntilityVMPath(path string) {
 	g.Config.Windows.HyperV.UtilityVMPath = path
 }
 
-// SetWinodwsIgnoreFlushesDuringBoot sets g.Config.Winodws.IgnoreFlushesDuringBoot.
-func (g *Generator) SetWinodwsIgnoreFlushesDuringBoot(ignore bool) {
+// SetWindowsIgnoreFlushesDuringBoot sets g.Config.Windows.IgnoreFlushesDuringBoot.
+func (g *Generator) SetWindowsIgnoreFlushesDuringBoot(ignore bool) {
 	g.initConfigWindows()
 	g.Config.Windows.IgnoreFlushesDuringBoot = ignore
 }
@@ -1751,6 +1742,12 @@ func (g *Generator) SetWindowsNetwork(network rspec.WindowsNetwork) {
 	g.Config.Windows.Network = &network
 }
 
+// SetWindowsNetworkAllowUnqualifiedDNSQuery sets g.Config.Windows.Network.AllowUnqualifiedDNSQuery
+func (g *Generator) SetWindowsNetworkAllowUnqualifiedDNSQuery(setting bool) {
+	g.initConfigWindowsNetwork()
+	g.Config.Windows.Network.AllowUnqualifiedDNSQuery = setting
+}
+
 // SetWindowsNetworkNamespace sets g.Config.Windows.Network.NetworkNamespace
 func (g *Generator) SetWindowsNetworkNamespace(path string) {
 	g.initConfigWindowsNetwork()
@@ -1775,8 +1772,8 @@ func (g *Generator) SetWindowsResourcesStorage(storage rspec.WindowsStorageResou
 	g.Config.Windows.Resources.Storage = &storage
 }
 
-// SetWinodwsServicing sets g.Config.Winodws.Servicing.
-func (g *Generator) SetWinodwsServicing(servicing bool) {
+// SetWindowsServicing sets g.Config.Windows.Servicing.
+func (g *Generator) SetWindowsServicing(servicing bool) {
 	g.initConfigWindows()
 	g.Config.Windows.Servicing = servicing
 }

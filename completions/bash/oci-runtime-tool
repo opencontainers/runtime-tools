@@ -436,6 +436,7 @@ _oci-runtime-tool_generate() {
 		--process-terminal
 		--rootfs-readonly
 		--windows-ignore-flushes-during-boot
+		--windows-network-allowunqualifieddnsquery
 		--windows-servicing
 	"
 
