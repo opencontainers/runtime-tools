@@ -1197,6 +1197,18 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 	return mountErrs
 }
 
+func (c *complianceTester) validateApparmorProfile(spec *rspec.Spec) error {
+	if spec.Process == nil || spec.Process.ApparmorProfile == "" {
+		c.harness.Skip(1, "process.ApparmorProfile not set")
+		return nil
+	}
+	profilePath := filepath.Join(spec.Root.Path, "/etc/apparmor.d", spec.Process.ApparmorProfile)
+	_, err := os.Stat(profilePath)
+	c.harness.Ok(err != nil, "has expected apparmorProfile")
+
+	return nil
+}
+
 func (c *complianceTester) validateMountLabel(spec *rspec.Spec) error {
 	if spec.Linux == nil || spec.Linux.MountLabel == "" {
 		c.harness.Skip(1, "linux.mountlabel not set")
@@ -1279,6 +1291,7 @@ func run(context *cli.Context) error {
 		c.validateUIDMappings,
 		c.validateGIDMappings,
 		c.validateMountLabel,
+		c.validateApparmorProfile,
 	}
 
 	validations := defaultValidations
