@@ -70,6 +70,10 @@ func main() {
 				// KILL MUST be supported and KILL cannot be trapped
 				err = r.Kill("KILL")
 				util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
+				if err != nil {
+					//Be sure to not leave the container around
+					r.Delete()
+				}
 				return err
 			},
 		}

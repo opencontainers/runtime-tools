@@ -350,7 +350,8 @@ func RuntimeLifecycleValidate(config LifecycleConfig) error {
 				if _, err := r.State(); err != nil {
 					return
 				}
-				err := WaitingForStatus(r, LifecycleStatusCreated|LifecycleStatusStopped, time.Second*10, time.Second*1)
+				r.Kill("KILL")
+				err := WaitingForStatus(r, LifecycleStatusStopped, time.Second*10, time.Second*1)
 				if err == nil {
 					r.Delete()
 				} else {

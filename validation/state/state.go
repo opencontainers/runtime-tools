@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	"time"
 
 	"github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
@@ -44,6 +45,8 @@ func main() {
 			},
 			PostCreate: func(r *util.Runtime) error {
 				_, err = r.State()
+				r.Kill("KILL")
+				util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second)
 				return err
 			},
 		}

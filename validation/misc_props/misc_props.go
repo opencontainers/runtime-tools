@@ -45,9 +45,15 @@ func main() {
 		util.Fatal(err)
 	}
 	basicConfig.SetProcessArgs([]string{"true"})
-	annotationConfig := basicConfig
+	annotationConfig, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	annotationConfig.AddAnnotation(fmt.Sprintf("org.%s", containerID), "")
-	invalidConfig := basicConfig
+	invalidConfig, err := util.GetDefaultGenerator()
+	if err != nil {
+		util.Fatal(err)
+	}
 	invalidConfig.SetVersion("invalid")
 
 	cases := []struct {
