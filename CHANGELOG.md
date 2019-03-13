@@ -1,3 +1,24 @@
+# v0.9.0
+
+## Additions
+* Windows: Typos and incorrect defaults (#683).
+* validation: Add apparmor profile test(#684).
+* generate: add oci-version option (#681).
+* validation: Add SELinux Check (#682).
+* generate: add process-cap-add and process-cap-drop option (#675).
+* generate: Add generate option (#672).
+* Initialize Config Windows Network for Windows Namespace (#666).
+
+## Minor fixes and documentation
+* validation-tests: fix several tests (#687).
+* adding security and CoC links (#686).
+* Simplified code (#685).
+* Godeps: update hashicorp/go-multierror (#678).
+* fix up vm parameters (#676).
+* generate: fix capabilities add/drop option (#674).
+* update to golang 1.11 (#670).
+
+
 # v0.8.0
 
 ## Additions
