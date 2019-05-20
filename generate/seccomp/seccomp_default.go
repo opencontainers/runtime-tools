@@ -513,7 +513,7 @@ func DefaultProfile(rs *specs.Spec) *rspec.LinuxSeccomp {
 				Args: []rspec.LinuxSeccompArg{
 					{
 						Index:    sysCloneFlagsIndex,
-						Value:    CloneNewNS | CloneNewUTS | CloneNewIPC | CloneNewUser | CloneNewPID | CloneNewNet,
+						Value:    CloneNewNS | CloneNewUTS | CloneNewIPC | CloneNewUser | CloneNewPID | CloneNewNet | CloneNewCgroup,
 						ValueTwo: 0,
 						Op:       rspec.OpMaskedEqual,
 					},
