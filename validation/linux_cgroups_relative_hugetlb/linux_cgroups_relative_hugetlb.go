@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
@@ -8,48 +9,57 @@ import (
 )
 
 func main() {
-	page := "1GB"
-	var limit uint64 = 56892210544640
-
 	t := tap.New()
 	t.Header(0)
 	defer t.AutoPlan()
 
-	g, err := util.GetDefaultGenerator()
+	pageSizes, err := cgroups.GetHugePageSize()
+
 	if err != nil {
-		util.Fatal(err)
+		t.Fail(fmt.Sprintf("error when getting hugepage sizes: %+v", err))
 	}
-	g.SetLinuxCgroupsPath(cgroups.RelCgroupPath)
-	g.AddLinuxResourcesHugepageLimit(page, limit)
-	err = util.RuntimeOutsideValidate(g, t, func(config *rspec.Spec, t *tap.T, state *rspec.State) error {
-		cg, err := cgroups.FindCgroup()
-		t.Ok((err == nil), "find hugetlb cgroup")
-		if err != nil {
-			t.Diagnostic(err.Error())
-			return nil
-		}
+	// When setting the limit just for checking if writing works, the amount of memory
+	// requested does not matter, as all insigned integers will be accepted.
+	// Use 2GiB as an example
+	const limit = 2 * (1 << 30)
 
-		lhd, err := cg.GetHugepageLimitData(state.Pid, config.Linux.CgroupsPath)
-		t.Ok((err == nil), "get hugetlb cgroup data")
+	for _, pageSize := range pageSizes {
+		g, err := util.GetDefaultGenerator()
 		if err != nil {
-			t.Diagnostic(err.Error())
-			return nil
+			util.Fatal(err)
 		}
-
-		found := false
-		for _, lhl := range lhd {
-			if lhl.Pagesize == page {
-				found = true
-				t.Ok(lhl.Limit == limit, "hugepage limit is set correctly")
-				t.Diagnosticf("expect: %d, actual: %d", limit, lhl.Limit)
+		g.SetLinuxCgroupsPath(cgroups.RelCgroupPath)
+		g.AddLinuxResourcesHugepageLimit(pageSize, limit)
+		err = util.RuntimeOutsideValidate(g, t, func(config *rspec.Spec, t *tap.T, state *rspec.State) error {
+			cg, err := cgroups.FindCgroup()
+			t.Ok((err == nil), "find hugetlb cgroup")
+			if err != nil {
+				t.Diagnostic(err.Error())
+				return nil
 			}
+
+			lhd, err := cg.GetHugepageLimitData(state.Pid, config.Linux.CgroupsPath)
+			t.Ok((err == nil), "get hugetlb cgroup data")
+			if err != nil {
+				t.Diagnostic(err.Error())
+				return nil
+			}
+
+			found := false
+			for _, lhl := range lhd {
+				if lhl.Pagesize == pageSize {
+					found = true
+					t.Ok(lhl.Limit == limit, fmt.Sprintf("hugepage limit is set correctly for size: %s", pageSize))
+					t.Diagnosticf("expect: %d, actual: %d", limit, lhl.Limit)
+				}
+			}
+			t.Ok(found, "hugepage limit found")
+
+			return nil
+		})
+
+		if err != nil {
+			t.Fail(err.Error())
 		}
-		t.Ok(found, "hugepage limit found")
-
-		return nil
-	})
-
-	if err != nil {
-		t.Fail(err.Error())
 	}
 }
