@@ -18,6 +18,11 @@ type CgroupV1 struct {
 	MountPath string
 }
 
+// HugePageSizeUnitList is a list of the units used by the linux kernel when
+// naming the HugePage control files.
+// https://www.kernel.org/doc/Documentation/cgroup-v1/hugetlb.txt
+var HugePageSizeUnitList = []string{"B", "KB", "MB", "GB", "TB", "PB"}
+
 func getDeviceID(id string) (int64, int64, error) {
 	elem := strings.Split(id, ":")
 	major, err := strconv.ParseInt(elem[0], 10, 64)
@@ -393,9 +398,11 @@ func inBytes(size string) (int64, error) {
 	return int64(byteSize), nil
 }
 
-func getHugePageSize() ([]string, error) {
+// GetHugePageSize returns a list of the supported Hugepage sizes on the same format as
+// opencontainers/runtime-spec (see pageSize): https://github.com/opencontainers/runtime-spec/blob/master/config-linux.md#huge-page-limits
+// eg. ["64KB", "2MB", "1GB"]
+func GetHugePageSize() ([]string, error) {
 	var pageSizes []string
-	sizeList := []string{"B", "kB", "MB", "GB", "TB", "PB"}
 	files, err := ioutil.ReadDir("/sys/kernel/mm/hugepages")
 	if err != nil {
 		return pageSizes, err
@@ -409,12 +416,12 @@ func getHugePageSize() ([]string, error) {
 		size := float64(pageSize)
 		base := float64(1024.0)
 		i := 0
-		unitsLimit := len(sizeList) - 1
+		unitsLimit := len(HugePageSizeUnitList) - 1
 		for size >= base && i < unitsLimit {
 			size = size / base
 			i++
 		}
-		sizeString := fmt.Sprintf("%g%s", size, sizeList[i])
+		sizeString := fmt.Sprintf("%g%s", size, HugePageSizeUnitList[i])
 		pageSizes = append(pageSizes, sizeString)
 	}
 
@@ -433,7 +440,7 @@ func (cg *CgroupV1) GetHugepageLimitData(pid int, cgPath string) ([]rspec.LinuxH
 		}
 	}
 	lh := []rspec.LinuxHugepageLimit{}
-	pageSizes, err := getHugePageSize()
+	pageSizes, err := GetHugePageSize()
 	if err != nil {
 		return lh, err
 	}

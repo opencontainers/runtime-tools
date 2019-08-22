@@ -15,26 +15,24 @@ func testHugetlbCgroups() error {
 	t.Header(0)
 	defer t.AutoPlan()
 
-	// limit =~ 100 * page size
-	// NOTE: on some systems, pagesize "1GB" doesn't seem to work.
-	// Ideally we should auto-detect the value.
-	cases := []struct {
-		page  string
-		limit uint64
-	}{
-		{"2MB", 100 * 2 * 1024 * 1024},
-		{"1GB", 100 * 1024 * 1024 * 1024},
-		{"2MB", 100 * 2 * 1024 * 1024},
-		{"1GB", 100 * 1024 * 1024 * 1024},
+	pageSizes, err := cgroups.GetHugePageSize()
+
+	if err != nil {
+		t.Fail(fmt.Sprintf("error when getting hugepage sizes: %+v", err))
 	}
 
-	for _, c := range cases {
+	// When setting the limit just for checking if writing works, the amount of memory
+	// requested does not matter, as all insigned integers will be accepted.
+	// Use 2GiB as an example
+	const limit = 2 * (1 << 30)
+
+	for _, pageSize := range pageSizes {
 		g, err := util.GetDefaultGenerator()
 		if err != nil {
 			return err
 		}
 		g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
-		g.AddLinuxResourcesHugepageLimit(c.page, c.limit)
+		g.AddLinuxResourcesHugepageLimit(pageSize, limit)
 		err = util.RuntimeOutsideValidate(g, t, func(config *rspec.Spec, t *tap.T, state *rspec.State) error {
 			cg, err := cgroups.FindCgroup()
 			if err != nil {
@@ -45,11 +43,11 @@ func testHugetlbCgroups() error {
 				return err
 			}
 			for _, lhl := range lhd {
-				if lhl.Pagesize != c.page {
+				if lhl.Pagesize != pageSize {
 					continue
 				}
-				t.Ok(lhl.Limit == c.limit, "hugepage limit is set correctly")
-				t.Diagnosticf("expect: %d, actual: %d", c.limit, lhl.Limit)
+				t.Ok(lhl.Limit == limit, fmt.Sprintf("hugepage limit is set correctly for size: %s", pageSize))
+				t.Diagnosticf("expect: %d, actual: %d", limit, lhl.Limit)
 			}
 			return nil
 		})
@@ -63,7 +61,8 @@ func testHugetlbCgroups() error {
 
 func testWrongHugetlb() error {
 	// We deliberately set the page size to a wrong value, "3MB", to see
-	// if the container really returns an error.
+	// if the container really returns an error. Page sizes will always be a
+	// on the format 2^(integer)
 	page := "3MB"
 	var limit uint64 = 100 * 3 * 1024 * 1024
 
