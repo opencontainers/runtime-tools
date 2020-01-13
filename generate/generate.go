@@ -1496,7 +1496,7 @@ func (g *Generator) AddDevice(device rspec.LinuxDevice) {
 			return
 		}
 		if dev.Type == device.Type && dev.Major == device.Major && dev.Minor == device.Minor {
-			fmt.Fprintln(os.Stderr, "WARNING: The same type, major and minor should not be used for multiple devices.")
+			fmt.Fprintf(os.Stderr, "WARNING: Creating device %q with same type, major and minor as existing %q.\n", device.Path, dev.Path)
 		}
 	}
 
