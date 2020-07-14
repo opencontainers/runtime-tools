@@ -43,7 +43,7 @@ func TestJSONSchema(t *testing.T) {
 	}{
 		{
 			config: &rspec.Spec{},
-			error:  "1 error occurred:\n\t* Version string empty\nRefer to: https://github.com/opencontainers/runtime-spec/blob/v1.0.1/config.md#specification-version\n\n",
+			error:  "1 error occurred:\n\t* Version string empty\nRefer to: https://github.com/opencontainers/runtime-spec/blob/v1.0.2/config.md#specification-version\n\n",
 		},
 		{
 			config: &rspec.Spec{
@@ -62,7 +62,7 @@ func TestJSONSchema(t *testing.T) {
 				Version: "1.0.0",
 				Process: &rspec.Process{},
 			},
-			error: "process.args: Invalid type. Expected: array, given: null",
+			error: "1 error occurred:\n\t* args: args is required\n\n",
 		},
 		{
 			config: &rspec.Spec{

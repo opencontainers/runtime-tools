@@ -35,8 +35,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
-			"Comment": "v1.0.1-57-g1722abf",
-			"Rev": "1722abf79c2f8f2675f47367f827c6491472cf27"
+			"Comment": "v1.0.2",
+		        "Rev": "c4ee7d12c742ffe806cd9350b6af3b4b19faed6f"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
