@@ -236,7 +236,8 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 	}
 
 	if context.IsSet("process-umask") {
-		g.SetProcessUmask(uint32(context.Int("process-umask")))
+		umask := uint32(context.Int("process-umask"))
+		g.SetProcessUmask(&umask)
 	}
 
 	if context.IsSet("process-gid") {

@@ -17,7 +17,8 @@ func main() {
 		g.SetProcessUID(10)
 		g.SetProcessGID(10)
 		g.AddProcessAdditionalGid(5)
-		g.SetProcessUmask(002)
+		umask := uint32(002)
+		g.SetProcessUmask(&umask)
 	case "windows":
 		g.SetProcessUsername("test")
 	default:

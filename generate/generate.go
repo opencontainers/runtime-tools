@@ -445,7 +445,7 @@ func (g *Generator) SetProcessUsername(username string) {
 }
 
 // SetProcessUmask sets g.Config.Process.User.Umask.
-func (g *Generator) SetProcessUmask(umask uint32) {
+func (g *Generator) SetProcessUmask(umask *uint32) {
 	g.initConfigProcess()
 	g.Config.Process.User.Umask = umask
 }
