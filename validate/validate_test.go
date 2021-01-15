@@ -43,7 +43,7 @@ func TestJSONSchema(t *testing.T) {
 	}{
 		{
 			config: &rspec.Spec{},
-			error:  "1 error occurred:\n\t* Version string empty\nRefer to: https://github.com/opencontainers/runtime-spec/blob/v1.0.2/config.md#specification-version\n\n",
+			error:  fmt.Sprintf("1 error occurred:\n\t* Version string empty\nRefer to: https://github.com/opencontainers/runtime-spec/blob/v%s/config.md#specification-version\n\n", rspec.Version),
 		},
 		{
 			config: &rspec.Spec{

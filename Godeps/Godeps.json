@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/opencontainers/runtime-tools",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v77",
+	"GodepVersion": "v80",
 	"Packages": [
 		"./..."
 	],
@@ -35,8 +35,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
-			"Comment": "v1.0.2",
-		        "Rev": "c4ee7d12c742ffe806cd9350b6af3b4b19faed6f"
+			"Comment": "v1.0.2-41-g7413a7f",
+			"Rev": "7413a7f753e1bd9a6a9c6dc7f96f55888cbbd476"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
