@@ -52,11 +52,11 @@ const (
 	LifecycleStatusStopped
 )
 
-var lifecycleStatusMap = map[string]LifecycleStatus{
-	"creating": LifecycleStatusCreating,
-	"created":  LifecycleStatusCreated,
-	"running":  LifecycleStatusRunning,
-	"stopped":  LifecycleStatusStopped,
+var lifecycleStatusMap = map[rspec.ContainerState]LifecycleStatus{
+	rspec.StateCreating: LifecycleStatusCreating,
+	rspec.StateCreated:  LifecycleStatusCreated,
+	rspec.StateRunning:  LifecycleStatusRunning,
+	rspec.StateStopped:  LifecycleStatusStopped,
 }
 
 // LifecycleConfig includes
