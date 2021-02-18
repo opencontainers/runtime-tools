@@ -127,12 +127,15 @@ func main() {
 			r.SetID(containerID)
 			return nil
 		},
-		PreDelete: func(r *util.Runtime) error {
+		PostCreate: func(r *util.Runtime) error {
 			state, err := r.State()
 			if err != nil {
 				return err
 			}
 			containerPid = state.Pid
+			return nil
+		},
+		PreDelete: func(r *util.Runtime) error {
 			util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second)
 			return nil
 		},
