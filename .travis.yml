@@ -2,7 +2,13 @@ language: go
 go:
   - 1.10.x
   - 1.11.x
-  - 1.16.x
+
+jobs:
+  # Only check vendoring on the latest version, as what's vendored differs
+  # between versions of go.
+  include:
+    - go: 1.16.x
+      env: CHECK_VENDOR=1
 
 sudo: false
 
@@ -16,5 +22,6 @@ install: true
 
 script:
   - git-validation -run DCO,short-subject -v -range ${TRAVIS_COMMIT_RANGE}
+  - if [ "${CHECK_VENDOR}" = 1 ]; then make validate-vendor; fi
   - make
   - make test
