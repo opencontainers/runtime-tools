@@ -8,8 +8,8 @@ sudo: false
 before_install:
   - mkdir --parents $GOPATH/src/golang.org/x
     && git clone --depth=1 https://go.googlesource.com/lint $GOPATH/src/golang.org/x/lint
-    && go get golang.org/x/lint/golint
-  - go get github.com/vbatts/git-validation
+    && GO111MODULE=off go get golang.org/x/lint/golint
+  - GO111MODULE=off go get github.com/vbatts/git-validation
 
 install: true
 
