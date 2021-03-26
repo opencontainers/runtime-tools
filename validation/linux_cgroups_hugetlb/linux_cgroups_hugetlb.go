@@ -24,7 +24,7 @@ func testHugetlbCgroups() error {
 	// When setting the limit just for checking if writing works, the amount of memory
 	// requested does not matter, as all insigned integers will be accepted.
 	// Use 2GiB as an example
-	const limit = 2 * (1 << 30)
+	var limit uint64 = 2 * (1 << 30)
 
 	for _, pageSize := range pageSizes {
 		g, err := util.GetDefaultGenerator()
