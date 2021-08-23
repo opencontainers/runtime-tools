@@ -857,6 +857,28 @@ func (g *Generator) DropLinuxResourcesHugepageLimit(pageSize string) {
 	}
 }
 
+// AddLinuxResourcesUnified sets the g.Config.Linux.Resources.Unified
+func (g *Generator) SetLinuxResourcesUnified(unified map[string]string) {
+	g.initConfigLinuxResourcesUnified()
+	for k, v := range unified {
+		g.Config.Linux.Resources.Unified[k] = v
+	}
+}
+
+// AddLinuxResourcesUnified adds or updates the key-value pair from g.Config.Linux.Resources.Unified
+func (g *Generator) AddLinuxResourcesUnified(key, val string) {
+	g.initConfigLinuxResourcesUnified()
+	g.Config.Linux.Resources.Unified[key] = val
+}
+
+// DropLinuxResourcesUnified drops a key-value pair from g.Config.Linux.Resources.Unified
+func (g *Generator) DropLinuxResourcesUnified(key string) {
+	if g.Config == nil || g.Config.Linux == nil || g.Config.Linux.Resources == nil || g.Config.Linux.Resources.Unified == nil {
+		return
+	}
+	delete(g.Config.Linux.Resources.Unified, key)
+}
+
 // SetLinuxResourcesMemoryLimit sets g.Config.Linux.Resources.Memory.Limit.
 func (g *Generator) SetLinuxResourcesMemoryLimit(limit int64) {
 	g.initConfigLinuxResourcesMemory()

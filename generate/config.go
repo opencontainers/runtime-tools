@@ -123,6 +123,13 @@ func (g *Generator) initConfigLinuxResourcesPids() {
 	}
 }
 
+func (g *Generator) initConfigLinuxResourcesUnified() {
+	g.initConfigLinuxResources()
+	if g.Config.Linux.Resources.Unified == nil {
+		g.Config.Linux.Resources.Unified = map[string]string{}
+	}
+}
+
 func (g *Generator) initConfigSolaris() {
 	g.initConfig()
 	if g.Config.Solaris == nil {
