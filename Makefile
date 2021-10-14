@@ -61,20 +61,13 @@ $(VALIDATION_TESTS): %.t: %.go
 print-validation-tests:
 	@echo $(VALIDATION_TESTS)
 
-.PHONY: test .gofmt .govet .golint print-validation-tests
+.PHONY: test .govet print-validation-tests
 
 PACKAGES = $(shell go list ./... | grep -v vendor)
-test: .gofmt .govet .golint .gotest
-
-.gofmt:
-	OUT=$$(go fmt $(PACKAGES)); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
+test: .govet .gotest
 
 .govet:
 	go vet -x $(PACKAGES)
 
-.golint:
-	golint -set_exit_status $(PACKAGES)
-
-UTDIRS = ./filepath/... ./validate/... ./generate/...
 .gotest:
-	go test $(UTDIRS)
+	go test $(TESTFLAGS) ./...
