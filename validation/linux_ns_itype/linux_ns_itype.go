@@ -119,7 +119,7 @@ func main() {
 	t.Header(0)
 
 	if "linux" != runtime.GOOS {
-		t.Skip(1, fmt.Sprintf("linux-specific namespace test"))
+		t.Skip(1, "linux-specific namespace test")
 	}
 
 	err := testNamespaceInheritType(t)

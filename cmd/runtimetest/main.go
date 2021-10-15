@@ -982,7 +982,7 @@ func (c *complianceTester) validateOOMScoreAdj(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		rfcError, err := c.Ok(actual == expected, specerror.LinuxProcOomScoreAdjSet, spec.Version, fmt.Sprintf("has expected OOM score adjustment"))
+		rfcError, err := c.Ok(actual == expected, specerror.LinuxProcOomScoreAdjSet, spec.Version, "has expected OOM score adjustment")
 		if err != nil {
 			return err
 		}

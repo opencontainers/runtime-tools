@@ -1560,7 +1560,6 @@ func (g *Generator) RemoveLinuxResourcesDevice(allow bool, devType string, major
 			return
 		}
 	}
-	return
 }
 
 // SetSyscallAction adds rules for syscalls with the specified action

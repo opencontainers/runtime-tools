@@ -26,7 +26,7 @@ func ValidateLinuxResourcesDevices(config *rspec.Spec, t *tap.T, state *rspec.St
 	}
 
 	for i, device := range config.Linux.Resources.Devices {
-		if device.Allow == true {
+		if device.Allow {
 			found := false
 			if lnd[i-1].Type == device.Type && *lnd[i-1].Major == *device.Major && *lnd[i-1].Minor == *device.Minor && lnd[i-1].Access == device.Access {
 				found = true
