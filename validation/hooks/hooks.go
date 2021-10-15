@@ -99,7 +99,7 @@ func main() {
 		diagnostic := map[string]string{
 			"error": err.Error(),
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	} else {
 		diagnostic := map[string]string{
 			"error": err.Error(),
@@ -109,7 +109,7 @@ func main() {
 				diagnostic["stderr"] = string(e.Stderr)
 			}
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	}
 
 	t.AutoPlan()

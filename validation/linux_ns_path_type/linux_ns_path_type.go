@@ -42,7 +42,7 @@ func checkNSPathMatchType(t *tap.T, ns, wrongNs string) error {
 			"level":          rfcError.Level.String(),
 			"reference":      rfcError.Reference,
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 
 		return fmt.Errorf("cannot validate path with wrong type")
 	}

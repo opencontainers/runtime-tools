@@ -159,14 +159,14 @@ func (c *complianceTester) validatePosixUser(spec *rspec.Spec) error {
 
 	uid := uint32(os.Getuid())
 	c.harness.Ok(uid == spec.Process.User.UID, "has expected user ID")
-	c.harness.YAML(map[string]uint32{
+	_ = c.harness.YAML(map[string]uint32{
 		"expected": spec.Process.User.UID,
 		"actual":   uid,
 	})
 
 	gid := uint32(os.Getgid())
 	c.harness.Ok(gid == spec.Process.User.GID, "has expected group ID")
-	c.harness.YAML(map[string]uint32{
+	_ = c.harness.YAML(map[string]uint32{
 		"expected": spec.Process.User.GID,
 		"actual":   gid,
 	})
@@ -202,7 +202,7 @@ func (c *complianceTester) validateProcess(spec *rspec.Spec) error {
 			return err
 		}
 		c.harness.Ok(cwd == spec.Process.Cwd, "has expected working directory")
-		c.harness.YAML(map[string]string{
+		_ = c.harness.YAML(map[string]string{
 			"expected": spec.Process.Cwd,
 			"actual":   cwd,
 		})
@@ -214,7 +214,7 @@ func (c *complianceTester) validateProcess(spec *rspec.Spec) error {
 		expectedValue := parts[1]
 		actualValue := os.Getenv(key)
 		c.harness.Ok(expectedValue == actualValue, fmt.Sprintf("has expected environment variable %v", key))
-		c.harness.YAML(map[string]string{
+		_ = c.harness.YAML(map[string]string{
 			"variable": key,
 			"expected": expectedValue,
 			"actual":   actualValue,
@@ -237,13 +237,13 @@ func (c *complianceTester) validateLinuxProcess(spec *rspec.Spec) error {
 
 	args := bytes.Split(bytes.Trim(cmdlineBytes, "\x00"), []byte("\x00"))
 	c.harness.Ok(len(args) == len(spec.Process.Args), "has expected number of process arguments")
-	c.harness.YAML(map[string]interface{}{
+	_ = c.harness.YAML(map[string]interface{}{
 		"expected": spec.Process.Args,
 		"actual":   args,
 	})
 	for i, a := range args {
 		c.harness.Ok(string(a) == spec.Process.Args[i], fmt.Sprintf("has expected process argument %d", i))
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"index":    i,
 			"expected": spec.Process.Args[i],
 			"actual":   string(a),
@@ -337,7 +337,7 @@ func (c *complianceTester) validateHostname(spec *rspec.Spec) error {
 		return err
 	}
 	c.harness.Ok(spec.Hostname == hostname, "has expected hostname")
-	c.harness.YAML(map[string]string{
+	_ = c.harness.YAML(map[string]string{
 		"expected": spec.Hostname,
 		"actual":   hostname,
 	})
@@ -365,7 +365,7 @@ func (c *complianceTester) validateRlimits(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"type":      r.Type,
@@ -377,7 +377,7 @@ func (c *complianceTester) validateRlimits(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"type":      r.Type,
@@ -402,7 +402,7 @@ func (c *complianceTester) validateSysctls(spec *rspec.Spec) error {
 		}
 		value := strings.TrimSpace(string(bytes.Trim(vBytes, "\x00")))
 		c.harness.Ok(value == v, fmt.Sprintf("has expected sysctl %v", k))
-		c.harness.YAML(map[string]string{
+		_ = c.harness.YAML(map[string]string{
 			"sysctl":   k,
 			"expected": v,
 			"actual":   value,
@@ -522,7 +522,7 @@ func (c *complianceTester) validateRootFS(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]string{
+		_ = c.harness.YAML(map[string]string{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 		})
@@ -625,7 +625,7 @@ func (c *complianceTester) validateDefaultFS(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]string{
+		_ = c.harness.YAML(map[string]string{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"mount":     fs,
@@ -671,7 +671,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 	if err != nil {
 		return err
 	}
-	c.harness.YAML(map[string]string{
+	_ = c.harness.YAML(map[string]string{
 		"level":     rfcError.Level.String(),
 		"reference": rfcError.Reference,
 		"path":      device.Path,
@@ -703,7 +703,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 	if err != nil {
 		return err
 	}
-	c.harness.YAML(map[string]string{
+	_ = c.harness.YAML(map[string]string{
 		"level":     rfcError.Level.String(),
 		"reference": rfcError.Reference,
 		"path":      device.Path,
@@ -722,7 +722,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -733,7 +733,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -751,7 +751,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -772,7 +772,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -788,7 +788,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -815,7 +815,7 @@ func (c *complianceTester) validateDefaultSymlinks(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]string{
+		_ = c.harness.YAML(map[string]string{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      symlink,
@@ -833,7 +833,7 @@ func (c *complianceTester) validateDefaultSymlinks(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      symlink,
@@ -855,7 +855,7 @@ func (c *complianceTester) validateDefaultSymlinks(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]string{
+		_ = c.harness.YAML(map[string]string{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      symlink,
@@ -986,7 +986,7 @@ func (c *complianceTester) validateOOMScoreAdj(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"expected":  expected,
@@ -1047,7 +1047,7 @@ func (c *complianceTester) validateIDMappings(mappings []rspec.LinuxIDMapping, p
 		return err
 	}
 	c.harness.Ok(len(idMaps) == len(mappings), fmt.Sprintf("%s has expected number of mappings", path))
-	c.harness.YAML(map[string]interface{}{
+	_ = c.harness.YAML(map[string]interface{}{
 		"expected": mappings,
 		"actual":   idMaps,
 	})
@@ -1180,7 +1180,7 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 		} else {
 			rfcError, err = c.Ok(foundInOrder, specerror.MountsInOrder, spec.Version, fmt.Sprintf("mounts[%d] (%s) found in order", i, configMount.Destination))
 		}
-		c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]interface{}{
 			"level":       rfcError.Level.String(),
 			"reference":   rfcError.Reference,
 			"config":      configMount,
@@ -1231,7 +1231,7 @@ func (c *complianceTester) validateMountLabel(spec *rspec.Spec) error {
 			return fmt.Errorf("Failed to get mountLabel of %v", mount.Destination)
 		}
 		c.harness.Ok(spec.Linux.MountLabel == fileLabel, "has expected mountlabel")
-		c.harness.YAML(map[string]string{
+		_ = c.harness.YAML(map[string]string{
 			"expected": spec.Linux.MountLabel,
 			"actual":   fileLabel,
 		})

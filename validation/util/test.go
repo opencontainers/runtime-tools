@@ -100,7 +100,7 @@ func Skip(message string, diagnostic interface{}) {
 	t.Header(1)
 	t.Skip(1, message)
 	if diagnostic != nil {
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	}
 }
 
@@ -119,7 +119,7 @@ func SpecErrorOK(t *tap.T, expected bool, specErr error, detailedErr error) {
 			}
 		}
 	}
-	t.YAML(diagnostic)
+	_ = t.YAML(diagnostic)
 }
 
 // PrepareBundle creates a test bundle in a temporary directory.
@@ -238,7 +238,7 @@ func RuntimeInsideValidate(g *generate.Generator, t *tap.T, f PreFunc) (err erro
 		if err != nil {
 			diagnostic["error"] = fmt.Sprintf("%v", err)
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 		t.Ok(err == nil && !strings.Contains(string(stdout), "not ok"), g.Config.Annotations["TestName"])
 	} else {
 		if runtimeInsideValidateCalled {

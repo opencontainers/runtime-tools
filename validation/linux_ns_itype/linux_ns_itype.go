@@ -22,7 +22,7 @@ func printDiag(t *tap.T, diagActual, diagExpected, diagNsType string, errNs erro
 		"level":          specErr.(*specerror.Error).Err.Level.String(),
 		"reference":      specErr.(*specerror.Error).Err.Reference,
 	}
-	t.YAML(diagnostic)
+	_ = t.YAML(diagnostic)
 }
 
 func testNamespaceInheritType(t *tap.T) error {

@@ -64,7 +64,7 @@ func main() {
 		diagnostic := map[string]string{
 			"error": err.Error(),
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	}
 
 	t.AutoPlan()

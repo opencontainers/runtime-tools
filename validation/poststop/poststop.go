@@ -103,7 +103,7 @@ func main() {
 				diagnostic["stderr"] = string(e.Stderr)
 			}
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	}
 
 	t.AutoPlan()
