@@ -178,20 +178,25 @@ func (r *Runtime) Delete() (err error) {
 // directory is removed after the container is deleted successfully or, if
 // forceRemoveBundle is true, after the deletion attempt regardless of
 // whether it was successful or not.
-func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) error {
-	r.Kill("KILL")
-	WaitingForStatus(*r, LifecycleStatusStopped, time.Second*10, time.Second/10)
-
-	err := r.Delete()
-
-	if removeBundle && (err == nil || forceRemoveBundle) {
-		err2 := os.RemoveAll(r.bundleDir())
-		if err2 != nil && err == nil {
-			err = err2
-		}
+func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) {
+	if err := r.Kill("KILL"); err != nil {
+		fmt.Fprintf(os.Stderr, "Clean: Kill: %v", err)
+	}
+	if err := WaitingForStatus(*r, LifecycleStatusStopped, time.Second*10, time.Second/10); err != nil {
+		fmt.Fprintf(os.Stderr, "Clean: %v", err)
 	}
 
-	return err
+	err := r.Delete()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Clean: Delete: %v", err)
+	}
+
+	if removeBundle && (err == nil || forceRemoveBundle) {
+		err := os.RemoveAll(r.bundleDir())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Clean: %v", err)
+		}
+	}
 }
 
 func execWithStderrFallbackToStdout(cmd *exec.Cmd) (err error) {
