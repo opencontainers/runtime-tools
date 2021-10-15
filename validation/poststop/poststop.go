@@ -30,9 +30,9 @@ func main() {
 			if err != nil {
 				util.Fatal(err)
 			}
-			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
+			output = filepath.Join(r.BundleDir, g.Config.Root.Path, "output")
 			err = g.AddPostStopHook(rspec.Hook{
-				Path: filepath.Join(r.BundleDir, g.Spec().Root.Path, "/bin/sh"),
+				Path: filepath.Join(r.BundleDir, g.Config.Root.Path, "/bin/sh"),
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'post-stop called' >> %s", output),
 				},

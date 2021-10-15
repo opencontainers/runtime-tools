@@ -296,7 +296,7 @@ func RuntimeOutsideValidate(g *generate.Generator, t *tap.T, f AfterFunc) error 
 		if err != nil {
 			return err
 		}
-		if err := f(g.Spec(), t, &state); err != nil {
+		if err := f(g.Config, t, &state); err != nil {
 			return err
 		}
 	}

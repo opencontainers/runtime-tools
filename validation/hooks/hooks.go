@@ -27,8 +27,8 @@ func main() {
 			if err != nil {
 				util.Fatal(err)
 			}
-			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
-			shPath := filepath.Join(r.BundleDir, g.Spec().Root.Path, "/bin/sh")
+			output = filepath.Join(r.BundleDir, g.Config.Root.Path, "output")
+			shPath := filepath.Join(r.BundleDir, g.Config.Root.Path, "/bin/sh")
 			err = g.AddPreStartHook(rspec.Hook{
 				Path: shPath,
 				Args: []string{

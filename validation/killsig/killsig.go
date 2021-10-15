@@ -34,7 +34,7 @@ func main() {
 		os.RemoveAll(bundleDir)
 		util.Fatal(err)
 	}
-	rootDir := filepath.Join(bundleDir, sigConfig.Spec().Root.Path)
+	rootDir := filepath.Join(bundleDir, sigConfig.Config.Root.Path)
 	for _, signal := range signals {
 		sigConfig.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("trap 'touch /%s' %s; sleep 10 & wait $!", signal, signal)})
 		config := util.LifecycleConfig{

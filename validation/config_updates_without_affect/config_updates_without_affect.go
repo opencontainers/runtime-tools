@@ -65,10 +65,9 @@ func main() {
 		util.Fatal(err)
 	}
 
-	spec := &rspec.Spec{
+	g.Config = &rspec.Spec{
 		Version: "1.0.0",
 	}
-	g.SetSpec(spec)
 	err = r.SetConfig(g)
 	if err != nil {
 		util.Fatal(err)

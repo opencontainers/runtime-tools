@@ -27,7 +27,7 @@ func main() {
 		util.Fatal(err)
 	}
 	prestart := rspec.Hook{
-		Path: filepath.Join(bundleDir, g.Spec().Root.Path, "/bin/false"),
+		Path: filepath.Join(bundleDir, g.Config.Root.Path, "/bin/false"),
 		Args: []string{"false"},
 	}
 	g.AddPreStartHook(prestart)
@@ -45,7 +45,7 @@ func main() {
 	}
 
 	runErr := util.RuntimeLifecycleValidate(config)
-	_, outputErr := os.Stat(filepath.Join(bundleDir, g.Spec().Root.Path, "output"))
+	_, outputErr := os.Stat(filepath.Join(bundleDir, g.Config.Root.Path, "output"))
 
 	// query the state
 	r, _ := util.NewRuntime(util.RuntimeCommand, "")

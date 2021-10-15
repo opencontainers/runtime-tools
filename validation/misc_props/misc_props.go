@@ -62,9 +62,9 @@ func main() {
 		errExpected bool
 		err         error
 	}{
-		{extendedSpec{Spec: *annotationConfig.Spec()}, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, true, specerror.NewError(specerror.AnnotationsKeyIgnoreUnknown, fmt.Errorf("implementations that are reading/processing this configuration file MUST NOT generate an error if they encounter an unknown annotation key"), rspecs.Version)},
-		{extendedSpec{Spec: *basicConfig.Spec(), Unknown: "unknown"}, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, true, specerror.NewError(specerror.ExtensibilityIgnoreUnknownProp, fmt.Errorf("runtimes that are reading or processing this configuration file MUST NOT generate an error if they encounter an unknown property"), rspecs.Version)},
-		{extendedSpec{Spec: *invalidConfig.Spec()}, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, false, specerror.NewError(specerror.ValidValues, fmt.Errorf("runtimes that are reading or processing this configuration file MUST generate an error when invalid or unsupported values are encountered"), rspecs.Version)},
+		{extendedSpec{Spec: *annotationConfig.Config}, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, true, specerror.NewError(specerror.AnnotationsKeyIgnoreUnknown, fmt.Errorf("implementations that are reading/processing this configuration file MUST NOT generate an error if they encounter an unknown annotation key"), rspecs.Version)},
+		{extendedSpec{Spec: *basicConfig.Config, Unknown: "unknown"}, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, true, specerror.NewError(specerror.ExtensibilityIgnoreUnknownProp, fmt.Errorf("runtimes that are reading or processing this configuration file MUST NOT generate an error if they encounter an unknown property"), rspecs.Version)},
+		{extendedSpec{Spec: *invalidConfig.Config}, util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete, false, specerror.NewError(specerror.ValidValues, fmt.Errorf("runtimes that are reading or processing this configuration file MUST generate an error when invalid or unsupported values are encountered"), rspecs.Version)},
 	}
 
 	for _, c := range cases {

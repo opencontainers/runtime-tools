@@ -94,25 +94,25 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	outputDir := filepath.Join(bundleDir, g.Spec().Root.Path)
+	outputDir := filepath.Join(bundleDir, g.Config.Root.Path)
 	timeout := 1
 	g.AddAnnotation(annotationKey, annotationValue)
 	g.AddPreStartHook(rspecs.Hook{
-		Path: filepath.Join(bundleDir, g.Spec().Root.Path, "/bin/sh"),
+		Path: filepath.Join(bundleDir, g.Config.Root.Path, "/bin/sh"),
 		Args: []string{
 			"sh", "-c", fmt.Sprintf("cat > %s", filepath.Join(outputDir, "prestart")),
 		},
 		Timeout: &timeout,
 	})
 	g.AddPostStartHook(rspecs.Hook{
-		Path: filepath.Join(bundleDir, g.Spec().Root.Path, "/bin/sh"),
+		Path: filepath.Join(bundleDir, g.Config.Root.Path, "/bin/sh"),
 		Args: []string{
 			"sh", "-c", fmt.Sprintf("cat > %s", filepath.Join(outputDir, "poststart")),
 		},
 		Timeout: &timeout,
 	})
 	g.AddPostStopHook(rspecs.Hook{
-		Path: filepath.Join(bundleDir, g.Spec().Root.Path, "/bin/sh"),
+		Path: filepath.Join(bundleDir, g.Config.Root.Path, "/bin/sh"),
 		Args: []string{
 			"sh", "-c", fmt.Sprintf("cat > %s", filepath.Join(outputDir, "poststop")),
 		},
