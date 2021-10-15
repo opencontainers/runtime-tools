@@ -9,6 +9,15 @@ on:
   pull_request:
 
 jobs:
+
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42
+
   test:
     runs-on: ubuntu-20.04
     strategy:
