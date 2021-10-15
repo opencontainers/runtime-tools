@@ -6,16 +6,18 @@ BUILDTAGS=
 RUNTIME ?= runc
 COMMIT=$(shell git rev-parse HEAD 2> /dev/null || true)
 VERSION := ${shell cat ./VERSION}
+BUILD_FLAGS := -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=$(COMMIT) -X main.version=$(VERSION)" $(EXTRA_FLAGS)
+STATIC_BUILD_FLAGS := -tags "$(BUILDTAGS) netgo osusergo" -ldflags "-extldflags -static -X main.gitCommit=$(COMMIT) -X main.version=$(VERSION)" $(EXTRA_FLAGS)
 VALIDATION_TESTS ?= $(patsubst %.go,%.t,$(shell find ./validation/ -name *.go | grep -v util))
 
 all: tool runtimetest validation-executables
 
 tool:
-	go build -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION}" -o oci-runtime-tool ./cmd/oci-runtime-tool
+	go build $(BUILD_FLAGS) -o oci-runtime-tool ./cmd/oci-runtime-tool
 
 .PHONY: runtimetest
 runtimetest:
-	CGO_ENABLED=0 go build -installsuffix cgo -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION}" -o runtimetest ./cmd/runtimetest
+	go build $(STATIC_BUILD_FLAGS) -o runtimetest ./cmd/runtimetest
 
 .PHONY: man
 man:
@@ -56,7 +58,7 @@ validation-executables: $(VALIDATION_TESTS)
 .PRECIOUS: $(VALIDATION_TESTS)
 .PHONY: $(VALIDATION_TESTS)
 $(VALIDATION_TESTS): %.t: %.go
-	go build -tags "$(BUILDTAGS)" ${TESTFLAGS} -o $@ $<
+	go build $(BUILD_FLAGS) -o $@ $<
 
 print-validation-tests:
 	@echo $(VALIDATION_TESTS)
