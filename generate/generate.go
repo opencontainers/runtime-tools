@@ -1563,9 +1563,6 @@ func (g *Generator) RemoveLinuxResourcesDevice(allow bool, devType string, major
 	return
 }
 
-// strPtr returns the pointer pointing to the string s.
-func strPtr(s string) *string { return &s }
-
 // SetSyscallAction adds rules for syscalls with the specified action
 func (g *Generator) SetSyscallAction(arguments seccomp.SyscallOpts) error {
 	g.initConfigLinuxSeccomp()
