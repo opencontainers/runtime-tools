@@ -1179,19 +1179,19 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 			rfcError, err = c.Ok(false, specerror.MountsInOrder, spec.Version, fmt.Sprintf("mounts[%d] (%s) found", i, configMount.Destination))
 		} else {
 			rfcError, err = c.Ok(foundInOrder, specerror.MountsInOrder, spec.Version, fmt.Sprintf("mounts[%d] (%s) found in order", i, configMount.Destination))
-			c.harness.YAML(map[string]interface{}{
-				"level":       rfcError.Level.String(),
-				"reference":   rfcError.Reference,
-				"config":      configMount,
-				"indexConfig": i,
-				"indexSystem": configSys[i],
-				"earlier": map[string]interface{}{
-					"config":      spec.Mounts[highestMatchedConfig],
-					"indexConfig": highestMatchedConfig,
-					"indexSystem": configSys[highestMatchedConfig],
-				},
-			})
 		}
+		c.harness.YAML(map[string]interface{}{
+			"level":       rfcError.Level.String(),
+			"reference":   rfcError.Reference,
+			"config":      configMount,
+			"indexConfig": i,
+			"indexSystem": configSys[i],
+			"earlier": map[string]interface{}{
+				"config":      spec.Mounts[highestMatchedConfig],
+				"indexConfig": highestMatchedConfig,
+				"indexSystem": configSys[highestMatchedConfig],
+			},
+		})
 	}
 
 	return mountErrs
