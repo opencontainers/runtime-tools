@@ -1025,10 +1025,9 @@ func (g *Generator) ClearPreStartHooks() {
 }
 
 // AddPreStartHook add a prestart hook into g.Config.Hooks.Prestart.
-func (g *Generator) AddPreStartHook(preStartHook rspec.Hook) error {
+func (g *Generator) AddPreStartHook(preStartHook rspec.Hook) {
 	g.initConfigHooks()
 	g.Config.Hooks.Prestart = append(g.Config.Hooks.Prestart, preStartHook)
-	return nil
 }
 
 // ClearPostStopHooks clear g.Config.Hooks.Poststop.
@@ -1040,10 +1039,9 @@ func (g *Generator) ClearPostStopHooks() {
 }
 
 // AddPostStopHook adds a poststop hook into g.Config.Hooks.Poststop.
-func (g *Generator) AddPostStopHook(postStopHook rspec.Hook) error {
+func (g *Generator) AddPostStopHook(postStopHook rspec.Hook) {
 	g.initConfigHooks()
 	g.Config.Hooks.Poststop = append(g.Config.Hooks.Poststop, postStopHook)
-	return nil
 }
 
 // ClearPostStartHooks clear g.Config.Hooks.Poststart.
@@ -1055,10 +1053,9 @@ func (g *Generator) ClearPostStartHooks() {
 }
 
 // AddPostStartHook adds a poststart hook into g.Config.Hooks.Poststart.
-func (g *Generator) AddPostStartHook(postStartHook rspec.Hook) error {
+func (g *Generator) AddPostStartHook(postStartHook rspec.Hook) {
 	g.initConfigHooks()
 	g.Config.Hooks.Poststart = append(g.Config.Hooks.Poststart, postStartHook)
-	return nil
 }
 
 // AddMount adds a mount into g.Config.Mounts.
