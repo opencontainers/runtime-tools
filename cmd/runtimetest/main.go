@@ -568,11 +568,11 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 		if err := unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
 			return err
 		}
-		defer unix.Unmount(targetDir, unix.MNT_DETACH)
+		defer unix.Unmount(targetDir, unix.MNT_DETACH) //nolint:errcheck
 		if err := unix.Mount(testDir, mountDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
 			return err
 		}
-		defer unix.Unmount(mountDir, unix.MNT_DETACH)
+		defer unix.Unmount(mountDir, unix.MNT_DETACH) //nolint:errcheck
 		targetFile := filepath.Join(targetDir, filepath.Join(mountDir, filepath.Base(tmpfile.Name())))
 		var exposed bool
 		_, err = os.Stat(targetFile)
@@ -599,7 +599,7 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 		} else if err != nil {
 			return err
 		}
-		defer unix.Unmount(targetDir, unix.MNT_DETACH)
+		defer unix.Unmount(targetDir, unix.MNT_DETACH) //nolint:errcheck
 		c.harness.Fail("root propagation is unbindable")
 		return nil
 	default:
