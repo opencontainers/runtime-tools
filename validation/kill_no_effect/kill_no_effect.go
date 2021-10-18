@@ -10,7 +10,7 @@ import (
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 	defer os.RemoveAll(bundleDir)
 
 	targetErr := specerror.NewError(specerror.KillNonCreateRunHaveNoEffect, fmt.Errorf("attempting to send a signal to a container that is neither `created` nor `running` MUST have no effect on the container"), rspecs.Version)
-	containerID := uuid.NewV4().String()
+	containerID := uuid.NewString()
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		util.Fatal(err)

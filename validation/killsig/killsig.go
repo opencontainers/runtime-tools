@@ -10,7 +10,7 @@ import (
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 var signals = []string{
@@ -28,7 +28,7 @@ func main() {
 	}
 	defer os.RemoveAll(bundleDir)
 
-	containerID := uuid.NewV4().String()
+	containerID := uuid.NewString()
 	sigConfig, err := util.GetDefaultGenerator()
 	if err != nil {
 		os.RemoveAll(bundleDir)

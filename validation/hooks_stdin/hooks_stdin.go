@@ -15,7 +15,7 @@ import (
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 func stdinStateCheck(outputDir, hookName string, expectedState rspecs.State) (errs *multierror.Error) {
@@ -83,7 +83,7 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	containerID := uuid.NewV4().String()
+	containerID := uuid.NewString()
 	defer os.RemoveAll(bundleDir)
 
 	var containerPid int

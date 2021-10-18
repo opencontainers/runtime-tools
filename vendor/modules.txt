@@ -4,6 +4,9 @@ github.com/blang/semver
 # github.com/davecgh/go-spew v1.1.1-0.20170829195320-a47672248388
 ## explicit
 github.com/davecgh/go-spew/spew
+# github.com/google/uuid v1.3.0
+## explicit
+github.com/google/uuid
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.0.0
@@ -24,9 +27,6 @@ github.com/opencontainers/selinux/go-selinux
 github.com/opencontainers/selinux/go-selinux/label
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/satori/go.uuid v1.1.0
-## explicit
-github.com/satori/go.uuid
 # github.com/sirupsen/logrus v1.0.2-0.20170713114250-a3f95b5c4235
 ## explicit
 github.com/sirupsen/logrus

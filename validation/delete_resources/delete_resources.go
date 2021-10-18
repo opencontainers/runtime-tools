@@ -12,7 +12,7 @@ import (
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 		util.Fatal(err)
 	}
 
-	r.SetID(uuid.NewV4().String())
+	r.SetID(uuid.NewString())
 	g, err := util.GetDefaultGenerator()
 	if err != nil {
 		util.Fatal(err)

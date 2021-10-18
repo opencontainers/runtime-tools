@@ -10,7 +10,7 @@ import (
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -40,7 +40,7 @@ func main() {
 		util.Fatal(err)
 	}
 
-	containerID := uuid.NewV4().String()
+	containerID := uuid.NewString()
 	cases := []struct {
 		id          string
 		errExpected bool
