@@ -47,33 +47,32 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.1-rc1",
+				Version: "1.0.99-rc1", // non-existent
 			},
 			error: "Could not read schema from HTTP, response status is 404 Not Found",
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.0", // too old
+			},
+			error: "1 error occurred:\n\t* unsupported configuration version (older than 1.0.2)\n\n",
+		},
+		{
+			config: &rspec.Spec{
+				Version: "1.0.2",
 			},
 			error: "",
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
-				Process: &rspec.Process{},
-			},
-			error: "1 error occurred:\n\t* args: args is required\n\n",
-		},
-		{
-			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux:   &rspec.Linux{},
 			},
 			error: "",
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					RootfsPropagation: "",
 				},
@@ -82,7 +81,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					RootfsPropagation: "shared",
 				},
@@ -91,7 +90,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					RootfsPropagation: "rshared",
 				},
@@ -100,13 +99,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0-rc5",
-			},
-			error: "process: process is required",
-		},
-		{
-			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					Namespaces: []rspec.LinuxNamespace{
 						{
@@ -119,7 +112,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					Namespaces: []rspec.LinuxNamespace{
 						{
@@ -132,7 +125,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					Seccomp: &rspec.LinuxSeccomp{
 						DefaultAction: "SCMP_ACT_ALLOW",
@@ -147,7 +140,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					Seccomp: &rspec.LinuxSeccomp{
 						DefaultAction: "SCMP_ACT_ALLOW",
@@ -162,7 +155,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					Seccomp: &rspec.LinuxSeccomp{
 						DefaultAction: "SCMP_ACT_ALLOW",
@@ -179,7 +172,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					Seccomp: &rspec.LinuxSeccomp{
 						DefaultAction: "SCMP_ACT_ALLOW",
@@ -192,11 +185,11 @@ func TestJSONSchema(t *testing.T) {
 					},
 				},
 			},
-			error: "linux.seccomp.syscalls.0.action: linux.seccomp.syscalls.0.action must be one of the following: \"SCMP_ACT_KILL\", \"SCMP_ACT_TRAP\", \"SCMP_ACT_ERRNO\", \"SCMP_ACT_TRACE\", \"SCMP_ACT_ALLOW\"",
+			error: "linux.seccomp.syscalls.0.action: linux.seccomp.syscalls.0.action must be one of the following: \"SCMP_ACT_KILL\", \"SCMP_ACT_TRAP\", \"SCMP_ACT_ERRNO\", \"SCMP_ACT_TRACE\", \"SCMP_ACT_ALLOW\", \"SCMP_ACT_LOG\"",
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					Seccomp: &rspec.LinuxSeccomp{
 						DefaultAction: "SCMP_ACT_ALLOW",
@@ -220,7 +213,7 @@ func TestJSONSchema(t *testing.T) {
 		},
 		{
 			config: &rspec.Spec{
-				Version: "1.0.0",
+				Version: "1.0.2",
 				Linux: &rspec.Linux{
 					Seccomp: &rspec.LinuxSeccomp{
 						DefaultAction: "SCMP_ACT_ALLOW",
@@ -322,7 +315,7 @@ func TestCheckSemVer(t *testing.T) {
 		expected specerror.Code
 	}{
 		{rspec.Version, specerror.NonError},
-		//FIXME: validate currently only handles rpsec.Version
+		// FIXME: validate currently only handles rpsec.Version
 		{"0.0.1", specerror.NonRFCError},
 		{"invalid", specerror.SpecVersionInSemVer},
 	}
