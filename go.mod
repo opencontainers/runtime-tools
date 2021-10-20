@@ -12,7 +12,7 @@ require (
 	github.com/opencontainers/selinux v1.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.3.0
-	github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8
+	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	github.com/urfave/cli v1.19.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sys v0.0.0-20191115151921-52ab43148777
