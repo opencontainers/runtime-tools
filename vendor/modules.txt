@@ -20,10 +20,12 @@ github.com/mrunalp/fileutils
 # github.com/opencontainers/runtime-spec v1.0.3-0.20201121164853-7413a7f753e1
 ## explicit
 github.com/opencontainers/runtime-spec/specs-go
-# github.com/opencontainers/selinux v1.0.1-0.20190118194646-2d93b96e1a01
+# github.com/opencontainers/selinux v1.9.1
 ## explicit
 github.com/opencontainers/selinux/go-selinux
 github.com/opencontainers/selinux/go-selinux/label
+github.com/opencontainers/selinux/pkg/pwalk
+github.com/opencontainers/selinux/pkg/pwalkdir
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/sirupsen/logrus v1.8.1
@@ -45,7 +47,7 @@ github.com/xeipuuv/gojsonreference
 # github.com/xeipuuv/gojsonschema v1.2.0
 ## explicit
 github.com/xeipuuv/gojsonschema
-# golang.org/x/sys v0.0.0-20191026070338-33540a1f6037
+# golang.org/x/sys v0.0.0-20191115151921-52ab43148777
 ## explicit
 golang.org/x/sys/unix
 golang.org/x/sys/windows
