@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/mndrix/tap-go v0.0.0-20171203230836-629fa407e90b
-	github.com/mrunalp/fileutils v0.0.0-20160930181131-4ee1cc9a8058
+	github.com/mrunalp/fileutils v0.5.0
 	github.com/opencontainers/runtime-spec v1.0.3-0.20201121164853-7413a7f753e1
 	github.com/opencontainers/selinux v1.0.1-0.20190118194646-2d93b96e1a01
 	github.com/sirupsen/logrus v1.8.1
