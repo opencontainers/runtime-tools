@@ -4,18 +4,20 @@ TAP ?= tap
 
 BUILDTAGS=
 RUNTIME ?= runc
-COMMIT=$(shell git rev-parse HEAD 2> /dev/null || true)
+COMMIT ?= $(shell git describe --dirty --long --always --tags 2> /dev/null)
 VERSION := ${shell cat ./VERSION}
+BUILD_FLAGS := -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=$(COMMIT) -X main.version=$(VERSION)" $(EXTRA_FLAGS)
+STATIC_BUILD_FLAGS := -tags "$(BUILDTAGS) netgo osusergo" -ldflags "-extldflags -static -X main.gitCommit=$(COMMIT) -X main.version=$(VERSION)" $(EXTRA_FLAGS)
 VALIDATION_TESTS ?= $(patsubst %.go,%.t,$(shell find ./validation/ -name *.go | grep -v util))
 
 all: tool runtimetest validation-executables
 
 tool:
-	go build -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION}" -o oci-runtime-tool ./cmd/oci-runtime-tool
+	go build $(BUILD_FLAGS) -o oci-runtime-tool ./cmd/oci-runtime-tool
 
 .PHONY: runtimetest
 runtimetest:
-	CGO_ENABLED=0 go build -installsuffix cgo -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION}" -o runtimetest ./cmd/runtimetest
+	go build $(STATIC_BUILD_FLAGS) -o runtimetest ./cmd/runtimetest
 
 .PHONY: man
 man:
@@ -56,25 +58,18 @@ validation-executables: $(VALIDATION_TESTS)
 .PRECIOUS: $(VALIDATION_TESTS)
 .PHONY: $(VALIDATION_TESTS)
 $(VALIDATION_TESTS): %.t: %.go
-	go build -tags "$(BUILDTAGS)" ${TESTFLAGS} -o $@ $<
+	go build $(BUILD_FLAGS) -o $@ $<
 
 print-validation-tests:
 	@echo $(VALIDATION_TESTS)
 
-.PHONY: test .gofmt .govet .golint print-validation-tests
+.PHONY: test .govet print-validation-tests
 
 PACKAGES = $(shell go list ./... | grep -v vendor)
-test: .gofmt .govet .golint .gotest
-
-.gofmt:
-	OUT=$$(go fmt $(PACKAGES)); if test -n "$${OUT}"; then echo "$${OUT}" && exit 1; fi
+test: .govet .gotest
 
 .govet:
 	go vet -x $(PACKAGES)
 
-.golint:
-	golint -set_exit_status $(PACKAGES)
-
-UTDIRS = ./filepath/... ./validate/... ./generate/...
 .gotest:
-	go test $(UTDIRS)
+	go test $(TESTFLAGS) ./...

@@ -529,9 +529,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if err := json.Unmarshal([]byte(hook), &tmpHook); err != nil {
 				return err
 			}
-			if err := g.AddPostStartHook(tmpHook); err != nil {
-				return err
-			}
+			g.AddPostStartHook(tmpHook)
 		}
 	}
 
@@ -546,9 +544,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if err := json.Unmarshal([]byte(hook), &tmpHook); err != nil {
 				return err
 			}
-			if err := g.AddPostStopHook(tmpHook); err != nil {
-				return err
-			}
+			g.AddPostStopHook(tmpHook)
 		}
 	}
 
@@ -563,9 +559,7 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 			if err := json.Unmarshal([]byte(hook), &tmpHook); err != nil {
 				return err
 			}
-			if err := g.AddPreStartHook(tmpHook); err != nil {
-				return err
-			}
+			g.AddPreStartHook(tmpHook)
 		}
 	}
 

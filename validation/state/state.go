@@ -57,7 +57,7 @@ func main() {
 				"reference": e.Err.Reference,
 				"error":     e.Err.Error(),
 			}
-			t.YAML(diagnostic)
+			_ = t.YAML(diagnostic)
 			continue
 		}
 
@@ -73,7 +73,7 @@ func main() {
 				}
 			}
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	}
 
 	t.AutoPlan()

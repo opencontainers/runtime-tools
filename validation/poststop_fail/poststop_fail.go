@@ -28,14 +28,14 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	output := filepath.Join(bundleDir, g.Spec().Root.Path, "output")
+	output := filepath.Join(bundleDir, g.Config.Root.Path, "output")
 	poststop := rspec.Hook{
-		Path: filepath.Join(bundleDir, g.Spec().Root.Path, "/bin/false"),
+		Path: filepath.Join(bundleDir, g.Config.Root.Path, "/bin/false"),
 		Args: []string{"false"},
 	}
 	g.AddPostStopHook(poststop)
 	poststopOK := rspec.Hook{
-		Path: filepath.Join(bundleDir, g.Spec().Root.Path, "/bin/sh"),
+		Path: filepath.Join(bundleDir, g.Config.Root.Path, "/bin/sh"),
 		Args: []string{
 			"sh", "-c", fmt.Sprintf("echo 'post-stop called' >> %s", output),
 		},
@@ -66,7 +66,7 @@ func main() {
 		diagnostic := map[string]string{
 			"error": err.Error(),
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	}
 
 	t.AutoPlan()

@@ -27,62 +27,44 @@ func main() {
 			if err != nil {
 				util.Fatal(err)
 			}
-			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
-			shPath := filepath.Join(r.BundleDir, g.Spec().Root.Path, "/bin/sh")
-			err = g.AddPreStartHook(rspec.Hook{
+			output = filepath.Join(r.BundleDir, g.Config.Root.Path, "output")
+			shPath := filepath.Join(r.BundleDir, g.Config.Root.Path, "/bin/sh")
+			g.AddPreStartHook(rspec.Hook{
 				Path: shPath,
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'pre-start1 called' >> %s", output),
 				},
 			})
-			if err != nil {
-				return err
-			}
-			err = g.AddPreStartHook(rspec.Hook{
+			g.AddPreStartHook(rspec.Hook{
 				Path: shPath,
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'pre-start2 called' >> %s", output),
 				},
 			})
-			if err != nil {
-				return err
-			}
-			err = g.AddPostStartHook(rspec.Hook{
+			g.AddPostStartHook(rspec.Hook{
 				Path: shPath,
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'post-start1 called' >> %s", output),
 				},
 			})
-			if err != nil {
-				return err
-			}
-			err = g.AddPostStartHook(rspec.Hook{
+			g.AddPostStartHook(rspec.Hook{
 				Path: shPath,
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'post-start2 called' >> %s", output),
 				},
 			})
-			if err != nil {
-				return err
-			}
-			err = g.AddPostStopHook(rspec.Hook{
+			g.AddPostStopHook(rspec.Hook{
 				Path: shPath,
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'post-stop1 called' >> %s", output),
 				},
 			})
-			if err != nil {
-				return err
-			}
-			err = g.AddPostStopHook(rspec.Hook{
+			g.AddPostStopHook(rspec.Hook{
 				Path: shPath,
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'post-stop2 called' >> %s", output),
 				},
 			})
-			if err != nil {
-				return err
-			}
 			g.SetProcessArgs([]string{"true"})
 			return r.SetConfig(g)
 		},
@@ -99,7 +81,7 @@ func main() {
 		diagnostic := map[string]string{
 			"error": err.Error(),
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	} else {
 		diagnostic := map[string]string{
 			"error": err.Error(),
@@ -109,7 +91,7 @@ func main() {
 				diagnostic["stderr"] = string(e.Stderr)
 			}
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	}
 
 	t.AutoPlan()

@@ -22,7 +22,7 @@ func printDiag(t *tap.T, diagActual, diagExpected, diagNsType string, errNs erro
 		"level":          specErr.(*specerror.Error).Err.Level.String(),
 		"reference":      specErr.(*specerror.Error).Err.Reference,
 	}
-	t.YAML(diagnostic)
+	_ = t.YAML(diagnostic)
 }
 
 func testNamespaceNoPath(t *tap.T) error {
@@ -120,7 +120,7 @@ func main() {
 	t.Header(0)
 
 	if "linux" != runtime.GOOS {
-		t.Skip(1, fmt.Sprintf("linux-specific namespace test"))
+		t.Skip(1, "linux-specific namespace test")
 	}
 
 	err := testNamespaceNoPath(t)

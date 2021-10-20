@@ -1,0 +1,58 @@
+name: ci
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+      - release-*
+  pull_request:
+
+jobs:
+
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42
+
+  commit:
+    runs-on: ubuntu-20.04
+    # Only check commits on pull requests.
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: get pr commits
+        id: 'get-pr-commits'
+        uses: tim-actions/get-pr-commits@v1.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: check subject line length
+        uses: tim-actions/commit-message-checker-with-regex@v0.3.1
+        with:
+          commits: ${{ steps.get-pr-commits.outputs.commits }}
+          pattern: '^.{0,72}(\n.*)*$'
+          error: 'Subject too long (max 72)'
+
+  test:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [1.16.x, 1.17.x]
+        race: ["-race", ""]
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: install go ${{ matrix.go-version }}
+      uses: actions/setup-go@v2
+      with:
+        stable: '!contains(${{ matrix.go-version }}, "beta") && !contains(${{ matrix.go-version }}, "rc")'
+        go-version: ${{ matrix.go-version }}
+    - name: build
+      run: make EXTRA_FLAGS="${{ matrix.race }}"
+    - name: test
+      run: make TESTFLAGS="${{ matrix.race }}" test

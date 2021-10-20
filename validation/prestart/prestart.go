@@ -28,16 +28,13 @@ func main() {
 			if err != nil {
 				util.Fatal(err)
 			}
-			output = filepath.Join(r.BundleDir, g.Spec().Root.Path, "output")
-			err = g.AddPreStartHook(rspec.Hook{
-				Path: filepath.Join(r.BundleDir, g.Spec().Root.Path, "/bin/sh"),
+			output = filepath.Join(r.BundleDir, g.Config.Root.Path, "output")
+			g.AddPreStartHook(rspec.Hook{
+				Path: filepath.Join(r.BundleDir, g.Config.Root.Path, "/bin/sh"),
 				Args: []string{
 					"sh", "-c", fmt.Sprintf("echo 'pre-start called' >> %s", output),
 				},
 			})
-			if err != nil {
-				return err
-			}
 			g.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("echo 'process called' >> %s", "/output")})
 			return r.SetConfig(g)
 		},
@@ -85,7 +82,7 @@ func main() {
 				diagnostic["stderr"] = string(e.Stderr)
 			}
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 	}
 
 	t.AutoPlan()

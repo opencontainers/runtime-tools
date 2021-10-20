@@ -59,7 +59,7 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	if err := util.ValidateLinuxResourcesPids(g.Spec(), t, &state); err != nil {
+	if err := util.ValidateLinuxResourcesPids(g.Config, t, &state); err != nil {
 		util.Fatal(err)
 	}
 

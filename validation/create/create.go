@@ -66,13 +66,13 @@ func main() {
 				}
 			}
 		}
-		t.YAML(diagnostic)
+		_ = t.YAML(diagnostic)
 
 		if err == nil {
 			state, err := r.State()
 			t.Ok(err == nil && state.ID == c.id, "'state' MUST return the state of a container")
 			if err == nil {
-				t.YAML(map[string]string{
+				_ = t.YAML(map[string]string{
 					"container ID": c.id,
 					"state ID":     state.ID,
 				})
@@ -85,7 +85,7 @@ func main() {
 						diagnostic["stderr"] = string(e.Stderr)
 					}
 				}
-				t.YAML(diagnostic)
+				_ = t.YAML(diagnostic)
 			}
 		}
 	}

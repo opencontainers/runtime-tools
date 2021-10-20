@@ -40,7 +40,7 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	output := filepath.Join(bundleDir, g.Spec().Root.Path, "output")
+	output := filepath.Join(bundleDir, g.Config.Root.Path, "output")
 
 	// start without id
 	err = r.Start()
@@ -98,7 +98,7 @@ func main() {
 		return
 	}
 
-	g.Spec().Process = nil
+	g.Config.Process = nil
 	err = r.SetConfig(g)
 	if err != nil {
 		util.Fatal(err)

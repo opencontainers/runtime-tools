@@ -1,11 +1,10 @@
 package util
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,7 +13,6 @@ import (
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
-	"github.com/satori/go.uuid"
 )
 
 // Runtime represents the basic requirement of a container runtime
@@ -23,8 +21,8 @@ type Runtime struct {
 	BundleDir      string
 	PidFile        string
 	ID             string
-	stdout         *os.File
-	stderr         *os.File
+	stdout         bytes.Buffer
+	stderr         bytes.Buffer
 }
 
 // DefaultSignal represents the default signal sends to a container
@@ -80,17 +78,10 @@ func (r *Runtime) Create() (err error) {
 		args = append(args, r.ID)
 	}
 	cmd := exec.Command(r.RuntimeCommand, args...)
-	id := uuid.NewV4().String()
-	r.stdout, err = os.OpenFile(filepath.Join(r.bundleDir(), fmt.Sprintf("stdout-%s", id)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
-	if err != nil {
-		return err
-	}
-	cmd.Stdout = r.stdout
-	r.stderr, err = os.OpenFile(filepath.Join(r.bundleDir(), fmt.Sprintf("stderr-%s", id)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
-	if err != nil {
-		return err
-	}
-	cmd.Stderr = r.stderr
+	r.stdout.Reset()
+	cmd.Stdout = &r.stdout
+	r.stderr.Reset()
+	cmd.Stderr = &r.stderr
 
 	err = cmd.Run()
 	if err == nil {
@@ -98,7 +89,7 @@ func (r *Runtime) Create() (err error) {
 	}
 
 	if e, ok := err.(*exec.ExitError); ok {
-		stdout, stderr, _ := r.ReadStandardStreams()
+		stdout, stderr := r.StandardStreams()
 		if len(stderr) == 0 {
 			stderr = stdout
 		}
@@ -108,19 +99,9 @@ func (r *Runtime) Create() (err error) {
 	return err
 }
 
-// ReadStandardStreams collects content from the stdout and stderr buffers.
-func (r *Runtime) ReadStandardStreams() (stdout []byte, stderr []byte, err error) {
-	_, err = r.stdout.Seek(0, io.SeekStart)
-	stdout, err2 := ioutil.ReadAll(r.stdout)
-	if err == nil && err2 != nil {
-		err = err2
-	}
-	_, err = r.stderr.Seek(0, io.SeekStart)
-	stderr, err2 = ioutil.ReadAll(r.stderr)
-	if err == nil && err2 != nil {
-		err = err2
-	}
-	return stdout, stderr, err
+// StandardStreams returns content from the stdout and stderr buffers.
+func (r *Runtime) StandardStreams() (stdout, stderr []byte) {
+	return r.stdout.Bytes(), r.stderr.Bytes()
 }
 
 // Start a container
@@ -197,20 +178,25 @@ func (r *Runtime) Delete() (err error) {
 // directory is removed after the container is deleted successfully or, if
 // forceRemoveBundle is true, after the deletion attempt regardless of
 // whether it was successful or not.
-func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) error {
-	r.Kill("KILL")
-	WaitingForStatus(*r, LifecycleStatusStopped, time.Second*10, time.Second/10)
-
-	err := r.Delete()
-
-	if removeBundle && (err == nil || forceRemoveBundle) {
-		err2 := os.RemoveAll(r.bundleDir())
-		if err2 != nil && err == nil {
-			err = err2
-		}
+func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) {
+	if err := r.Kill("KILL"); err != nil {
+		fmt.Fprintf(os.Stderr, "Clean: Kill: %v", err)
+	}
+	if err := WaitingForStatus(*r, LifecycleStatusStopped, time.Second*10, time.Second/10); err != nil {
+		fmt.Fprintf(os.Stderr, "Clean: %v", err)
 	}
 
-	return err
+	err := r.Delete()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Clean: Delete: %v", err)
+	}
+
+	if removeBundle && (err == nil || forceRemoveBundle) {
+		err := os.RemoveAll(r.bundleDir())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Clean: %v", err)
+		}
+	}
 }
 
 func execWithStderrFallbackToStdout(cmd *exec.Cmd) (err error) {

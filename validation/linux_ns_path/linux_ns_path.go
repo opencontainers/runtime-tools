@@ -166,7 +166,7 @@ func main() {
 				"level":          rfcError.Level.String(),
 				"reference":      rfcError.Reference,
 			}
-			t.YAML(diagnostic)
+			_ = t.YAML(diagnostic)
 		}
 	}
 

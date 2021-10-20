@@ -1025,10 +1025,9 @@ func (g *Generator) ClearPreStartHooks() {
 }
 
 // AddPreStartHook add a prestart hook into g.Config.Hooks.Prestart.
-func (g *Generator) AddPreStartHook(preStartHook rspec.Hook) error {
+func (g *Generator) AddPreStartHook(preStartHook rspec.Hook) {
 	g.initConfigHooks()
 	g.Config.Hooks.Prestart = append(g.Config.Hooks.Prestart, preStartHook)
-	return nil
 }
 
 // ClearPostStopHooks clear g.Config.Hooks.Poststop.
@@ -1040,10 +1039,9 @@ func (g *Generator) ClearPostStopHooks() {
 }
 
 // AddPostStopHook adds a poststop hook into g.Config.Hooks.Poststop.
-func (g *Generator) AddPostStopHook(postStopHook rspec.Hook) error {
+func (g *Generator) AddPostStopHook(postStopHook rspec.Hook) {
 	g.initConfigHooks()
 	g.Config.Hooks.Poststop = append(g.Config.Hooks.Poststop, postStopHook)
-	return nil
 }
 
 // ClearPostStartHooks clear g.Config.Hooks.Poststart.
@@ -1055,10 +1053,9 @@ func (g *Generator) ClearPostStartHooks() {
 }
 
 // AddPostStartHook adds a poststart hook into g.Config.Hooks.Poststart.
-func (g *Generator) AddPostStartHook(postStartHook rspec.Hook) error {
+func (g *Generator) AddPostStartHook(postStartHook rspec.Hook) {
 	g.initConfigHooks()
 	g.Config.Hooks.Poststart = append(g.Config.Hooks.Poststart, postStartHook)
-	return nil
 }
 
 // AddMount adds a mount into g.Config.Mounts.
@@ -1560,11 +1557,7 @@ func (g *Generator) RemoveLinuxResourcesDevice(allow bool, devType string, major
 			return
 		}
 	}
-	return
 }
-
-// strPtr returns the pointer pointing to the string s.
-func strPtr(s string) *string { return &s }
 
 // SetSyscallAction adds rules for syscalls with the specified action
 func (g *Generator) SetSyscallAction(arguments seccomp.SyscallOpts) error {
@@ -1691,14 +1684,14 @@ func (g *Generator) SetVMHypervisorPath(path string) error {
 	if !strings.HasPrefix(path, "/") {
 		return fmt.Errorf("hypervisorPath %v is not an absolute path", path)
 	}
-	g.initConfigVMHypervisor()
+	g.initConfigVM()
 	g.Config.VM.Hypervisor.Path = path
 	return nil
 }
 
 // SetVMHypervisorParameters sets g.Config.VM.Hypervisor.Parameters
 func (g *Generator) SetVMHypervisorParameters(parameters []string) {
-	g.initConfigVMHypervisor()
+	g.initConfigVM()
 	g.Config.VM.Hypervisor.Parameters = parameters
 }
 
@@ -1707,14 +1700,14 @@ func (g *Generator) SetVMKernelPath(path string) error {
 	if !strings.HasPrefix(path, "/") {
 		return fmt.Errorf("kernelPath %v is not an absolute path", path)
 	}
-	g.initConfigVMKernel()
+	g.initConfigVM()
 	g.Config.VM.Kernel.Path = path
 	return nil
 }
 
 // SetVMKernelParameters sets g.Config.VM.Kernel.Parameters
 func (g *Generator) SetVMKernelParameters(parameters []string) {
-	g.initConfigVMKernel()
+	g.initConfigVM()
 	g.Config.VM.Kernel.Parameters = parameters
 }
 
@@ -1723,7 +1716,7 @@ func (g *Generator) SetVMKernelInitRD(initrd string) error {
 	if !strings.HasPrefix(initrd, "/") {
 		return fmt.Errorf("kernelInitrd %v is not an absolute path", initrd)
 	}
-	g.initConfigVMKernel()
+	g.initConfigVM()
 	g.Config.VM.Kernel.InitRD = initrd
 	return nil
 }
@@ -1733,7 +1726,7 @@ func (g *Generator) SetVMImagePath(path string) error {
 	if !strings.HasPrefix(path, "/") {
 		return fmt.Errorf("imagePath %v is not an absolute path", path)
 	}
-	g.initConfigVMImage()
+	g.initConfigVM()
 	g.Config.VM.Image.Path = path
 	return nil
 }
@@ -1749,7 +1742,7 @@ func (g *Generator) SetVMImageFormat(format string) error {
 	default:
 		return fmt.Errorf("Commonly supported formats are: raw, qcow2, vdi, vmdk, vhd")
 	}
-	g.initConfigVMImage()
+	g.initConfigVM()
 	g.Config.VM.Image.Format = format
 	return nil
 }
