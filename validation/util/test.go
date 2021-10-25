@@ -228,7 +228,16 @@ func RuntimeInsideValidate(g *generate.Generator, t *tap.T, f PreFunc) (err erro
 		return err
 	}
 
-	stdout, stderr := r.StandardStreams()
+	stdout, stderr, err := r.ReadStandardStreams()
+	if err != nil {
+		if len(stderr) == 0 {
+			stderr = stdout
+		}
+		os.Stderr.WriteString("failed to read standard streams\n")
+		os.Stderr.Write(stderr)
+		return err
+	}
+
 	// Write stdout in the outter TAP
 	if t != nil {
 		diagnostic := map[string]string{
