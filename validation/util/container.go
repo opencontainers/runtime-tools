@@ -112,9 +112,7 @@ func (r *Runtime) Create() (err error) {
 func (r *Runtime) ReadStandardStreams() (stdout []byte, stderr []byte, err error) {
 	_, err = r.stdout.Seek(0, io.SeekStart)
 	stdout, err2 := ioutil.ReadAll(r.stdout)
-	if err == nil && err2 != nil {
-		err = err2
-	}
+
 	_, err = r.stderr.Seek(0, io.SeekStart)
 	stderr, err2 = ioutil.ReadAll(r.stderr)
 	if err == nil && err2 != nil {
