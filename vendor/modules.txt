@@ -1,39 +1,40 @@
 # github.com/blang/semver v3.5.0+incompatible
 ## explicit
 github.com/blang/semver
-# github.com/davecgh/go-spew v1.1.1-0.20170829195320-a47672248388
-## explicit
+# github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/google/uuid v1.3.0
+## explicit
+github.com/google/uuid
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
-# github.com/hashicorp/go-multierror v1.0.0
+# github.com/hashicorp/go-multierror v1.1.1
 ## explicit
 github.com/hashicorp/go-multierror
 # github.com/mndrix/tap-go v0.0.0-20171203230836-629fa407e90b
 ## explicit
 github.com/mndrix/tap-go
-# github.com/mrunalp/fileutils v0.0.0-20160930181131-4ee1cc9a8058
+# github.com/mrunalp/fileutils v0.5.0
 ## explicit
 github.com/mrunalp/fileutils
 # github.com/opencontainers/runtime-spec v1.0.3-0.20201121164853-7413a7f753e1
 ## explicit
 github.com/opencontainers/runtime-spec/specs-go
-# github.com/opencontainers/selinux v1.0.1-0.20190118194646-2d93b96e1a01
+# github.com/opencontainers/selinux v1.9.1
 ## explicit
 github.com/opencontainers/selinux/go-selinux
 github.com/opencontainers/selinux/go-selinux/label
+github.com/opencontainers/selinux/pkg/pwalk
+github.com/opencontainers/selinux/pkg/pwalkdir
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/satori/go.uuid v1.1.0
-## explicit
-github.com/satori/go.uuid
-# github.com/sirupsen/logrus v1.0.2-0.20170713114250-a3f95b5c4235
+# github.com/sirupsen/logrus v1.8.1
 ## explicit
 github.com/sirupsen/logrus
 # github.com/stretchr/testify v1.3.0
 ## explicit
 github.com/stretchr/testify/assert
-# github.com/syndtr/gocapability v0.0.0-20170704070218-db04d3cc01c8
+# github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 ## explicit
 github.com/syndtr/gocapability/capability
 # github.com/urfave/cli v1.19.1
@@ -46,9 +47,10 @@ github.com/xeipuuv/gojsonreference
 # github.com/xeipuuv/gojsonschema v1.2.0
 ## explicit
 github.com/xeipuuv/gojsonschema
-# golang.org/x/sys v0.0.0-20170407050850-f3918c30c5c2
+# golang.org/x/sys v0.0.0-20191115151921-52ab43148777
 ## explicit
 golang.org/x/sys/unix
+golang.org/x/sys/windows
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit
 gopkg.in/yaml.v2

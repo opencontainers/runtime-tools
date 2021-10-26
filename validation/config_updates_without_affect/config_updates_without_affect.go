@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
 	tap "github.com/mndrix/tap-go"
 	"github.com/mrunalp/fileutils"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	testPath := filepath.Join(bundleDir, "test.json")
-	r.SetID(uuid.NewV4().String())
+	r.SetID(uuid.NewString())
 	// generate a config has all the testing properties
 	g, err := util.GetDefaultGenerator()
 	if err != nil {

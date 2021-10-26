@@ -10,7 +10,7 @@ import (
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 		util.Fatal(err)
 	}
 	runningConfig.SetProcessArgs([]string{"sleep", "30"})
-	containerID := uuid.NewV4().String()
+	containerID := uuid.NewString()
 
 	cases := []struct {
 		config      *generate.Generator

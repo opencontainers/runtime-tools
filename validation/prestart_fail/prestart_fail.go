@@ -9,7 +9,7 @@ import (
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 	}
 	g.AddPreStartHook(prestart)
 	g.SetProcessArgs([]string{"sh", "-c", fmt.Sprintf("touch %s", "/output")})
-	containerID := uuid.NewV4().String()
+	containerID := uuid.NewString()
 
 	config := util.LifecycleConfig{
 		Config:    g,

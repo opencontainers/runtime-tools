@@ -16,7 +16,7 @@ import (
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
-	"github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 var (
@@ -204,7 +204,7 @@ func RuntimeInsideValidate(g *generate.Generator, t *tap.T, f PreFunc) (err erro
 		return err
 	}
 
-	r.SetID(uuid.NewV4().String())
+	r.SetID(uuid.NewString())
 	err = r.Create()
 	if err != nil {
 		os.Stderr.WriteString("failed to create the container\n")
@@ -272,7 +272,7 @@ func RuntimeOutsideValidate(g *generate.Generator, t *tap.T, f AfterFunc) error 
 		return err
 	}
 
-	r.SetID(uuid.NewV4().String())
+	r.SetID(uuid.NewString())
 	err = r.Create()
 	if err != nil {
 		os.Stderr.WriteString("failed to create the container\n")

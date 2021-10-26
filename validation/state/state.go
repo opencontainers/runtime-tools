@@ -10,7 +10,7 @@ import (
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 		util.Fatal(err)
 	}
 	g.SetProcessArgs([]string{"true"})
-	containerID := uuid.NewV4().String()
+	containerID := uuid.NewString()
 
 	cases := []struct {
 		id          string

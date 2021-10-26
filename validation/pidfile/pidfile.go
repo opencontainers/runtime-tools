@@ -11,7 +11,7 @@ import (
 
 	tap "github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 		Config:  g,
 		Actions: util.LifecycleActionCreate | util.LifecycleActionStart | util.LifecycleActionDelete,
 		PreCreate: func(r *util.Runtime) error {
-			r.SetID(uuid.NewV4().String())
+			r.SetID(uuid.NewString())
 			r.PidFile = tempPidFile
 			return nil
 		},
