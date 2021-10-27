@@ -272,8 +272,11 @@ func (c *complianceTester) validateCapabilities(spec *rspec.Spec) error {
 		last = capability.CAP_BLOCK_SUSPEND
 	}
 
-	processCaps, err := capability.NewPid(0)
+	processCaps, err := capability.NewPid2(0)
 	if err != nil {
+		return err
+	}
+	if err := processCaps.Load(); err != nil {
 		return err
 	}
 
