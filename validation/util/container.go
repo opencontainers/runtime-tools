@@ -1,15 +1,16 @@
 package util
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
@@ -21,8 +22,8 @@ type Runtime struct {
 	BundleDir      string
 	PidFile        string
 	ID             string
-	stdout         bytes.Buffer
-	stderr         bytes.Buffer
+	stdout         *os.File
+	stderr         *os.File
 }
 
 // DefaultSignal represents the default signal sends to a container
@@ -78,10 +79,17 @@ func (r *Runtime) Create() (err error) {
 		args = append(args, r.ID)
 	}
 	cmd := exec.Command(r.RuntimeCommand, args...)
-	r.stdout.Reset()
-	cmd.Stdout = &r.stdout
-	r.stderr.Reset()
-	cmd.Stderr = &r.stderr
+	id := uuid.NewString()
+	r.stdout, err = os.OpenFile(filepath.Join(r.bundleDir(), fmt.Sprintf("stdout-%s", id)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	if err != nil {
+		return err
+	}
+	cmd.Stdout = r.stdout
+	r.stderr, err = os.OpenFile(filepath.Join(r.bundleDir(), fmt.Sprintf("stderr-%s", id)), os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	if err != nil {
+		return err
+	}
+	cmd.Stderr = r.stderr
 
 	err = cmd.Run()
 	if err == nil {
@@ -89,7 +97,7 @@ func (r *Runtime) Create() (err error) {
 	}
 
 	if e, ok := err.(*exec.ExitError); ok {
-		stdout, stderr := r.StandardStreams()
+		stdout, stderr, _ := r.ReadStandardStreams()
 		if len(stderr) == 0 {
 			stderr = stdout
 		}
@@ -99,9 +107,14 @@ func (r *Runtime) Create() (err error) {
 	return err
 }
 
-// StandardStreams returns content from the stdout and stderr buffers.
-func (r *Runtime) StandardStreams() (stdout, stderr []byte) {
-	return r.stdout.Bytes(), r.stderr.Bytes()
+// ReadStandardStreams collects content from the stdout and stderr buffers.
+func (r *Runtime) ReadStandardStreams() (stdout []byte, stderr []byte, err error) {
+	stdout, err = ioutil.ReadFile(r.stdout.Name())
+	stderr, err2 := ioutil.ReadFile(r.stderr.Name())
+	if err == nil && err2 != nil {
+		err = err2
+	}
+	return
 }
 
 // Start a container
