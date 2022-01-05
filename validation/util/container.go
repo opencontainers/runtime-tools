@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 
 	"github.com/google/uuid"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
@@ -175,10 +174,22 @@ func (r *Runtime) Kill(sig string) (err error) {
 	return execWithStderrFallbackToStdout(cmd)
 }
 
-// Delete a container
-func (r *Runtime) Delete() (err error) {
+// Delete removes a (stopped) container.
+func (r *Runtime) Delete() error {
+	return r.del(false)
+}
+
+// ForceDelete removes a container (killing it if necessary).
+func (r *Runtime) ForceDelete() error {
+	return r.del(true)
+}
+
+func (r *Runtime) del(force bool) (err error) {
 	var args []string
 	args = append(args, "delete")
+	if force {
+		args = append(args, "--force")
+	}
 	if r.ID != "" {
 		args = append(args, r.ID)
 	}
@@ -192,22 +203,15 @@ func (r *Runtime) Delete() (err error) {
 // forceRemoveBundle is true, after the deletion attempt regardless of
 // whether it was successful or not.
 func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) {
-	if err := r.Kill("KILL"); err != nil {
-		fmt.Fprintf(os.Stderr, "Clean: Kill: %v", err)
-	}
-	if err := WaitingForStatus(*r, LifecycleStatusStopped, time.Second*10, time.Second/10); err != nil {
-		fmt.Fprintf(os.Stderr, "Clean: %v", err)
-	}
-
-	err := r.Delete()
+	err := r.ForceDelete()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Clean: Delete: %v", err)
+		fmt.Fprintln(os.Stderr, "Clean: Delete: ", err)
 	}
 
 	if removeBundle && (err == nil || forceRemoveBundle) {
 		err := os.RemoveAll(r.bundleDir())
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Clean: %v", err)
+			fmt.Fprintln(os.Stderr, "Clean: ", err)
 		}
 	}
 }
