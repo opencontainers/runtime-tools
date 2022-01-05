@@ -11,18 +11,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mndrix/tap-go"
 	"github.com/mrunalp/fileutils"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
-	"github.com/google/uuid"
 )
 
-var (
-	// RuntimeCommand is the default runtime command.
-	RuntimeCommand = "runc"
-)
+// RuntimeCommand is the default runtime command.
+var RuntimeCommand = "runc"
 
 // LifecycleAction defines the phases will be called.
 type LifecycleAction int
@@ -194,7 +192,7 @@ func RuntimeInsideValidate(g *generate.Generator, t *tap.T, f PreFunc) (err erro
 		os.RemoveAll(bundleDir)
 		return err
 	}
-	defer r.Clean(true, true)
+	defer r.Clean()
 	err = r.SetConfig(g)
 	if err != nil {
 		return err
@@ -271,7 +269,7 @@ func RuntimeOutsideValidate(g *generate.Generator, t *tap.T, f AfterFunc) error 
 		os.RemoveAll(bundleDir)
 		return err
 	}
-	defer r.Clean(true, true)
+	defer r.Clean()
 	err = r.SetConfig(g)
 	if err != nil {
 		return err

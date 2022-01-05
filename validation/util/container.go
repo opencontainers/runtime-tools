@@ -198,21 +198,16 @@ func (r *Runtime) del(force bool) (err error) {
 	return execWithStderrFallbackToStdout(cmd)
 }
 
-// Clean deletes the container.  If removeBundle is set, the bundle
-// directory is removed after the container is deleted successfully or, if
-// forceRemoveBundle is true, after the deletion attempt regardless of
-// whether it was successful or not.
-func (r *Runtime) Clean(removeBundle bool, forceRemoveBundle bool) {
+// Clean kills and removes the container and its bundle directory.
+func (r *Runtime) Clean() {
 	err := r.ForceDelete()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Clean: Delete: ", err)
 	}
 
-	if removeBundle && (err == nil || forceRemoveBundle) {
-		err := os.RemoveAll(r.bundleDir())
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Clean: ", err)
-		}
+	err = os.RemoveAll(r.bundleDir())
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Clean: ", err)
 	}
 }
 
