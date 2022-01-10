@@ -5,12 +5,12 @@ import (
 	"os/exec"
 	"runtime"
 
+	"github.com/google/uuid"
 	"github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
-	defer r.Clean(true, true)
+	defer r.Clean()
 
 	err = r.SetConfig(&g)
 	if err != nil {

@@ -10,9 +10,13 @@ func testLinuxRootPropagation(t *tap.T, propMode string) error {
 	if err != nil {
 		util.Fatal(err)
 	}
-	g.SetupPrivileged(true)
+	// Test case validateRootfsPropagation needs CAP_SYS_ADMIN to perform mounts.
+	g.AddProcessCapability("CAP_SYS_ADMIN")
+	// The generated seccomp profile does not enable mount/umount/umount2 syscalls.
+	g.Config.Linux.Seccomp = nil
+
 	g.SetLinuxRootPropagation(propMode)
-	g.AddAnnotation("TestName", "check root propagation")
+	g.AddAnnotation("TestName", "check root propagation: "+propMode)
 	return util.RuntimeInsideValidate(g, t, nil)
 }
 

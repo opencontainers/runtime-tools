@@ -548,8 +548,22 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 	}
 	defer os.RemoveAll(targetDir)
 
+	mountErr := unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, "")
+	if mountErr == unix.EPERM { //nolint:errcheck // unix errors are bare
+		// This test needs CAP_SYS_ADMIN to perform mounts.
+		// EPERM most probably means it was not granted.
+		c.harness.Skip(1, "unable to perform mount (test requires CAP_SYS_ADMIN)")
+		return nil
+	}
+	if err == nil {
+		defer unix.Unmount(targetDir, unix.MNT_DETACH) //nolint:errcheck
+	}
+
 	switch spec.Linux.RootfsPropagation {
 	case "shared", "slave", "private":
+		if mountErr != nil {
+			return fmt.Errorf("bind-mount / %s: %w", targetDir, err)
+		}
 		mountDir, err := ioutil.TempDir("/", "mount")
 		if err != nil {
 			return err
@@ -568,12 +582,8 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 		}
 		defer os.Remove(tmpfile.Name())
 
-		if err := unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
-			return err
-		}
-		defer unix.Unmount(targetDir, unix.MNT_DETACH) //nolint:errcheck
 		if err := unix.Mount(testDir, mountDir, "", unix.MS_BIND|unix.MS_REC, ""); err != nil {
-			return err
+			return fmt.Errorf("bind-mount %s %s: %w", testDir, mountDir, err)
 		}
 		defer unix.Unmount(mountDir, unix.MNT_DETACH) //nolint:errcheck
 		targetFile := filepath.Join(targetDir, filepath.Join(mountDir, filepath.Base(tmpfile.Name())))
@@ -595,14 +605,12 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 			)
 		}
 	case "unbindable":
-		err = unix.Mount("/", targetDir, "", unix.MS_BIND|unix.MS_REC, "")
-		if err == syscall.EINVAL {
+		if mountErr == syscall.EINVAL {
 			c.harness.Pass("root propagation is unbindable")
 			return nil
-		} else if err != nil {
-			return err
+		} else if mountErr != nil {
+			return fmt.Errorf("bind-mount / %s: %w", targetDir, err)
 		}
-		defer unix.Unmount(targetDir, unix.MNT_DETACH) //nolint:errcheck
 		c.harness.Fail("root propagation is unbindable")
 		return nil
 	default:
