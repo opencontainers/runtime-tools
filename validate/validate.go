@@ -170,8 +170,8 @@ func (v *Validator) CheckJSONSchema() (errs error) {
 func (v *Validator) CheckRoot() (errs error) {
 	logrus.Debugf("check root")
 
-	if v.platform == "windows" && v.spec.Windows != nil {
-		if v.spec.Windows.HyperV != nil {
+	if v.platform == "windows" {
+		if v.spec.Windows != nil && v.spec.Windows.HyperV != nil {
 			if v.spec.Root != nil {
 				errs = multierror.Append(errs,
 					specerror.NewError(specerror.RootOnHyperVNotSet, fmt.Errorf("for Hyper-V containers, Root must not be set"), rspec.Version))
@@ -182,7 +182,7 @@ func (v *Validator) CheckRoot() (errs error) {
 				specerror.NewError(specerror.RootOnWindowsRequired, fmt.Errorf("on Windows, for Windows Server Containers, Root is REQUIRED"), rspec.Version))
 			return
 		}
-	} else if v.platform != "windows" && v.spec.Root == nil {
+	} else if v.spec.Root == nil {
 		errs = multierror.Append(errs,
 			specerror.NewError(specerror.RootOnNonWindowsRequired, fmt.Errorf("on all other platforms, Root is REQUIRED"), rspec.Version))
 		return
