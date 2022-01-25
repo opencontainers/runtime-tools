@@ -113,7 +113,7 @@ If you cannot install node-tap, you can probably run the test suite with another
 For example, with [`prove`][prove]:
 
 ```console
-$ sudo make TAP='prove -Q -j9' RUNTIME=runc VALIDATION_TESTS=validation/pidfile/pidfile.t localvalidation
+$ sudo make TAPTOOL='prove -Q -j9' RUNTIME=runc VALIDATION_TESTS=validation/pidfile/pidfile.t localvalidation
 RUNTIME=runc prove -Q -j9 validation/pidfile.t
 All tests successful.
 Files=1, Tests=1,  0 wallclock secs ( 0.01 usr  0.01 sys +  0.03 cusr  0.03 csys =  0.08 CPU)

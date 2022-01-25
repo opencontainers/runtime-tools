@@ -1,6 +1,6 @@
 PREFIX ?= $(DESTDIR)/usr
 BINDIR ?= $(DESTDIR)/usr/bin
-TAP ?= tap
+TAPTOOL ?= tap
 
 BUILDTAGS=
 RUNTIME ?= runc
@@ -50,7 +50,7 @@ localvalidation:
 			exit 1; \
 		fi; \
 	done
-	RUNTIME=$(RUNTIME) $(TAP) $(VALIDATION_TESTS)
+	RUNTIME=$(RUNTIME) $(TAPTOOL) $(VALIDATION_TESTS)
 
 .PHONY: validation-executables
 validation-executables: $(VALIDATION_TESTS)
