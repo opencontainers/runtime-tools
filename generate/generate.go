@@ -249,10 +249,6 @@ func New(os string) (generator Generator, err error) {
 
 // NewFromSpec creates a configuration Generator from a given
 // configuration.
-//
-// Deprecated: Replace with:
-//
-//   generator := Generator{Config: config}
 func NewFromSpec(config *rspec.Spec) Generator {
 	envCache := map[string]int{}
 	if config != nil && config.Process != nil {
