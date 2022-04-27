@@ -237,6 +237,21 @@ func New(os string) (generator Generator, err error) {
 			},
 			Seccomp: seccomp.DefaultProfile(&config),
 		}
+	} else if os == "freebsd" {
+		config.Mounts = []rspec.Mount{
+			{
+				Destination: "/dev",
+				Type:        "devfs",
+				Source:      "devfs",
+				Options:     []string{"ruleset=4"},
+			},
+			{
+				Destination: "/dev/fd",
+				Type:        "fdescfs",
+				Source:      "fdesc",
+				Options:     []string{},
+			},
+		}
 	}
 
 	envCache := map[string]int{}
