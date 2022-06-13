@@ -15,7 +15,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/mndrix/tap-go"
+	tap "github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sirupsen/logrus"
 	"github.com/syndtr/gocapability/capability"

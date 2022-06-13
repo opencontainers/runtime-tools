@@ -114,7 +114,7 @@ func (level Level) String() string {
 	}
 
 	panic(fmt.Sprintf("%d is not a valid compliance level", level))
-}
+} //nolint // missing return (typecheck)
 
 // Error returns the error message with specification reference.
 func (err *Error) Error() string {

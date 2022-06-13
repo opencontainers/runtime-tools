@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os/exec"
+	"os/exec" //nolint
 	"runtime"
 
 	"github.com/google/uuid"
-	"github.com/mndrix/tap-go"
+	tap "github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mndrix/tap-go"
+	tap "github.com/mndrix/tap-go"
 	"github.com/mrunalp/fileutils"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"

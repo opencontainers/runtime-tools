@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"unicode"
-	"unicode/utf8"
+	"unicode"      //nolint
+	"unicode/utf8" //nolint
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"

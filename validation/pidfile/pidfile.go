@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
+	"os/exec" //nolint
 	"path/filepath"
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	tap "github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {

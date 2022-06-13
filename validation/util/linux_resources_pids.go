@@ -1,7 +1,7 @@
 package util
 
 import (
-	"github.com/mndrix/tap-go"
+	tap "github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 )

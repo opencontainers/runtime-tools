@@ -5,7 +5,7 @@ package specerror
 import (
 	"fmt"
 
-	"github.com/hashicorp/go-multierror"
+	multierror "github.com/hashicorp/go-multierror"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 )
 

@@ -13,11 +13,11 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"unicode"
-	"unicode/utf8"
+	"unicode"      //nolint
+	"unicode/utf8" //nolint
 
 	"github.com/blang/semver"
-	"github.com/hashicorp/go-multierror"
+	multierror "github.com/hashicorp/go-multierror"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	osFilepath "github.com/opencontainers/runtime-tools/filepath"
 	"github.com/sirupsen/logrus"

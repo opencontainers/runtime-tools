@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"os/exec"
+	"os/exec" //nolint
 	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
 	tap "github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {

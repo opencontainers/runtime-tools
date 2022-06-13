@@ -5,7 +5,7 @@ import (
 	"net"
 	"runtime"
 
-	"github.com/mndrix/tap-go"
+	tap "github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
