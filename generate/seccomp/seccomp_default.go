@@ -354,11 +354,23 @@ func DefaultProfile(rs *specs.Spec) *rspec.LinuxSeccomp {
 					Value: 0x0,
 					Op:    rspec.OpEqualTo,
 				},
+			},
+		},
+		{
+			Names:  []string{"personality"},
+			Action: rspec.ActAllow,
+			Args: []rspec.LinuxSeccompArg{
 				{
 					Index: 0,
 					Value: 0x0008,
 					Op:    rspec.OpEqualTo,
 				},
+			},
+		},
+		{
+			Names:  []string{"personality"},
+			Action: rspec.ActAllow,
+			Args: []rspec.LinuxSeccompArg{
 				{
 					Index: 0,
 					Value: 0xffffffff,
