@@ -20,6 +20,7 @@ import (
 
 var generateFlags = []cli.Flag{
 	cli.StringSliceFlag{Name: "args", Usage: "command to run in the container"},
+	cli.StringFlag{Name: "domainname", Usage: "domainname value for the container"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
 	cli.StringSliceFlag{Name: "hooks-poststart-add", Usage: "set command to run in poststart hooks"},
@@ -205,6 +206,10 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("hostname") {
 		g.SetHostname(context.String("hostname"))
+	}
+
+	if context.IsSet("domainname") {
+		g.SetDomainName(context.String("domainname"))
 	}
 
 	if context.IsSet("oci-version") {

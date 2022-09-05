@@ -22,6 +22,10 @@ read the configuration from `config.json`.
 
   --args "/usr/bin/httpd" --args "-D" --args "FOREGROUND"
 
+**--domainname**
+  Set the container domain name that is available inside the container.
+
+
 **--env**=[]
   Set environment variables e.g. key=value.
   This option allows you to specify arbitrary environment variables
