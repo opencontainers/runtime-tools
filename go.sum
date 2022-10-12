@@ -13,8 +13,8 @@ github.com/mndrix/tap-go v0.0.0-20171203230836-629fa407e90b h1:Ga1nclDSe8gOw37MV
 github.com/mndrix/tap-go v0.0.0-20171203230836-629fa407e90b/go.mod h1:pzzDgJWZ34fGzaAZGFW22KVZDfyrYW+QABMrWnJBnSs=
 github.com/mrunalp/fileutils v0.5.0 h1:NKzVxiH7eSk+OQ4M+ZYW1K6h27RUV3MI6NUTsHhU6Z4=
 github.com/mrunalp/fileutils v0.5.0/go.mod h1:M1WthSahJixYnrXQl/DFQuteStB1weuxD2QJNHXfbSQ=
-github.com/opencontainers/runtime-spec v1.0.3-0.20201121164853-7413a7f753e1 h1:UAfI7SOCo1CNIu3RevW9B4HQyf7SY5aSzcSeoC7OPs0=
-github.com/opencontainers/runtime-spec v1.0.3-0.20201121164853-7413a7f753e1/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
+github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb h1:1xSVPOd7/UA+39/hXEGnBJ13p6JFB0E1EvQFlrRDOXI=
+github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
 github.com/opencontainers/selinux v1.9.1 h1:b4VPEF3O5JLZgdTDBmGepaaIbAo0GqoF6EBRq5f/g3Y=
 github.com/opencontainers/selinux v1.9.1/go.mod h1:2i0OySw99QjzBBQByd1Gr9gSjvuho1lHsJxIJ3gGbJI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
