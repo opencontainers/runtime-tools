@@ -1,6 +1,6 @@
 module github.com/opencontainers/runtime-tools
 
-go 1.16
+go 1.19
 
 require (
 	github.com/blang/semver/v4 v4.0.0
@@ -18,4 +18,11 @@ require (
 	golang.org/x/sys v0.0.0-20191115151921-52ab43148777
 )
 
-require gopkg.in/yaml.v2 v2.4.0 // indirect
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
+	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
+)
