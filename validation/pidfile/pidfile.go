@@ -2,23 +2,22 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	tap "github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {
 	t := tap.New()
 	t.Header(0)
 
-	tempDir, err := ioutil.TempDir("", "oci-pid")
+	tempDir, err := os.MkdirTemp("", "oci-pid")
 	if err != nil {
 		util.Fatal(err)
 	}
@@ -39,7 +38,7 @@ func main() {
 			return nil
 		},
 		PostCreate: func(r *util.Runtime) error {
-			pidData, err := ioutil.ReadFile(tempPidFile)
+			pidData, err := os.ReadFile(tempPidFile)
 			if err != nil {
 				return err
 			}

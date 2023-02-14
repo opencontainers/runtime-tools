@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
 	tap "github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -75,7 +75,7 @@ func main() {
 	}
 
 	err := util.RuntimeLifecycleValidate(config)
-	outputData, _ := ioutil.ReadFile(output)
+	outputData, _ := os.ReadFile(output)
 	if err == nil && string(outputData) != "pre-start1 called\npre-start2 called\npost-start1\npost-start2\npost-stop1\npost-stop2\n" {
 		err = specerror.NewError(specerror.PosixHooksCalledInOrder, fmt.Errorf("Hooks MUST be called in the listed order"), rspec.Version)
 		diagnostic := map[string]string{

@@ -3,18 +3,17 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	tap "github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -41,7 +40,7 @@ func main() {
 			return r.SetConfig(g)
 		},
 		PostCreate: func(r *util.Runtime) error {
-			outputData, err := ioutil.ReadFile(output)
+			outputData, err := os.ReadFile(output)
 			if err == nil {
 				if strings.Contains(string(outputData), "post-stop called") {
 					return specerror.NewError(specerror.PoststopTiming, fmt.Errorf("The post-stop hooks MUST be called after the container is deleted"), rspec.Version)
@@ -54,7 +53,7 @@ func main() {
 		},
 		PreDelete: func(r *util.Runtime) error {
 			util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second)
-			outputData, err := ioutil.ReadFile(output)
+			outputData, err := os.ReadFile(output)
 			if err != nil {
 				return specerror.NewError(specerror.ProcImplement, fmt.Errorf("The runtime MUST run the user-specified program, as specified by `process`"), rspec.Version)
 			}
@@ -70,7 +69,7 @@ func main() {
 			}
 		},
 		PostDelete: func(r *util.Runtime) error {
-			outputData, err := ioutil.ReadFile(output)
+			outputData, err := os.ReadFile(output)
 			if err != nil {
 				return fmt.Errorf("%v\n%v", specerror.NewError(specerror.PoststopHooksInvoke, fmt.Errorf("The poststop hooks MUST be invoked by the runtime"), rspec.Version), specerror.NewError(specerror.ProcImplement, fmt.Errorf("The runtime MUST run the user-specified program, as specified by `process`"), rspec.Version))
 			}

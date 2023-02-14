@@ -3,7 +3,6 @@ package cgroups
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -78,7 +77,7 @@ func FindCgroup() (Cgroup, error) {
 
 // GetSubsystemPath gets path of subsystem
 func GetSubsystemPath(pid int, subsystem string) (string, error) {
-	contents, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cgroup", pid))
+	contents, err := os.ReadFile(fmt.Sprintf("/proc/%d/cgroup", pid))
 	if err != nil {
 		return "", err
 	}

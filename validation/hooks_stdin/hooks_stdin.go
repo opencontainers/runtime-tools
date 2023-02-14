@@ -4,23 +4,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"time"
 
+	"github.com/google/uuid"
 	multierror "github.com/hashicorp/go-multierror"
 	tap "github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func stdinStateCheck(outputDir, hookName string, expectedState rspecs.State) (errs *multierror.Error) {
 	var state rspecs.State
-	data, err := ioutil.ReadFile(filepath.Join(outputDir, hookName))
+	data, err := os.ReadFile(filepath.Join(outputDir, hookName))
 	if err != nil {
 		errs = multierror.Append(errs, err)
 		return

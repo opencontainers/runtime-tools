@@ -1,7 +1,6 @@
 package generate_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -31,7 +30,7 @@ func TestGenerateValid(t *testing.T) {
 			continue
 		}
 
-		bundle, err := ioutil.TempDir("", "TestGenerateValid_bundle")
+		bundle, err := os.MkdirTemp("", "TestGenerateValid_bundle")
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -2,16 +2,15 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -72,7 +71,7 @@ func main() {
 			t.Fail(err.Error())
 			return
 		}
-		outputData, outputErr := ioutil.ReadFile(output)
+		outputData, outputErr := os.ReadFile(output)
 		// check the output
 		util.SpecErrorOK(t, outputErr == nil && string(outputData) == "process called\n", specerror.NewError(specerror.StartProcImplement, fmt.Errorf("`start` operation MUST run the user-specified program as specified by `process`"), rspecs.Version), outputErr)
 	}
@@ -88,7 +87,7 @@ func main() {
 		return
 	}
 
-	outputData, outputErr := ioutil.ReadFile(output)
+	outputData, outputErr := os.ReadFile(output)
 	// must have no effect, it will not be something like 'process called\nprocess called\n'
 	util.SpecErrorOK(t, outputErr == nil && string(outputData) == "process called\n", specerror.NewError(specerror.StartNotCreatedHaveNoEffect, fmt.Errorf("attempting to `start` a container that is not `created` MUST have no effect on the container"), rspecs.Version), outputErr)
 

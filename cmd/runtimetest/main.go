@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -230,7 +229,7 @@ func (c *complianceTester) validateLinuxProcess(spec *rspec.Spec) error {
 		return nil
 	}
 
-	cmdlineBytes, err := ioutil.ReadFile("/proc/self/cmdline")
+	cmdlineBytes, err := os.ReadFile("/proc/self/cmdline")
 	if err != nil {
 		return err
 	}
@@ -399,7 +398,7 @@ func (c *complianceTester) validateSysctls(spec *rspec.Spec) error {
 
 	for k, v := range spec.Linux.Sysctl {
 		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
-		vBytes, err := ioutil.ReadFile(keyPath)
+		vBytes, err := os.ReadFile(keyPath)
 		if err != nil {
 			return err
 		}
@@ -437,8 +436,8 @@ func testReadAccess(path string) (readable bool, err error) {
 }
 
 func testDirectoryReadAccess(path string) (readable bool, err error) {
-	files, err := ioutil.ReadDir(path)
-	if err == io.EOF || len(files) == 0 {
+	entries, err := os.ReadDir(path)
+	if err == io.EOF || len(entries) == 0 {
 		// Our validation/ tests only use non-empty directories for read-access
 		// tests. So if we get an EOF on the first read, the runtime did
 		// successfully block readability. So it should not be considered as test
@@ -493,7 +492,7 @@ func testWriteAccess(path string) (writable bool, err error) {
 }
 
 func testDirectoryWriteAccess(path string) (writable bool, err error) {
-	tmpfile, err := ioutil.TempFile(path, "Test")
+	tmpfile, err := os.CreateTemp(path, "Test")
 	if err != nil {
 		return false, nil
 	}
@@ -502,7 +501,7 @@ func testDirectoryWriteAccess(path string) (writable bool, err error) {
 }
 
 func testFileWriteAccess(path string) (readable bool, err error) {
-	err = ioutil.WriteFile(path, []byte("a"), 0644)
+	err = os.WriteFile(path, []byte("a"), 0644)
 	if err == nil {
 		return true, nil
 	}
@@ -542,7 +541,7 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 		return nil
 	}
 
-	targetDir, err := ioutil.TempDir("/", "target")
+	targetDir, err := os.MkdirTemp("/", "target")
 	if err != nil {
 		return err
 	}
@@ -564,19 +563,19 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 		if mountErr != nil {
 			return fmt.Errorf("bind-mount / %s: %w", targetDir, err)
 		}
-		mountDir, err := ioutil.TempDir("/", "mount")
+		mountDir, err := os.MkdirTemp("/", "mount")
 		if err != nil {
 			return err
 		}
 		defer os.RemoveAll(mountDir)
 
-		testDir, err := ioutil.TempDir("/", "test")
+		testDir, err := os.MkdirTemp("/", "test")
 		if err != nil {
 			return err
 		}
 		defer os.RemoveAll(testDir)
 
-		tmpfile, err := ioutil.TempFile(testDir, "example")
+		tmpfile, err := os.CreateTemp(testDir, "example")
 		if err != nil {
 			return err
 		}

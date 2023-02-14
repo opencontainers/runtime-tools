@@ -2,7 +2,6 @@ package cgroups
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -62,7 +61,7 @@ func (cg *CgroupV1) GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO,
 			}
 			filePath = filepath.Join(cg.MountPath, "blkio", subPath, fileName)
 		}
-		contents, err := ioutil.ReadFile(filePath)
+		contents, err := os.ReadFile(filePath)
 		if err != nil {
 			if os.IsNotExist(err) {
 				return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
@@ -237,7 +236,7 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 			}
 			filePath = filepath.Join(cg.MountPath, "cpu", subPath, fileName)
 		}
-		contents, err := ioutil.ReadFile(filePath)
+		contents, err := os.ReadFile(filePath)
 		if err != nil {
 			if os.IsNotExist(err) {
 				return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
@@ -271,7 +270,7 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 	}
 	// CONFIG_RT_GROUP_SCHED may be not set
 	// Can always get rt data from /proc
-	contents, err := ioutil.ReadFile("/proc/sys/kernel/sched_rt_period_us")
+	contents, err := os.ReadFile("/proc/sys/kernel/sched_rt_period_us")
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +279,7 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 		return nil, err
 	}
 	lc.RealtimePeriod = &rtPeriod
-	contents, err = ioutil.ReadFile("/proc/sys/kernel/sched_rt_runtime_us")
+	contents, err = os.ReadFile("/proc/sys/kernel/sched_rt_runtime_us")
 	if err != nil {
 		return nil, err
 	}
@@ -304,7 +303,7 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 			}
 			filePath = filepath.Join(cg.MountPath, "cpuset", subPath, fileName)
 		}
-		contents, err := ioutil.ReadFile(filePath)
+		contents, err := os.ReadFile(filePath)
 		if err != nil {
 			return nil, err
 		}
@@ -334,7 +333,7 @@ func (cg *CgroupV1) GetDevicesData(pid int, cgPath string) ([]rspec.LinuxDeviceC
 		}
 		filePath = filepath.Join(cg.MountPath, "devices", subPath, fileName)
 	}
-	contents, err := ioutil.ReadFile(filePath)
+	contents, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -403,12 +402,12 @@ func inBytes(size string) (int64, error) {
 // eg. ["64KB", "2MB", "1GB"]
 func GetHugePageSize() ([]string, error) {
 	var pageSizes []string
-	files, err := ioutil.ReadDir("/sys/kernel/mm/hugepages")
+	entries, err := os.ReadDir("/sys/kernel/mm/hugepages")
 	if err != nil {
 		return pageSizes, err
 	}
-	for _, st := range files {
-		nameArray := strings.Split(st.Name(), "-")
+	for _, entry := range entries {
+		nameArray := strings.Split(entry.Name(), "-")
 		pageSize, err := inBytes(nameArray[1])
 		if err != nil {
 			return []string{}, err
@@ -457,7 +456,7 @@ func (cg *CgroupV1) GetHugepageLimitData(pid int, cgPath string) ([]rspec.LinuxH
 			}
 			filePath = filepath.Join(cg.MountPath, "hugetlb", subPath, maxUsage)
 		}
-		contents, err := ioutil.ReadFile(filePath)
+		contents, err := os.ReadFile(filePath)
 		if err != nil {
 			if os.IsNotExist(err) {
 				return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
@@ -504,7 +503,7 @@ func (cg *CgroupV1) GetMemoryData(pid int, cgPath string) (*rspec.LinuxMemory, e
 			}
 			filePath = filepath.Join(cg.MountPath, "memory", subPath, fileName)
 		}
-		contents, err := ioutil.ReadFile(filePath)
+		contents, err := os.ReadFile(filePath)
 		if err != nil {
 			if os.IsNotExist(err) {
 				return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
@@ -597,7 +596,7 @@ func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork,
 		}
 		filePath = filepath.Join(cg.MountPath, "net_cls", subPath, fileName)
 	}
-	contents, err := ioutil.ReadFile(filePath)
+	contents, err := os.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, specerror.NewError(specerror.CgroupsPathAttach, fmt.Errorf("The runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`"), rspec.Version)
@@ -624,7 +623,7 @@ func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork,
 		}
 		filePath = filepath.Join(cg.MountPath, "net_prio", subPath, fileName)
 	}
-	contents, err = ioutil.ReadFile(filePath)
+	contents, err = os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -668,7 +667,7 @@ func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error
 		}
 		filePath = filepath.Join(cg.MountPath, "pids", subPath, fileName)
 	}
-	contents, err := ioutil.ReadFile(filePath)
+	contents, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}

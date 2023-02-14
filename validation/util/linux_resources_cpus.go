@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -68,21 +68,21 @@ func ValidateLinuxResourcesCPU(config *rspec.Spec, t *tap.T, state *rspec.State)
 // ValidateLinuxResourcesCPUEmpty validates Linux.Resources.CPU is set to
 // correct values, when each value are set to the default ones.
 func ValidateLinuxResourcesCPUEmpty(config *rspec.Spec, t *tap.T, state *rspec.State) error {
-	outShares, err := ioutil.ReadFile(filepath.Join(CPUCgroupPrefix, "cpu.shares"))
+	outShares, err := os.ReadFile(filepath.Join(CPUCgroupPrefix, "cpu.shares"))
 	if err != nil {
 		return nil
 	}
 	sh, _ := strconv.Atoi(strings.TrimSpace(string(outShares)))
 	defaultShares := uint64(sh)
 
-	outPeriod, err := ioutil.ReadFile(filepath.Join(CPUCgroupPrefix, "cpu.cfs_period_us"))
+	outPeriod, err := os.ReadFile(filepath.Join(CPUCgroupPrefix, "cpu.cfs_period_us"))
 	if err != nil {
 		return nil
 	}
 	pe, _ := strconv.Atoi(strings.TrimSpace(string(outPeriod)))
 	defaultPeriod := uint64(pe)
 
-	outQuota, err := ioutil.ReadFile(filepath.Join(CPUCgroupPrefix, "cpu.cfs_quota_us"))
+	outQuota, err := os.ReadFile(filepath.Join(CPUCgroupPrefix, "cpu.cfs_quota_us"))
 	if err != nil {
 		return nil
 	}
