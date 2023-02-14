@@ -49,11 +49,10 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: install go ${{ matrix.go-version }}
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
-        stable: '!contains(${{ matrix.go-version }}, "beta") && !contains(${{ matrix.go-version }}, "rc")'
         go-version: ${{ matrix.go-version }}
     - name: build
       run: make EXTRA_FLAGS="${{ matrix.race }}"
