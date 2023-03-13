@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -41,7 +40,7 @@ func checkReadonlyPaths(t *tap.T) error {
 			return err
 		}
 		// create a temp file to make testDir non-empty
-		tmpfile, err := ioutil.TempFile(testDir, "tmp")
+		tmpfile, err := os.CreateTemp(testDir, "tmp")
 		if err != nil {
 			return err
 		}
@@ -50,17 +49,17 @@ func checkReadonlyPaths(t *tap.T) error {
 		// runtimetest cannot check the readability of empty files, so
 		// write something.
 		testSubSubFile := filepath.Join(path, readonlyFileSubSub)
-		if err := ioutil.WriteFile(testSubSubFile, []byte("immutable"), 0777); err != nil {
+		if err := os.WriteFile(testSubSubFile, []byte("immutable"), 0777); err != nil {
 			return err
 		}
 
 		testSubFile := filepath.Join(path, readonlyFileSub)
-		if err := ioutil.WriteFile(testSubFile, []byte("immutable"), 0777); err != nil {
+		if err := os.WriteFile(testSubFile, []byte("immutable"), 0777); err != nil {
 			return err
 		}
 
 		testFile := filepath.Join(path, readonlyFile)
-		return ioutil.WriteFile(testFile, []byte("immutable"), 0777)
+		return os.WriteFile(testFile, []byte("immutable"), 0777)
 	})
 	return err
 }

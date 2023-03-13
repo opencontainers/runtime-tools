@@ -3,7 +3,6 @@ package util
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -122,7 +121,7 @@ func SpecErrorOK(t *tap.T, expected bool, specErr error, detailedErr error) {
 
 // PrepareBundle creates a test bundle in a temporary directory.
 func PrepareBundle() (string, error) {
-	bundleDir, err := ioutil.TempDir("", "ocitest")
+	bundleDir, err := os.MkdirTemp("", "ocitest")
 	if err != nil {
 		return "", err
 	}

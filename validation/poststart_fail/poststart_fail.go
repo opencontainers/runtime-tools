@@ -2,16 +2,15 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
 	tap "github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -57,7 +56,7 @@ func main() {
 	}
 
 	runErr := util.RuntimeLifecycleValidate(config)
-	outputData, _ := ioutil.ReadFile(output)
+	outputData, _ := os.ReadFile(output)
 
 	// if runErr is not nil, it means the runtime generates an error
 	// if outputData is not equal to the expected content, it means there is something wrong with the remaining hooks and lifecycle

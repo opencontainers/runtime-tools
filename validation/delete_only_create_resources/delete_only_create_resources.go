@@ -2,18 +2,17 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	tap "github.com/mndrix/tap-go"
 	"github.com/mrunalp/fileutils"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -62,7 +61,7 @@ func main() {
 		util.Fatal(err)
 	}
 	// Add the container to the cgroup
-	err = ioutil.WriteFile(filepath.Join(testPath, "tasks"), []byte(strconv.Itoa(state.Pid)), 0644)
+	err = os.WriteFile(filepath.Join(testPath, "tasks"), []byte(strconv.Itoa(state.Pid)), 0644)
 	if err != nil {
 		util.Fatal(err)
 	}

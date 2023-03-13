@@ -2,7 +2,6 @@ package validate
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -263,7 +262,7 @@ func TestJSONSchema(t *testing.T) {
 }
 
 func TestCheckRoot(t *testing.T) {
-	tmpBundle, err := ioutil.TempDir("", "oci-check-rootfspath")
+	tmpBundle, err := os.MkdirTemp("", "oci-check-rootfspath")
 	if err != nil {
 		t.Fatalf("Failed to create a TempDir in 'CheckRoot'")
 	}

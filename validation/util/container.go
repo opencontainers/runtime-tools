@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -108,8 +107,8 @@ func (r *Runtime) Create() (err error) {
 
 // ReadStandardStreams collects content from the stdout and stderr buffers.
 func (r *Runtime) ReadStandardStreams() (stdout []byte, stderr []byte, err error) {
-	stdout, err = ioutil.ReadFile(r.stdout.Name())
-	stderr, err2 := ioutil.ReadFile(r.stderr.Name())
+	stdout, err = os.ReadFile(r.stdout.Name())
+	stderr, err2 := os.ReadFile(r.stderr.Name())
 	if err == nil && err2 != nil {
 		err = err2
 	}
