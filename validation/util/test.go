@@ -11,11 +11,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mndrix/tap-go"
 	"github.com/mrunalp/fileutils"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
+	tap "github.com/opencontainers/runtime-tools/util/tap"
 )
 
 // RuntimeCommand is the default runtime command.

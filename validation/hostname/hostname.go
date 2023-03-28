@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/mndrix/tap-go"
+	tap "github.com/opencontainers/runtime-tools/util/tap"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 

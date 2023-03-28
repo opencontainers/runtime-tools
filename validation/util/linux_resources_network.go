@@ -3,9 +3,9 @@ package util
 import (
 	"fmt"
 
-	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
+	tap "github.com/opencontainers/runtime-tools/util/tap"
 )
 
 // ValidateLinuxResourcesNetwork validates linux.resources.network.

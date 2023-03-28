@@ -1,11 +1,11 @@
-// +build yaml
+//go:build yaml
 
 package tap
 
 import (
 	"bytes"
 
-	goyaml "gopkg.in/yaml.v2"
+	goyaml "gopkg.in/yaml.v3"
 )
 
 // yaml serializes a message to YAML.  This implementation uses

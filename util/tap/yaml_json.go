@@ -1,4 +1,4 @@
-// +build !yaml
+//go:build !yaml
 
 package tap
 

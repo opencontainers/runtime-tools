@@ -3,10 +3,10 @@ package util
 import (
 	"fmt"
 
-	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/specerror"
+	tap "github.com/opencontainers/runtime-tools/util/tap"
 )
 
 // ValidateLinuxResourcesDevices validates linux.resources.devices.
