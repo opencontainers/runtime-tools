@@ -15,7 +15,7 @@ require (
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
 	github.com/urfave/cli v1.19.1
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/sys v0.0.0-20191115151921-52ab43148777
+	golang.org/x/sys v0.0.0-20220908150016-7ac13a9a928d
 )
 
 require (

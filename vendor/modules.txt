@@ -52,8 +52,9 @@ github.com/xeipuuv/gojsonreference
 # github.com/xeipuuv/gojsonschema v1.2.0
 ## explicit
 github.com/xeipuuv/gojsonschema
-# golang.org/x/sys v0.0.0-20191115151921-52ab43148777
+# golang.org/x/sys v0.0.0-20220908150016-7ac13a9a928d
 ## explicit; go 1.12
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # gopkg.in/yaml.v2 v2.4.0
