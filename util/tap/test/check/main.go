@@ -1,6 +1,6 @@
 package main
 
-import "github.com/mndrix/tap-go"
+import "github.com/opencontainers/runtime-tools/util/tap"
 
 func main() {
 	add := func(x int) bool { return x+3 > x }

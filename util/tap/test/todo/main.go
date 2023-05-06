@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	tap "github.com/mndrix/tap-go"
+	tap "github.com/opencontainers/runtime-tools/util/tap"
 )
 
 func main() {

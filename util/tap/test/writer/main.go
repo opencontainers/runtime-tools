@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"os"
 
-	"github.com/mndrix/tap-go"
+	"github.com/opencontainers/runtime-tools/util/tap"
 )
 
 func main() {

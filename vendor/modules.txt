@@ -13,9 +13,6 @@ github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit; go 1.13
 github.com/hashicorp/go-multierror
-# github.com/mndrix/tap-go v0.0.0-20171203230836-629fa407e90b
-## explicit
-github.com/mndrix/tap-go
 # github.com/mrunalp/fileutils v0.5.0
 ## explicit; go 1.13
 github.com/mrunalp/fileutils

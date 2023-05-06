@@ -1,6 +1,6 @@
 package main
 
-import "github.com/mndrix/tap-go"
+import "github.com/opencontainers/runtime-tools/util/tap"
 
 func main() {
 	t := tap.New()
