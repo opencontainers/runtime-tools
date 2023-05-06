@@ -1,32 +1,32 @@
 // Package tap provides support for automated Test Anything Protocol ("TAP")
 // tests in Go.  For example:
 //
-//		package main
+//	package main
 //
-//		import "github.com/mndrix/tap-go"
+//	import "github.com/opencontainers/runtime-tools/util/tap"
 //
-//		func main() {
-//			t := tap.New()
-//			t.Header(2)
-//			t.Ok(true, "first test")
-//			t.Ok(true, "second test")
-//		}
+//	func main() {
+//		t := tap.New()
+//		t.Header(2)
+//		t.Ok(true, "first test")
+//		t.Ok(true, "second test")
+//	}
 //
 // generates the following output
 //
-//		TAP version 13
-//		1..2
-//		ok 1 - first test
-//		ok 2 - second test
-package tap // import "github.com/mndrix/tap-go"
+//	TAP version 13
+//	1..2
+//	ok 1 - first test
+//	ok 2 - second test
+package tap
 
 import (
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"testing/quick"
 )
-import "testing/quick"
 
 // T is a type to encapsulate test state.  Methods on this type generate TAP
 // output.

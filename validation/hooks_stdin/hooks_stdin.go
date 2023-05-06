@@ -11,9 +11,9 @@ import (
 
 	"github.com/google/uuid"
 	multierror "github.com/hashicorp/go-multierror"
-	tap "github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
+	tap "github.com/opencontainers/runtime-tools/util/tap"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 

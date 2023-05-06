@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
+	"github.com/opencontainers/runtime-tools/util/tap"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
