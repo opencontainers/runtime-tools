@@ -162,6 +162,7 @@ __oci-runtime-tool_complete_seccomp_arches() {
 		s390x
 		parisc
 		parisc64
+		riscv64
 	" -- "$cur" ) )
 }
 
