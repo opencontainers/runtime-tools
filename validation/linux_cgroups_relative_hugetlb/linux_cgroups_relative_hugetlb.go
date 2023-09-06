@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
@@ -14,7 +15,6 @@ func main() {
 	defer t.AutoPlan()
 
 	pageSizes, err := cgroups.GetHugePageSize()
-
 	if err != nil {
 		t.Fail(fmt.Sprintf("error when getting hugepage sizes: %+v", err))
 	}

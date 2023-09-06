@@ -35,7 +35,7 @@ func checkReadonlyPaths(t *tap.T) error {
 	g.AddAnnotation("TestName", "check read-only paths")
 	err = util.RuntimeInsideValidate(g, t, func(path string) error {
 		testDir := filepath.Join(path, readonlyDirSub)
-		err = os.MkdirAll(testDir, 0777)
+		err = os.MkdirAll(testDir, 0o777)
 		if err != nil {
 			return err
 		}
@@ -49,17 +49,17 @@ func checkReadonlyPaths(t *tap.T) error {
 		// runtimetest cannot check the readability of empty files, so
 		// write something.
 		testSubSubFile := filepath.Join(path, readonlyFileSubSub)
-		if err := os.WriteFile(testSubSubFile, []byte("immutable"), 0777); err != nil {
+		if err := os.WriteFile(testSubSubFile, []byte("immutable"), 0o777); err != nil {
 			return err
 		}
 
 		testSubFile := filepath.Join(path, readonlyFileSub)
-		if err := os.WriteFile(testSubFile, []byte("immutable"), 0777); err != nil {
+		if err := os.WriteFile(testSubFile, []byte("immutable"), 0o777); err != nil {
 			return err
 		}
 
 		testFile := filepath.Join(path, readonlyFile)
-		return os.WriteFile(testFile, []byte("immutable"), 0777)
+		return os.WriteFile(testFile, []byte("immutable"), 0o777)
 	})
 	return err
 }
@@ -169,9 +169,9 @@ func main() {
 	// test creation of different type of devices, i.e. block device,
 	// character device, and FIFO.
 	modes := []uint32{
-		unix.S_IFBLK | 0666,
-		unix.S_IFCHR | 0666,
-		unix.S_IFIFO | 0666,
+		unix.S_IFBLK | 0o666,
+		unix.S_IFCHR | 0o666,
+		unix.S_IFIFO | 0o666,
 	}
 
 	for _, m := range modes {

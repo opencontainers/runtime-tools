@@ -5,12 +5,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -71,7 +71,7 @@ func main() {
 				err = r.Kill("KILL")
 				util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 				if err != nil {
-					//Be sure to not leave the container around
+					// Be sure to not leave the container around
 					r.Delete()
 				}
 				return err

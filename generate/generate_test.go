@@ -38,7 +38,7 @@ func TestGenerateValid(t *testing.T) {
 
 		// Create our toy bundle.
 		rootfsPath := filepath.Join(bundle, "rootfs")
-		if err := os.Mkdir(rootfsPath, 0755); err != nil {
+		if err := os.Mkdir(rootfsPath, 0o755); err != nil {
 			t.Fatal(err)
 		}
 		configPath := filepath.Join(bundle, "config.json")

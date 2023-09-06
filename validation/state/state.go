@@ -5,12 +5,12 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
-	"github.com/google/uuid"
 )
 
 func main() {

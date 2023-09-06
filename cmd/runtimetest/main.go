@@ -501,7 +501,7 @@ func testDirectoryWriteAccess(path string) (writable bool, err error) {
 }
 
 func testFileWriteAccess(path string) (readable bool, err error) {
-	err = os.WriteFile(path, []byte("a"), 0644)
+	err = os.WriteFile(path, []byte("a"), 0o644)
 	if err == nil {
 		return true, nil
 	}
@@ -1143,10 +1143,10 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 	}
 
 	var mountErrs error
-	var configSys = make(map[int]int)
-	var consumedSys = make(map[int]bool)
+	configSys := make(map[int]int)
+	consumedSys := make(map[int]bool)
 	highestMatchedConfig := -1
-	var j = 0
+	j := 0
 	for i, configMount := range spec.Mounts {
 		if configMount.Type == "bind" || configMount.Type == "rbind" {
 			c.harness.Todo().Fail("we need an (r)bind spec to test against")

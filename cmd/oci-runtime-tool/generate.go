@@ -1223,10 +1223,11 @@ var cgroupDeviceType = map[string]bool{
 	"b": true, // block device
 	"c": true, // character device
 }
+
 var cgroupDeviceAccess = map[string]bool{
-	"r": true, //read
-	"w": true, //write
-	"m": true, //mknod
+	"r": true, // read
+	"w": true, // write
+	"m": true, // mknod
 }
 
 // parseLinuxResourcesDeviceAccess parses the raw string passed with the --device-access-add flag
@@ -1448,12 +1449,12 @@ func parseEnv(env string) (string, string, error) {
 
 // parseEnvFile reads a file with environment variables enumerated by lines
 //
-// ``Environment variable names used by the utilities in the Shell and
+// “Environment variable names used by the utilities in the Shell and
 // Utilities volume of IEEE Std 1003.1-2001 consist solely of uppercase
 // letters, digits, and the '_' (underscore) from the characters defined in
 // Portable Character Set and do not begin with a digit. *But*, other
 // characters may be permitted by an implementation; applications shall
-// tolerate the presence of such names.''
+// tolerate the presence of such names.”
 // -- http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html
 //
 // As of #16585, it's up to application inside docker to validate or not
@@ -1495,7 +1496,6 @@ func parseEnvFile(filename string) ([]string, error) {
 			}
 
 			if len(data) > 1 {
-
 				// pass the value through, no trimming
 				lines = append(lines, fmt.Sprintf("%s=%s", variable, data[1]))
 			} else {

@@ -61,7 +61,7 @@ func FindCgroup() (Cgroup, error) {
 		} else if postSeparatorFields[0] == "cgroup2" {
 			cgroupv2 = true
 			continue
-			//TODO cgroupv2 unimplemented
+			// TODO cgroupv2 unimplemented
 		}
 	}
 

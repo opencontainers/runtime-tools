@@ -20,7 +20,7 @@ func saveConfig(path string, v interface{}) error {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0o644)
 }
 
 func main() {
