@@ -7,6 +7,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/mndrix/tap-go v0.0.0-20171203230836-629fa407e90b
+	github.com/moby/sys/mountinfo v0.7.2
 	github.com/mrunalp/fileutils v0.5.0
 	github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb
 	github.com/opencontainers/selinux v1.9.1
