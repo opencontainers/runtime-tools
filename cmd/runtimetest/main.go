@@ -20,7 +20,7 @@ import (
 	"github.com/syndtr/gocapability/capability"
 	"github.com/urfave/cli"
 
-	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
+	"github.com/moby/sys/mountinfo"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/selinux/go-selinux/label"
@@ -620,14 +620,14 @@ func (c *complianceTester) validateRootfsPropagation(spec *rspec.Spec) error {
 }
 
 func (c *complianceTester) validateDefaultFS(spec *rspec.Spec) error {
-	mountInfos, err := mount.GetMounts()
+	mountInfos, err := mountinfo.GetMounts(nil)
 	if err != nil {
 		return nil
 	}
 
 	mountsMap := make(map[string]string)
 	for _, mountInfo := range mountInfos {
-		mountsMap[mountInfo.Mountpoint] = mountInfo.Fstype
+		mountsMap[mountInfo.Mountpoint] = mountInfo.FSType
 	}
 
 	for fs, fstype := range defaultFS {
@@ -1091,10 +1091,10 @@ func (c *complianceTester) validateGIDMappings(spec *rspec.Spec) error {
 	return c.validateIDMappings(spec.Linux.GIDMappings, "/proc/self/gid_map", "linux.gidMappings")
 }
 
-func mountMatch(configMount rspec.Mount, sysMount *mount.Info) error {
+func mountMatch(configMount rspec.Mount, sysMount *mountinfo.Info) error {
 	sys := rspec.Mount{
 		Destination: sysMount.Mountpoint,
-		Type:        sysMount.Fstype,
+		Type:        sysMount.FSType,
 		Source:      sysMount.Source,
 	}
 
@@ -1137,7 +1137,7 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 		return nil
 	}
 
-	mountInfos, err := mount.GetMounts()
+	mountInfos, err := mountinfo.GetMounts(nil)
 	if err != nil {
 		return err
 	}
