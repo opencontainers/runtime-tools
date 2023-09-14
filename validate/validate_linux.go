@@ -49,7 +49,7 @@ func (v *Validator) CheckLinux() (errs error) {
 		return
 	}
 
-	var nsTypeList = map[rspec.LinuxNamespaceType]struct {
+	nsTypeList := map[rspec.LinuxNamespaceType]struct {
 		num      int
 		newExist bool
 	}{

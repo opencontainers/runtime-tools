@@ -298,7 +298,7 @@ func (v *Validator) checkEventHooks(hookType string, hooks []rspec.Hook, hostSpe
 			if err != nil {
 				errs = multierror.Append(errs, fmt.Errorf("cannot find %s hook: %v", hookType, hook.Path))
 			}
-			if fi.Mode()&0111 == 0 {
+			if fi.Mode()&0o111 == 0 {
 				errs = multierror.Append(errs, fmt.Errorf("the %s hook %v: is not executable", hookType, hook.Path))
 			}
 		}
@@ -358,7 +358,7 @@ func (v *Validator) CheckProcess() (errs error) {
 				errs = multierror.Append(errs, err)
 			} else {
 				m := fileinfo.Mode()
-				if m.IsDir() || m&0111 == 0 {
+				if m.IsDir() || m&0o111 == 0 {
 					errs = multierror.Append(errs, fmt.Errorf("arg %q is not executable", process.Args[0]))
 				}
 			}

@@ -25,5 +25,4 @@ func main() {
 	if err != nil {
 		t.Fail(err.Error())
 	}
-
 }

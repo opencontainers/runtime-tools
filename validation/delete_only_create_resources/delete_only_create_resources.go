@@ -22,7 +22,7 @@ func main() {
 	// Create a cgroup
 	cgPath := "/sys/fs/cgroup"
 	testPath := filepath.Join(cgPath, "pids", "cgrouptest")
-	os.Mkdir(testPath, 0755)
+	os.Mkdir(testPath, 0o755)
 	defer os.RemoveAll(testPath)
 
 	bundleDir, err := util.PrepareBundle()
@@ -61,7 +61,7 @@ func main() {
 		util.Fatal(err)
 	}
 	// Add the container to the cgroup
-	err = os.WriteFile(filepath.Join(testPath, "tasks"), []byte(strconv.Itoa(state.Pid)), 0644)
+	err = os.WriteFile(filepath.Join(testPath, "tasks"), []byte(strconv.Itoa(state.Pid)), 0o644)
 	if err != nil {
 		util.Fatal(err)
 	}

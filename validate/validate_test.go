@@ -271,7 +271,7 @@ func TestCheckRoot(t *testing.T) {
 	rootfsDir := "rootfs/rootfs"
 	rootfsNonDir := "rootfsfile"
 	rootfsNonExists := "rootfsnil"
-	if err := os.MkdirAll(filepath.Join(tmpBundle, rootfsDir), 0700); err != nil {
+	if err := os.MkdirAll(filepath.Join(tmpBundle, rootfsDir), 0o700); err != nil {
 		t.Fatalf("Failed to create a rootfs directory in 'CheckRoot'")
 	}
 	if _, err := os.Create(filepath.Join(tmpBundle, rootfsNonDir)); err != nil {

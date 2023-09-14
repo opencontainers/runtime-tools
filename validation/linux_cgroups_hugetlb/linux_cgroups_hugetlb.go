@@ -16,7 +16,6 @@ func testHugetlbCgroups() error {
 	defer t.AutoPlan()
 
 	pageSizes, err := cgroups.GetHugePageSize()
-
 	if err != nil {
 		t.Fail(fmt.Sprintf("error when getting hugepage sizes: %+v", err))
 	}

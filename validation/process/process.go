@@ -18,7 +18,7 @@ func main() {
 
 	err = util.RuntimeInsideValidate(g, nil, func(path string) error {
 		pathName := filepath.Join(path, "test")
-		return os.MkdirAll(pathName, 0700)
+		return os.MkdirAll(pathName, 0o700)
 	})
 	if err != nil {
 		util.Fatal(err)
