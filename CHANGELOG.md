@@ -1,3 +1,13 @@
+# v0.9.1
+
+This release is a hotfix based on v0.9.0 with runtime-spec 1.0.2 support and a
+switch to Go modules, to allow `go install` to use the correct version of the
+spec.
+
+# Additions
+* Switch to go modules.
+* generate: add support for --process-umask (backport of #706).
+
 # v0.9.0
 
 ## Additions
@@ -87,7 +97,7 @@
 * validate: CheckLinux is platform dependent (#560).
 * validation: Add error judgment to SetConfig (#585).
 * validate: allow non-linux compatibility (#588).
- 
+
 ## Minor fixes and documentation
 
 * cgroups_v1: Correction parameters (#629).
@@ -106,7 +116,7 @@
 * runtimetest: fix uid_map parsing (#596).
 * Fix condition in BlockIO test (#595).
 * generate/seccomp: platform independent values (#561).
- 
+
 # v0.5.0
 ## Additions
 
