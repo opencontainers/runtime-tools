@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/mndrix/tap-go v0.0.0-20171203230836-629fa407e90b
 	github.com/mrunalp/fileutils v0.0.0-20160930181131-4ee1cc9a8058
-	github.com/opencontainers/runtime-spec v1.0.2-0.20181111125026-1722abf79c2f
+	github.com/opencontainers/runtime-spec v1.0.2
 	github.com/opencontainers/selinux v1.0.1-0.20190118194646-2d93b96e1a01
 	github.com/satori/go.uuid v1.1.0
 	github.com/sirupsen/logrus v1.0.2-0.20170713114250-a3f95b5c4235
@@ -20,7 +20,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1-0.20170829195320-a47672248388 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20170225233418-6fe8760cad35 // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20150808065054-e02fc20de94c // indirect
