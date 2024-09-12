@@ -260,6 +260,7 @@ func New(os string) (generator Generator, err error) {
 				Options:     []string{},
 			},
 		}
+		config.FreeBSD = &rspec.FreeBSD{}
 	}
 
 	envCache := map[string]int{}
@@ -1878,4 +1879,147 @@ func (g *Generator) SetWindowsResourcesStorage(storage rspec.WindowsStorageResou
 func (g *Generator) SetWindowsServicing(servicing bool) {
 	g.initConfigWindows()
 	g.Config.Windows.Servicing = servicing
+}
+
+// AddFreeBSDDevice - add a device into g.Config.FreeBSD.Devices
+func (g *Generator) AddFreeBSDDevice(device rspec.FreeBSDDevice) {
+	g.initConfigFreeBSD()
+
+	for i, dev := range g.Config.FreeBSD.Devices {
+		if dev.Path == device.Path {
+			g.Config.FreeBSD.Devices[i] = device
+			return
+		}
+	}
+
+	g.Config.FreeBSD.Devices = append(g.Config.FreeBSD.Devices, device)
+}
+
+// RemoveFreeBSDDevice remove a device from g.Config.Linux.Devices
+func (g *Generator) RemoveFreeBSDDevice(path string) {
+	if g.Config == nil || g.Config.FreeBSD == nil || g.Config.FreeBSD.Devices == nil {
+		return
+	}
+
+	for i, device := range g.Config.FreeBSD.Devices {
+		if device.Path == path {
+			g.Config.FreeBSD.Devices = append(g.Config.FreeBSD.Devices[:i], g.Config.FreeBSD.Devices[i+1:]...)
+			return
+		}
+	}
+}
+
+func (g *Generator) SetFreeBSDJailParent(id string) error {
+	g.initConfigFreeBSDJail()
+	p := g.Config.FreeBSD.Jail.Parent
+	if p != "" && p != id {
+		return fmt.Errorf("Jail parent is already set to %s", p)
+	}
+	g.Config.FreeBSD.Jail.Parent = id
+	return nil
+}
+
+func (g *Generator) SetFreeBSDJailHost(val rspec.FreeBSDSharing) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.Host = val
+}
+
+func (g *Generator) SetFreeBSDJailIP4(val rspec.FreeBSDSharing) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.Ip4 = val
+}
+
+func (g *Generator) SetFreeBSDJailIP4Addr(val []string) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.Ip4Addr = val
+}
+
+func (g *Generator) SetFreeBSDJailIP6(val rspec.FreeBSDSharing) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.Ip6 = val
+}
+
+func (g *Generator) SetFreeBSDJailIP6Addr(val []string) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.Ip6Addr = val
+}
+
+func (g *Generator) SetFreeBSDJailVnet(val rspec.FreeBSDSharing) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.Vnet = val
+}
+
+func (g *Generator) SetFreeBSDJailInterface(val string) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.Interface = val
+}
+
+func (g *Generator) SetFreeBSDJailVnetInterfaces(val []string) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.VnetInterfaces = val
+}
+
+func (g *Generator) SetFreeBSDJailSysVMsg(val rspec.FreeBSDSharing) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.SysVMsg = val
+}
+
+func (g *Generator) SetFreeBSDJailSysVSem(val rspec.FreeBSDSharing) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.SysVSem = val
+}
+
+func (g *Generator) SetFreeBSDJailSysVShm(val rspec.FreeBSDSharing) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.SysVShm = val
+}
+
+func (g *Generator) SetFreeBSDJailEnforceStatfs(val int) {
+	g.initConfigFreeBSDJail()
+	g.Config.FreeBSD.Jail.EnforceStatfs = &val
+}
+
+func (g *Generator) SetFreeBSDJailAllowSetHostname(val bool) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.SetHostname = val
+}
+
+func (g *Generator) SetFreeBSDJailAllowRawSockets(val bool) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.RawSockets = val
+}
+
+func (g *Generator) SetFreeBSDJailAllowChflags(val bool) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.Chflags = val
+}
+
+func (g *Generator) SetFreeBSDJailAllowQuotas(val bool) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.Quotas = val
+}
+
+func (g *Generator) SetFreeBSDJailAllowSocketAf(val bool) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.SocketAf = val
+}
+
+func (g *Generator) SetFreeBSDJailAllowMlock(val bool) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.Mlock = val
+}
+
+func (g *Generator) SetFreeBSDJailAllowReservedPorts(val bool) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.ReservedPorts = val
+}
+
+func (g *Generator) SetFreeBSDJailAllowSuser(val bool) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.Suser = val
+}
+
+func (g *Generator) SetFreeBSDJailAllowMount(val []string) {
+	g.initConfigFreeBSDJailAllow()
+	g.Config.FreeBSD.Jail.Allow.Mount = val
 }

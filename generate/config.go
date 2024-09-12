@@ -192,3 +192,24 @@ func (g *Generator) initConfigVM() {
 		g.Config.VM = &rspec.VM{}
 	}
 }
+
+func (g *Generator) initConfigFreeBSD() {
+	g.initConfig()
+	if g.Config.FreeBSD == nil {
+		g.Config.FreeBSD = &rspec.FreeBSD{}
+	}
+}
+
+func (g *Generator) initConfigFreeBSDJail() {
+	g.initConfigFreeBSD()
+	if g.Config.FreeBSD.Jail == nil {
+		g.Config.FreeBSD.Jail = &rspec.FreeBSDJail{}
+	}
+}
+
+func (g *Generator) initConfigFreeBSDJailAllow() {
+	g.initConfigFreeBSDJail()
+	if g.Config.FreeBSD.Jail.Allow == nil {
+		g.Config.FreeBSD.Jail.Allow = &rspec.FreeBSDJailAllow{}
+	}
+}
