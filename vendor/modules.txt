@@ -19,7 +19,7 @@ github.com/mndrix/tap-go
 # github.com/mrunalp/fileutils v0.5.0
 ## explicit; go 1.13
 github.com/mrunalp/fileutils
-# github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb
+# github.com/opencontainers/runtime-spec v1.1.0
 ## explicit
 github.com/opencontainers/runtime-spec/specs-go
 # github.com/opencontainers/selinux v1.9.1
