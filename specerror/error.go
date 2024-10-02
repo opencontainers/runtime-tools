@@ -3,9 +3,9 @@
 package specerror
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/hashicorp/go-multierror"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 )
 
@@ -43,7 +43,7 @@ type LevelErrors struct {
 
 	// Error holds errors that were at or above a compliance-level
 	// threshold, as well as errors that are not Errors.
-	Error *multierror.Error
+	Error error
 }
 
 var ociErrors = map[Code]errorTemplate{}
@@ -107,6 +107,10 @@ func NewError(code Code, err error, version string) error {
 	}
 }
 
+type joinErr interface {
+	Unwrap() []error
+}
+
 // FindError finds an error from a source error (multiple error) and
 // returns the error code if found.
 // If the source error is nil or empty, return NonError.
@@ -115,16 +119,14 @@ func FindError(err error, code Code) Code {
 	if err == nil {
 		return NonError
 	}
-
-	if merr, ok := err.(*multierror.Error); ok {
-		if merr.ErrorOrNil() == nil {
-			return NonError
-		}
-		for _, e := range merr.Errors {
-			if rfcErr, ok := e.(*Error); ok {
-				if rfcErr.Code == code {
-					return code
-				}
+	var rfcErr *Error
+	if errors.As(err, &rfcErr) && rfcErr.Code == code {
+		return code
+	}
+	if errs, ok := err.(joinErr); ok {
+		for _, e := range errs.Unwrap() {
+			if errors.As(e, &rfcErr) && rfcErr.Code == code {
+				return code
 			}
 		}
 	}
@@ -135,18 +137,18 @@ func FindError(err error, code Code) Code {
 // from the source error.  If the source error is not a multierror, it
 // is returned unchanged.
 func SplitLevel(errIn error, level rfc2119.Level) (levelErrors LevelErrors, errOut error) {
-	merr, ok := errIn.(*multierror.Error)
+	errs, ok := errIn.(joinErr)
 	if !ok {
 		return levelErrors, errIn
 	}
-	for _, err := range merr.Errors {
-		e, ok := err.(*Error)
-		if ok && e.Err.Level < level {
-			fmt.Println(e)
-			levelErrors.Warnings = append(levelErrors.Warnings, e)
+	for _, err := range errs.Unwrap() {
+		var rfcErr *Error
+		if errors.As(err, &rfcErr) && rfcErr.Err.Level < level {
+			fmt.Println(rfcErr)
+			levelErrors.Warnings = append(levelErrors.Warnings, rfcErr)
 			continue
 		}
-		levelErrors.Error = multierror.Append(levelErrors.Error, err)
+		levelErrors.Error = errors.Join(levelErrors.Error, err)
 	}
 	return levelErrors, nil
 }
