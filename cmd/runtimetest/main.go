@@ -15,9 +15,9 @@ import (
 	"syscall"
 
 	"github.com/mndrix/tap-go"
+	"github.com/moby/sys/capability"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/sirupsen/logrus"
-	"github.com/syndtr/gocapability/capability"
 	"github.com/urfave/cli"
 
 	"github.com/opencontainers/runtime-tools/cmd/runtimetest/mount"
@@ -265,10 +265,9 @@ func (c *complianceTester) validateCapabilities(spec *rspec.Spec) error {
 		return nil
 	}
 
-	last := capability.CAP_LAST_CAP
-	// workaround for RHEL6 which has no /proc/sys/kernel/cap_last_cap
-	if last == capability.Cap(63) {
-		last = capability.CAP_BLOCK_SUSPEND
+	supportedCaps, err := capability.ListSupported()
+	if err != nil {
+		return err
 	}
 
 	processCaps, err := capability.NewPid2(0)
@@ -309,11 +308,7 @@ func (c *complianceTester) validateCapabilities(spec *rspec.Spec) error {
 			expectedCaps[ec] = true
 		}
 
-		for _, cap := range capability.List() {
-			if cap > last {
-				continue
-			}
-
+		for _, cap := range supportedCaps {
 			capKey := fmt.Sprintf("CAP_%s", strings.ToUpper(cap.String()))
 			expectedSet := expectedCaps[capKey]
 			actuallySet := processCaps.Get(capType.capType, cap)

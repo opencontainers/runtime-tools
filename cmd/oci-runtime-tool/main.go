@@ -56,7 +56,7 @@ func before(context *cli.Context) error {
 	logLevelString := context.GlobalString("log-level")
 	logLevel, err := logrus.ParseLevel(logLevelString)
 	if err != nil {
-		logrus.Fatalf(err.Error())
+		logrus.Fatal(err)
 	}
 	logrus.SetLevel(logLevel)
 
