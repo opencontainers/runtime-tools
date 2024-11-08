@@ -16,6 +16,9 @@ github.com/hashicorp/go-multierror
 # github.com/mndrix/tap-go v0.0.0-20171203230836-629fa407e90b
 ## explicit
 github.com/mndrix/tap-go
+# github.com/moby/sys/capability v0.3.0
+## explicit; go 1.21
+github.com/moby/sys/capability
 # github.com/mrunalp/fileutils v0.5.0
 ## explicit; go 1.13
 github.com/mrunalp/fileutils
@@ -37,9 +40,6 @@ github.com/sirupsen/logrus
 # github.com/stretchr/testify v1.3.0
 ## explicit
 github.com/stretchr/testify/assert
-# github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
-## explicit
-github.com/syndtr/gocapability/capability
 # github.com/urfave/cli v1.19.1
 ## explicit
 github.com/urfave/cli
