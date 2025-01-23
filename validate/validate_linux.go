@@ -60,6 +60,7 @@ func (v *Validator) CheckLinux() (errs error) {
 		rspec.UTSNamespace:     {0, false},
 		rspec.UserNamespace:    {0, false},
 		rspec.CgroupNamespace:  {0, false},
+		rspec.TimeNamespace:    {0, false},
 	}
 
 	for index := 0; index < len(v.spec.Linux.Namespaces); index++ {
