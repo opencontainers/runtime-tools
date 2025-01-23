@@ -54,6 +54,7 @@ func (v *Validator) CheckLinux() (errs error) {
 		rspec.UTSNamespace:     {0, false},
 		rspec.UserNamespace:    {0, false},
 		rspec.CgroupNamespace:  {0, false},
+		rspec.TimeNamespace:    {0, false},
 	}
 
 	for index := 0; index < len(v.spec.Linux.Namespaces); index++ {
@@ -91,6 +92,10 @@ func (v *Validator) CheckLinux() (errs error) {
 
 	if v.platform == "linux" && !nsTypeList[rspec.UTSNamespace].newExist && v.spec.Hostname != "" {
 		errs = multierror.Append(errs, fmt.Errorf("on Linux, hostname requires a new UTS namespace to be specified as well"))
+	}
+
+	if !nsTypeList[rspec.TimeNamespace].newExist && len(v.spec.Linux.TimeOffsets) > 0 {
+		errs = multierror.Append(errs, fmt.Errorf("TimeOffsets requires a new time namespace to be specified as well"))
 	}
 
 	// Linux devices validation
