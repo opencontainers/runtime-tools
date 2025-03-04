@@ -16,7 +16,7 @@ import (
 
 var (
 	// Namespaces include the names of supported namespaces.
-	Namespaces = []string{"network", "pid", "mount", "ipc", "uts", "user", "cgroup"}
+	Namespaces = []string{"network", "pid", "mount", "ipc", "uts", "user", "cgroup", "time"}
 
 	// we don't care about order...and this is way faster...
 	removeFunc = func(s []string, i int) []string {
@@ -1478,6 +1478,8 @@ func mapStrToNamespace(ns string, path string) (rspec.LinuxNamespace, error) {
 		return rspec.LinuxNamespace{Type: rspec.UserNamespace, Path: path}, nil
 	case "cgroup":
 		return rspec.LinuxNamespace{Type: rspec.CgroupNamespace, Path: path}, nil
+	case "time":
+		return rspec.LinuxNamespace{Type: rspec.TimeNamespace, Path: path}, nil
 	default:
 		return rspec.LinuxNamespace{}, fmt.Errorf("unrecognized namespace %q", ns)
 	}
