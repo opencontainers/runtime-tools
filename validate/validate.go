@@ -692,6 +692,11 @@ func CapValid(c string, hostSpecific bool) error {
 	return capsCheck.CapValid(c, hostSpecific)
 }
 
+// LastCap returns last cap of system.
+//
+// Deprecated: use github.com/moby/sys/capability.LastCap directly.
+var LastCap = capsCheck.LastCap
+
 func envValid(env string) bool {
 	items := strings.Split(env, "=")
 	if len(items) < 2 {
