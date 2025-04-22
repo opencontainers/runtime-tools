@@ -932,6 +932,26 @@ func (g *Generator) SetLinuxResourcesMemorySwappiness(swappiness uint64) {
 	g.Config.Linux.Resources.Memory.Swappiness = &swappiness
 }
 
+// SetLinuxMemoryPolicyMode sets g.Config.Linux.MemoryPolicy.Mode
+func (g *Generator) SetLinuxMemoryPolicyMode(mode string) {
+	g.initConfigLinuxMemoryPolicy()
+	g.Config.Linux.MemoryPolicy.Mode = rspec.MemoryPolicyModeType(mode)
+}
+
+// SetLinuxMemoryPolicyNodes sets g.Config.Linux.MemoryPolicy.Nodes
+func (g *Generator) SetLinuxMemoryPolicyNodes(nodes string) {
+	g.initConfigLinuxMemoryPolicy()
+	g.Config.Linux.MemoryPolicy.Nodes = nodes
+}
+
+// SetLinuxMemoryPolicyFlags sets g.Config.Linux.MemoryPolicy.Flags
+func (g *Generator) SetLinuxMemoryPolicyFlags(flags []string) {
+	g.initConfigLinuxMemoryPolicy()
+	for _, flag := range flags {
+		g.Config.Linux.MemoryPolicy.Flags = append(g.Config.Linux.MemoryPolicy.Flags, rspec.MemoryPolicyFlagType(flag))
+	}
+}
+
 // SetLinuxResourcesMemoryDisableOOMKiller sets g.Config.Linux.Resources.Memory.DisableOOMKiller.
 func (g *Generator) SetLinuxResourcesMemoryDisableOOMKiller(disable bool) {
 	g.initConfigLinuxResourcesMemory()
