@@ -13,6 +13,7 @@ import (
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/generate/seccomp"
 	capsCheck "github.com/opencontainers/runtime-tools/validate/capabilities"
+	mpolCheck "github.com/opencontainers/runtime-tools/validate/memorypolicy"
 )
 
 var (
@@ -930,6 +931,42 @@ func (g *Generator) SetLinuxResourcesMemoryKernelTCP(kernelTCP int64) {
 func (g *Generator) SetLinuxResourcesMemorySwappiness(swappiness uint64) {
 	g.initConfigLinuxResourcesMemory()
 	g.Config.Linux.Resources.Memory.Swappiness = &swappiness
+}
+
+// SetLinuxMemoryPolicyMode sets g.Config.Linux.MemoryPolicy.Mode
+func (g *Generator) SetLinuxMemoryPolicyMode(mode string) error {
+	modecp := strings.ToUpper(mode)
+	if err := mpolCheck.MpolModeValid(modecp); err != nil {
+		return err
+	}
+	g.initConfigLinuxMemoryPolicy()
+	g.Config.Linux.MemoryPolicy.Mode = rspec.MemoryPolicyModeType(modecp)
+	return nil
+}
+
+// SetLinuxMemoryPolicyNodes sets g.Config.Linux.MemoryPolicy.Nodes
+func (g *Generator) SetLinuxMemoryPolicyNodes(nodes string) error {
+	if err := mpolCheck.MpolNodesValid(nodes); err != nil {
+		return err
+	}
+	g.initConfigLinuxMemoryPolicy()
+	g.Config.Linux.MemoryPolicy.Nodes = nodes
+	return nil
+}
+
+// SetLinuxMemoryPolicyFlags sets g.Config.Linux.MemoryPolicy.Flags
+func (g *Generator) SetLinuxMemoryPolicyFlags(flags []string) error {
+	var validFlags []rspec.MemoryPolicyFlagType
+	for _, flag := range flags {
+		flagcp := strings.ToUpper(flag)
+		if err := mpolCheck.MpolFlagValid(flagcp); err != nil {
+			return err
+		}
+		validFlags = append(validFlags, rspec.MemoryPolicyFlagType(flagcp))
+	}
+	g.initConfigLinuxMemoryPolicy()
+	g.Config.Linux.MemoryPolicy.Flags = validFlags
+	return nil
 }
 
 // SetLinuxResourcesMemoryDisableOOMKiller sets g.Config.Linux.Resources.Memory.DisableOOMKiller.
