@@ -15,15 +15,9 @@ import (
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	osFilepath "github.com/opencontainers/runtime-tools/filepath"
 	"github.com/opencontainers/runtime-tools/specerror"
-	capsCheck "github.com/opencontainers/runtime-tools/validate/capabilities"
 	"github.com/opencontainers/selinux/go-selinux/label"
 	"github.com/sirupsen/logrus"
 )
-
-// LastCap return last cap of system
-//
-// Deprecated: use github.com/opencontainers/runtime-tools/validate/capabilities.LastCap directly.
-var LastCap = capsCheck.LastCap
 
 func deviceValid(d rspec.LinuxDevice) bool {
 	switch d.Type {
