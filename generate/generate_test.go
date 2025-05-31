@@ -10,6 +10,8 @@ import (
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validate"
+
+	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -154,4 +156,15 @@ func TestMultipleEnvCaching(t *testing.T) {
 	}
 	g.AddMultipleProcessEnv([]string{})
 	assert.Equal(t, []string(nil), g.Config.Process.Env)
+}
+
+func TestSetProcessExecCPUAffinity(t *testing.T) {
+	g, err := generate.New("linux")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	g.SetProcessExecCPUAffinity(&rspec.CPUAffinity{Initial: "1", Final: "2"})
+	assert.Equal(t, "1", g.Config.Process.ExecCPUAffinity.Initial)
+	assert.Equal(t, "2", g.Config.Process.ExecCPUAffinity.Final)
 }
