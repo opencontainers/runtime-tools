@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/moby/sys/capability"
@@ -619,6 +620,18 @@ func (g *Generator) SetLinuxCgroupsPath(path string) {
 func (g *Generator) SetLinuxIntelRdtClosID(clos string) {
 	g.initConfigLinuxIntelRdt()
 	g.Config.Linux.IntelRdt.ClosID = clos
+}
+
+// SetLinuxIntelRdtEnableMonitoring sets g.Config.Linux.IntelRdt.EnableMonitoring
+func (g *Generator) SetLinuxIntelRdtEnableMonitoring(value bool) {
+	g.initConfigLinuxIntelRdt()
+	g.Config.Linux.IntelRdt.EnableMonitoring = value
+}
+
+// SetLinuxIntelRdtSchemata sets g.Config.Linux.IntelRdt.Schemata
+func (g *Generator) SetLinuxIntelRdtSchemata(schemata []string) {
+	g.initConfigLinuxIntelRdt()
+	g.Config.Linux.IntelRdt.Schemata = slices.Clone(schemata)
 }
 
 // SetLinuxIntelRdtL3CacheSchema sets g.Config.Linux.IntelRdt.L3CacheSchema
