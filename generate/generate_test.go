@@ -124,6 +124,12 @@ func TestEnvCaching(t *testing.T) {
 	}
 	g.AddProcessEnv("", "")
 	assert.Equal(t, []string(nil), g.Config.Process.Env)
+
+	// Test with nil envMap.
+	g = generate.Generator{}
+	expected = []string{"k1=v1"}
+	g.AddProcessEnv("k1", "v1")
+	assert.Equal(t, expected, g.Config.Process.Env)
 }
 
 func TestMultipleEnvCaching(t *testing.T) {
