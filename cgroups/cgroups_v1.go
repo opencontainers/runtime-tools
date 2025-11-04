@@ -679,7 +679,7 @@ func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error
 
 		return nil, err
 	}
-	lp.Limit = res
+	lp.Limit = &res
 
 	return lp, nil
 }
