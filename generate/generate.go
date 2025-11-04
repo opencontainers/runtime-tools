@@ -970,7 +970,7 @@ func (g *Generator) DropLinuxResourcesNetworkPriorities(name string) {
 // SetLinuxResourcesPidsLimit sets g.Config.Linux.Resources.Pids.Limit.
 func (g *Generator) SetLinuxResourcesPidsLimit(limit int64) {
 	g.initConfigLinuxResourcesPids()
-	g.Config.Linux.Resources.Pids.Limit = limit
+	g.Config.Linux.Resources.Pids.Limit = &limit
 }
 
 // ClearLinuxSysctl clears g.Config.Linux.Sysctl.

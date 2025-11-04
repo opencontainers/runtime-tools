@@ -671,6 +671,13 @@ func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error
 	if err != nil {
 		return nil, err
 	}
+
+	if strings.TrimSpace(string(contents)) == "max" {
+		res := int64(-1)
+		lp.Limit = &res
+		return lp, nil
+	}
+
 	res, err := strconv.ParseInt(strings.TrimSpace(string(contents)), 10, 64)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -679,7 +686,7 @@ func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error
 
 		return nil, err
 	}
-	lp.Limit = res
+	lp.Limit = &res
 
 	return lp, nil
 }
