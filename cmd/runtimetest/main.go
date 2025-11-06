@@ -392,7 +392,7 @@ func (c *complianceTester) validateSysctls(spec *rspec.Spec) error {
 	}
 
 	for k, v := range spec.Linux.Sysctl {
-		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
+		keyPath := filepath.Join("/proc/sys", strings.ReplaceAll(k, ".", "/"))
 		vBytes, err := os.ReadFile(keyPath)
 		if err != nil {
 			return err
