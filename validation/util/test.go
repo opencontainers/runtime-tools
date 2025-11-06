@@ -92,7 +92,7 @@ func Fatal(err error) {
 }
 
 // Skip skips a full TAP suite.
-func Skip(message string, diagnostic interface{}) {
+func Skip(message string, diagnostic any) {
 	t := tap.New()
 	t.Header(1)
 	t.Skip(1, message)

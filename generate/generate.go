@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/moby/sys/capability"
@@ -595,10 +596,8 @@ func (g *Generator) ClearProcessAdditionalGids() {
 // AddProcessAdditionalGid adds an additional gid into g.Config.Process.AdditionalGids.
 func (g *Generator) AddProcessAdditionalGid(gid uint32) {
 	g.initConfigProcess()
-	for _, group := range g.Config.Process.User.AdditionalGids {
-		if group == gid {
-			return
-		}
+	if slices.Contains(g.Config.Process.User.AdditionalGids, gid) {
+		return
 	}
 	g.Config.Process.User.AdditionalGids = append(g.Config.Process.User.AdditionalGids, gid)
 }

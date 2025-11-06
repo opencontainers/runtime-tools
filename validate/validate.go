@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -719,17 +720,13 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 	}
 
 	if v.platform == "linux" {
-		for _, val := range linuxRlimits {
-			if val == rlimit.Type {
-				return
-			}
+		if slices.Contains(linuxRlimits, rlimit.Type) {
+			return
 		}
 		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
 	} else if v.platform == "solaris" {
-		for _, val := range posixRlimits {
-			if val == rlimit.Type {
-				return
-			}
+		if slices.Contains(posixRlimits, rlimit.Type) {
+			return
 		}
 		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
 	} else {
@@ -787,7 +784,7 @@ func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, paren
 	return
 }
 
-func checkMandatory(obj interface{}) (errs error) {
+func checkMandatory(obj any) (errs error) {
 	objT := reflect.TypeOf(obj)
 	objV := reflect.ValueOf(obj)
 	if isStructPtr(objT) {
