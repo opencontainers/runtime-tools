@@ -454,9 +454,10 @@ func testFileReadAccess(path string) (readable bool, err error) {
 	defer f.Close()
 	b := make([]byte, 1)
 	_, err = f.Read(b)
-	if err == nil {
+	switch err {
+	case nil:
 		return true, nil
-	} else if err == io.EOF {
+	case io.EOF:
 		// Our validation/ tests only use non-empty files for read-access
 		// tests. So if we get an EOF on the first read, the runtime did
 		// successfully block readability.
@@ -1310,10 +1311,11 @@ func run(context *cli.Context) error {
 	}
 
 	validations := defaultValidations
-	if platform == "linux" {
+	switch platform {
+	case "linux":
 		validations = append(validations, posixValidations...)
 		validations = append(validations, linuxValidations...)
-	} else if platform == "solaris" {
+	case "solaris":
 		validations = append(validations, posixValidations...)
 	}
 

@@ -89,7 +89,8 @@ func New(os string) (generator Generator, err error) {
 		}
 	}
 
-	if os == "linux" {
+	switch os {
+	case "linux":
 		config.Process.Capabilities = &rspec.LinuxCapabilities{
 			Bounding: []string{
 				"CAP_CHOWN",
@@ -238,7 +239,7 @@ func New(os string) (generator Generator, err error) {
 			},
 			Seccomp: seccomp.DefaultProfile(&config),
 		}
-	} else if os == "freebsd" {
+	case "freebsd":
 		config.Mounts = []rspec.Mount{
 			{
 				Destination: "/dev",

@@ -719,17 +719,18 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 		errs = multierror.Append(errs, fmt.Errorf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type))
 	}
 
-	if v.platform == "linux" {
+	switch v.platform {
+	case "linux":
 		if slices.Contains(linuxRlimits, rlimit.Type) {
 			return
 		}
 		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
-	} else if v.platform == "solaris" {
+	case "solaris":
 		if slices.Contains(posixRlimits, rlimit.Type) {
 			return
 		}
 		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
-	} else {
+	default:
 		logrus.Warnf("process.rlimits validation not yet implemented for platform %q", v.platform)
 	}
 
