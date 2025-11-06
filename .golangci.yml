@@ -1,5 +1,15 @@
-# For documentation, see https://golangci-lint.run/usage/configuration/
+version: "2"
+
+formatters:
+  enable:
+    - gofmt
 
 linters:
   disable:
     - errcheck
+  settings:
+    staticcheck:
+      checks:
+        - all # Enable all checks, except...
+        - -ST1005 # https://staticcheck.dev/docs/checks/#ST1005 Incorrectly formatted error string.
+        - -ST1000 # https://staticcheck.dev/docs/checks/#ST1000 Incorrect or missing package comment.
