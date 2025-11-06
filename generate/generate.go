@@ -595,7 +595,7 @@ func (g *Generator) ClearProcessAdditionalGids() {
 }
 
 // AddProcessAdditionalGid adds an additional gid into g.Config.Process.AdditionalGids.
-func (g *Generator) AddProcessAdditionalGid(gid uint32) {
+func (g *Generator) AddProcessAdditionalGid(gid uint32) { //nolint:staticcheck // Ignore ST1003: method AddProcessAdditionalGid should be AddProcessAdditionalGID
 	g.initConfigProcess()
 	if slices.Contains(g.Config.Process.User.AdditionalGids, gid) {
 		return

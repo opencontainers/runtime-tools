@@ -441,7 +441,7 @@ func (v *Validator) CheckCapabilities() (errs error) {
 		if effective && !permitted {
 			errs = multierror.Append(errs, fmt.Errorf("effective capability %q is not allowed, as it's not permitted", capability))
 		}
-		if ambient && !(permitted && inheritable) {
+		if ambient && !(permitted && inheritable) { //nolint:staticcheck // Ignore QF1001: could apply De Morgan's law.
 			errs = multierror.Append(errs, fmt.Errorf("ambient capability %q is not allowed, as it's not permitted and inheribate", capability))
 		}
 	}
