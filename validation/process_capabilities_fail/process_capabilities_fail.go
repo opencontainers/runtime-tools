@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	if "linux" != runtime.GOOS {
+	if runtime.GOOS != "linux" {
 		util.Skip("linux-specific process.capabilities test", map[string]string{"OS": runtime.GOOS})
 		os.Exit(0)
 	}
