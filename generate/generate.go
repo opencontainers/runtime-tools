@@ -868,7 +868,7 @@ func (g *Generator) DropLinuxResourcesHugepageLimit(pageSize string) {
 	}
 }
 
-// AddLinuxResourcesUnified sets the g.Config.Linux.Resources.Unified
+// SetLinuxResourcesUnified sets the g.Config.Linux.Resources.Unified.
 func (g *Generator) SetLinuxResourcesUnified(unified map[string]string) {
 	g.initConfigLinuxResourcesUnified()
 	for k, v := range unified {
