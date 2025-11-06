@@ -539,7 +539,7 @@ func (cg *CgroupV1) GetMemoryData(pid int, cgPath string) (*rspec.LinuxMemory, e
 				return nil, err
 			}
 			kernelLimit := res
-			lm.Kernel = &kernelLimit
+			lm.Kernel = &kernelLimit //nolint:staticcheck // Ignore SA1019: lm.Kernel is deprecated
 		case 4:
 			res, err := strconv.ParseInt(strings.TrimSpace(string(contents)), 10, 64)
 			if err != nil {
