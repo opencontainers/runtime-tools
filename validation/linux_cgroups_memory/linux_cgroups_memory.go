@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	if "linux" != runtime.GOOS {
+	if runtime.GOOS != "linux" {
 		util.Fatal(fmt.Errorf("linux-specific cgroup test"))
 	}
 

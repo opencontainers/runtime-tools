@@ -14,7 +14,7 @@ import (
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
-func saveConfig(path string, v interface{}) error {
+func saveConfig(path string, v any) error {
 	data, err := json.Marshal(v)
 	if err != nil {
 		return err

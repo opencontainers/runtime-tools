@@ -8,10 +8,12 @@ import (
 )
 
 func main() {
-	var shares uint64 = 1024
-	var period uint64 = 100000
-	var quota int64 = 50000
-	var cpus, mems string = "0-1", "0"
+	const (
+		shares     uint64 = 1024
+		period     uint64 = 100000
+		quota      int64  = 50000
+		cpus, mems        = "0-1", "0"
+	)
 
 	t := tap.New()
 	t.Header(0)

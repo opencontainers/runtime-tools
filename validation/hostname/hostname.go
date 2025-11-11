@@ -30,7 +30,7 @@ func main() {
 	t.Header(0)
 	defer t.AutoPlan()
 
-	if "linux" != runtime.GOOS {
+	if runtime.GOOS != "linux" {
 		t.Skip(1, "linux-specific namespace test")
 	}
 

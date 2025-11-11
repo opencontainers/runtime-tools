@@ -118,7 +118,7 @@ func main() {
 	t := tap.New()
 	t.Header(0)
 
-	if "linux" != runtime.GOOS {
+	if runtime.GOOS != "linux" {
 		t.Skip(1, "linux-specific namespace test")
 	}
 

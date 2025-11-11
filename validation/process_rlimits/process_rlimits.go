@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	if "linux" != runtime.GOOS && "solaris" != runtime.GOOS {
+	if runtime.GOOS != "linux" && runtime.GOOS != "solaris" {
 		util.Skip("POSIX-specific process.rlimits test", map[string]string{"OS": runtime.GOOS})
 		os.Exit(0)
 	}

@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -440,7 +441,7 @@ func (v *Validator) CheckCapabilities() (errs error) {
 		if effective && !permitted {
 			errs = multierror.Append(errs, fmt.Errorf("effective capability %q is not allowed, as it's not permitted", capability))
 		}
-		if ambient && !(permitted && inheritable) {
+		if ambient && !(permitted && inheritable) { //nolint:staticcheck // Ignore QF1001: could apply De Morgan's law.
 			errs = multierror.Append(errs, fmt.Errorf("ambient capability %q is not allowed, as it's not permitted and inheribate", capability))
 		}
 	}
@@ -718,21 +719,18 @@ func (v *Validator) rlimitValid(rlimit rspec.POSIXRlimit) (errs error) {
 		errs = multierror.Append(errs, fmt.Errorf("hard limit of rlimit %s should not be less than soft limit", rlimit.Type))
 	}
 
-	if v.platform == "linux" {
-		for _, val := range linuxRlimits {
-			if val == rlimit.Type {
-				return
-			}
+	switch v.platform {
+	case "linux":
+		if slices.Contains(linuxRlimits, rlimit.Type) {
+			return
 		}
 		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
-	} else if v.platform == "solaris" {
-		for _, val := range posixRlimits {
-			if val == rlimit.Type {
-				return
-			}
+	case "solaris":
+		if slices.Contains(posixRlimits, rlimit.Type) {
+			return
 		}
 		errs = multierror.Append(errs, specerror.NewError(specerror.PosixProcRlimitsTypeValueError, fmt.Errorf("rlimit type %q may not be valid", rlimit.Type), v.spec.Version))
-	} else {
+	default:
 		logrus.Warnf("process.rlimits validation not yet implemented for platform %q", v.platform)
 	}
 
@@ -787,7 +785,7 @@ func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, paren
 	return
 }
 
-func checkMandatory(obj interface{}) (errs error) {
+func checkMandatory(obj any) (errs error) {
 	objT := reflect.TypeOf(obj)
 	objV := reflect.ValueOf(obj)
 	if isStructPtr(objT) {

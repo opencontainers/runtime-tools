@@ -148,7 +148,7 @@ func main() {
 	}
 
 	for _, c := range cases {
-		if "linux" != runtime.GOOS {
+		if runtime.GOOS != "linux" {
 			t.Skip(1, fmt.Sprintf("linux-specific namespace test: %s", c))
 		}
 

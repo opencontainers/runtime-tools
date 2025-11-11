@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
@@ -89,10 +90,8 @@ func GetSubsystemPath(pid int, subsystem string) (string, error) {
 			continue
 		}
 		subelems := strings.Split(elem[1], ",")
-		for _, subelem := range subelems {
-			if subelem == subsystem {
-				return elem[2], nil
-			}
+		if slices.Contains(subelems, subsystem) {
+			return elem[2], nil
 		}
 	}
 

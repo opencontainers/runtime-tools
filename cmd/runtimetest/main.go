@@ -236,13 +236,13 @@ func (c *complianceTester) validateLinuxProcess(spec *rspec.Spec) error {
 
 	args := bytes.Split(bytes.Trim(cmdlineBytes, "\x00"), []byte("\x00"))
 	c.harness.Ok(len(args) == len(spec.Process.Args), "has expected number of process arguments")
-	_ = c.harness.YAML(map[string]interface{}{
+	_ = c.harness.YAML(map[string]any{
 		"expected": spec.Process.Args,
 		"actual":   args,
 	})
 	for i, a := range args {
 		c.harness.Ok(string(a) == spec.Process.Args[i], fmt.Sprintf("has expected process argument %d", i))
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"index":    i,
 			"expected": spec.Process.Args[i],
 			"actual":   string(a),
@@ -362,7 +362,7 @@ func (c *complianceTester) validateRlimits(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"type":      r.Type,
@@ -374,7 +374,7 @@ func (c *complianceTester) validateRlimits(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"type":      r.Type,
@@ -392,7 +392,7 @@ func (c *complianceTester) validateSysctls(spec *rspec.Spec) error {
 	}
 
 	for k, v := range spec.Linux.Sysctl {
-		keyPath := filepath.Join("/proc/sys", strings.Replace(k, ".", "/", -1))
+		keyPath := filepath.Join("/proc/sys", strings.ReplaceAll(k, ".", "/"))
 		vBytes, err := os.ReadFile(keyPath)
 		if err != nil {
 			return err
@@ -454,9 +454,10 @@ func testFileReadAccess(path string) (readable bool, err error) {
 	defer f.Close()
 	b := make([]byte, 1)
 	_, err = f.Read(b)
-	if err == nil {
+	switch err {
+	case nil:
 		return true, nil
-	} else if err == io.EOF {
+	case io.EOF:
 		// Our validation/ tests only use non-empty files for read-access
 		// tests. So if we get an EOF on the first read, the runtime did
 		// successfully block readability.
@@ -727,7 +728,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -738,7 +739,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -756,7 +757,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -777,7 +778,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -793,7 +794,7 @@ func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition s
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      device.Path,
@@ -838,7 +839,7 @@ func (c *complianceTester) validateDefaultSymlinks(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"path":      symlink,
@@ -991,7 +992,7 @@ func (c *complianceTester) validateOOMScoreAdj(spec *rspec.Spec) error {
 		if err != nil {
 			return err
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":     rfcError.Level.String(),
 			"reference": rfcError.Reference,
 			"expected":  expected,
@@ -1052,7 +1053,7 @@ func (c *complianceTester) validateIDMappings(mappings []rspec.LinuxIDMapping, p
 		return err
 	}
 	c.harness.Ok(len(idMaps) == len(mappings), fmt.Sprintf("%s has expected number of mappings", path))
-	_ = c.harness.YAML(map[string]interface{}{
+	_ = c.harness.YAML(map[string]any{
 		"expected": mappings,
 		"actual":   idMaps,
 	})
@@ -1185,13 +1186,13 @@ func (c *complianceTester) validatePosixMounts(spec *rspec.Spec) error {
 		} else {
 			rfcError, err = c.Ok(foundInOrder, specerror.MountsInOrder, spec.Version, fmt.Sprintf("mounts[%d] (%s) found in order", i, configMount.Destination))
 		}
-		_ = c.harness.YAML(map[string]interface{}{
+		_ = c.harness.YAML(map[string]any{
 			"level":       rfcError.Level.String(),
 			"reference":   rfcError.Reference,
 			"config":      configMount,
 			"indexConfig": i,
 			"indexSystem": configSys[i],
-			"earlier": map[string]interface{}{
+			"earlier": map[string]any{
 				"config":      spec.Mounts[highestMatchedConfig],
 				"indexConfig": highestMatchedConfig,
 				"indexSystem": configSys[highestMatchedConfig],
@@ -1310,10 +1311,11 @@ func run(context *cli.Context) error {
 	}
 
 	validations := defaultValidations
-	if platform == "linux" {
+	switch platform {
+	case "linux":
 		validations = append(validations, posixValidations...)
 		validations = append(validations, linuxValidations...)
-	} else if platform == "solaris" {
+	case "solaris":
 		validations = append(validations, posixValidations...)
 	}
 
