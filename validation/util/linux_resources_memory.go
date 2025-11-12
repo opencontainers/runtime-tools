@@ -31,11 +31,11 @@ func ValidateLinuxResourcesMemory(config *rspec.Spec, t *tap.T, state *rspec.Sta
 	t.Ok(*lm.Swap == *config.Linux.Resources.Memory.Swap, "memory swap is set correctly")
 	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Swap, *lm.Reservation)
 
-	t.Ok(*lm.Kernel == *config.Linux.Resources.Memory.Kernel, "memory kernel is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Kernel, *lm.Kernel)
+	t.Ok(*lm.Kernel == *config.Linux.Resources.Memory.Kernel, "memory kernel is set correctly") //nolint:staticcheck // Ignore SA1019: lm.Kernel is deprecated
+	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Kernel, *lm.Kernel)  //nolint:staticcheck // Ignore SA1019: config.Linux.Resources.Memory.Kernel is deprecated
 
 	t.Ok(*lm.KernelTCP == *config.Linux.Resources.Memory.KernelTCP, "memory kernelTCP is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.KernelTCP, *lm.Kernel)
+	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.KernelTCP, *lm.Kernel) //nolint:staticcheck // Ignore SA1019: lm.Kernel is deprecated
 
 	t.Ok(*lm.Swappiness == *config.Linux.Resources.Memory.Swappiness, "memory swappiness is set correctly")
 	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Swappiness, *lm.Swappiness)

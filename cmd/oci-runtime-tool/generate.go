@@ -16,6 +16,8 @@ import (
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/generate/seccomp"
 	"github.com/urfave/cli"
+
+	mpolCheck "github.com/opencontainers/runtime-tools/validate/memorypolicy"
 )
 
 var generateFlags = []cli.Flag{
@@ -64,6 +66,9 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "linux-mems", Usage: "list of memory nodes in the cpuset (default is to use any available memory node)"},
 	cli.Uint64Flag{Name: "linux-mem-swap", Usage: "total memory limit (memory + swap) (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-swappiness", Usage: "how aggressive the kernel will swap memory pages (Range from 0 to 100)"},
+	cli.StringFlag{Name: "linux-memorypolicy-mode", Usage: "memory policy defines from which nodes memory is allocated by default, e.g MPOL_INTERLEAVE"},
+	cli.StringFlag{Name: "linux-memorypolicy-nodes", Usage: "memory nodes related to the linux-memorypolicy-mode, e.g 0-3,7"},
+	cli.StringSliceFlag{Name: "linux-memorypolicy-flags", Usage: "optional memory policy mode flags, e.g MPOL_F_STATIC_NODES"},
 	cli.StringFlag{Name: "linux-mount-label", Usage: "selinux mount context label"},
 	cli.StringSliceFlag{Name: "linux-namespace-add", Usage: "adds a namespace to the set of namespaces to create or join of the form 'ns[:path]'"},
 	cli.StringSliceFlag{Name: "linux-namespace-remove", Usage: "removes a namespace from the set of namespaces to create or join of the form 'ns'"},
@@ -780,6 +785,35 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("linux-mem-swappiness") {
 		g.SetLinuxResourcesMemorySwappiness(context.Uint64("linux-mem-swappiness"))
+	}
+
+	if context.IsSet("linux-memorypolicy-mode") {
+		mpolMode := context.String("linux-memorypolicy-mode")
+		if err := mpolCheck.MpolModeValid(mpolMode); err != nil {
+			return err
+		}
+		g.SetLinuxMemoryPolicyMode(mpolMode)
+	}
+
+	if context.IsSet("linux-memorypolicy-nodes") {
+		g.SetLinuxMemoryPolicyNodes(context.String("linux-memorypolicy-nodes"))
+	}
+
+	if context.IsSet("linux-memorypolicy-flags") {
+		mpolFlags := context.StringSlice("linux-memorypolicy-flags")
+		for _, flag := range mpolFlags {
+			if err := mpolCheck.MpolFlagValid(flag); err != nil {
+				return err
+			}
+		}
+		g.SetLinuxMemoryPolicyFlags(mpolFlags)
+	}
+
+	if g.Config.Linux.MemoryPolicy != nil {
+		// Validating memory policy nodes needs mode as a context.
+		if err := mpolCheck.MpolModeNodesValid(g.Config.Linux.MemoryPolicy.Mode, g.Config.Linux.MemoryPolicy.Nodes); err != nil {
+			return err
+		}
 	}
 
 	if context.IsSet("linux-network-classid") {

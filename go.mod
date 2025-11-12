@@ -10,7 +10,7 @@ require (
 	github.com/moby/sys/capability v0.4.0
 	github.com/moby/sys/mountinfo v0.7.2
 	github.com/mrunalp/fileutils v0.5.0
-	github.com/opencontainers/runtime-spec v1.1.0
+	github.com/opencontainers/runtime-spec v1.3.0
 	github.com/opencontainers/selinux v1.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.3.0

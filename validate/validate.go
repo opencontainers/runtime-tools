@@ -275,7 +275,7 @@ func (v *Validator) CheckHooks() (errs error) {
 	}
 
 	if v.spec.Hooks != nil {
-		errs = multierror.Append(errs, v.checkEventHooks("prestart", v.spec.Hooks.Prestart, v.HostSpecific))
+		errs = multierror.Append(errs, v.checkEventHooks("prestart", v.spec.Hooks.Prestart, v.HostSpecific)) //nolint:staticcheck // Ignore SA1019: v.Spec.Hooks.Prestart is deprecated
 		errs = multierror.Append(errs, v.checkEventHooks("poststart", v.spec.Hooks.Poststart, v.HostSpecific))
 		errs = multierror.Append(errs, v.checkEventHooks("poststop", v.spec.Hooks.Poststop, v.HostSpecific))
 	}
