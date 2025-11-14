@@ -6,7 +6,7 @@ BUILDTAGS=
 RUNTIME ?= runc
 COMMIT ?= $(shell git describe --dirty --long --always --tags 2> /dev/null)
 VERSION := ${shell cat ./VERSION}
-BUILD_FLAGS := -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=$(COMMIT) -X main.version=$(VERSION)" $(EXTRA_FLAGS)
+BUILD_FLAGS := -tags "$(BUILDTAGS)" -ldflags "-X main.gitCommit=$(COMMIT) -X main.version=$(VERSION) -buildmode=pie" $(EXTRA_FLAGS)
 STATIC_BUILD_FLAGS := -tags "$(BUILDTAGS) netgo osusergo" -ldflags "-extldflags -static -X main.gitCommit=$(COMMIT) -X main.version=$(VERSION)" $(EXTRA_FLAGS)
 VALIDATION_TESTS ?= $(patsubst %.go,%.t,$(shell find ./validation/ -name *.go | grep -v util))
 
