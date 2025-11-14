@@ -130,6 +130,13 @@ func (g *Generator) initConfigLinuxResourcesUnified() {
 	}
 }
 
+func (g *Generator) initConfigLinuxNetDevices() {
+	g.initConfigLinux()
+	if g.Config.Linux.NetDevices == nil {
+		g.Config.Linux.NetDevices = map[string]rspec.LinuxNetDevice{}
+	}
+}
+
 func (g *Generator) initConfigSolaris() {
 	g.initConfig()
 	if g.Config.Solaris == nil {

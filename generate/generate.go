@@ -1660,6 +1660,31 @@ func (g *Generator) AddLinuxReadonlyPaths(path string) {
 	g.Config.Linux.ReadonlyPaths = append(g.Config.Linux.ReadonlyPaths, path)
 }
 
+// AddLinuxNetDevice adds a network device into g.Config.Linux.NetDevices.
+func (g *Generator) AddLinuxNetDevice(hostIf string, netDev *rspec.LinuxNetDevice) {
+	g.initConfigLinuxNetDevices()
+	g.Config.Linux.NetDevices[hostIf] = *netDev
+}
+
+// RemoveLinuxNetDeviceByHostName removes any linux network device with a
+// matching host interface name from g.Config.Linux.NetDevices.
+func (g *Generator) RemoveLinuxNetDeviceByHostName(hostIf string) {
+	g.initConfigLinuxNetDevices()
+	delete(g.Config.Linux.NetDevices, hostIf)
+}
+
+// RemoveLinuxNetDeviceByName removes any linux network device with a
+// matching name from g.Config.Linux.NetDevices.
+func (g *Generator) RemoveLinuxNetDeviceByName(name string) {
+	g.initConfigLinuxNetDevices()
+	for hif, dev := range g.Config.Linux.NetDevices {
+		if dev.Name == name {
+			delete(g.Config.Linux.NetDevices, hif)
+			return
+		}
+	}
+}
+
 func addOrReplaceBlockIOThrottleDevice(tmpList []rspec.LinuxThrottleDevice, major int64, minor int64, rate uint64) []rspec.LinuxThrottleDevice {
 	throttleDevices := tmpList
 	for i, throttleDevice := range throttleDevices {
