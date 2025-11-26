@@ -39,6 +39,108 @@ read the configuration from `config.json`.
   When specified multiple times, files are loaded in order with duplicate
   keys overwriting previous ones.
 
+**--freebsd-device-add**=*PATH:MODE*
+  Add a device file in container. e.g. --freebsd-device-add=/dev/cuau0c/fuse:438
+    *PATH* is the device path.
+    *MODE* is the file mode of the device file.
+  This option can be specified multiple times.
+
+**--freebsd-device-remove**=*PATH*
+  Remove a device file in container.
+  This option can be specified multiple times.
+
+**--freebsd-jail-allow-chflags**
+  Allow using the *chroot* syscall inside the container.
+
+**--freebsd-jail-allow-mlock**
+  Allow using the *mlock* and *munlock* syscalls inside the container.
+
+**--freebsd-jail-allow-mount**=*FSTYPE*
+  Allow mounting filesystems of type *FSTYPE* inside the container.
+  This option can be specified multiple times.
+
+**--freebsd-jail-allow-quotas**
+  Allow administering quotas inside the container.
+
+**--freebsd-jail-allow-raw-sockets**
+  Allow using raw sockets inside the container.
+
+**--freebsd-jail-allow-reserved-ports**
+  Allow using reserved IP ports inside the container.
+
+**--freebsd-jail-allow-set-hostname**
+  Allow setting hostname inside the container.
+
+**--freebsd-jail-allow-socket-af**
+  Allow using non-IP network protocols inside the container.
+
+**--freebsd-jail-allow-suser**
+  Allow super-user inside the container.
+
+**--freebsd-jail-enforce-statfs**=*VALUE*
+  Specifies the visibility of mounts in the container. The value should be one of:
+    *0* all mount points on the host are visible.
+    *1* only mount points below the container's root are visible.
+    *2* syscalls are limited to operate only on a mount-point where the container's root directory is located.
+
+**--freebsd-jail-host**=*SHARING*
+  Specify the jail's host namespace. The value of *SHARING* should be one of:
+    *new* to create a new namespace for the container.
+    *inherit* to share the namespace from the host (or parent jail if specified).
+
+**--freebsd-jail-interface**=*INTERFACE*
+  Specifies a network interface to use for IPv4 and IPv6 addresses when not using *VNET*.
+
+**--freebsd-jail-ip4**=*SHARING*
+  Specify the jail's IPv4 namespace. The value of *SHARING* should be one of:
+    *new* to create a new namespace for the container.
+    *inherit* to share the host namespace from the host (or parent jail if specified).
+    *disable* to stop the container from using IPv4.
+
+**--freebsd-jail-ip4-addr**=*ADDRESS*
+  Specifies an IPv4 address that is available for the container.
+  This option can be specified multiple times.
+
+**--freebsd-jail-ip6**=*SHARING*
+  Specify the jail's IPv6 namespace. The value of *SHARING* should be one of:
+    *new* to create a new namespace for the container.
+    *inherit* to share the host namespace from the host (or parent jail if specified).
+    *disable* to stop the container from using IPv6.
+
+**--freebsd-jail-ip6-addr**=*ADDRESS*
+  Specifies an IPv6 address that is available for the container.
+  This option can be specified multiple times.
+
+**--freebsd-jail-parent**=*NAME*
+  Specify the name of a parent jail for this container, if required.
+
+**--freebsd-jail-sysvmsg**=*SHARING*
+  Specify the jail's SYSV IPC message namespace. The value of *SHARING* should be one of:
+    *new* to create a new namespace for the container.
+    *inherit* to share the host namespace from the host (or parent jail if specified).
+    *disable* to stop the container from using SYSV messages.
+
+**--freebsd-jail-sysvsem**=*SHARING*
+  Specify the jail's SYSV IPC semaphore namespace. The value of *SHARING* should be one of:
+    *new* to create a new namespace for the container.
+    *inherit* to share the host namespace from the host (or parent jail if specified).
+    *disable* to stop the container from using SYSV semaphores.
+
+**--freebsd-jail-sysvshm**=*SHARING*
+  Specify the jail's SYSV IPC shared memory namespace. The value of *SHARING* should be one of:
+    *new* to create a new namespace for the container.
+    *inherit* to share the host namespace from the host (or parent jail if specified).
+    *disable* to stop the container from using SYSV shared memory.
+
+**--freebsd-jail-vnet**=*SHARING*
+  Specify the jail's VNET namespace. The value of *SHARING* should be one of:
+    *new* to create a new namespace for the container.
+    *inherit* to share the host namespace from the host (or parent jail if specified).
+  
+**--freebsd-jail-vnet-interface**=*INTERFACE*
+  Specifies an interface to move into the container's vnet during its lifetime.
+  This option can be specified multiple times.
+  
 **--help**
   Print usage statement
 
