@@ -46,6 +46,7 @@ func parseArch(arch string) (rspec.Arch, error) {
 		"ppc64le":     rspec.ArchPPC64LE,
 		"s390":        rspec.ArchS390,
 		"s390x":       rspec.ArchS390X,
+		"loong64":     rspec.ArchLOONGARCH64,
 	}
 	a, ok := arches[arch]
 	if !ok {
