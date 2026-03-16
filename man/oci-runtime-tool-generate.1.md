@@ -201,6 +201,13 @@ read the configuration from `config.json`.
   RDT Class of Service, i.e. group under the resctrl pseudo-filesystem, which
   to associate the container with.
 
+**--linux-intelRdt-enableMonitoring**=""
+  Enable resctrl monitoring for the container.
+
+**--linux-intelRdt-schema**=[]
+  Specifies one resctrl schema. May be specified multiple times to configure the complete schemata.
+  e.g. --linux-intelRdt-schemata="MB:0=80" --linux-intelRdt-schemata="L3:0=ff"
+
 **--linux-intelRdt-l3CacheSchema**=""
   Specifies the schema for L3 cache id and capacity bitmask.
 
