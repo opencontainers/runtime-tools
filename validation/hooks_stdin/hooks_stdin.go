@@ -10,65 +10,64 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	multierror "github.com/hashicorp/go-multierror"
 	tap "github.com/mndrix/tap-go"
 	rspecs "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
 
-func stdinStateCheck(outputDir, hookName string, expectedState rspecs.State) (errs *multierror.Error) {
+func stdinStateCheck(outputDir, hookName string, expectedState rspecs.State) (errs error) {
 	var state rspecs.State
 	data, err := os.ReadFile(filepath.Join(outputDir, hookName))
 	if err != nil {
-		errs = multierror.Append(errs, err)
+		errs = errors.Join(errs, err)
 		return
 	}
 	err = json.Unmarshal(data, &state)
 	if err != nil {
-		errs = multierror.Append(errs, err)
+		errs = errors.Join(errs, err)
 		return
 	}
 
 	if state.ID != expectedState.ID {
 		err = fmt.Errorf("wrong container ID %q in the stdin of %s hook, expected %q", state.ID, hookName, expectedState.ID)
-		errs = multierror.Append(errs, err)
+		errs = errors.Join(errs, err)
 	}
 
 	if state.Bundle != expectedState.Bundle {
 		err = fmt.Errorf("wrong bundle directory %q in the stdin of %s hook, expected %q", state.Bundle, hookName, expectedState.Bundle)
-		errs = multierror.Append(errs, err)
+		errs = errors.Join(errs, err)
 	}
 
 	if hookName != "poststop" && state.Pid != expectedState.Pid {
 		err = fmt.Errorf("wrong container process ID %q in the stdin of %s hook, expected %q", state.Version, hookName, expectedState.Version)
-		errs = multierror.Append(errs, err)
+		errs = errors.Join(errs, err)
 	}
 
 	if !reflect.DeepEqual(state.Annotations, expectedState.Annotations) {
 		err = fmt.Errorf("wrong annotations \"%v\" in the stdin of %s hook, expected \"%v\"", state.Annotations, hookName, expectedState.Annotations)
-		errs = multierror.Append(errs, err)
+		errs = errors.Join(errs, err)
 	}
 
 	switch hookName {
 	case "prestart":
 		if state.Status != "created" {
 			err = fmt.Errorf("wrong status %q in the stdin of %s hook, expected %q", state.Status, hookName, "created")
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		}
 	case "poststart":
 		if state.Status != "running" {
 			err = fmt.Errorf("wrong status %q in the stdin of %s hook, expected %q", state.Status, hookName, "running")
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		}
 	case "poststop":
 		if state.Status == "" {
 			err = fmt.Errorf("status in the stdin of %s hook should not be empty", hookName)
-			errs = multierror.Append(errs, err)
+			errs = errors.Join(errs, err)
 		}
 	default:
 		err = fmt.Errorf("internal error, unexpected hook name %q", hookName)
-		errs = multierror.Append(errs, err)
+		errs = errors.Join(errs, err)
 	}
 
 	return
@@ -159,7 +158,7 @@ func main() {
 		} else {
 			newError = errors.New(errs.Error())
 		}
-		util.SpecErrorOK(t, errs.ErrorOrNil() == nil, specerror.NewError(specerror.PosixHooksStateToStdin, fmt.Errorf("the state of the container MUST be passed to %q hook over stdin", file), rspecs.Version), newError)
+		util.SpecErrorOK(t, errs == nil, specerror.NewError(specerror.PosixHooksStateToStdin, fmt.Errorf("the state of the container MUST be passed to %q hook over stdin", file), rspecs.Version), newError)
 	}
 
 	t.AutoPlan()
