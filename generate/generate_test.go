@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"testing"
 
+	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	rfc2119 "github.com/opencontainers/runtime-tools/error"
 	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/opencontainers/runtime-tools/specerror"
@@ -154,4 +155,34 @@ func TestMultipleEnvCaching(t *testing.T) {
 	}
 	g.AddMultipleProcessEnv([]string{})
 	assert.Equal(t, []string(nil), g.Config.Process.Env)
+}
+
+func TestAddLinuxNetDevice(t *testing.T) {
+	// Start with empty ENV and add a few
+	g, err := generate.New("linux")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := map[string]rspec.LinuxNetDevice{
+		"eth0": {
+			Name: "eno1",
+		},
+		"eth1": {
+			Name: "eno2",
+		},
+		"eth2": {
+			Name: "eno3",
+		},
+	}
+	g.AddLinuxNetDevice("eth0", &rspec.LinuxNetDevice{Name: "eno1"})
+	g.AddLinuxNetDevice("eth1", &rspec.LinuxNetDevice{Name: "eno2"})
+	g.AddLinuxNetDevice("eth2", &rspec.LinuxNetDevice{Name: "eno3"})
+	assert.Equal(t, expected, g.Config.Linux.NetDevices)
+
+	g.RemoveLinuxNetDeviceByHostName("eth0")
+	delete(expected, "eth0")
+	assert.Equal(t, expected, g.Config.Linux.NetDevices)
+	g.RemoveLinuxNetDeviceByName("eno2")
+	delete(expected, "eth1")
+	assert.Equal(t, expected, g.Config.Linux.NetDevices)
 }
