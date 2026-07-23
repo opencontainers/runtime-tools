@@ -490,6 +490,20 @@ func TestCheckProcess(t *testing.T) {
 			platform: "solaris",
 			expected: specerror.PosixProcRlimitsTypeValueError,
 		},
+		{
+			// Root is optional in the runtime spec; an apparmorProfile
+			// with no root must not panic the validator.
+			val: rspec.Spec{
+				Version: "1.0.0",
+				Process: &rspec.Process{
+					Args:            []string{"sh"},
+					Cwd:             "/",
+					ApparmorProfile: "docker-default",
+				},
+			},
+			platform: "linux",
+			expected: specerror.NonError,
+		},
 	}
 	for _, c := range cases {
 		v, err := NewValidator(&c.val, ".", false, c.platform)
