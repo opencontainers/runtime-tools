@@ -35,26 +35,9 @@ func ValidateLinuxResourcesCPU(config *rspec.Spec, t *tap.T, state *rspec.State)
 		return nil
 	}
 
-	if lcd.Shares == nil || config.Linux.Resources.CPU.Shares == nil {
-		t.Diagnostic(fmt.Sprintf("unable to get cpu shares, lcd.Shares == %v, config.Linux.Resources.CPU.Shares == %v", lcd.Shares, config.Linux.Resources.CPU.Shares))
-		return nil
-	}
-	t.Ok(*lcd.Shares == *config.Linux.Resources.CPU.Shares, "cpu shares is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.CPU.Shares, *lcd.Shares)
-
-	if lcd.Period == nil || config.Linux.Resources.CPU.Period == nil {
-		t.Diagnostic(fmt.Sprintf("unable to get cpu period, lcd.Period == %v, config.Linux.Resources.CPU.Period == %v", lcd.Period, config.Linux.Resources.CPU.Period))
-		return nil
-	}
-	t.Ok(*lcd.Period == *config.Linux.Resources.CPU.Period, "cpu period is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.CPU.Period, *lcd.Period)
-
-	if lcd.Quota == nil || config.Linux.Resources.CPU.Quota == nil {
-		t.Diagnostic(fmt.Sprintf("unable to get cpu quota, lcd.Quota == %v, config.Linux.Resources.CPU.Quota == %v", lcd.Quota, config.Linux.Resources.CPU.Quota))
-		return nil
-	}
-	t.Ok(*lcd.Quota == *config.Linux.Resources.CPU.Quota, "cpu quota is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.CPU.Quota, *lcd.Quota)
+	checkValue(t, "cpu shares", config.Linux.Resources.CPU.Shares, lcd.Shares)
+	checkValue(t, "cpu period", config.Linux.Resources.CPU.Period, lcd.Period)
+	checkValue(t, "cpu quota", config.Linux.Resources.CPU.Quota, lcd.Quota)
 
 	t.Ok(lcd.Cpus == config.Linux.Resources.CPU.Cpus, "cpu cpus is set correctly")
 	t.Diagnosticf("expect: %s, actual: %s", config.Linux.Resources.CPU.Cpus, lcd.Cpus)
@@ -106,26 +89,9 @@ func ValidateLinuxResourcesCPUEmpty(config *rspec.Spec, t *tap.T, state *rspec.S
 		return nil
 	}
 
-	if lcd.Shares == nil {
-		t.Diagnostic(fmt.Sprintf("unable to get cpu shares, lcd.Shares == %v", lcd.Shares))
-		return nil
-	}
-	t.Ok(*lcd.Shares == defaultShares, "cpu shares is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", defaultShares, *lcd.Shares)
-
-	if lcd.Period == nil {
-		t.Diagnostic(fmt.Sprintf("unable to get cpu period, lcd.Period == %v", lcd.Period))
-		return nil
-	}
-	t.Ok(*lcd.Period == defaultPeriod, "cpu period is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", defaultPeriod, *lcd.Period)
-
-	if lcd.Quota == nil {
-		t.Diagnostic(fmt.Sprintf("unable to get cpu quota, lcd.Quota == %v", lcd.Quota))
-		return nil
-	}
-	t.Ok(*lcd.Quota == defaultQuota, "cpu quota is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", defaultQuota, *lcd.Quota)
+	checkValue(t, "cpu shares", &defaultShares, lcd.Shares)
+	checkValue(t, "cpu period", &defaultPeriod, lcd.Period)
+	checkValue(t, "cpu quota", &defaultQuota, lcd.Quota)
 
 	t.Ok(lcd.Cpus == defaultCpus, "cpu cpus is set correctly")
 	t.Diagnosticf("expect: %s, actual: %s", defaultCpus, lcd.Cpus)

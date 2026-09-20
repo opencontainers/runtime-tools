@@ -22,26 +22,14 @@ func ValidateLinuxResourcesMemory(config *rspec.Spec, t *tap.T, state *rspec.Sta
 		return nil
 	}
 
-	t.Ok(*lm.Limit == *config.Linux.Resources.Memory.Limit, "memory limit is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Limit, *lm.Limit)
-
-	t.Ok(*lm.Reservation == *config.Linux.Resources.Memory.Reservation, "memory reservation is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Reservation, *lm.Reservation)
-
-	t.Ok(*lm.Swap == *config.Linux.Resources.Memory.Swap, "memory swap is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Swap, *lm.Reservation)
-
-	t.Ok(*lm.Kernel == *config.Linux.Resources.Memory.Kernel, "memory kernel is set correctly") //nolint:staticcheck // Ignore SA1019: lm.Kernel is deprecated
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Kernel, *lm.Kernel)  //nolint:staticcheck // Ignore SA1019: config.Linux.Resources.Memory.Kernel is deprecated
-
-	t.Ok(*lm.KernelTCP == *config.Linux.Resources.Memory.KernelTCP, "memory kernelTCP is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.KernelTCP, *lm.Kernel) //nolint:staticcheck // Ignore SA1019: lm.Kernel is deprecated
-
-	t.Ok(*lm.Swappiness == *config.Linux.Resources.Memory.Swappiness, "memory swappiness is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.Memory.Swappiness, *lm.Swappiness)
-
-	t.Ok(*lm.DisableOOMKiller == *config.Linux.Resources.Memory.DisableOOMKiller, "memory oom is set correctly")
-	t.Diagnosticf("expect: %t, actual: %t", *config.Linux.Resources.Memory.DisableOOMKiller, *lm.DisableOOMKiller)
+	lrm := config.Linux.Resources.Memory
+	checkValue(t, "memory limit", lrm.Limit, lm.Limit)
+	checkValue(t, "memory reservation", lrm.Reservation, lm.Reservation)
+	checkValue(t, "memory swap", lrm.Swap, lm.Swap)
+	checkValue(t, "memory kernel", lrm.Kernel, lm.Kernel) //nolint:staticcheck // Ignore SA1019: Kernel is deprecated
+	checkValue(t, "memory kernelTCP", lrm.KernelTCP, lm.KernelTCP)
+	checkValue(t, "memory swappiness", lrm.Swappiness, lm.Swappiness)
+	checkValue(t, "memory oom", lrm.DisableOOMKiller, lm.DisableOOMKiller)
 
 	return nil
 }

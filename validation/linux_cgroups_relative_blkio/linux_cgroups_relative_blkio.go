@@ -21,10 +21,15 @@ func main() {
 		util.Fatal(err)
 	}
 	g.SetLinuxCgroupsPath(cgroups.RelCgroupPath)
-	g.SetLinuxResourcesBlockIOWeight(weight)
-	g.SetLinuxResourcesBlockIOLeafWeight(leafWeight)
-	g.AddLinuxResourcesBlockIOWeightDevice(major, minor, weight)
-	g.AddLinuxResourcesBlockIOLeafWeightDevice(major, minor, leafWeight)
+	// The unified hierarchy has no leaf weights, and writes the weight to a
+	// file that depends on the IO scheduler in use, so it cannot be read
+	// back to compare it with the configured value.
+	if !util.UnifiedCgroups() {
+		g.SetLinuxResourcesBlockIOWeight(weight)
+		g.SetLinuxResourcesBlockIOLeafWeight(leafWeight)
+		g.AddLinuxResourcesBlockIOWeightDevice(major, minor, weight)
+		g.AddLinuxResourcesBlockIOLeafWeightDevice(major, minor, leafWeight)
+	}
 	g.AddLinuxResourcesBlockIOThrottleReadBpsDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor, rate)

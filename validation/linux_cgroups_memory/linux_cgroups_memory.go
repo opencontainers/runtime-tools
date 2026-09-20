@@ -38,10 +38,12 @@ func main() {
 		g.SetLinuxResourcesMemoryLimit(c.limit)
 		g.SetLinuxResourcesMemoryReservation(c.limit)
 		g.SetLinuxResourcesMemorySwap(c.limit)
-		g.SetLinuxResourcesMemoryKernel(c.limit)
-		g.SetLinuxResourcesMemoryKernelTCP(c.limit)
-		g.SetLinuxResourcesMemorySwappiness(c.swappiness)
-		g.SetLinuxResourcesMemoryDisableOOMKiller(true)
+		if !util.UnifiedCgroups() {
+			g.SetLinuxResourcesMemoryKernel(c.limit)
+			g.SetLinuxResourcesMemoryKernelTCP(c.limit)
+			g.SetLinuxResourcesMemorySwappiness(c.swappiness)
+			g.SetLinuxResourcesMemoryDisableOOMKiller(true)
+		}
 		err = util.RuntimeOutsideValidate(g, t, util.ValidateLinuxResourcesMemory)
 		if err != nil {
 			t.Fail(err.Error())
