@@ -17,6 +17,11 @@ type CgroupV1 struct {
 	MountPath string
 }
 
+// Version returns the hierarchy version this implementation reads
+func (cg *CgroupV1) Version() int {
+	return 1
+}
+
 // HugePageSizeUnitList is a list of the units used by the linux kernel when
 // naming the HugePage control files.
 // https://www.kernel.org/doc/Documentation/cgroup-v1/hugetlb.txt

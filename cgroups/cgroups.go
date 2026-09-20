@@ -20,6 +20,7 @@ var (
 
 // Cgroup represents interfaces for cgroup validation
 type Cgroup interface {
+	Version() int
 	GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO, error)
 	GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error)
 	GetDevicesData(pid int, cgPath string) ([]rspec.LinuxDeviceCgroup, error)
@@ -37,7 +38,7 @@ func FindCgroup() (Cgroup, error) {
 	}
 	defer f.Close()
 
-	cgroupv2 := false
+	unifiedPath := ""
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -60,9 +61,10 @@ func FindCgroup() (Cgroup, error) {
 			}
 			return cg, nil
 		} else if postSeparatorFields[0] == "cgroup2" {
-			cgroupv2 = true
+			// A unified hierarchy is only used when no legacy
+			// controller is mounted, so keep looking.
+			unifiedPath = fields[4]
 			continue
-			// TODO cgroupv2 unimplemented
 		}
 	}
 
@@ -70,8 +72,11 @@ func FindCgroup() (Cgroup, error) {
 		return nil, err
 	}
 
-	if cgroupv2 {
-		return nil, fmt.Errorf("cgroupv2 is not supported yet")
+	if unifiedPath != "" {
+		cg := &CgroupV2{
+			MountPath: unifiedPath,
+		}
+		return cg, nil
 	}
 	return nil, fmt.Errorf("cgroup is not found")
 }
