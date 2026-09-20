@@ -40,6 +40,13 @@ func (cg *CgroupV2) Version() int {
 	return 2
 }
 
+// ControllerPath returns the directory backing an absolute cgroupsPath.
+// The unified hierarchy keeps every controller in one directory, so the
+// controller is ignored.
+func (cg *CgroupV2) ControllerPath(controller string, cgPath string) string {
+	return filepath.Join(cg.MountPath, cgPath)
+}
+
 func (cg *CgroupV2) dir(pid int, cgPath string) (string, error) {
 	if filepath.IsAbs(cgPath) {
 		path := filepath.Join(cg.MountPath, cgPath)

@@ -21,6 +21,7 @@ var (
 // Cgroup represents interfaces for cgroup validation
 type Cgroup interface {
 	Version() int
+	ControllerPath(controller string, cgPath string) string
 	GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO, error)
 	GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error)
 	GetDevicesData(pid int, cgPath string) ([]rspec.LinuxDeviceCgroup, error)
