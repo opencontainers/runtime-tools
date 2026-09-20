@@ -109,12 +109,10 @@ func main() {
 	}
 
 	err = r.Start()
-	util.SpecErrorOK(t, err == nil, specerror.NewError(specerror.StartWithProcUnsetGenError, fmt.Errorf("`start` operation MUST generate an error if `process` was not set"), rspecs.Version), err)
-	err = util.WaitingForStatus(r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
-	if err == nil {
-		err = r.Delete()
-	}
-	if err != nil {
-		t.Fail(err.Error())
-	}
+	util.SpecErrorOK(t, err != nil, specerror.NewError(specerror.StartWithProcUnsetGenError, fmt.Errorf("`start` operation MUST generate an error if `process` was not set"), rspecs.Version), err)
+
+	// The container never ran, and nothing in the spec says how to dispose
+	// of one that has no `process` to signal, so tear it down without
+	// holding the runtime to a particular way out.
+	r.Clean()
 }
