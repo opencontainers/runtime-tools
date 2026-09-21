@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
@@ -8,6 +10,11 @@ import (
 
 func main() {
 	var major1, minor1, major2, minor2, major3, minor3 int64 = 10, 229, 8, 20, 10, 200
+
+	if util.UnifiedCgroups() {
+		util.Skip("cgroup v1 specific linux.resources.devices test", nil)
+		os.Exit(0)
+	}
 
 	t := tap.New()
 	t.Header(0)
