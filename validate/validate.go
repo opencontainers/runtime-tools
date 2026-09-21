@@ -742,13 +742,13 @@ func isStruct(t reflect.Type) bool {
 }
 
 func isStructPtr(t reflect.Type) bool {
-	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct
+	return t.Kind() == reflect.Pointer && t.Elem().Kind() == reflect.Struct
 }
 
 func checkMandatoryUnit(field reflect.Value, tagField reflect.StructField, parent string) (errs error) {
 	mandatory := !strings.Contains(tagField.Tag.Get("json"), "omitempty")
 	switch field.Kind() {
-	case reflect.Ptr:
+	case reflect.Pointer:
 		if mandatory && field.IsNil() {
 			errs = multierror.Append(errs, fmt.Errorf("'%s.%s' should not be empty", parent, tagField.Name))
 		}
