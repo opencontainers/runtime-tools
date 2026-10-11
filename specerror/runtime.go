@@ -86,14 +86,16 @@ const (
 	KillSignalImplement
 	// DeleteWithoutIDGenError represents "`delete` operation MUST generate an error if it is not provided the container ID."
 	DeleteWithoutIDGenError
-	// DeleteNonStopHaveNoEffect represents "Attempting to `delete` a container that is not `stopped` MUST have no effect on the container."
+	// DeleteNonStopHaveNoEffect represents "Attempting to `delete` a container that is neither `created` nor `stopped` MUST have no effect on the container."
 	DeleteNonStopHaveNoEffect
-	// DeleteNonStopGenError represents "Attempting to `delete` a container that is not `stopped` MUST generate an error."
+	// DeleteNonStopGenError represents "Attempting to `delete` a container that is neither `created` nor `stopped` MUST generate an error."
 	DeleteNonStopGenError
 	// DeleteResImplement represents "Deleting a container MUST delete the resources that were created during the `create` step."
 	DeleteResImplement
 	// DeleteOnlyCreatedRes represents "Note that resources associated with the container, but not created by this container, MUST NOT be deleted."
 	DeleteOnlyCreatedRes
+	// DeleteCreatedNoEffectOrDelete represents "Attempting to `delete` a container that is `created` MAY either have no effect on the container and generate an error, or terminate the container process and then delete the container."
+	DeleteCreatedNoEffectOrDelete
 )
 
 var (
@@ -176,4 +178,5 @@ func init() {
 	register(DeleteNonStopGenError, rfc2119.Must, deleteRef)
 	register(DeleteResImplement, rfc2119.Must, deleteRef)
 	register(DeleteOnlyCreatedRes, rfc2119.Must, deleteRef)
+	register(DeleteCreatedNoEffectOrDelete, rfc2119.May, deleteRef)
 }
