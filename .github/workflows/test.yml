@@ -11,7 +11,7 @@ on:
 jobs:
 
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
@@ -22,7 +22,7 @@ jobs:
           version: latest
 
   commit:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # Only check commits on pull requests.
     if: github.event_name == 'pull_request'
     steps:
@@ -40,7 +40,7 @@ jobs:
           error: 'Subject too long (max 72)'
 
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
