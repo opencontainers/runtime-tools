@@ -8,39 +8,66 @@ on:
       - release-*
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
 
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
-      - uses: actions/checkout@v5
-      - uses: golangci/golangci-lint-action@v9
+          cache: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          version: v2.9
+          persist-credentials: false
+      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: latest
 
   commit:
-    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read # Needed to list the PR's commits.
+    runs-on: ubuntu-26.04
     # Only check commits on pull requests.
     if: github.event_name == 'pull_request'
     steps:
-      - name: get pr commits
-        id: 'get-pr-commits'
-        uses: tim-actions/get-pr-commits@v1.3.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: check commit subject line length
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Save to a file first, so that a gh failure fails the step (rather
+          # than being masked by jq succeeding on empty input).
+          gh api --paginate --slurp \
+            "/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits" \
+            > "$RUNNER_TEMP/commits.json"
 
-      - name: check subject line length
-        uses: tim-actions/commit-message-checker-with-regex@v0.3.2
-        with:
-          commits: ${{ steps.get-pr-commits.outputs.commits }}
-          pattern: '^.{0,72}(\n.*)*$'
-          error: 'Subject too long (max 72)'
+          # A page is an array, and --slurp gives an array of pages, thus
+          # the double iteration. Merge commits are skipped.
+          long=$(jq -r '
+              .[][]
+              | select(.parents | length <= 1)
+              | (.commit.message | split("\n")[0]) as $subject
+              | select(($subject | length) > 72)
+              | "\(.sha[0:12]) \($subject)"
+            ' "$RUNNER_TEMP/commits.json")
+
+          if [ -z "$long" ]; then
+            echo "All commit subject lines are 72 characters or less."
+            exit 0
+          fi
+
+          while read -r commit; do
+            echo "::error::subject line too long (max 72 characters): $commit"
+          done <<<"$long"
+          exit 1
 
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -49,11 +76,14 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
     - name: install go ${{ matrix.go-version }}
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
         go-version: ${{ matrix.go-version }}
+        cache: false
     - name: build
       run: make EXTRA_FLAGS="${{ matrix.race }}"
     - name: test

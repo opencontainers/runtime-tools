@@ -669,7 +669,7 @@ func TestCheckHooks(t *testing.T) {
 			val: rspec.Spec{
 				Version: "1.0.0",
 				Hooks: &rspec.Hooks{
-					Prestart: []rspec.Hook{
+					Prestart: []rspec.Hook{ //nolint:staticcheck // Ignore SA1019: rspec.Hooks.Prestart is deprecated
 						{
 							Path: "/usr/bin/fix-mounts",
 						},
@@ -682,7 +682,7 @@ func TestCheckHooks(t *testing.T) {
 			val: rspec.Spec{
 				Version: "1.0.0",
 				Hooks: &rspec.Hooks{
-					Prestart: []rspec.Hook{
+					Prestart: []rspec.Hook{ //nolint:staticcheck // Ignore SA1019: rspec.Hooks.Prestart is deprecated
 						{
 							Path: "usr",
 						},
