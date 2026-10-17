@@ -43,15 +43,18 @@ func main() {
 		errExpected bool
 		// set true to check whether 'delete' takes effect and just check if 'delete' DOES NOT take effect
 		effectCheck bool
-		err         error
+		// set true if 'delete' may either fail and have no effect, or succeed and delete the container
+		mayDelete bool
+		err       error
 	}{
 		// Note: the nil config test case should run first since we are re-using the bundle
 		// delete without id
-		{nil, "", util.LifecycleActionNone, false, false, specerror.NewError(specerror.DeleteWithoutIDGenError, fmt.Errorf("`delete` operation MUST generate an error if it is not provided the container ID"), rspecs.Version)},
+		{nil, "", util.LifecycleActionNone, false, false, false, specerror.NewError(specerror.DeleteWithoutIDGenError, fmt.Errorf("`delete` operation MUST generate an error if it is not provided the container ID"), rspecs.Version)},
 		// delete a created container
-		{stoppedConfig, containerID, util.LifecycleActionCreate, false, true, specerror.NewError(specerror.DeleteNonStopGenError, fmt.Errorf("attempting to `delete` a container that is not `stopped` MUST generate an error"), rspecs.Version)},
+		// TODO: bump runtime-spec to v1.3.1 once it's out (for the reference).
+		{stoppedConfig, containerID, util.LifecycleActionCreate, false, false, true, specerror.NewError(specerror.DeleteCreatedNoEffectOrDelete, fmt.Errorf("attempting to `delete` a container that is `created` MAY either have no effect on the container and generate an error, or terminate the container process and then delete the container"), rspecs.Version)},
 		// delete a running container
-		{runningConfig, containerID, util.LifecycleActionCreate | util.LifecycleActionStart, false, true, specerror.NewError(specerror.DeleteNonStopGenError, fmt.Errorf("attempting to `delete` a container that is not `stopped` MUST generate an error"), rspecs.Version)},
+		{runningConfig, containerID, util.LifecycleActionCreate | util.LifecycleActionStart, false, true, false, specerror.NewError(specerror.DeleteNonStopGenError, fmt.Errorf("attempting to `delete` a container that is neither `created` nor `stopped` MUST generate an error"), rspecs.Version)},
 	}
 
 	for _, c := range cases {
@@ -70,14 +73,25 @@ func main() {
 		testRuntime.SetID(c.id)
 		util.WaitingForStatus(testRuntime, util.LifecycleStatusCreated|util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 		deletedErr := testRuntime.Delete()
-		util.SpecErrorOK(t, (deletedErr == nil) == c.errExpected, c.err, deletedErr)
+		if c.mayDelete {
+			if deletedErr == nil {
+				// waiting for the error of State, just in case the delete operation takes time
+				util.WaitingForStatus(testRuntime, util.LifecycleActionNone, time.Second*3, time.Second/2)
+			}
+			_, err = testRuntime.State()
+			// either 'delete' failed and the container is still there,
+			// or 'delete' succeeded and the container is gone
+			util.SpecErrorOK(t, (deletedErr == nil) == (err != nil), c.err, deletedErr)
+		} else {
+			util.SpecErrorOK(t, (deletedErr == nil) == c.errExpected, c.err, deletedErr)
+		}
 
 		if c.effectCheck {
 			// waiting for the error of State, just in case the delete operation takes time
 			util.WaitingForStatus(testRuntime, util.LifecycleActionNone, time.Second*3, time.Second/2)
 			_, err = testRuntime.State()
 			// err == nil means the 'delete' operation does NOT take effect
-			util.SpecErrorOK(t, err == nil, specerror.NewError(specerror.DeleteNonStopHaveNoEffect, fmt.Errorf("attempting to `delete` a container that is not `stopped` MUST have no effect on the container"), rspecs.Version), err)
+			util.SpecErrorOK(t, err == nil, specerror.NewError(specerror.DeleteNonStopHaveNoEffect, fmt.Errorf("attempting to `delete` a container that is neither `created` nor `stopped` MUST have no effect on the container"), rspecs.Version), err)
 		}
 
 		// created and but deleted
