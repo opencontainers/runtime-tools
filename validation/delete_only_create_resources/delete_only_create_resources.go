@@ -11,6 +11,7 @@ import (
 	tap "github.com/mndrix/tap-go"
 	"github.com/mrunalp/fileutils"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/specerror"
 	"github.com/opencontainers/runtime-tools/validation/util"
 )
@@ -19,9 +20,13 @@ func main() {
 	t := tap.New()
 	t.Header(0)
 
+	cg, err := cgroups.FindCgroup()
+	if err != nil {
+		util.Fatal(err)
+	}
+
 	// Create a cgroup
-	cgPath := "/sys/fs/cgroup"
-	testPath := filepath.Join(cgPath, "pids", "cgrouptest")
+	testPath := cg.ControllerPath("pids", cgroups.AbsCgroupPath)
 	os.Mkdir(testPath, 0o755)
 	defer os.RemoveAll(testPath)
 
@@ -61,7 +66,7 @@ func main() {
 		util.Fatal(err)
 	}
 	// Add the container to the cgroup
-	err = os.WriteFile(filepath.Join(testPath, "tasks"), []byte(strconv.Itoa(state.Pid)), 0o644)
+	err = os.WriteFile(filepath.Join(testPath, "cgroup.procs"), []byte(strconv.Itoa(state.Pid)), 0o644)
 	if err != nil {
 		util.Fatal(err)
 	}

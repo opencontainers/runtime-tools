@@ -17,6 +17,16 @@ type CgroupV1 struct {
 	MountPath string
 }
 
+// Version returns the hierarchy version this implementation reads
+func (cg *CgroupV1) Version() int {
+	return 1
+}
+
+// ControllerPath returns the directory backing an absolute cgroupsPath
+func (cg *CgroupV1) ControllerPath(controller string, cgPath string) string {
+	return filepath.Join(cg.MountPath, controller, cgPath)
+}
+
 // HugePageSizeUnitList is a list of the units used by the linux kernel when
 // naming the HugePage control files.
 // https://www.kernel.org/doc/Documentation/cgroup-v1/hugetlb.txt
