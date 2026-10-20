@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
 	"runtime"
 
 	"github.com/mndrix/tap-go"
@@ -100,6 +101,11 @@ func testNetworkCgroups() error {
 func main() {
 	if runtime.GOOS != "linux" {
 		util.Fatal(fmt.Errorf("linux-specific cgroup test"))
+	}
+
+	if util.UnifiedCgroups() {
+		util.Skip("cgroup v1 specific linux.resources.network test", nil)
+		os.Exit(0)
 	}
 
 	if err := testNetworkCgroups(); err != nil {

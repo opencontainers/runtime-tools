@@ -663,6 +663,108 @@ func (c *complianceTester) validateLinuxDevices(spec *rspec.Spec) error {
 	return nil
 }
 
+func isDefaultDevicePath(path string) bool {
+	for _, device := range defaultDevices {
+		if device.Path == path {
+			return true
+		}
+	}
+
+	return false
+}
+
+func deviceRuleMatches(rule rspec.LinuxDeviceCgroup, devType string, major int64, minor int64) bool {
+	if rule.Type != "" && rule.Type != "a" && rule.Type != devType {
+		return false
+	}
+	if rule.Major != nil && *rule.Major != major {
+		return false
+	}
+	if rule.Minor != nil && *rule.Minor != minor {
+		return false
+	}
+
+	return rule.Access == "" || strings.Contains(rule.Access, "r")
+}
+
+// deviceReadAllowed applies the entries in the listed order, as a runtime
+// is required to, and reports what the last one to match has to say. A
+// device that no entry matches carries no restriction.
+func deviceReadAllowed(rules []rspec.LinuxDeviceCgroup, devType string, major int64, minor int64) bool {
+	allowed := true
+	for _, rule := range rules {
+		if deviceRuleMatches(rule, devType, major, minor) {
+			allowed = rule.Allow
+		}
+	}
+
+	return allowed
+}
+
+// deviceCgroupType maps a linux.devices type onto the type the device
+// controller knows, which covers character and block devices only.
+func deviceCgroupType(devType string) (string, bool) {
+	switch devType {
+	case "c", "u":
+		return "c", true
+	case "b":
+		return "b", true
+	}
+
+	return "", false
+}
+
+// deviceDeniedByCgroup opens a device node to find out whether the device
+// controller refuses it. EPERM comes back before the driver behind the
+// node is consulted, so a node with nothing behind it answers the question
+// just as well as one that could be read. The open does not block, so a
+// driver that waits for a peer cannot hold the test up.
+func deviceDeniedByCgroup(path string) bool {
+	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err == nil {
+		f.Close()
+		return false
+	}
+
+	return errors.Is(err, syscall.EPERM)
+}
+
+func (c *complianceTester) validateLinuxResourcesDevices(spec *rspec.Spec) error {
+	if spec.Linux == nil || spec.Linux.Resources == nil || len(spec.Linux.Resources.Devices) == 0 {
+		c.harness.Skip(1, "linux.resources.devices is not set")
+		return nil
+	}
+
+	for _, device := range spec.Linux.Devices {
+		// Runtimes add rules of their own for the devices they are
+		// required to supply, so those say nothing about the list that
+		// was configured.
+		if isDefaultDevicePath(device.Path) {
+			continue
+		}
+		devType, ok := deviceCgroupType(device.Type)
+		if !ok {
+			continue
+		}
+		expected := !deviceReadAllowed(spec.Linux.Resources.Devices, devType, device.Major, device.Minor)
+		denied := deviceDeniedByCgroup(device.Path)
+		rfcError, err := c.Ok(denied == expected, specerror.DevicesApplyInOrder, spec.Version,
+			fmt.Sprintf("access to %s follows linux.resources.devices", device.Path))
+		if err != nil {
+			return err
+		}
+		_ = c.harness.YAML(map[string]string{
+			"level":     rfcError.Level.String(),
+			"reference": rfcError.Reference,
+			"device":    fmt.Sprintf("%s %d:%d", device.Type, device.Major, device.Minor),
+			"expected":  fmt.Sprintf("denied: %t", expected),
+			"actual":    fmt.Sprintf("denied: %t", denied),
+		})
+	}
+
+	return nil
+}
+
 func (c *complianceTester) validateDevice(device *rspec.LinuxDevice, condition specerror.Code, version string, description string) (err error) {
 	var exists bool
 	fi, err := os.Stat(device.Path)
@@ -1297,6 +1399,7 @@ func run(context *cli.Context) error {
 		c.validateDefaultFS,
 		c.validateDefaultDevices,
 		c.validateLinuxDevices,
+		c.validateLinuxResourcesDevices,
 		c.validateLinuxProcess,
 		c.validateMaskedPaths,
 		c.validateOOMScoreAdj,

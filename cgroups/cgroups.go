@@ -2,6 +2,7 @@ package cgroups
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
+	"golang.org/x/sys/unix"
 )
 
 var (
@@ -20,6 +22,8 @@ var (
 
 // Cgroup represents interfaces for cgroup validation
 type Cgroup interface {
+	Version() int
+	ControllerPath(controller string, cgPath string) string
 	GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO, error)
 	GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error)
 	GetDevicesData(pid int, cgPath string) ([]rspec.LinuxDeviceCgroup, error)
@@ -31,13 +35,18 @@ type Cgroup interface {
 
 // FindCgroup gets cgroup root mountpoint
 func FindCgroup() (Cgroup, error) {
+	var st unix.Statfs_t
+
+	if err := unix.Statfs(unifiedPath, &st); err == nil && st.Type == unix.CGROUP2_SUPER_MAGIC {
+		return &CgroupV2{}, nil
+	}
+
 	f, err := os.Open("/proc/self/mountinfo")
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	cgroupv2 := false
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -59,10 +68,6 @@ func FindCgroup() (Cgroup, error) {
 				MountPath: filepath.Dir(fields[4]),
 			}
 			return cg, nil
-		} else if postSeparatorFields[0] == "cgroup2" {
-			cgroupv2 = true
-			continue
-			// TODO cgroupv2 unimplemented
 		}
 	}
 
@@ -70,14 +75,11 @@ func FindCgroup() (Cgroup, error) {
 		return nil, err
 	}
 
-	if cgroupv2 {
-		return nil, fmt.Errorf("cgroupv2 is not supported yet")
-	}
 	return nil, fmt.Errorf("cgroup is not found")
 }
 
-// GetSubsystemPath gets path of subsystem
-func GetSubsystemPath(pid int, subsystem string) (string, error) {
+// GetV1SubsystemPath gets the path of a cgroup v1 subsystem
+func GetV1SubsystemPath(pid int, subsystem string) (string, error) {
 	contents, err := os.ReadFile(fmt.Sprintf("/proc/%d/cgroup", pid))
 	if err != nil {
 		return "", err
@@ -96,4 +98,26 @@ func GetSubsystemPath(pid int, subsystem string) (string, error) {
 	}
 
 	return "", fmt.Errorf("subsystem %s not found", subsystem)
+}
+
+// GetCgroupV2Path gets the path of a process in the unified hierarchy
+func GetCgroupV2Path(pid int) (string, error) {
+	f, err := os.Open(fmt.Sprintf("/proc/%d/cgroup", pid))
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		// "0::/user.slice/user-1001.slice/session-1.scope"
+		if path, ok := strings.CutPrefix(s.Text(), "0::"); ok {
+			return path, nil
+		}
+	}
+	if err := s.Err(); err != nil {
+		return "", err
+	}
+
+	return "", errors.New("cgroup v2 path not found")
 }

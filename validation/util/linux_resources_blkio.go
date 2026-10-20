@@ -24,32 +24,16 @@ func ValidateLinuxResourcesBlockIO(config *rspec.Spec, t *tap.T, state *rspec.St
 		return nil
 	}
 
-	if lbd.Weight == nil || config.Linux.Resources.BlockIO.Weight == nil {
-		t.Diagnostic(fmt.Sprintf("unable to get weight: lbd.Weight == %v, config.Linux.Resources.BlockIO.Weight == %v", lbd.Weight, config.Linux.Resources.BlockIO.Weight))
-		return nil
-	}
-
-	t.Ok(*lbd.Weight == *config.Linux.Resources.BlockIO.Weight, "blkio weight is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.BlockIO.Weight, *lbd.Weight)
-
-	if lbd.LeafWeight == nil || config.Linux.Resources.BlockIO.LeafWeight == nil {
-		t.Diagnostic(fmt.Sprintf("unable to get leafWeight: lbd.LeafWeight == %v, config.Linux.Resources.BlockIO.LeafWeight == %v", lbd.LeafWeight, config.Linux.Resources.BlockIO.LeafWeight))
-		return nil
-	}
-
-	t.Ok(*lbd.LeafWeight == *config.Linux.Resources.BlockIO.LeafWeight, "blkio leafWeight is set correctly")
-	t.Diagnosticf("expect: %d, actual: %d", *config.Linux.Resources.BlockIO.LeafWeight, *lbd.LeafWeight)
+	checkValue(t, "blkio weight", config.Linux.Resources.BlockIO.Weight, lbd.Weight)
+	checkValue(t, "blkio leafWeight", config.Linux.Resources.BlockIO.LeafWeight, lbd.LeafWeight)
 
 	for _, device := range config.Linux.Resources.BlockIO.WeightDevice {
 		found := false
 		for _, wd := range lbd.WeightDevice {
 			if wd.Major == device.Major && wd.Minor == device.Minor {
 				found = true
-				t.Ok(*wd.Weight == *device.Weight, fmt.Sprintf("blkio weight for %d:%d is set correctly", device.Major, device.Minor))
-				t.Diagnosticf("expect: %d, actual: %d", *device.Weight, *wd.Weight)
-
-				t.Ok(*wd.LeafWeight == *device.LeafWeight, fmt.Sprintf("blkio leafWeight for %d:%d is set correctly", device.Major, device.Minor))
-				t.Diagnosticf("expect: %d, actual: %d", *device.LeafWeight, *wd.LeafWeight)
+				checkValue(t, fmt.Sprintf("blkio weight for %d:%d", device.Major, device.Minor), device.Weight, wd.Weight)
+				checkValue(t, fmt.Sprintf("blkio leafWeight for %d:%d", device.Major, device.Minor), device.LeafWeight, wd.LeafWeight)
 			}
 		}
 		t.Ok(found, fmt.Sprintf("blkio weightDevice for %d:%d found", device.Major, device.Minor))

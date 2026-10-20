@@ -17,6 +17,16 @@ type CgroupV1 struct {
 	MountPath string
 }
 
+// Version returns the hierarchy version this implementation reads
+func (cg *CgroupV1) Version() int {
+	return 1
+}
+
+// ControllerPath returns the directory backing an absolute cgroupsPath
+func (cg *CgroupV1) ControllerPath(controller string, cgPath string) string {
+	return filepath.Join(cg.MountPath, controller, cgPath)
+}
+
 // HugePageSizeUnitList is a list of the units used by the linux kernel when
 // naming the HugePage control files.
 // https://www.kernel.org/doc/Documentation/cgroup-v1/hugetlb.txt
@@ -52,7 +62,7 @@ func (cg *CgroupV1) GetBlockIOData(pid int, cgPath string) (*rspec.LinuxBlockIO,
 		fileName := strings.Join([]string{"blkio", name}, ".")
 		filePath := filepath.Join(cg.MountPath, "blkio", cgPath, fileName)
 		if !filepath.IsAbs(cgPath) {
-			subPath, err := GetSubsystemPath(pid, "blkio")
+			subPath, err := GetV1SubsystemPath(pid, "blkio")
 			if err != nil {
 				return nil, err
 			}
@@ -227,7 +237,7 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 		fileName := strings.Join([]string{"cpu", name}, ".")
 		filePath := filepath.Join(cg.MountPath, "cpu", cgPath, fileName)
 		if !filepath.IsAbs(cgPath) {
-			subPath, err := GetSubsystemPath(pid, "cpu")
+			subPath, err := GetV1SubsystemPath(pid, "cpu")
 			if err != nil {
 				return nil, err
 			}
@@ -294,7 +304,7 @@ func (cg *CgroupV1) GetCPUData(pid int, cgPath string) (*rspec.LinuxCPU, error) 
 		fileName := strings.Join([]string{"cpuset", name}, ".")
 		filePath := filepath.Join(cg.MountPath, "cpuset", cgPath, fileName)
 		if !filepath.IsAbs(cgPath) {
-			subPath, err := GetSubsystemPath(pid, "cpuset")
+			subPath, err := GetV1SubsystemPath(pid, "cpuset")
 			if err != nil {
 				return nil, err
 			}
@@ -324,7 +334,7 @@ func (cg *CgroupV1) GetDevicesData(pid int, cgPath string) ([]rspec.LinuxDeviceC
 	fileName := strings.Join([]string{"devices", "list"}, ".")
 	filePath := filepath.Join(cg.MountPath, "devices", cgPath, fileName)
 	if !filepath.IsAbs(cgPath) {
-		subPath, err := GetSubsystemPath(pid, "devices")
+		subPath, err := GetV1SubsystemPath(pid, "devices")
 		if err != nil {
 			return nil, err
 		}
@@ -447,7 +457,7 @@ func (cg *CgroupV1) GetHugepageLimitData(pid int, cgPath string) ([]rspec.LinuxH
 		maxUsage := strings.Join([]string{"hugetlb", pageSize, "limit_in_bytes"}, ".")
 		filePath := filepath.Join(cg.MountPath, "hugetlb", cgPath, maxUsage)
 		if !filepath.IsAbs(cgPath) {
-			subPath, err := GetSubsystemPath(pid, "hugetlb")
+			subPath, err := GetV1SubsystemPath(pid, "hugetlb")
 			if err != nil {
 				return lh, err
 			}
@@ -494,7 +504,7 @@ func (cg *CgroupV1) GetMemoryData(pid int, cgPath string) (*rspec.LinuxMemory, e
 		fileName := strings.Join([]string{"memory", name}, ".")
 		filePath := filepath.Join(cg.MountPath, "memory", cgPath, fileName)
 		if !filepath.IsAbs(cgPath) {
-			subPath, err := GetSubsystemPath(pid, "memory")
+			subPath, err := GetV1SubsystemPath(pid, "memory")
 			if err != nil {
 				return nil, err
 			}
@@ -587,7 +597,7 @@ func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork,
 	fileName := strings.Join([]string{"net_cls", "classid"}, ".")
 	filePath := filepath.Join(cg.MountPath, "net_cls", cgPath, fileName)
 	if !filepath.IsAbs(cgPath) {
-		subPath, err := GetSubsystemPath(pid, "net_cls")
+		subPath, err := GetV1SubsystemPath(pid, "net_cls")
 		if err != nil {
 			return nil, err
 		}
@@ -614,7 +624,7 @@ func (cg *CgroupV1) GetNetworkData(pid int, cgPath string) (*rspec.LinuxNetwork,
 	fileName = strings.Join([]string{"net_prio", "ifpriomap"}, ".")
 	filePath = filepath.Join(cg.MountPath, "net_prio", cgPath, fileName)
 	if !filepath.IsAbs(cgPath) {
-		subPath, err := GetSubsystemPath(pid, "net_prio")
+		subPath, err := GetV1SubsystemPath(pid, "net_prio")
 		if err != nil {
 			return nil, err
 		}
@@ -658,7 +668,7 @@ func (cg *CgroupV1) GetPidsData(pid int, cgPath string) (*rspec.LinuxPids, error
 	fileName := strings.Join([]string{"pids", "max"}, ".")
 	filePath := filepath.Join(cg.MountPath, "pids", cgPath, fileName)
 	if !filepath.IsAbs(cgPath) {
-		subPath, err := GetSubsystemPath(pid, "pids")
+		subPath, err := GetV1SubsystemPath(pid, "pids")
 		if err != nil {
 			return nil, err
 		}

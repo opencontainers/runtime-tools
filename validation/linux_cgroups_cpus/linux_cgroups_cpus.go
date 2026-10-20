@@ -59,7 +59,10 @@ func testCPUCgroups() error {
 
 		g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 
-		if c.shares > 0 {
+		// cpu.shares is mapped onto cpu.weight by a conversion the
+		// runtime-spec does not define, and the mapping is lossy, so
+		// the configured value cannot be recovered.
+		if c.shares > 0 && !util.UnifiedCgroups() {
 			g.SetLinuxResourcesCPUShares(c.shares)
 		}
 
