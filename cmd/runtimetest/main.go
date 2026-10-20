@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -341,6 +342,63 @@ func (c *complianceTester) validateHostname(spec *rspec.Spec) error {
 	return nil
 }
 
+func parseProcLimit(value string) (uint64, error) {
+	if value == "unlimited" {
+		return unix.RLIM_INFINITY, nil
+	}
+
+	return strconv.ParseUint(value, 10, 64)
+}
+
+// parseNofileLimits extracts RLIMIT_NOFILE from the contents of a
+// /proc/<pid>/limits file.
+func parseNofileLimits(limits string) (syscall.Rlimit, error) {
+	var rlimit syscall.Rlimit
+
+	for _, line := range strings.Split(limits, "\n") {
+		rest, ok := strings.CutPrefix(line, "Max open files")
+		if !ok {
+			continue
+		}
+		fields := strings.Fields(rest)
+		if len(fields) < 2 {
+			break
+		}
+		soft, err := parseProcLimit(fields[0])
+		if err != nil {
+			return rlimit, err
+		}
+		hard, err := parseProcLimit(fields[1])
+		if err != nil {
+			return rlimit, err
+		}
+		rlimit.Cur = soft
+		rlimit.Max = hard
+		return rlimit, nil
+	}
+
+	return rlimit, errors.New("no RLIMIT_NOFILE entry in the process limits")
+}
+
+// getRlimit reads a resource limit as the runtime set it. The Go runtime
+// raises its own soft RLIMIT_NOFILE at start-up and restores the original
+// in the processes it starts, so that one is read from a child.
+func getRlimit(resource int) (syscall.Rlimit, error) {
+	var rlimit syscall.Rlimit
+
+	if resource != syscall.RLIMIT_NOFILE {
+		err := syscall.Getrlimit(resource, &rlimit)
+		return rlimit, err
+	}
+
+	limits, err := exec.Command("/bin/cat", "/proc/self/limits").Output()
+	if err != nil {
+		return rlimit, err
+	}
+
+	return parseNofileLimits(string(limits))
+}
+
 func (c *complianceTester) validateRlimits(spec *rspec.Spec) error {
 	if spec.Process == nil {
 		c.harness.Skip(1, "process.rlimits not set")
@@ -353,8 +411,8 @@ func (c *complianceTester) validateRlimits(spec *rspec.Spec) error {
 			return err
 		}
 
-		var rlimit syscall.Rlimit
-		if err := syscall.Getrlimit(rl, &rlimit); err != nil {
+		rlimit, err := getRlimit(rl)
+		if err != nil {
 			return err
 		}
 
