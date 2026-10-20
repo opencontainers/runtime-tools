@@ -72,17 +72,17 @@ func main() {
 			util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second)
 			return nil
 		},
+		PostDelete: func(r *util.Runtime) error {
+			outputData, err := os.ReadFile(output)
+			if err != nil || string(outputData) != "pre-start1 called\npre-start2 called\npost-start1 called\npost-start2 called\npost-stop1 called\npost-stop2 called\n" {
+				return fmt.Errorf("%v\n%v", specerror.NewError(specerror.PosixHooksCalledInOrder, fmt.Errorf("Hooks MUST be called in the listed order"), rspec.Version), specerror.NewError(specerror.ProcImplement, fmt.Errorf("The runtime MUST run the user-specified program, as specified by `process`"), rspec.Version))
+			}
+			return nil
+		},
 	}
 
 	err := util.RuntimeLifecycleValidate(config)
-	outputData, _ := os.ReadFile(output)
-	if err == nil && string(outputData) != "pre-start1 called\npre-start2 called\npost-start1\npost-start2\npost-stop1\npost-stop2\n" {
-		err = specerror.NewError(specerror.PosixHooksCalledInOrder, fmt.Errorf("Hooks MUST be called in the listed order"), rspec.Version)
-		diagnostic := map[string]string{
-			"error": err.Error(),
-		}
-		_ = t.YAML(diagnostic)
-	} else {
+	if err != nil {
 		diagnostic := map[string]string{
 			"error": err.Error(),
 		}
