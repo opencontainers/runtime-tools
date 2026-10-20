@@ -548,6 +548,9 @@ func (g *Generator) addEnv(env, key string) {
 	} else {
 		// else the env doesn't exist, so add it and add it's index to g.envMap
 		g.Config.Process.Env = append(g.Config.Process.Env, env)
+		if g.envMap == nil {
+			g.envMap = map[string]int{}
+		}
 		g.envMap[key] = len(g.Config.Process.Env) - 1
 	}
 }
