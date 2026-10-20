@@ -48,6 +48,7 @@ func main() {
 	if err != nil {
 		util.Fatal(err)
 	}
+	annotationConfig.SetProcessArgs([]string{"true"})
 	annotationConfig.AddAnnotation(fmt.Sprintf("org.%s", containerID), "")
 	invalidConfig, err := util.GetDefaultGenerator()
 	if err != nil {
