@@ -64,6 +64,9 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "linux-mems", Usage: "list of memory nodes in the cpuset (default is to use any available memory node)"},
 	cli.Uint64Flag{Name: "linux-mem-swap", Usage: "total memory limit (memory + swap) (in bytes)"},
 	cli.Uint64Flag{Name: "linux-mem-swappiness", Usage: "how aggressive the kernel will swap memory pages (Range from 0 to 100)"},
+	cli.StringFlag{Name: "linux-memorypolicy-mode", Usage: "mode of the default NUMA memory policy for page allocation, e.g MPOL_INTERLEAVE"},
+	cli.StringFlag{Name: "linux-memorypolicy-nodes", Usage: "nodes of the default NUMA memory policy, e.g 0-3,7"},
+	cli.StringSliceFlag{Name: "linux-memorypolicy-flag", Usage: "adds a flag for the default NUMA memory policy, e.g MPOL_F_STATIC_NODES"},
 	cli.StringFlag{Name: "linux-mount-label", Usage: "selinux mount context label"},
 	cli.StringSliceFlag{Name: "linux-namespace-add", Usage: "adds a namespace to the set of namespaces to create or join of the form 'ns[:path]'"},
 	cli.StringSliceFlag{Name: "linux-namespace-remove", Usage: "removes a namespace from the set of namespaces to create or join of the form 'ns'"},
@@ -780,6 +783,27 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 
 	if context.IsSet("linux-mem-swappiness") {
 		g.SetLinuxResourcesMemorySwappiness(context.Uint64("linux-mem-swappiness"))
+	}
+
+	if context.IsSet("linux-memorypolicy-mode") {
+		mpolMode := context.String("linux-memorypolicy-mode")
+		if err := g.SetLinuxMemoryPolicyMode(mpolMode); err != nil {
+			return err
+		}
+	}
+
+	if context.IsSet("linux-memorypolicy-nodes") {
+		mpolNodes := context.String("linux-memorypolicy-nodes")
+		if err := g.SetLinuxMemoryPolicyNodes(mpolNodes); err != nil {
+			return err
+		}
+	}
+
+	if context.IsSet("linux-memorypolicy-flag") {
+		mpolFlags := context.StringSlice("linux-memorypolicy-flag")
+		if err := g.SetLinuxMemoryPolicyFlags(mpolFlags); err != nil {
+			return err
+		}
 	}
 
 	if context.IsSet("linux-network-classid") {
