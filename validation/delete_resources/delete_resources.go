@@ -50,6 +50,11 @@ func main() {
 		util.Fatal(err)
 	}
 
+	cg, err := cgroups.FindCgroup()
+	if err != nil {
+		util.Fatal(err)
+	}
+
 	err = r.Create()
 	if err != nil {
 		util.Fatal(err)
@@ -76,8 +81,7 @@ func main() {
 		t.Fail(err.Error())
 	}
 
-	path := filepath.Join("/sys/fs/cgroup/pids", cgroups.AbsCgroupPath)
-	_, err = os.Stat(path)
+	_, err = os.Stat(cg.ControllerPath("pids", cgroups.AbsCgroupPath))
 	util.SpecErrorOK(t, os.IsNotExist(err), specerror.NewError(specerror.DeleteResImplement, fmt.Errorf("Deleting a container MUST delete the resources that were created during the `create` step"), rspec.Version), nil)
 
 	t.AutoPlan()

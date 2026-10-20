@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/mndrix/tap-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 	"github.com/opencontainers/runtime-tools/validation/util"
@@ -9,6 +11,11 @@ import (
 func main() {
 	var id, prio uint32 = 255, 10
 	ifName := "lo"
+
+	if util.UnifiedCgroups() {
+		util.Skip("cgroup v1 specific linux.resources.network test", nil)
+		os.Exit(0)
+	}
 
 	t := tap.New()
 	t.Header(0)

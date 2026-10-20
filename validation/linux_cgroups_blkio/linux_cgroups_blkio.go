@@ -30,13 +30,19 @@ func testBlkioCgroups(rate uint64, isEmpty bool) error {
 
 	g.SetLinuxCgroupsPath(cgroups.AbsCgroupPath)
 
-	if !isEmpty {
-		g.SetLinuxResourcesBlockIOWeight(weight)
-		g.SetLinuxResourcesBlockIOLeafWeight(leafWeight)
+	// The unified hierarchy has no leaf weights, and writes the weight to a
+	// file that depends on the IO scheduler in use, so it cannot be read
+	// back to compare it with the configured value.
+	if !util.UnifiedCgroups() {
+		if !isEmpty {
+			g.SetLinuxResourcesBlockIOWeight(weight)
+			g.SetLinuxResourcesBlockIOLeafWeight(leafWeight)
+		}
+
+		g.AddLinuxResourcesBlockIOWeightDevice(major, minor, weight)
+		g.AddLinuxResourcesBlockIOLeafWeightDevice(major, minor, leafWeight)
 	}
 
-	g.AddLinuxResourcesBlockIOWeightDevice(major, minor, weight)
-	g.AddLinuxResourcesBlockIOLeafWeightDevice(major, minor, leafWeight)
 	g.AddLinuxResourcesBlockIOThrottleReadBpsDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleWriteBpsDevice(major, minor, rate)
 	g.AddLinuxResourcesBlockIOThrottleReadIOPSDevice(major, minor, rate)
