@@ -1,12 +1,46 @@
 package util
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/runtime-tools/cgroups"
 )
+
+// GetBlockDevice returns the device number of a whole block device on
+// the host, as blkio device rules have to name one that exists. Devices
+// backed by hardware are preferred over loop and RAM disks, which may
+// have nothing behind them.
+func GetBlockDevice() (int64, int64, error) {
+	devs, err := filepath.Glob("/sys/block/*/dev")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	for _, hardware := range []bool{true, false} {
+		for _, dev := range devs {
+			if _, err := os.Stat(filepath.Join(filepath.Dir(dev), "device")); hardware && err != nil {
+				continue
+			}
+			contents, err := os.ReadFile(dev)
+			if err != nil {
+				continue
+			}
+			var major, minor int64
+			if _, err := fmt.Sscanf(strings.TrimSpace(string(contents)), "%d:%d", &major, &minor); err != nil {
+				continue
+			}
+			return major, minor, nil
+		}
+	}
+
+	return 0, 0, errors.New("no block device found in /sys/block")
+}
 
 // ValidateLinuxResourcesBlockIO validates linux.resources.blockIO.
 func ValidateLinuxResourcesBlockIO(config *rspec.Spec, t *tap.T, state *rspec.State) error {

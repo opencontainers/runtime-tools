@@ -13,11 +13,10 @@ func testBlkioCgroups(rate uint64, isEmpty bool) error {
 	var weight uint16 = 500
 	var leafWeight uint16 = 300
 
-	// It's assumed that a device /dev/sda (8:0) exists on the test system.
-	// The minor number must be always 0, as it's only allowed to set blkio
-	// weights to a whole block device /dev/sda, not to partitions like sda1.
-	var major int64 = 8
-	var minor int64
+	major, minor, err := util.GetBlockDevice()
+	if err != nil {
+		return err
+	}
 
 	t := tap.New()
 	t.Header(0)

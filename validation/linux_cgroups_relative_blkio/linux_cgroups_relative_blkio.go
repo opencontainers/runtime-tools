@@ -9,8 +9,12 @@ import (
 func main() {
 	var weight uint16 = 500
 	var leafWeight uint16 = 300
-	var major, minor int64 = 8, 0
 	var rate uint64 = 102400
+
+	major, minor, err := util.GetBlockDevice()
+	if err != nil {
+		util.Fatal(err)
+	}
 
 	t := tap.New()
 	t.Header(0)
