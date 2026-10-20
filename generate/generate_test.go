@@ -155,3 +155,41 @@ func TestMultipleEnvCaching(t *testing.T) {
 	g.AddMultipleProcessEnv([]string{})
 	assert.Equal(t, []string(nil), g.Config.Process.Env)
 }
+
+func TestEnvCachingOverrides(t *testing.T) {
+	// Test overriding default ENV variables to verify createEnvCacheMap correctly extracts keys
+	g, err := generate.New("linux")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Override existing default ENVs
+	g.AddProcessEnv("TERM", "vt100")
+	g.AddProcessEnv("PATH", "/minimal/path")
+	g.AddProcessEnv("FOO", "bar")
+
+	expected := []string{
+		"PATH=/minimal/path",
+		"TERM=vt100",
+		"FOO=bar",
+	}
+	assert.Equal(t, expected, g.Config.Process.Env)
+
+	// Test AddMultipleProcessEnv with overrides
+	g, err = generate.New("linux")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	g.AddMultipleProcessEnv([]string{
+		"TERM=tmux-256color",
+		"NEW_VAR=123",
+	})
+
+	expectedMultiple := []string{
+		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+		"TERM=tmux-256color",
+		"NEW_VAR=123",
+	}
+	assert.Equal(t, expectedMultiple, g.Config.Process.Env)
+}
