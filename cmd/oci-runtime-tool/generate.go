@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"runtime"
 	"strconv"
@@ -23,6 +24,30 @@ var generateFlags = []cli.Flag{
 	cli.StringFlag{Name: "domainname", Usage: "domainname value for the container"},
 	cli.StringSliceFlag{Name: "env", Usage: "add environment variable e.g. key=value"},
 	cli.StringSliceFlag{Name: "env-file", Usage: "read in a file of environment variables"},
+	cli.StringSliceFlag{Name: "freebsd-device-add", Usage: "add a device which must be made available in the container"},
+	cli.StringSliceFlag{Name: "freebsd-device-remove", Usage: "remove a device which must be made available in the container"},
+	cli.BoolFlag{Name: "freebsd-jail-allow-chflags", Usage: "allow chflags(2) inside the jail"},
+	cli.BoolFlag{Name: "freebsd-jail-allow-mlock", Usage: "allow using mlock(2) inside the jail"},
+	cli.StringSliceFlag{Name: "freebsd-jail-allow-mount", Usage: "allow mounting filesystems inside the jail"},
+	cli.BoolFlag{Name: "freebsd-jail-allow-quotas", Usage: "allow administering quotas inside the jail"},
+	cli.BoolFlag{Name: "freebsd-jail-allow-raw-sockets", Usage: "allow using raw sockets inside the jail"},
+	cli.BoolFlag{Name: "freebsd-jail-allow-reserved-ports", Usage: "allow using reserved IP ports inside the jail"},
+	cli.BoolFlag{Name: "freebsd-jail-allow-set-hostname", Usage: "allow setting hostname inside the jail"},
+	cli.BoolFlag{Name: "freebsd-jail-allow-socket-af", Usage: "allow using non-IP protocols inside the jail"},
+	cli.BoolFlag{Name: "freebsd-jail-allow-suser", Usage: "allow super-user inside the jail"},
+	cli.IntFlag{Name: "freebsd-jail-enforce-statfs", Usage: "specifies the visibility of mounts in the jail"},
+	cli.StringFlag{Name: "freebsd-jail-host", Usage: "specifies the jail's host namespace"},
+	cli.StringFlag{Name: "freebsd-jail-interface", Usage: "specifies the network interface to use for ip4 and ip6 addresses"},
+	cli.StringFlag{Name: "freebsd-jail-ip4", Usage: "specifies the jail's ip4 namespace"},
+	cli.StringSliceFlag{Name: "freebsd-jail-ip4-addr", Usage: "specifies the jail's ip4 addresses"},
+	cli.StringFlag{Name: "freebsd-jail-ip6", Usage: "specifies the jail's ip6 namespace"},
+	cli.StringSliceFlag{Name: "freebsd-jail-ip6-addr", Usage: "specifies the jail's ip6 addresses"},
+	cli.StringFlag{Name: "freebsd-jail-parent", Usage: "set the name of a parent jail which can share namespaces with this container"},
+	cli.StringFlag{Name: "freebsd-jail-sysvmsg", Usage: "specifies the jail's SYSV IPC message namespace"},
+	cli.StringFlag{Name: "freebsd-jail-sysvsem", Usage: "specifies the jail's SYSV IPC semaphore namespace"},
+	cli.StringFlag{Name: "freebsd-jail-sysvshm", Usage: "specifies the jail's SYSV IPC shared memory namespace"},
+	cli.StringFlag{Name: "freebsd-jail-vnet", Usage: "specifies the jail's vnet namespace"},
+	cli.StringSliceFlag{Name: "freebsd-jail-vnet-interface", Usage: "specifies interfaces to move into the jail's vnet"},
 	cli.StringSliceFlag{Name: "hooks-poststart-add", Usage: "set command to run in poststart hooks"},
 	cli.BoolFlag{Name: "hooks-poststart-remove-all", Usage: "remove all poststart hooks"},
 	cli.StringSliceFlag{Name: "hooks-poststop-add", Usage: "set command to run in poststop hooks"},
@@ -1017,6 +1042,134 @@ func setupSpec(g *generate.Generator, context *cli.Context) error {
 		g.SetWindowsServicing(context.Bool("windows-servicing"))
 	}
 
+	if context.IsSet("freebsd-device-add") {
+		devices := context.StringSlice("freebsd-device-add")
+		for _, deviceArg := range devices {
+			dev, err := parseFreeBSDDevice(deviceArg)
+			if err != nil {
+				return err
+			}
+			g.AddFreeBSDDevice(dev)
+		}
+	}
+
+	if context.IsSet("freebsd-device-remove") {
+		devices := context.StringSlice("freebsd-device-remove")
+		for _, device := range devices {
+			g.RemoveFreeBSDDevice(device)
+		}
+	}
+	if context.IsSet("freebsd-jail-parent") {
+		g.SetFreeBSDJailParent(context.String("freebsd-jail-parent"))
+	}
+	if context.IsSet("freebsd-jail-host") {
+		sharing, err := parseFreeBSDSharing(context.String("freebsd-jail-host"), false)
+		if err != nil {
+			return err
+		}
+		g.SetFreeBSDJailHost(sharing)
+	}
+	if context.IsSet("freebsd-jail-ip4") {
+		sharing, err := parseFreeBSDSharing(context.String("freebsd-jail-ip4"), true)
+		if err != nil {
+			return err
+		}
+		g.SetFreeBSDJailIP4(sharing)
+	}
+	if context.IsSet("freebsd-jail-ip4-addr") {
+		addrs := context.StringSlice("freebsd-jail-ip4-addr")
+		for _, addr := range addrs {
+			if !validFreeBSDIP4Addr(addr) {
+				return fmt.Errorf("invalid IPv4 address: %s", addr)
+			}
+		}
+		g.SetFreeBSDJailIP4Addr(addrs)
+	}
+	if context.IsSet("freebsd-jail-ip6") {
+		sharing, err := parseFreeBSDSharing(context.String("freebsd-jail-ip6"), true)
+		if err != nil {
+			return err
+		}
+		g.SetFreeBSDJailIP6(sharing)
+	}
+	if context.IsSet("freebsd-jail-ip6-addr") {
+		addrs := context.StringSlice("freebsd-jail-ip6-addr")
+		for _, addr := range addrs {
+			if !validFreeBSDIP6Addr(addr) {
+				return fmt.Errorf("invalid IPv6 address: %s", addr)
+			}
+		}
+		g.SetFreeBSDJailIP6Addr(addrs)
+	}
+	if context.IsSet("freebsd-jail-vnet") {
+		sharing, err := parseFreeBSDSharing(context.String("freebsd-jail-vnet"), false)
+		if err != nil {
+			return err
+		}
+		g.SetFreeBSDJailVnet(sharing)
+	}
+	if context.IsSet("freebsd-jail-interface") {
+		g.SetFreeBSDJailInterface(context.String("freebsd-jail-interface"))
+	}
+	if context.IsSet("freebsd-jail-vnet-interface") {
+		g.SetFreeBSDJailVnetInterfaces(context.StringSlice("freebsd-jail-vnet-interface"))
+	}
+	if context.IsSet("freebsd-jail-sysvmsg") {
+		sharing, err := parseFreeBSDSharing(context.String("freebsd-jail-sysvmsg"), true)
+		if err != nil {
+			return err
+		}
+		g.SetFreeBSDJailSysVMsg(sharing)
+	}
+	if context.IsSet("freebsd-jail-sysvsem") {
+		sharing, err := parseFreeBSDSharing(context.String("freebsd-jail-sysvsem"), true)
+		if err != nil {
+			return err
+		}
+		g.SetFreeBSDJailSysVSem(sharing)
+	}
+	if context.IsSet("freebsd-jail-sysvshm") {
+		sharing, err := parseFreeBSDSharing(context.String("freebsd-jail-sysvshm"), true)
+		if err != nil {
+			return err
+		}
+		g.SetFreeBSDJailSysVShm(sharing)
+	}
+	if context.IsSet("freebsd-jail-enforce-statfs") {
+		val := context.Int("freebsd-jail-enforce-statfs")
+		if val < 0 || val > 2 {
+			return fmt.Errorf("invalid enforce-statfs value: %d", val)
+		}
+		g.SetFreeBSDJailEnforceStatfs(val)
+	}
+	if context.IsSet("freebsd-jail-allow-set-hostname") {
+		g.SetFreeBSDJailAllowSetHostname(context.Bool("freebsd-jail-allow-set-hostname"))
+	}
+	if context.IsSet("freebsd-jail-allow-raw-sockets") {
+		g.SetFreeBSDJailAllowRawSockets(context.Bool("freebsd-jail-allow-raw-sockets"))
+	}
+	if context.IsSet("freebsd-jail-allow-reserved-ports") {
+		g.SetFreeBSDJailAllowReservedPorts(context.Bool("freebsd-jail-allow-reserved-ports"))
+	}
+	if context.IsSet("freebsd-jail-allow-chflags") {
+		g.SetFreeBSDJailAllowChflags(context.Bool("freebsd-jail-allow-chflags"))
+	}
+	if context.IsSet("freebsd-jail-allow-quotas") {
+		g.SetFreeBSDJailAllowQuotas(context.Bool("freebsd-jail-allow-quotas"))
+	}
+	if context.IsSet("freebsd-jail-allow-socket-af") {
+		g.SetFreeBSDJailAllowSocketAf(context.Bool("freebsd-jail-allow-socket-af"))
+	}
+	if context.IsSet("freebsd-jail-allow-mlock") {
+		g.SetFreeBSDJailAllowMlock(context.Bool("freebsd-jail-allow-mlock"))
+	}
+	if context.IsSet("freebsd-jail-allow-suser") {
+		g.SetFreeBSDJailAllowSuser(context.Bool("freebsd-jail-allow-suser"))
+	}
+	if context.IsSet("freebsd-jail-allow-mount") {
+		g.SetFreeBSDJailAllowMount(context.StringSlice("freebsd-jail-allow-mount"))
+	}
+
 	err := addSeccomp(context, g)
 	return err
 }
@@ -1564,4 +1717,55 @@ func parseThrottleDevice(throttleDevice string) (int64, int64, int64, error) {
 	}
 
 	return int64(major), int64(minor), int64(rate), nil
+}
+
+// parseFreeBSDDevice takes the raw string passed with the --freebsd-device-add flag
+func parseFreeBSDDevice(device string) (rspec.FreeBSDDevice, error) {
+	dev := rspec.FreeBSDDevice{}
+	argsParts := strings.Split(device, ":")
+	if len(argsParts) < 2 {
+		return dev, fmt.Errorf("Incomplete device arguments: %s", device)
+	}
+	if len(argsParts) > 2 {
+		return dev, fmt.Errorf("Too many device arguments: %s", device)
+	}
+	dev.Path = argsParts[0]
+	i, err := strconv.ParseInt(argsParts[1], 10, 32)
+	if err != nil {
+		return dev, err
+	}
+	mode := os.FileMode(i)
+	dev.Mode = &mode
+
+	return dev, nil
+}
+
+// parseFreeBSDSharing takes a string representing a namespace sharing mode
+func parseFreeBSDSharing(sharing string, allowDisable bool) (rspec.FreeBSDSharing, error) {
+	if sharing == "inherit" {
+		return rspec.FreeBSDShareInherit, nil
+	}
+	if sharing == "new" {
+		return rspec.FreeBSDShareNew, nil
+	}
+	if allowDisable && sharing == "disable" {
+		return rspec.FreeBSDShareDisable, nil
+	}
+	return "", fmt.Errorf("Invalid sharing mode: %s", sharing)
+}
+
+func validFreeBSDIP4Addr(addr string) bool {
+	ip := net.ParseIP(addr)
+	if ip == nil || ip.To4() == nil {
+		return false
+	}
+	return true
+}
+
+func validFreeBSDIP6Addr(addr string) bool {
+	ip := net.ParseIP(addr)
+	if ip == nil || ip.To4() != nil {
+		return false
+	}
+	return true
 }
