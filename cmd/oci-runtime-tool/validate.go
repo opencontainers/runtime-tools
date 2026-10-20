@@ -45,7 +45,7 @@ var bundleValidateCommand = cli.Command{
 				logrus.Warn(e)
 			}
 
-			return levelErrors.Error.ErrorOrNil()
+			return levelErrors.Error
 		}
 		fmt.Println("Bundle validation succeeded.")
 		return nil

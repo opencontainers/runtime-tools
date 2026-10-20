@@ -1,18 +1,22 @@
 package validate
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/opencontainers/runtime-tools/specerror"
 )
+
+type joinErr interface {
+	Unwrap() []error
+}
 
 func TestNewValidator(t *testing.T) {
 	testSpec := &rspec.Spec{}
@@ -42,7 +46,7 @@ func TestJSONSchema(t *testing.T) {
 	}{
 		{
 			config: &rspec.Spec{},
-			error:  fmt.Sprintf("1 error occurred:\n\t* Version string empty\nRefer to: https://github.com/opencontainers/runtime-spec/blob/v%s/config.md#specification-version\n\n", rspec.Version),
+			error:  fmt.Sprintf("Version string empty\nRefer to: https://github.com/opencontainers/runtime-spec/blob/v%s/config.md#specification-version", rspec.Version),
 		},
 		{
 			config: &rspec.Spec{
@@ -54,7 +58,7 @@ func TestJSONSchema(t *testing.T) {
 			config: &rspec.Spec{
 				Version: "1.0.0", // too old
 			},
-			error: "1 error occurred:\n\t* unsupported configuration version (older than 1.0.2)\n\n",
+			error: "unsupported configuration version (older than 1.0.2)",
 		},
 		{
 			config: &rspec.Spec{
@@ -120,7 +124,7 @@ func TestJSONSchema(t *testing.T) {
 					},
 				},
 			},
-			error: "2 errors occurred:\n\t* linux.namespaces.0: Must validate at least one schema (anyOf)\n\t* linux.namespaces.0.type: linux.namespaces.0.type must be one of the following: \"mount\", \"pid\", \"network\", \"uts\", \"ipc\", \"user\", \"cgroup\"\n\n",
+			error: "linux.namespaces.0: Must validate at least one schema (anyOf)\nlinux.namespaces.0.type: linux.namespaces.0.type must be one of the following: \"mount\", \"pid\", \"network\", \"uts\", \"ipc\", \"user\", \"cgroup\"",
 		},
 		{
 			config: &rspec.Spec{
@@ -247,11 +251,14 @@ func TestJSONSchema(t *testing.T) {
 			if errs == nil {
 				t.Fatal("failed to raise the expected error")
 			}
-			merr, ok := errs.(*multierror.Error)
+			if errs.Error() == tt.error {
+				return
+			}
+			merr, ok := errs.(joinErr)
 			if !ok {
 				t.Fatalf("non-multierror returned by CheckJSONSchema: %s", errs.Error())
 			}
-			for _, err := range merr.Errors {
+			for _, err := range merr.Unwrap() {
 				if err.Error() == tt.error {
 					return
 				}
@@ -492,12 +499,15 @@ func TestCheckProcess(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		v, err := NewValidator(&c.val, ".", false, c.platform)
-		if err != nil {
-			t.Errorf("unexpected NewValidator error: %+v", err)
-		}
-		err = v.CheckProcess()
-		assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckProcess: %v %d", err, c.expected))
+		c := c
+		t.Run("", func(t *testing.T) {
+			v, err := NewValidator(&c.val, ".", false, c.platform)
+			if err != nil {
+				t.Errorf("unexpected NewValidator error: %+v", err)
+			}
+			err = v.CheckProcess()
+			assert.Equal(t, c.expected, specerror.FindError(err, c.expected), fmt.Sprintf("failed CheckProcess: %v %d", err, c.expected))
+		})
 	}
 }
 
@@ -709,11 +719,11 @@ func TestCheckMandatoryFields(t *testing.T) {
 	}{
 		{
 			config: &rspec.Spec{},
-			error:  "1 error occurred:\n\t* 'Spec.Version' should not be empty\n\n",
+			error:  "'Spec.Version' should not be empty",
 		},
 		{
 			config: nil,
-			error:  "1 error occurred:\n\t* Spec can't be nil\n\n",
+			error:  "Spec can't be nil",
 		},
 		{
 			config: &rspec.Spec{
@@ -726,26 +736,28 @@ func TestCheckMandatoryFields(t *testing.T) {
 				Version: "1.0.0",
 				Root:    &rspec.Root{},
 			},
-			error: "1 error occurred:\n\t* 'Root.Path' should not be empty\n\n",
+			error: "'Root.Path' should not be empty",
 		},
 	} {
 		t.Run(tt.error, func(t *testing.T) {
-			var errs *multierror.Error
+			var errs error
 			v := &Validator{spec: tt.config}
-			errs = multierror.Append(errs, v.CheckMandatoryFields())
+			errs = errors.Join(errs, v.CheckMandatoryFields())
 			if tt.error == "" {
-				if errs.ErrorOrNil() == nil {
+				if errs == nil {
 					return
 				}
 				t.Fatalf("expected no error, but got: %s", errs.Error())
 			}
-			if errs.ErrorOrNil() == nil {
+			if errs == nil {
 				t.Fatal("failed to raise the expected error")
 			}
 
-			for _, err := range errs.Errors {
-				if err.Error() == tt.error {
-					return
+			if merr, ok := errs.(joinErr); ok {
+				for _, err := range merr.Unwrap() {
+					if err.Error() == tt.error {
+						return
+					}
 				}
 			}
 			assert.Equal(t, tt.error, errs.Error())
