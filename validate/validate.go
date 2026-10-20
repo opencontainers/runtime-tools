@@ -375,7 +375,7 @@ func (v *Validator) CheckProcess() (errs error) {
 			errs = multierror.Append(errs, v.CheckCapabilities())
 		}
 
-		if len(process.ApparmorProfile) > 0 {
+		if len(process.ApparmorProfile) > 0 && v.spec.Root != nil {
 			profilePath := filepath.Join(v.bundlePath, v.spec.Root.Path, "/etc/apparmor.d", process.ApparmorProfile)
 			_, err := os.Stat(profilePath)
 			if err != nil {
