@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/mndrix/tap-go"
 	rspec "github.com/opencontainers/runtime-spec/specs-go"
@@ -10,14 +11,19 @@ import (
 )
 
 func main() {
+	pageSizes, err := util.GetHugetlbPageSizes()
+	if err != nil {
+		util.Fatal(fmt.Errorf("error when getting hugepage sizes: %+v", err))
+	}
+	if len(pageSizes) == 0 {
+		util.Skip("no huge pages or hugetlb cgroup controller on the host", nil)
+		os.Exit(0)
+	}
+
 	t := tap.New()
 	t.Header(0)
 	defer t.AutoPlan()
 
-	pageSizes, err := cgroups.GetHugePageSize()
-	if err != nil {
-		t.Fail(fmt.Sprintf("error when getting hugepage sizes: %+v", err))
-	}
 	// When setting the limit just for checking if writing works, the amount of memory
 	// requested does not matter, as all insigned integers will be accepted.
 	// Use 2GiB as an example
