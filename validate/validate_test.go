@@ -702,6 +702,48 @@ func TestCheckHooks(t *testing.T) {
 	}
 }
 
+func TestCheckHooksHostSpecific(t *testing.T) {
+	dir := t.TempDir()
+	executable := filepath.Join(dir, "executable")
+	if err := os.WriteFile(executable, nil, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	notExecutable := filepath.Join(dir, "not-executable")
+	if err := os.WriteFile(notExecutable, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	missing := filepath.Join(dir, "missing")
+
+	cases := []struct {
+		path     string
+		expected string
+	}{
+		{path: executable, expected: ""},
+		{path: notExecutable, expected: "is not executable"},
+		{path: missing, expected: "cannot find prestart hook"},
+	}
+	for _, c := range cases {
+		spec := rspec.Spec{
+			Version: "1.0.0",
+			Hooks: &rspec.Hooks{
+				Prestart: []rspec.Hook{{Path: c.path}}, //nolint:staticcheck // Ignore SA1019: rspec.Hooks.Prestart is deprecated
+			},
+		}
+		v, err := NewValidator(&spec, ".", true, "linux")
+		if err != nil {
+			t.Fatalf("unexpected NewValidator error: %+v", err)
+		}
+		err = multierror.Append(nil, v.CheckHooks()).ErrorOrNil()
+		if c.expected == "" {
+			assert.NoError(t, err, c.path)
+			continue
+		}
+		if assert.Error(t, err, c.path) {
+			assert.Contains(t, err.Error(), c.expected, c.path)
+		}
+	}
+}
+
 func TestCheckMandatoryFields(t *testing.T) {
 	for _, tt := range []struct {
 		config *rspec.Spec
