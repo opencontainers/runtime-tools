@@ -56,11 +56,10 @@ func main() {
 			return nil
 		},
 		PreDelete: func(r *util.Runtime) error {
-			util.WaitingForStatus(*r, util.LifecycleStatusRunning, time.Second*10, time.Second*1)
-			err = r.Kill("KILL")
-			// wait before the container been deleted
-			util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
-			return err
+			// The container process is `true`, so it exits on its own and
+			// signalling it afterwards is an error the runtime is required
+			// to generate.
+			return util.WaitingForStatus(*r, util.LifecycleStatusStopped, time.Second*10, time.Second*1)
 		},
 	}
 
